@@ -305,13 +305,13 @@ class _BoxState extends State<Box> {
       String description) async {
     try {
       if (title == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a title')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Inserisci un titolo')));
         return;
       }
       if (selectedClass == "") {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a class')));
+            const SnackBar(content: Text('Inserisci una classe')));
         return;
       }
 
@@ -332,7 +332,7 @@ class _BoxState extends State<Box> {
       });
       Navigator.pop(context);
     } catch (e) {
-      print('Error updating user details: $e');
+      print('Errore aggiornamento utente: $e');
     }
   }
 
@@ -341,7 +341,7 @@ class _BoxState extends State<Box> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) {
-      throw Exception('No image selected');
+      throw Exception('Nessuna immagine selezionata');
     }
 
     final Reference ref = FirebaseStorage.instance
@@ -371,10 +371,6 @@ class _BoxState extends State<Box> {
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
-        } else if ((snapshot.data as List<Map<String, dynamic>>).isEmpty) {
-          return const Center(
-              child: Text("Non ci sono programmi",
-                  style: TextStyle(fontSize: 18.0)));
         } else {
           allDocuments.sort((a, b) =>
               (a['startDate'] as String).compareTo(b['startDate'] as String));
@@ -386,7 +382,8 @@ class _BoxState extends State<Box> {
               var title = document['title'];
               var level = document['selectedOption'];
               var startDate = document['startDate'];
-              //var imagePath = document['imagePath'];
+              var imagePath =
+                  'https://firebasestorage.googleapis.com/v0/b/club-60d94.appspot.com/o/space.jpeg?alt=media&token=b6cd7a20-5ecc-4d4f-91b0-bc9ea4219bea'; //document['imagePath'];
               var description = document['description'];
               return Container(
                 margin: const EdgeInsets.all(10.0),
@@ -402,20 +399,20 @@ class _BoxState extends State<Box> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Title: $title',
+                          Text('Titolo: $title',
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('StartDate: $startDate'),
-                          Text('Club Class: ${widget.clubClass}'),
+                          Text('Data iniziale: $startDate'),
+                          Text('Classe: ${widget.clubClass}'),
                           if (document['endDate'] != '')
-                            Text('EndDate: ${document['endDate']}'),
-                          Image(
-                            image: NetworkImage(
-                                'images/$level/default.jpg'), //dovrebbe essere '${document['imagePath']}', ma non carica bene...
+                            Text('Data finale: ${document['endDate']}'),
+                          const Image(
+                            image: NetworkImage('https://firebasestorage.googleapis.com/v0/b/club-60d94.appspot.com/o/space.jpeg?alt=media&token=b6cd7a20-5ecc-4d4f-91b0-bc9ea4219bea'),
+                            //'images/$level/default.jpg'), //dovrebbe essere '${document['imagePath']}', ma non carica bene...
                             height: 100,
                             width: 100,
                           ),
-                          Text('Description: $description'),
+                          Text('Descrizione: $description'),
                         ],
                       ),
                     ),
@@ -436,18 +433,18 @@ class _BoxState extends State<Box> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Confirm'),
+                                  title: const Text('Elimina'),
                                   content: const Text(
-                                      'Are you sure you want to delete this item?'),
+                                      'Sei sicuro di voler eliminare il programma?'),
                                   actions: <Widget>[
                                     TextButton(
-                                      child: const Text('Cancel'),
+                                      child: const Text('No'),
                                       onPressed: () {
                                         Navigator.of(context).pop(false);
                                       },
                                     ),
                                     TextButton(
-                                      child: const Text('Delete'),
+                                      child: const Text('Si'),
                                       onPressed: () {
                                         Navigator.of(context).pop(true);
                                       },

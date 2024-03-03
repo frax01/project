@@ -10,6 +10,9 @@ import 'package:club/pages/main/setting.dart';
 import 'package:club/pages/club/box.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'tabScorer.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -37,8 +40,6 @@ class _ClubPageState extends State<ClubPage> {
         return acc;
       },
     );
-
-    print("SharedPreferences: $allPrefs");
 
     await FirebaseAuth.instance.signOut();
     setState(() {
@@ -101,7 +102,77 @@ class _ClubPageState extends State<ClubPage> {
     return imagePath;
   }
 
+  FirebaseStorage _storage = FirebaseStorage.instance;
+
+  Future<void> uploadPic() async {
+    //Get the file from the image picker and store it
+    final ImagePicker picker = ImagePicker();
+    final XFile? xImage = await picker.pickImage(source: ImageSource.gallery);
+    //final File image = File(xImage!.path);
+
+    //Create a reference to the location you want to upload to in firebase
+    Reference reference = _storage.ref().child("images/");
+
+    //Upload the file to firebase
+    //UploadTask uploadTask = reference.putFile(image);
+
+    // Waits till the file is uploaded then stores the download url
+    //Uri location = (await uploadTask.future).downloadUrl;
+
+    //returns the download url
+    //return location;
+  }
+
   Future<String> uploadImage() async {
+    final storageRef = FirebaseStorage.instance.ref();
+
+    final imagesRef = storageRef.child("space.jpeg");
+    //final spaceRef = storageRef.child("images/space.jpeg");
+
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    String filePath = image!.path;
+    print("Percorso del file: $filePath");
+
+    //Directory appDocDir = await getApplicationDocumentsDirectory();
+    //String filePath = '${appDocDir.absolute}/photo.jpeg';
+    //File file = File(filePath);
+
+    //try {
+    final UploadTask uploadTask = imagesRef.putData(await image.readAsBytes());
+    final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+    final String imageUrl = await snapshot.ref.getDownloadURL();
+    //} on FirebaseException catch (e) {
+    //  print("Errore Firebase: $e");
+    //}
+
+    return imageUrl;
+  }
+
+  Future<void> downloadImage() async {
+    final storageRef = FirebaseStorage.instance.ref();
+    final pathReference = storageRef.child("space.jpeg");
+    final imageUrl = await storageRef.child("space.jpeg").getDownloadURL();
+    print("I: $imageUrl");
+
+    print("2");
+
+    try {
+      print("3");
+      const oneMegabyte = 1024 * 1024;
+      print("4");
+      final Uint8List? data = await pathReference.getData(oneMegabyte);
+      print("5");
+      print("Ecco: $data");
+      print("6");
+      // Data for "images/island.jpg" is returned, use this as needed.
+    } on FirebaseException catch (e) {
+      print("errore");
+    }
+  }
+
+  Future<String> uploadImage1() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
@@ -109,18 +180,27 @@ class _ClubPageState extends State<ClubPage> {
       throw Exception('No image selected');
     }
 
+    final String imagePath = '/image.jpeg';
+    await image.saveTo(imagePath);
+
+    //final String imagePath = await saveImageToFile(image);
+    final File imageFile = File(imagePath);
+
     final Reference ref = FirebaseStorage.instance
         .ref()
-        .child('users/${DateTime.now().toIso8601String()}');
+        .child('users/${DateTime.now().toIso8601String()}.jpeg');
     //.child('${section}_image/${DateTime.now().toIso8601String()}');
 
-    final UploadTask uploadTask = ref.putData(await image.readAsBytes());
+    //final UploadTask uploadTask = ref.putData(await image.readAsBytes());
+    final UploadTask uploadTask = ref.putFile(imageFile);
     final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
     final String imageUrl = await snapshot.ref.getDownloadURL();
 
     setState(() {
       imageUploaded = true;
     });
+
+    print("imageUrl: $imageUrl");
 
     return imageUrl;
   }
@@ -227,7 +307,10 @@ class _ClubPageState extends State<ClubPage> {
                     onPressed: imageUploaded
                         ? null
                         : () async {
+                            //await uploadPic();
                             String imageUrl = await uploadImage();
+                            print("1");
+                            await downloadImage();
                             setState(() {
                               imagePath = imageUrl;
                             });
@@ -325,6 +408,7 @@ class _ClubPageState extends State<ClubPage> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
+                          print("here: $imagePath");
                           await createEvent(event, imagePath, clubClass,
                               startDate, endDate, description, level);
                         },
@@ -351,51 +435,50 @@ class _ClubPageState extends State<ClubPage> {
         automaticallyImplyLeading: false,
       ),
       body: Center(
-        child: _selectedLevel == "home"
-        ? Box(
-            level: _selectedLevel,
-            clubClass: widget.document['club_class'],
-            section: section.toLowerCase(),
-          )
-        : _selectedLevel == "torneo"
-        ? TabScorer(
-            email: widget.document["email"],
-            status: widget.document["status"],
-          )
-        : SettingsPage(
-            id: widget.document["id"],
-            document: widget.document,
-          )
-      ),
+          child: _selectedLevel == "home"
+              ? Box(
+                  level: _selectedLevel,
+                  clubClass: widget.document['club_class'],
+                  section: section.toLowerCase(),
+                )
+              : _selectedLevel == "torneo"
+                  ? TabScorer(
+                      email: widget.document["email"],
+                      status: widget.document["status"],
+                    )
+                  : SettingsPage(
+                      id: widget.document["id"],
+                      document: widget.document,
+                    )),
       floatingActionButton:
-        widget.document['status'] == 'Admin' && _selectedLevel == 'home'
-          ? SpeedDial(
-              child: Icon(Icons.add),
-              children: [
-                SpeedDialChild(
-                  child: Icon(Icons.calendar_today),
-                  backgroundColor: Colors.grey,
-                  onTap: () {
-                    _showAddEvent("weekend");
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(Icons.holiday_village),
-                  backgroundColor: Colors.grey,
-                  onTap: () {
-                    _showAddEvent("trip");
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(Icons.plus_one),
-                  backgroundColor: Colors.grey,
-                  onTap: () {
-                    _showAddEvent("extra");
-                  },
-                ),
-              ],
-            )
-          : null,
+          widget.document['status'] == 'Admin' && _selectedLevel == 'home'
+              ? SpeedDial(
+                  child: Icon(Icons.add),
+                  children: [
+                    SpeedDialChild(
+                      child: Icon(Icons.calendar_today),
+                      backgroundColor: Colors.grey,
+                      onTap: () {
+                        _showAddEvent("weekend");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Icon(Icons.holiday_village),
+                      backgroundColor: Colors.grey,
+                      onTap: () {
+                        _showAddEvent("trip");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Icon(Icons.plus_one),
+                      backgroundColor: Colors.grey,
+                      onTap: () {
+                        _showAddEvent("extra");
+                      },
+                    ),
+                  ],
+                )
+              : null,
       bottomNavigationBar: BottomAppBar(
         color: const Color.fromARGB(255, 130, 16, 8),
         child: Row(
