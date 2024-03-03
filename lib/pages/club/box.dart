@@ -382,8 +382,7 @@ class _BoxState extends State<Box> {
               var title = document['title'];
               var level = document['selectedOption'];
               var startDate = document['startDate'];
-              var imagePath =
-                  'https://firebasestorage.googleapis.com/v0/b/club-60d94.appspot.com/o/space.jpeg?alt=media&token=b6cd7a20-5ecc-4d4f-91b0-bc9ea4219bea'; //document['imagePath'];
+              var imagePath = document['imagePath'];
               var description = document['description'];
               return Container(
                 margin: const EdgeInsets.all(10.0),
@@ -406,9 +405,8 @@ class _BoxState extends State<Box> {
                           Text('Classe: ${widget.clubClass}'),
                           if (document['endDate'] != '')
                             Text('Data finale: ${document['endDate']}'),
-                          const Image(
-                            image: NetworkImage('https://firebasestorage.googleapis.com/v0/b/club-60d94.appspot.com/o/space.jpeg?alt=media&token=b6cd7a20-5ecc-4d4f-91b0-bc9ea4219bea'),
-                            //'images/$level/default.jpg'), //dovrebbe essere '${document['imagePath']}', ma non carica bene...
+                          Image(
+                            image: NetworkImage(imagePath),
                             height: 100,
                             width: 100,
                           ),
