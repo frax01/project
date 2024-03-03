@@ -35,11 +35,6 @@ void main() async {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   _firebaseMessaging.requestPermission();
-  //FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //  print('Got a message whilst in the foreground!');
-  //  print('1');
-  //  print('Message data: ${message.data}');
-  //});
 
   initializeDateFormatting();
 
@@ -59,7 +54,6 @@ void deleteOldDocuments() async {
   final oneDateCollections = [
     'club_extra',
     'club_weekend',
-    'football_extra',
   ];
   for (final collection in oneDateCollections) {
     final querySnapshot = await firestore.collection(collection).get();
@@ -76,7 +70,6 @@ void deleteOldDocuments() async {
   final twoDateCollections = [
     'club_summer',
     'club_trip',
-    'football_tournament',
   ];
   for (final collection in twoDateCollections) {
     final querySnapshot = await firestore.collection(collection).get();
@@ -126,16 +119,15 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const Login(
-        title: 'Phoenix United',
+        title: 'Tiber Club',
       ),
       initialRoute: '/homepage',
       routes: {
         '/homepage': (context) => const HomePage(),
-        '/login': (context) => const Login(title: 'Phoenix United'),
-        '/signup': (context) => const SignUp(title: 'Phoenix United'),
-        '/waiting': (context) => const Waiting(title: 'Phoenix United'),
-        '/acceptance': (context) =>
-            const AcceptancePage(title: 'Phoenix United'),
+        '/login': (context) => const Login(title: 'Tiber Club'),
+        '/signup': (context) => const SignUp(title: 'Tiber Club'),
+        '/waiting': (context) => const Waiting(title: 'Tiber Club'),
+        '/acceptance': (context) => const AcceptancePage(title: 'Tiber Club'),
       },
     );
   }
@@ -149,14 +141,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   String? email;
 
   Future<Map<String, dynamic>> retrieveData() async {
-    CollectionReference user = FirebaseFirestore.instance.collection('user');
-    QuerySnapshot querySnapshot1 =
-        await user.where('email', isEqualTo: email).get();
 
-    print("email: $email");
+    CollectionReference user = FirebaseFirestore.instance.collection('user');
+    QuerySnapshot querySnapshot1 = await user.where('email', isEqualTo: email).get();
 
     Map<String, dynamic> document = {
       'name': querySnapshot1.docs.first['name'],
@@ -173,9 +164,8 @@ class _HomePageState extends State<HomePage> {
     return document;
   }
 
-  //quando si fa il login con un nuovo utente bisogna mettere quello nella shared preferences
-
   Future<void> loadData() async {
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email');
 
@@ -212,7 +202,6 @@ class _HomePageState extends State<HomePage> {
       });
       //return const Login(title: "Asd Tiber Club");
     } else {
-      print("ciaooo");
       return FutureBuilder<Map<String, dynamic>>(
           future: retrieveData(),
           builder: (context, snapshot) {

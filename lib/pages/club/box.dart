@@ -40,8 +40,6 @@ class _BoxState extends State<Box> {
           .where('selectedClass', isEqualTo: widget.clubClass)
           .get();
 
-      print("dati da $collectionName: ${querySnapshot.docs}");
-
       if (querySnapshot.docs.isNotEmpty) {
         List<Map<String, dynamic>> documents = querySnapshot.docs
             .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
@@ -50,8 +48,6 @@ class _BoxState extends State<Box> {
         allDocuments.addAll(documents);
       }
     }
-
-    print(allDocuments);
 
     return allDocuments;
   }
@@ -138,7 +134,6 @@ class _BoxState extends State<Box> {
   }
 
   Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data) async {
-    print(data);
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
     String newTitle = data['title'];
@@ -147,7 +142,6 @@ class _BoxState extends State<Box> {
     String description = data['description'];
     String startDate = data['startDate'] ?? '';
     String endDate = data['endDate'] ?? '';
-    print('1');
 
     titleController.text = data['title'];
     descriptionController.text = data['description'];
@@ -195,7 +189,7 @@ class _BoxState extends State<Box> {
                           },
                     child: Text(imageUploaded
                         ? 'Immagine caricata'
-                        : 'Carica Immagine'),
+                        : 'Carica immagine'),
                   ),
                   const SizedBox(height: 16.0),
                   //  if (imageUploaded) ...[

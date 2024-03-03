@@ -1,4 +1,3 @@
-import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,11 +25,6 @@ class _ClubPageState extends State<ClubPage> {
   String section = 'CLUB';
   String _selectedLevel = 'home';
   bool imageUploaded = false;
-
-  _saveLastPage(String page) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('lastPage', page);
-  }
 
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -74,7 +68,7 @@ class _ClubPageState extends State<ClubPage> {
       BuildContext context, String startDate, String endDate) async {
     if (startDate == "") {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select the startDate first')));
+          const SnackBar(content: Text('Seleziona prima la data iniziale')));
       return '';
     } else {
       DateFormat inputFormat = DateFormat('dd-MM-yyyy');
@@ -98,11 +92,8 @@ class _ClubPageState extends State<ClubPage> {
   }
 
   Future<String> deleteImage(String imagePath) async {
-    // Ottieni il riferimento all'immagine
     final Reference ref = FirebaseStorage.instance.ref().child(imagePath);
-    // Elimina l'immagine
     await ref.delete();
-    // Imposta imageUploaded a false e imagePath a stringa vuota
     setState(() {
       imageUploaded = false;
       imagePath = '';
@@ -112,29 +103,20 @@ class _ClubPageState extends State<ClubPage> {
 
   Future<String> uploadImage() async {
     final ImagePicker picker = ImagePicker();
-    // Seleziona un'immagine dalla galleria
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) {
       throw Exception('No image selected');
     }
 
-    // Crea un riferimento a Firebase Storage
     final Reference ref = FirebaseStorage.instance
         .ref()
         .child('users/${DateTime.now().toIso8601String()}');
     //.child('${section}_image/${DateTime.now().toIso8601String()}');
 
-    // Carica l'immagine su Firebase Storage
     final UploadTask uploadTask = ref.putData(await image.readAsBytes());
-
-    // Attendi il completamento del caricamento
     final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-
-    // Ottieni l'URL dell'immagine caricata
     final String imageUrl = await snapshot.ref.getDownloadURL();
-
-    print(imageUrl);
 
     setState(() {
       imageUploaded = true;
@@ -177,10 +159,9 @@ class _ClubPageState extends State<ClubPage> {
             const SnackBar(content: Text('Please select a description')));
         return;
       }
-      if (imagePath == '') {
+      if (imagePath == "") {
         imagePath = 'images/$level/default.jpg';
       }
-      print("section: ${section.toLowerCase()}");
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       await firestore.collection('${section.toLowerCase()}_$level').add({
@@ -192,7 +173,6 @@ class _ClubPageState extends State<ClubPage> {
         'startDate': startDate,
         'endDate': endDate,
       });
-      print('Evento creato con successo!');
       Navigator.pop(context);
     } catch (e) {
       print('Errore durante la creazione dell\'evento: $e');
@@ -270,7 +250,7 @@ class _ClubPageState extends State<ClubPage> {
                                   'Sei sicuro di voler eliminare l\'immagine?'),
                               actions: <Widget>[
                                 TextButton(
-                                  child: const Text('Annulla'),
+                                  child: const Text('No'),
                                   onPressed: () {
                                     setState(() {
                                       Navigator.of(context).pop(false);
@@ -278,7 +258,7 @@ class _ClubPageState extends State<ClubPage> {
                                   },
                                 ),
                                 TextButton(
-                                  child: const Text('Elimina'),
+                                  child: const Text('Si'),
                                   onPressed: () {
                                     setState(() {
                                       imageUploaded = false;
@@ -294,7 +274,7 @@ class _ClubPageState extends State<ClubPage> {
                           await deleteImage(imagePath);
                         }
                       },
-                      child: const Text('Elimina Immagine'),
+                      child: const Text('Elimina immagine'),
                     ),
                   ],
                   const SizedBox(height: 16.0),
@@ -304,7 +284,7 @@ class _ClubPageState extends State<ClubPage> {
                             onPressed: () async {
                               startDate = await _startDate(context, startDate);
                             },
-                            child: const Text('Date'),
+                            child: const Text('Data'),
                           ),
                         ]
                       : (level == 'trip' || level == 'tournament')
@@ -314,7 +294,7 @@ class _ClubPageState extends State<ClubPage> {
                                   startDate =
                                       await _startDate(context, startDate);
                                 },
-                                child: const Text('Start date'),
+                                child: const Text('Data iniziale'),
                               ),
                               const SizedBox(height: 16.0),
                               ElevatedButton(
@@ -322,7 +302,7 @@ class _ClubPageState extends State<ClubPage> {
                                   endDate = await _endDate(
                                       context, startDate, endDate);
                                 },
-                                child: const Text('End date'),
+                                child: const Text('Data finale'),
                               ),
                             ]
                           : [],
@@ -363,257 +343,59 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    var height = size.height;
-    var width = size.width;
-    print("title: ${widget.title}");
-    print("document: ${widget.document}");
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title, style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 130, 16, 8),
         centerTitle: true,
-        //iconTheme: const IconThemeData(color: Colors.white),
         automaticallyImplyLeading: false,
       ),
       body: Center(
-          child: _selectedLevel == "home"
-              ? Box(
-                  level: _selectedLevel,
-                  clubClass: widget.document['club_class'],
-                  section: section.toLowerCase(),
-                )
-              : _selectedLevel == "torneo"
-                  ? TabScorer(
-                      email: widget.document["email"],
-                      status: widget.document["status"],
-                    )
-                  : SettingsPage(
-                      id: widget.document["id"],
-                      document: widget.document,
-                    )),
-      //drawer: Drawer(
-      //  width: width > 700
-      //      ? width / 3
-      //      : width > 400
-      //          ? width / 2
-      //          : width / 1.5,
-      //  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      //  child: ListView(
-      //    children: [
-      //      Padding(
-      //        padding: const EdgeInsets.all(8.0),
-      //        child: Image(
-      //          image: const AssetImage('images/logo.png'),
-      //          width: width > 700 ? width / 4 : width / 8,
-      //          height: height / 4,
-      //        ),
-      //      ),
-      //      Padding(
-      //        padding: const EdgeInsets.all(8.0),
-      //        child: Row(
-      //          mainAxisAlignment: MainAxisAlignment.center,
-      //          children: [
-      //            Text('${widget.document['name']} ',
-      //                style: TextStyle(fontSize: width > 300 ? 18 : 14)),
-      //            Text('${widget.document['surname']}',
-      //                style: TextStyle(fontSize: width > 300 ? 18 : 14))
-      //          ],
-      //        ),
-      //      ),
-      //      Padding(
-      //          padding:
-      //              const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-      //          child: Text('${widget.document['club_class']}',
-      //              textAlign: TextAlign.center,
-      //              style: TextStyle(
-      //                  fontSize: width > 500
-      //                      ? 14
-      //                      : width > 300
-      //                          ? 10
-      //                          : 8))),
-      //      Padding(
-      //          padding:
-      //              const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-      //          child: Text('${widget.document['email']}',
-      //              textAlign: TextAlign.center,
-      //              style: TextStyle(
-      //                  fontSize: width > 500
-      //                      ? 14
-      //                      : width > 300
-      //                          ? 10
-      //                          : 8))),
-      //      DropdownButton(
-      //        value: section,
-      //        onChanged: (value) {
-      //          if (widget.document['soccer_class'] != '') {
-      //            setState(() {
-      //              section = value.toString();
-      //              if (section == 'FOOTBALL') {
-      //                _saveLastPage('FootballPage');
-      //                Navigator.push(
-      //                    context,
-      //                    MaterialPageRoute(
-      //                        builder: (context) => FootballPage(
-      //                              title: 'Tiber Club',
-      //                              document: widget.document,
-      //                            )));
-      //              }
-      //            });
-      //          } else {
-      //            Navigator.pop(context);
-      //            ScaffoldMessenger.of(context).showSnackBar(
-      //              const SnackBar(
-      //                  content: Text('Non fai ancora parte di una squadra')),
-      //            );
-      //          }
-      //        },
-      //        alignment: AlignmentDirectional.center,
-      //        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-      //        underline: Container(
-      //          height: 0.5,
-      //          color: Colors.black,
-      //        ),
-      //        items: const [
-      //          DropdownMenuItem(
-      //            value: 'CLUB',
-      //            child: Text('CLUB'),
-      //          ),
-      //          DropdownMenuItem(
-      //            value: 'FOOTBALL',
-      //            child: Text('FOOTBALL'),
-      //          ),
-      //        ],
-      //      ),
-      //      ListTile(
-      //        leading: const Icon(
-      //          Icons.settings,
-      //        ),
-      //        title: const Text('Settings'),
-      //        subtitle: Text('Account management',
-      //            style: TextStyle(
-      //                fontSize: width > 700
-      //                    ? 12
-      //                    : width > 500
-      //                        ? 14
-      //                        : width > 400
-      //                            ? 11
-      //                            : width > 330
-      //                                ? 12
-      //                                : 10)),
-      //        onTap: () {
-      //          Navigator.push(
-      //              context,
-      //              MaterialPageRoute(
-      //                  builder: (context) => SettingsPage(
-      //                        id: widget.document['id'],
-      //                        document: widget.document,
-      //                      )));
-      //        },
-      //      ),
-      //      widget.document['status'] == 'Admin'
-      //          ? ListTile(
-      //              leading: const Icon(
-      //                Icons.code,
-      //              ),
-      //              title: const Text('Incoming requests'),
-      //              subtitle: Text('Accept new users',
-      //                  style: TextStyle(
-      //                      fontSize: width > 700
-      //                          ? 12
-      //                          : width > 500
-      //                              ? 14
-      //                              : width > 400
-      //                                  ? 11
-      //                                  : width > 330
-      //                                      ? 12
-      //                                      : 10)),
-      //              onTap: () {
-      //                Navigator.pushNamed(context, '/acceptance');
-      //              },
-      //            )
-      //          : Container(),
-      //      ListTile(
-      //        leading: const Icon(
-      //          Icons.logout,
-      //        ),
-      //        title: const Text('Logout'),
-      //        subtitle: Text('We will miss you...',
-      //            style: TextStyle(
-      //                fontSize: width > 700
-      //                    ? 12
-      //                    : width > 500
-      //                        ? 14
-      //                        : width > 400
-      //                            ? 11
-      //                            : width > 330
-      //                                ? 12
-      //                                : 10)),
-      //        onTap: () {
-      //          showDialog(
-      //            context: context,
-      //            builder: (BuildContext context) {
-      //              return AlertDialog(
-      //                title: const Text('Logout'),
-      //                content: const Text('Are you sure you want to logout?'),
-      //                actions: <Widget>[
-      //                  TextButton(
-      //                    child: const Text('Cancel'),
-      //                    onPressed: () {
-      //                      Navigator.of(context).pop();
-      //                    },
-      //                  ),
-      //                  TextButton(
-      //                    child: const Text('Yes'),
-      //                    onPressed: () async {
-      //                      await _logout();
-      //                    },
-      //                  ),
-      //                ],
-      //              );
-      //            },
-      //          );
-      //        },
-      //      ),
-      //    ],
-      //  ),
-      //),
+        child: _selectedLevel == "home"
+        ? Box(
+            level: _selectedLevel,
+            clubClass: widget.document['club_class'],
+            section: section.toLowerCase(),
+          )
+        : _selectedLevel == "torneo"
+        ? TabScorer(
+            email: widget.document["email"],
+            status: widget.document["status"],
+          )
+        : SettingsPage(
+            id: widget.document["id"],
+            document: widget.document,
+          )
+      ),
       floatingActionButton:
-          widget.document['status'] == 'Admin' && _selectedLevel == 'home'
-              //? FloatingActionButton(
-              //    onPressed: () {
-              //      _showAddEvent(_selectedLevel);
-              //    },
-              //    child: const Icon(Icons.add),
-              //  )
-              //: null,
-              ? SpeedDial(
-                  child: Icon(Icons.add),
-                  children: [
-                    SpeedDialChild(
-                      child: Icon(Icons.calendar_today),
-                      backgroundColor: Colors.grey,
-                      onTap: () {
-                        _showAddEvent("weekend");
-                      },
-                    ),
-                    SpeedDialChild(
-                      child: Icon(Icons.holiday_village),
-                      backgroundColor: Colors.grey,
-                      onTap: () {
-                        _showAddEvent("trip");
-                      },
-                    ),
-                    SpeedDialChild(
-                      child: Icon(Icons.plus_one),
-                      backgroundColor: Colors.grey,
-                      onTap: () {
-                        _showAddEvent("extra");
-                      },
-                    ),
-                  ],
-                )
-              : null,
+        widget.document['status'] == 'Admin' && _selectedLevel == 'home'
+          ? SpeedDial(
+              child: Icon(Icons.add),
+              children: [
+                SpeedDialChild(
+                  child: Icon(Icons.calendar_today),
+                  backgroundColor: Colors.grey,
+                  onTap: () {
+                    _showAddEvent("weekend");
+                  },
+                ),
+                SpeedDialChild(
+                  child: const Icon(Icons.holiday_village),
+                  backgroundColor: Colors.grey,
+                  onTap: () {
+                    _showAddEvent("trip");
+                  },
+                ),
+                SpeedDialChild(
+                  child: const Icon(Icons.plus_one),
+                  backgroundColor: Colors.grey,
+                  onTap: () {
+                    _showAddEvent("extra");
+                  },
+                ),
+              ],
+            )
+          : null,
       bottomNavigationBar: BottomAppBar(
         color: const Color.fromARGB(255, 130, 16, 8),
         child: Row(
