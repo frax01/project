@@ -1,6 +1,7 @@
 import 'package:club/pages/club/club.dart';
 import 'package:club/pages/main/signup.dart';
 import 'package:flutter/material.dart';
+import 'color_schemes.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'pages/main/acceptance.dart';
@@ -114,10 +115,9 @@ class MyApp extends StatelessWidget {
         Locale('it', 'IT'),
       ],
       title: 'Club App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.transparent),
-        useMaterial3: true,
-      ),
+      theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
+      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
+      themeMode: ThemeMode.light, // device controls theme
       home: const Login(
         title: 'Tiber Club',
       ),
@@ -197,7 +197,6 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Scaffold(
-                backgroundColor: Colors.red,
                 body: Center(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

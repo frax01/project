@@ -204,7 +204,7 @@ class _SignUpFormState extends State<SignUp> {
                 ),
               ),
             ),
-            child: const Text('Sign up', style: TextStyle(color: Colors.black)),
+            child: const Text('Sign up'),
           ),
         ],
       ),

@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:club/pages/main/setting.dart';
 import 'package:club/pages/club/box.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'tabScorer.dart';
+import 'torneo.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -290,8 +290,7 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 130, 16, 8),
+        title: Text(widget.title),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -315,22 +314,19 @@ class _ClubPageState extends State<ClubPage> {
               ? SpeedDial(
                   children: [
                     SpeedDialChild(
-                      child: const Icon(Icons.calendar_today),
-                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.calendar_today),
                       onTap: () {
                         _showAddEvent("weekend");
                       },
                     ),
                     SpeedDialChild(
                       child: const Icon(Icons.holiday_village),
-                      backgroundColor: Colors.grey,
                       onTap: () {
                         _showAddEvent("trip");
                       },
                     ),
                     SpeedDialChild(
                       child: const Icon(Icons.plus_one),
-                      backgroundColor: Colors.grey,
                       onTap: () {
                         _showAddEvent("extra");
                       },
@@ -340,7 +336,6 @@ class _ClubPageState extends State<ClubPage> {
                 )
               : null,
       bottomNavigationBar: BottomAppBar(
-        color: const Color.fromARGB(255, 130, 16, 8),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -355,8 +350,8 @@ class _ClubPageState extends State<ClubPage> {
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Icon(Icons.home, color: Colors.white),
-                  Text('Home', style: TextStyle(color: Colors.white)),
+                  Icon(Icons.home),
+                  Text('Home'),
                 ],
               ),
             ),
@@ -369,8 +364,8 @@ class _ClubPageState extends State<ClubPage> {
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Icon(Icons.sports_soccer, color: Colors.white),
-                  Text('Torneo', style: TextStyle(color: Colors.white)),
+                  Icon(Icons.sports_soccer),
+                  Text('Torneo'),
                 ],
               ),
             ),
@@ -383,8 +378,8 @@ class _ClubPageState extends State<ClubPage> {
               child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Icon(Icons.account_box, color: Colors.white),
-                  Text('Account', style: TextStyle(color: Colors.white)),
+                  Icon(Icons.account_box),
+                  Text('Account'),
                 ],
               ),
             ),
