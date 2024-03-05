@@ -168,15 +168,6 @@ class _HomePageState extends State<HomePage> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email');
-
-    Map<String, dynamic> allPrefs = prefs.getKeys().fold<Map<String, dynamic>>(
-      {},
-      (Map<String, dynamic> acc, String key) {
-        acc[key] = prefs.get(key);
-        return acc;
-      },
-    );
-
   }
 
   @override

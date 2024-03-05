@@ -7,13 +7,11 @@ import 'package:intl/intl.dart';
 class Box extends StatefulWidget {
   const Box({
     super.key,
-    required this.level,
-    required this.clubClass,
+    required this.selectedClass,
     required this.section,
   });
 
-  final String level;
-  final String clubClass;
+  final String selectedClass;
   final String section;
 
   @override
@@ -26,18 +24,17 @@ class _BoxState extends State<Box> {
   String? startDate;
   String? imagePath;
   String? description;
-  bool imageUploaded = true;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Map<String, dynamic>>> _fetchData() async {
     allDocuments = [];
     List<String> clubCollections = ['club_weekend', 'club_trip', 'club_extra'];
 
     for (String collectionName in clubCollections) {
-      CollectionReference collection =
-          FirebaseFirestore.instance.collection(collectionName);
+      CollectionReference collection = FirebaseFirestore.instance.collection(collectionName);
 
       QuerySnapshot querySnapshot = await collection
-          .where('selectedClass', isEqualTo: widget.clubClass)
+          .where('selectedClass', isEqualTo: widget.selectedClass)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -60,18 +57,14 @@ class _BoxState extends State<Box> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (picked != null && picked != DateTime.now()) {
-      setState(() {
-        startDate = DateFormat('dd-MM-yyyy').format(picked);
-      });
+      startDate = DateFormat('dd-MM-yyyy').format(picked);
     }
     return startDate;
   }
 
-  Future<String> _endDate(
-      BuildContext context, String startDate, String endDate) async {
+  Future<String> _endDate(BuildContext context, String startDate, String endDate) async {
     if (startDate == "") {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select the startDate first')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Inserisci prima la data iniziale')));
       return '';
     } else {
       DateFormat inputFormat = DateFormat('dd-MM-yyyy');
@@ -94,48 +87,29 @@ class _BoxState extends State<Box> {
     return endDate;
   }
 
-  Future<Map> loadBoxData(String id) async {
+  Future<Map> loadBoxData(String id, String level) async {
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('${widget.section}_${widget.level}')
+        .collection('${widget.section}_$level')
         .doc(id)
         .get();
 
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-    Map<String, dynamic> editData = {};
-    setState(() {
-      editData = {
-        'id': documentSnapshot.id,
-        'title': data['title'],
-        'imagePath': data['imagePath'],
-        'selectedLevel': widget.level,
-        'selectedClass': data['selectedClass'],
-        'description': data['description'],
-        'startDate': data['startDate'] ?? '',
-        'endDate': data['endDate'] ?? '',
-      };
-    });
-    return editData;
+
+    return data;
   }
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Future<void> deleteDocument(String collection, String docId) async {
     await _firestore.collection(collection).doc(docId).delete();
   }
 
-  Future<String> deleteImage(String imagePath) async {
-    final Reference ref = FirebaseStorage.instance.ref().child(
-        imagePath); //il problema è che l'immagine che eliminiamo (images/...) non esiste nel firebase, va prima caricata correttamente
-    await ref.delete();
-    setState(() {
-      imageUploaded = false;
-      imagePath = '';
-    });
-    return imagePath;
-  }
+  Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data, String section, String id) async {
 
-  Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data) async {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
+
+    titleController.text = data['title'];
+    descriptionController.text = data['description'];
+
     String newTitle = data['title'];
     String imagePath = data['imagePath'];
     String selectedClass = data['selectedClass'];
@@ -143,8 +117,6 @@ class _BoxState extends State<Box> {
     String startDate = data['startDate'] ?? '';
     String endDate = data['endDate'] ?? '';
 
-    titleController.text = data['title'];
-    descriptionController.text = data['description'];
     return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
@@ -179,74 +151,27 @@ class _BoxState extends State<Box> {
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
-                    onPressed: imageUploaded
-                        ? null
-                        : () async {
-                            String imageUrl = await uploadImage();
-                            setState(() {
-                              imagePath = imageUrl;
-                            });
-                          },
-                    child: Text(imageUploaded
-                        ? 'Immagine caricata'
-                        : 'Carica immagine'),
+                    onPressed: () async {
+                      String imageUrl = await uploadImage(section);
+                      setState(() {
+                        imagePath = imageUrl;
+                      });
+                    },
+                    child: const Text('Cambia immagine'),
                   ),
                   const SizedBox(height: 16.0),
-                  //  if (imageUploaded) ...[
-                  //ElevatedButton(
-                  //  onPressed: () async {
-                  //    // Mostra un dialogo di conferma prima di eliminare l'immagine
-                  //    bool? confirm = await showDialog<bool>(
-                  //      context: context,
-                  //      builder: (BuildContext context) {
-                  //        return AlertDialog(
-                  //          title: Text('Conferma'),
-                  //          content: Text(
-                  //              'Sei sicuro di voler eliminare l\'immagine?'),
-                  //          actions: <Widget>[
-                  //            TextButton(
-                  //              child: Text('Annulla'),
-                  //              onPressed: () {
-                  //                setState(() {
-                  //                  Navigator.of(context).pop(false);
-                  //                });
-                  //              },
-                  //            ),
-                  //            TextButton(
-                  //              child: Text('Elimina'),
-                  //              onPressed: () {
-                  //                setState(() {
-                  //                  imageUploaded = false;
-                  //                });
-                  //                Navigator.of(context).pop(true);
-                  //              },
-                  //            ),
-                  //          ],
-                  //        );
-                  //      },
-                  //    );
-                  //    if (confirm == true) {
-                  //      await deleteImage(imagePath);
-                  //      //print(level);
-                  //    }
-                  //  },
-                  //  child: Text('Elimina Immagine'),
-                  //),
-                  const SizedBox(height: 16.0),
-                  ...(level == 'weekend' || level == 'extra')
+                  ...(section == 'weekend' || section == 'extra')
                       ? [
                           ElevatedButton(
                             onPressed: () async {
-                              String newDate = startDate =
+                              startDate =
                                   await _startDate(context, data['startDate']);
-                              setState(() {
-                                startDate = newDate;
-                              });
+                              setState(() {});
                             },
                             child: Text(startDate),
                           ),
                         ]
-                      : (level == 'trip' || level == 'tournament')
+                      : (section == 'trip' || section == 'tournament')
                           ? [
                               ElevatedButton(
                                 onPressed: () async {
@@ -258,6 +183,7 @@ class _BoxState extends State<Box> {
                                 },
                                 child: Text(startDate),
                               ),
+                              const SizedBox(height: 16.0),
                               ElevatedButton(
                                 onPressed: () async {
                                   String newDate = await _endDate(context,
@@ -282,13 +208,20 @@ class _BoxState extends State<Box> {
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () async {
-                      await updateClubDetails(data['id'], newTitle, imagePath,
-                          selectedClass, startDate, endDate, description);
+                      await updateClubDetails(
+                          id,
+                          newTitle,
+                          imagePath,
+                          selectedClass,
+                          startDate,
+                          endDate,
+                          description,
+                          section);
                     },
-                    child: const Text('Crea'),
+                    child: const Text('Modifica'),
                   ),
-                ] //]
-                    ),
+                ]
+                ),
               );
             },
           );
@@ -302,7 +235,8 @@ class _BoxState extends State<Box> {
       String selectedClass,
       String startDate,
       String endDate,
-      String description) async {
+      String description,
+      String section) async {
     try {
       if (title == "") {
         ScaffoldMessenger.of(context)
@@ -316,16 +250,13 @@ class _BoxState extends State<Box> {
       }
 
       await FirebaseFirestore.instance
-          .collection('${widget.section}_${widget.level}')
+          .collection('${widget.section}_$section')
           .doc(id)
-          .delete();
-      await FirebaseFirestore.instance
-          .collection('${widget.section}_${widget.level}')
-          .add({
+          .update({
         'title': newTitle,
         'imagePath': imagePath,
         'selectedClass': selectedClass,
-        'selectedOption': widget.level,
+        'selectedOption': section,
         'description': description,
         'startDate': startDate,
         'endDate': endDate,
@@ -336,30 +267,16 @@ class _BoxState extends State<Box> {
     }
   }
 
-  Future<String> uploadImage() async {
+  Future<String> uploadImage(String level) async {
+    final storageRef = FirebaseStorage.instance.ref();
+    final imagesRef = storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image == null) {
-      throw Exception('Nessuna immagine selezionata');
-    }
-
-    final Reference ref = FirebaseStorage.instance
-        .ref()
-        .child('users/${DateTime.now().toIso8601String()}');
-    //.child('${section}_image/${DateTime.now().toIso8601String()}');
-
-    final UploadTask uploadTask = ref.putData(await image.readAsBytes());
-
+    final UploadTask uploadTask = imagesRef.putData(await image!.readAsBytes());
     final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-
     final String imageUrl = await snapshot.ref.getDownloadURL();
-
-    print(imageUrl);
-
-    setState(() {
-      imageUploaded = true;
-    });
 
     return imageUrl;
   }
@@ -402,7 +319,7 @@ class _BoxState extends State<Box> {
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold)),
                           Text('Data iniziale: $startDate'),
-                          Text('Classe: ${widget.clubClass}'),
+                          Text('Classe: ${widget.selectedClass}'),
                           if (document['endDate'] != '')
                             Text('Data finale: ${document['endDate']}'),
                           Image(
@@ -420,8 +337,8 @@ class _BoxState extends State<Box> {
                           icon: const Icon(Icons.edit),
                           onPressed: () async {
                             Map<dynamic, dynamic> data = {};
-                            data = await loadBoxData(id);
-                            _showEditDialog(widget.level, data);
+                            data = await loadBoxData(id, level);
+                            _showEditDialog(data["selectedOption"], data, level, id);
                           },
                         ),
                         IconButton(
@@ -453,8 +370,7 @@ class _BoxState extends State<Box> {
                             );
                             if (shouldDelete == true) {
                               setState(() {
-                                deleteDocument(
-                                    '${widget.section}_${widget.level}', id);
+                                deleteDocument('${widget.section}_$level', id);
                               });
                             }
                           },
