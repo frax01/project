@@ -16,10 +16,8 @@ class _AcceptancePageState extends State<AcceptancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 130, 16, 8),
+        title: Text(widget.title),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: const UserList(),
     );

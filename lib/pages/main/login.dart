@@ -5,10 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:club/pages/club/club.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key, required this.title})
-      : super(key: key);
+  const Login({Key? key, required this.title}) : super(key: key);
 
   final String title;
+
   //final bool logout;
 
   @override
@@ -73,14 +73,14 @@ class _LoginState extends State<Login> {
     }
 
     Map<String, dynamic> allPrefs = prefs.getKeys().fold<Map<String, dynamic>>(
-    {},
-    (Map<String, dynamic> acc, String key) {
-      acc[key] = prefs.get(key);
-      return acc;
-    },
-  );
+      {},
+      (Map<String, dynamic> acc, String key) {
+        acc[key] = prefs.get(key);
+        return acc;
+      },
+    );
 
-  print("SharedPreferences: $allPrefs");
+    print("SharedPreferences: $allPrefs");
   }
 
   _loadLastPage() async {
@@ -157,10 +157,10 @@ class _LoginState extends State<Login> {
         //  }
         //}
         Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                ClubPage(title: "Tiber Club", document: document)));
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ClubPage(title: "Tiber Club", document: document)));
       });
       if (rememberMe) {
         _saveLoginInfo();
@@ -201,14 +201,14 @@ class _LoginState extends State<Login> {
           decoration: const InputDecoration(labelText: 'Email'),
           onSubmitted: (_) => _handleLogin(),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextField(
           controller: passwordController,
           obscureText: true,
           decoration: const InputDecoration(labelText: 'Password'),
           onSubmitted: (_) => _handleLogin(),
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 15.0),
         CheckboxListTile(
           title: const Text('Remember me'),
           value: rememberMe,
@@ -218,7 +218,7 @@ class _LoginState extends State<Login> {
             });
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         ElevatedButton(
           onPressed: _handleLogin,
           style: ButtonStyle(
@@ -228,9 +228,9 @@ class _LoginState extends State<Login> {
               ),
             ),
           ),
-          child: const Text('Login', style: TextStyle(color: Colors.black)),
+          child: const Text('Login'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         ElevatedButton(
           onPressed: _handleSignUp,
           style: ButtonStyle(
@@ -240,7 +240,7 @@ class _LoginState extends State<Login> {
               ),
             ),
           ),
-          child: const Text('Sign up', style: TextStyle(color: Colors.black)),
+          child: const Text('Sign up'),
         ),
         const SizedBox(height: 16.0),
         TextButton(
@@ -298,7 +298,6 @@ class _LoginState extends State<Login> {
           },
           child: const Text(
             'Forgot password?',
-            style: TextStyle(color: Colors.black),
           ),
         ),
       ],
@@ -309,41 +308,40 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return Stack(
-          children: [
-            Image.asset(
-              "images/CC.jpeg",
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.cover,
-            ),
-            Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: SizedBox(
-                  width: 600,
-                  height: 620,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
-                      elevation: 10.0,
-                      shadowColor: Colors.black,
-                      surfaceTintColor: Colors.white54,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(25),
-                          child: Column(
-                            children: [
-                              Image.asset("images/logo.png", width: 150),
-                              const SizedBox(
-                                height: 20,
-                              ),
-                              Container(
-                                child: buildForm(),
-                              ),
-                            ],
-                          ),
+        children: [
+          Image.asset(
+            "images/CC.jpeg",
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
+          ),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Center(
+              child: SizedBox(
+                width: 600,
+                height: 620,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    elevation: 10.0,
+                    shadowColor: Colors.black,
+                    surfaceTintColor: Colors.white54,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(25),
+                        child: Column(
+                          children: [
+                            Image.asset("images/logo.png", width: 150),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                              child: buildForm(),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -351,8 +349,9 @@ class _LoginState extends State<Login> {
                 ),
               ),
             ),
-          ],
-        );
+          ),
+        ],
+      );
     });
   }
 }
