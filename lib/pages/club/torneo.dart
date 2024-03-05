@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class TabScorer extends StatefulWidget {
-  const TabScorer({super.key, required this.email, required this.status});
+  const TabScorer({super.key, required this.document});
 
-  final String email;
-  final String status;
+  //final String email;
+  //final String status;
+  final Map document;
 
   @override
   _TabScorerState createState() => _TabScorerState();
 }
 
 class _TabScorerState extends State<TabScorer> {
-
   late CollectionReference<Map<String, dynamic>> _scorerCollection;
   late Stream<QuerySnapshot> _scorersStream;
   String name = '';
   String surname = '';
-  String selectedTeam = 'beginner';
+  String bottomLevel = 'torneo';
   int goalCount = 1;
 
   @override
   void initState() {
     super.initState();
-    _scorerCollection = FirebaseFirestore.instance.collection('football_scorer');
-    _scorersStream = _scorerCollection.orderBy('goal', descending: true).snapshots();
+    _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
+    _scorersStream =
+        _scorerCollection.orderBy('goal', descending: true).snapshots();
   }
 
-  Future<void> _showAddDialog() async {
+  Future<void> _showAddDialog(String selectedClass) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Aggiungi Scorer'),
+              title: Text(selectedClass),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -54,21 +56,7 @@ class _TabScorerState extends State<TabScorer> {
                       });
                     },
                   ),
-                  DropdownButton<String>(
-                    value: selectedTeam,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedTeam = value!;
-                      });
-                    },
-                    items: ['beginner', 'intermediate', 'advanced']
-                        .map<DropdownMenuItem<String>>((String team) {
-                      return DropdownMenuItem<String>(
-                        value: team,
-                        child: Text(team),
-                      );
-                    }).toList(),
-                  ),
+                  const SizedBox(height: 8.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -101,20 +89,30 @@ class _TabScorerState extends State<TabScorer> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    goalCount = 1;
                   },
                   child: const Text('Annulla'),
                 ),
                 TextButton(
                   onPressed: () async {
-                    await FirebaseFirestore.instance
-                        .collection('football_scorer')
+                    if(name!="" && surname!="") {
+                      await FirebaseFirestore.instance
+                        .collection('club_scorer')
                         .add({
                       'name': name,
                       'surname': surname,
-                      'team': selectedTeam,
+                      'class': selectedClass,
                       'goal': goalCount,
                     });
+                    goalCount = 1;
                     Navigator.of(context).pop();
+                    } else if(name=="") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Inserisci il nome')));
+                    } else if(surname=="") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Inserisci il cognome')));
+                    }
                   },
                   child: const Text('OK'),
                 ),
@@ -126,7 +124,8 @@ class _TabScorerState extends State<TabScorer> {
     );
   }
 
-  Future<void> _showDialog(String name, String surname, String selectedTeam, int counter, String scorerId) async {
+  Future<void> _showDialog(String name, String surname, String selectedClass,
+      int counter, String scorerId) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -140,7 +139,7 @@ class _TabScorerState extends State<TabScorer> {
                 children: [
                   Text('Name: $name'),
                   Text('Surname: $surname'),
-                  Text('Team: $selectedTeam'),
+                  Text('Team: $selectedClass'),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -249,26 +248,31 @@ class _TabScorerState extends State<TabScorer> {
                 child: ListTile(
                   title: Text('${scorerData['name']} ${scorerData['surname']}'),
                   subtitle: Text(
-                      'Team: ${scorerData['team']}, Goals: ${scorerData['goal']}'),
+                      'Class: ${scorerData['class']}, Goals: ${scorerData['goal']}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      widget.status == 'Admin'
-                      ? IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            _showDialog(scorerData['name'], scorerData['surname'], scorerData['team'], scorerData['goal'], scorerId);
-                          },
-                        )
-                      : Container(),
-                      widget.status == 'Admin'
-                      ? IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            _deleteScorer(scorerId);
-                          },
-                        )
-                      : Container(),
+                      widget.document["status"] == 'Admin'
+                          ? IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                _showDialog(
+                                    scorerData['name'],
+                                    scorerData['surname'],
+                                    scorerData['class'],
+                                    scorerData['goal'],
+                                    scorerId);
+                              },
+                            )
+                          : Container(),
+                      widget.document["status"] == 'Admin'
+                          ? IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _deleteScorer(scorerId);
+                              },
+                            )
+                          : Container(),
                     ],
                   ),
                 ),
@@ -277,14 +281,32 @@ class _TabScorerState extends State<TabScorer> {
           );
         },
       ),
-      floatingActionButton: widget.status == 'Admin'
-      ? FloatingActionButton(
-          onPressed: () {
-            _showAddDialog();
-          },
-          child: const Icon(Icons.add),
-        )
-      : null,
+      floatingActionButton:
+          widget.document['status'] == 'Admin' && bottomLevel == 'torneo'
+              ? SpeedDial(
+                  children: [
+                    SpeedDialChild(
+                      child: const Text("1°"),
+                      onTap: () {
+                        _showAddDialog("1° media");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Text("2°"),
+                      onTap: () {
+                        _showAddDialog("2° media");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Text("3°"),
+                      onTap: () {
+                        _showAddDialog("3° media");
+                      },
+                    ),
+                  ],
+                  child: const Icon(Icons.add),
+                )
+              : null,
     );
   }
 }

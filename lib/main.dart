@@ -96,7 +96,7 @@ void firebaseMessaging() {
 
   FirebaseMessaging.instance.getToken().then((String? token) {
     assert(token != null);
-    print('FCM Token: $token');
+    //print('FCM Token: $token');
   });
 }
 

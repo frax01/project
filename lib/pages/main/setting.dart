@@ -33,11 +33,9 @@ class _SettingsPageState extends State<SettingsPage> {
       _birthdateController.text = userData['birthdate'];
       _emailController.text = userData['email'];
     });
-    print("id: ${widget.id}");
   }
 
   Future<Map<String, dynamic>> getUserData() async {
-    //print(_currentUser!.uid);
     DocumentSnapshot userDoc = await FirebaseFirestore.instance
         .collection('user')
         .doc(widget.id)
@@ -55,16 +53,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
-
-    Map<String, dynamic> allPrefs = prefs.getKeys().fold<Map<String, dynamic>>(
-      {},
-      (Map<String, dynamic> acc, String key) {
-        acc[key] = prefs.get(key);
-        return acc;
-      },
-    );
-
-    print("SharedPreferences: $allPrefs");
 
     await FirebaseAuth.instance.signOut();
     setState(() {
@@ -134,9 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 20.0),
             widget.document['status'] == 'Admin'
                 ? ElevatedButton(
-                    child: const Icon(
-                      Icons.code,
-                    ),
+                    child: const Text("Richieste utenti"),
                     onPressed: () {
                       Navigator.pushNamed(context, '/acceptance');
                     },
@@ -144,9 +130,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 : Container(),
             const SizedBox(height: 20.0),
             ElevatedButton(
-              child: const Icon(
-                Icons.logout,
-              ),
+              child: const Text("Logout"),
               onPressed: () {
                 showDialog(
                   context: context,

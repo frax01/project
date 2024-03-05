@@ -141,7 +141,7 @@ class _ClubPageState extends State<ClubPage> {
       }
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      print('${section.toLowerCase()}_$selectedOption');
+      
       await firestore
           .collection('${section.toLowerCase()}_$selectedOption')
           .add({
@@ -302,8 +302,9 @@ class _ClubPageState extends State<ClubPage> {
                 )
               : bottomLevel == "torneo"
                   ? TabScorer(
-                      email: widget.document["email"],
-                      status: widget.document["status"],
+                    document: widget.document,
+                      //email: widget.document["email"],
+                      //status: widget.document["status"],
                     )
                   : SettingsPage(
                       id: widget.document["id"],
