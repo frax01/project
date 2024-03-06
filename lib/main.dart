@@ -1,7 +1,7 @@
 import 'package:club/pages/club/club.dart';
 import 'package:club/pages/main/signup.dart';
 import 'package:flutter/material.dart';
-import 'color_schemes.dart';
+import 'theming.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'pages/main/acceptance.dart';
@@ -115,8 +115,16 @@ class MyApp extends StatelessWidget {
         Locale('it', 'IT'),
       ],
       title: 'Club App',
-      theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
-      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
+      theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: lightColorScheme,
+          textTheme: textTheme,
+      ),
+      darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: darkColorScheme,
+          textTheme: textTheme,
+      ),
       themeMode: ThemeMode.light, // device controls theme
       home: const Login(
         title: 'Tiber Club',
