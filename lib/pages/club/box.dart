@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Box extends StatefulWidget {
   const Box({
@@ -26,12 +28,138 @@ class _BoxState extends State<Box> {
   String? description;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  int weather_code = 0;
+  int temperature_min = 0;
+  int temperature_max = 0;
+
+  List w_code = [];
+  List t_min = [];
+  List t_max = [];
+  bool check = false;
+
+  //Bisogna fare due funzioni diverse, una per i trip e una per weekend e extra perchè sennò c'è il problema dei future
+  Future<void> _fetchWeatherData(startDate, endDate) async {
+    weather_code = 0;
+    temperature_min = 0;
+    temperature_max = 0;
+    check = false;
+    DateFormat inputFormat = DateFormat("dd-MM-yyyy");
+    DateFormat outputFormat = DateFormat("yyyy-MM-dd");
+    DateTime startParsedDate = inputFormat.parse(startDate);
+    String startOutputDate = outputFormat.format(startParsedDate);
+
+    DateTime today = DateTime.now();
+    DateTime startDateCheck = inputFormat.parse(startDate);
+    Duration difference = startDateCheck.difference(today);
+    int daysDifference = difference.inDays;
+    if (daysDifference >= 16) {
+      check = false;
+    } else if (endDate != '' &&
+        startDateCheck.isBefore(today) &&
+        today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate))) {
+      startOutputDate = outputFormat.format(today);
+      check = true;
+      final response = await http.get(
+        Uri.parse(
+            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        weather_code = data['daily']['weather_code'][0];
+        temperature_min = (data['daily']['temperature_2m_min'][0] < 0)
+            ? data['daily']['temperature_2m_min'][0].ceil()
+            : data['daily']['temperature_2m_min'][0].floor();
+        temperature_max = (data['daily']['temperature_2m_max'][0] < 0)
+            ? data['daily']['temperature_2m_max'][0].ceil()
+            : data['daily']['temperature_2m_max'][0].floor();
+        print('Weather_code: $weather_code');
+        print('Temperature Min: $temperature_min');
+        print('Temperature Max: $temperature_max');
+      } else {
+        throw Exception('Failed to fetch weather data');
+      }
+    } else if (endDate != '') {
+      //trip
+      check = true;
+
+      DateTime today = DateTime.now();
+      DateTime endDateCheck = DateFormat('dd-MM-yyyy').parse(endDate);
+      Duration difference = endDateCheck.difference(today);
+      int daysDifference = difference.inDays;
+      String endOutputDate = '';
+      if (daysDifference >= 16) {
+        DateTime endParsedDate = today.add(const Duration(days: 15));
+        endOutputDate = outputFormat.format(endParsedDate);
+      } else {
+        DateTime endParsedDate = inputFormat.parse(endDate);
+        endOutputDate = outputFormat.format(endParsedDate);
+      }
+      print(endOutputDate);
+      final response = await http.get(
+        Uri.parse(
+            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$endOutputDate'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        w_code = data['daily']['weather_code'];
+        t_min = data['daily']['temperature_2m_min'];
+        t_max = data['daily']['temperature_2m_max'];
+
+        double sum = 0;
+        for (double value in t_min) {
+          sum += value;
+        }
+        temperature_min = ((sum / t_min.length) < 0)
+            ? (sum / t_min.length).ceil()
+            : (sum / t_min.length).floor();
+
+        sum = 0;
+        for (double value in t_max) {
+          sum += value;
+        }
+        temperature_max = ((sum / t_max.length) < 0)
+            ? (sum / t_max.length).ceil()
+            : (sum / t_max.length).floor();
+
+        t_min.forEach((team) {
+          print(team);
+        });
+        //print('Temperature Min: $temperature_min');
+        //print('Temperature Max: $temperature_max');
+      } else {
+        throw Exception('Failed to fetch weather data');
+      }
+    } else {
+      check = true;
+      final response = await http.get(
+        Uri.parse(
+            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        weather_code = data['daily']['weather_code'][0];
+        temperature_min = (data['daily']['temperature_2m_min'][0] < 0)
+            ? data['daily']['temperature_2m_min'][0].ceil()
+            : data['daily']['temperature_2m_min'][0].floor();
+        temperature_max = (data['daily']['temperature_2m_max'][0] < 0)
+            ? data['daily']['temperature_2m_max'][0].ceil()
+            : data['daily']['temperature_2m_max'][0].floor();
+        print('Weather_code: $weather_code');
+        print('Temperature Min: $temperature_min');
+        print('Temperature Max: $temperature_max');
+      } else {
+        throw Exception('Failed to fetch weather data');
+      }
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _fetchData() async {
     allDocuments = [];
     List<String> clubCollections = ['club_weekend', 'club_trip', 'club_extra'];
 
     for (String collectionName in clubCollections) {
-      CollectionReference collection = FirebaseFirestore.instance.collection(collectionName);
+      CollectionReference collection =
+          FirebaseFirestore.instance.collection(collectionName);
 
       QuerySnapshot querySnapshot = await collection
           .where('selectedClass', isEqualTo: widget.selectedClass)
@@ -62,9 +190,11 @@ class _BoxState extends State<Box> {
     return startDate;
   }
 
-  Future<String> _endDate(BuildContext context, String startDate, String endDate) async {
+  Future<String> _endDate(
+      BuildContext context, String startDate, String endDate) async {
     if (startDate == "") {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Inserisci prima la data iniziale')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inserisci prima la data iniziale')));
       return '';
     } else {
       DateFormat inputFormat = DateFormat('dd-MM-yyyy');
@@ -102,8 +232,8 @@ class _BoxState extends State<Box> {
     await _firestore.collection(collection).doc(docId).delete();
   }
 
-  Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data, String section, String id) async {
-
+  Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data,
+      String section, String id) async {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
 
@@ -220,8 +350,7 @@ class _BoxState extends State<Box> {
                     },
                     child: const Text('Modifica'),
                   ),
-                ]
-                ),
+                ]),
               );
             },
           );
@@ -269,7 +398,8 @@ class _BoxState extends State<Box> {
 
   Future<String> uploadImage(String level) async {
     final storageRef = FirebaseStorage.instance.ref();
-    final imagesRef = storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
+    final imagesRef =
+        storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
 
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -299,86 +429,106 @@ class _BoxState extends State<Box> {
               var title = document['title'];
               var level = document['selectedOption'];
               var startDate = document['startDate'];
+              var endDate = document['endDate'] ?? '';
               var imagePath = document['imagePath'];
               var description = document['description'];
-              return Container(
-                margin: const EdgeInsets.all(10.0),
-                padding: const EdgeInsets.all(15.0),
-                decoration: BoxDecoration(
-                  border: Border.all(),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
+              return FutureBuilder(
+                future: _fetchWeatherData(startDate, endDate),
+                builder: (BuildContext context,
+                    AsyncSnapshot<void> weatherSnapshot) {
+                  if (weatherSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Container();
+                  } else {
+                    return Container(
+                      margin: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(15.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Titolo: $title',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('Data iniziale: $startDate'),
-                          Text('Classe: ${widget.selectedClass}'),
-                          if (document['endDate'] != '')
-                            Text('Data finale: ${document['endDate']}'),
-                          Image(
-                            image: NetworkImage(imagePath),
-                            height: 100,
-                            width: 100,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Titolo: $title',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                                Text('Data iniziale: $startDate'),
+                                Text('Classe: ${widget.selectedClass}'),
+                                if (document['endDate'] != '')
+                                  Text('Data finale: ${document['endDate']}'),
+                                Image(
+                                  image: NetworkImage(imagePath),
+                                  height: 100,
+                                  width: 100,
+                                ),
+                                Text('Descrizione: $description'),
+                                check
+                                    ? Text('Temp min: $temperature_min')
+                                    : Container(),
+                                check
+                                    ? Text('Temp max: $temperature_max')
+                                    : Container(),
+                              ],
+                            ),
                           ),
-                          Text('Descrizione: $description'),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () async {
+                                  Map<dynamic, dynamic> data = {};
+                                  data = await loadBoxData(id, level);
+                                  _showEditDialog(
+                                      data["selectedOption"], data, level, id);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () async {
+                                  bool? shouldDelete = await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Elimina'),
+                                        content: const Text(
+                                            'Sei sicuro di voler eliminare il programma?'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: const Text('No'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(false);
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: const Text('Si'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop(true);
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                  if (shouldDelete == true) {
+                                    setState(() {
+                                      deleteDocument(
+                                          '${widget.section}_$level', id);
+                                    });
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                    ),
-                    Column(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            Map<dynamic, dynamic> data = {};
-                            data = await loadBoxData(id, level);
-                            _showEditDialog(data["selectedOption"], data, level, id);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () async {
-                            bool? shouldDelete = await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Elimina'),
-                                  content: const Text(
-                                      'Sei sicuro di voler eliminare il programma?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      child: const Text('No'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop(false);
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: const Text('Si'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop(true);
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                            if (shouldDelete == true) {
-                              setState(() {
-                                deleteDocument('${widget.section}_$level', id);
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                    );
+                  }
+                },
               );
             },
           );
