@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const lightColorScheme = ColorScheme(
   brightness: Brightness.light,
@@ -67,37 +66,4 @@ const darkColorScheme = ColorScheme(
   surfaceTint: Color(0xFFFFB3AF),
   outlineVariant: Color(0xFF534342),
   scrim: Color(0xFF000000),
-);
-
-final textTheme = TextTheme(
-  displayLarge: GoogleFonts.cabin(
-      fontSize: 96, fontWeight: FontWeight.w300, color: Colors.black
-  ),
-  displayMedium: GoogleFonts.cabin(
-      fontSize: 60, fontWeight: FontWeight.w300, color: Colors.black
-  ),
-  displaySmall: GoogleFonts.cabin(
-      fontSize: 48, fontWeight: FontWeight.w300, color: Colors.black
-  ),
-  headlineLarge: GoogleFonts.sniglet(
-      fontSize: 34, fontWeight: FontWeight.w400, color: Colors.black
-  ),
-  headlineMedium: GoogleFonts.sniglet(
-      fontSize: 24, fontWeight: FontWeight.w400, color: Colors.black
-  ),
-  headlineSmall: GoogleFonts.sniglet(
-      fontSize: 20, fontWeight: FontWeight.w400, color: Colors.black
-  ),
- bodyLarge: GoogleFonts.cabin(
-      fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black
-  ),
-  bodyMedium: GoogleFonts.cabin(
-      fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black
-  ),
-  bodySmall: GoogleFonts.cabin(
-      fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black
-  ),
-  button: GoogleFonts.cabin(
-      fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white
-  ),
 );
