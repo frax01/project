@@ -88,7 +88,7 @@ final textTheme = TextTheme(
   headlineSmall: GoogleFonts.sniglet(
       fontSize: 20, fontWeight: FontWeight.w400, color: Colors.black
   ),
-  bodyLarge: GoogleFonts.cabin(
+ bodyLarge: GoogleFonts.cabin(
       fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black
   ),
   bodyMedium: GoogleFonts.cabin(

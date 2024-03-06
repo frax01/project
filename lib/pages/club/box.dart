@@ -38,7 +38,8 @@ class _BoxState extends State<Box> {
   bool check = false;
 
   //Bisogna fare due funzioni diverse, una per i trip e una per weekend e extra perchè sennò c'è il problema dei future
-  Future<void> _fetchWeatherData(startDate, endDate) async {
+  Future<String> _fetchWeatherData(startDate, endDate) async {
+    String weatherImageUrl = '';
     weather_code = 0;
     temperature_min = 0;
     temperature_max = 0;
@@ -54,6 +55,7 @@ class _BoxState extends State<Box> {
     int daysDifference = difference.inDays;
     if (daysDifference >= 16) {
       check = false;
+      return '';
     } else if (endDate != '' &&
         startDateCheck.isBefore(today) &&
         today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate))) {
@@ -78,6 +80,10 @@ class _BoxState extends State<Box> {
       } else {
         throw Exception('Failed to fetch weather data');
       }
+      String weatherImage = 'Weather/$weather_code.png';
+      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
+      weatherImageUrl = await ref.getDownloadURL();
+      return weatherImageUrl;
     } else if (endDate != '') {
       //trip
       check = true;
@@ -129,6 +135,10 @@ class _BoxState extends State<Box> {
       } else {
         throw Exception('Failed to fetch weather data');
       }
+      String weatherImage = 'Weather/${w_code[0]}.png';
+      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
+      weatherImageUrl = await ref.getDownloadURL();
+      return weatherImageUrl;
     } else {
       check = true;
       final response = await http.get(
@@ -150,6 +160,10 @@ class _BoxState extends State<Box> {
       } else {
         throw Exception('Failed to fetch weather data');
       }
+      String weatherImage = 'Weather/$weather_code.png';
+      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
+      weatherImageUrl = await ref.getDownloadURL();
+      return weatherImageUrl;
     }
   }
 
@@ -435,11 +449,12 @@ class _BoxState extends State<Box> {
               return FutureBuilder(
                 future: _fetchWeatherData(startDate, endDate),
                 builder: (BuildContext context,
-                    AsyncSnapshot<void> weatherSnapshot) {
+                    AsyncSnapshot<String> weatherSnapshot) {
                   if (weatherSnapshot.connectionState ==
                       ConnectionState.waiting) {
                     return Container();
                   } else {
+                    String? imageUrl = weatherSnapshot.data;
                     return Container(
                       margin: const EdgeInsets.all(10.0),
                       padding: const EdgeInsets.all(15.0),
@@ -473,6 +488,14 @@ class _BoxState extends State<Box> {
                                 check
                                     ? Text('Temp max: $temperature_max')
                                     : Container(),
+                                if (imageUrl == null || imageUrl == '')
+              const Text('Weather non disponibile')
+            else
+              Image(
+                image: NetworkImage(imageUrl),
+                height: 30,
+                width: 30,
+              ),
                               ],
                             ),
                           ),

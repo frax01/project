@@ -118,12 +118,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           useMaterial3: true,
           colorScheme: lightColorScheme,
-          textTheme: textTheme,
+          //textTheme: textTheme,
       ),
       darkTheme: ThemeData(
           useMaterial3: true,
           colorScheme: darkColorScheme,
-          textTheme: textTheme,
+          //textTheme: textTheme,
       ),
       themeMode: ThemeMode.light, // device controls theme
       home: const Login(
