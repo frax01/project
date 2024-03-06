@@ -37,7 +37,8 @@ class _BoxState extends State<Box> {
   List t_max = [];
   bool check = false;
 
-  //Bisogna fare due funzioni diverse, una per i trip e una per weekend e extra perchè sennò c'è il problema dei future
+  //Bisogna fare due funzioni diverse, una per i trip e una per weekend e extra perchè sennò c'è il problema dei future 
+  //oppure non usare le variabili globali ma locali
   Future<String> _fetchWeatherData(startDate, endDate) async {
     String weatherImageUrl = '';
     weather_code = 0;
@@ -489,13 +490,13 @@ class _BoxState extends State<Box> {
                                     ? Text('Temp max: $temperature_max')
                                     : Container(),
                                 if (imageUrl == null || imageUrl == '')
-              const Text('Weather non disponibile')
-            else
-              Image(
-                image: NetworkImage(imageUrl),
-                height: 30,
-                width: 30,
-              ),
+                                  const Text('Weather non disponibile')
+                                else
+                                  Image(
+                                    image: NetworkImage(imageUrl),
+                                    height: 30,
+                                    width: 30,
+                                  ),
                               ],
                             ),
                           ),
