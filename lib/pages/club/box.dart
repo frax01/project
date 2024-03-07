@@ -28,143 +28,146 @@ class _BoxState extends State<Box> {
   String? description;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  int weather_code = 0;
-  int temperature_min = 0;
-  int temperature_max = 0;
+  Future<Map> _fetchWeatherData(startDate, endDate) async {
+    Map<String, dynamic> weather = {};
+    int weatherCode = 0;
+    int temperatureMin = 0;
+    int temperatureMax = 0;
 
-  List w_code = [];
-  List t_min = [];
-  List t_max = [];
-  bool check = false;
-
-  //Bisogna fare due funzioni diverse, una per i trip e una per weekend e extra perchè sennò c'è il problema dei future 
-  //oppure non usare le variabili globali ma locali
-  Future<String> _fetchWeatherData(startDate, endDate) async {
-    String weatherImageUrl = '';
-    weather_code = 0;
-    temperature_min = 0;
-    temperature_max = 0;
-    check = false;
     DateFormat inputFormat = DateFormat("dd-MM-yyyy");
     DateFormat outputFormat = DateFormat("yyyy-MM-dd");
-    DateTime startParsedDate = inputFormat.parse(startDate);
-    String startOutputDate = outputFormat.format(startParsedDate);
+
+    DateTime startInputDate = inputFormat.parse(startDate);
+    String startOutputDate = outputFormat.format(startInputDate);
 
     DateTime today = DateTime.now();
-    DateTime startDateCheck = inputFormat.parse(startDate);
-    Duration difference = startDateCheck.difference(today);
-    int daysDifference = difference.inDays;
-    if (daysDifference >= 16) {
-      check = false;
-      return '';
+    String todayOutputFormat = outputFormat.format(today);
+
+    Duration startDifference = startInputDate.difference(today);
+    int startDaysDifference = startDifference.inDays;
+
+    if (startDaysDifference >= 16) {
+      return {
+        "t_min": '',
+        "t_max": '',
+        "w_code": '',
+        "image": '',
+        "check": false,
+      };
     } else if (endDate != '' &&
-        startDateCheck.isBefore(today) &&
-        today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate))) {
-      startOutputDate = outputFormat.format(today);
-      check = true;
+        startInputDate.isBefore(today) &&
+        today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate))) { //gestire il caso di weatherCode[i] in base ai giorni
       final response = await http.get(
         Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
+            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        weather_code = data['daily']['weather_code'][0];
-        temperature_min = (data['daily']['temperature_2m_min'][0] < 0)
+        weatherCode = data['daily']['weather_code'][0];
+        temperatureMin = (data['daily']['temperature_2m_min'][0] < 0)
             ? data['daily']['temperature_2m_min'][0].ceil()
             : data['daily']['temperature_2m_min'][0].floor();
-        temperature_max = (data['daily']['temperature_2m_max'][0] < 0)
+        temperatureMax = (data['daily']['temperature_2m_max'][0] < 0)
             ? data['daily']['temperature_2m_max'][0].ceil()
             : data['daily']['temperature_2m_max'][0].floor();
-        print('Weather_code: $weather_code');
-        print('Temperature Min: $temperature_min');
-        print('Temperature Max: $temperature_max');
       } else {
         throw Exception('Failed to fetch weather data');
       }
-      String weatherImage = 'Weather/$weather_code.png';
-      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
-      weatherImageUrl = await ref.getDownloadURL();
-      return weatherImageUrl;
-    } else if (endDate != '') {
-      //trip
-      check = true;
+      Reference ref = FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
+      String weatherImageUrl = await ref.getDownloadURL();
+      weather = {
+        "t_min": temperatureMin,
+        "t_max": temperatureMax,
+        "w_code": weatherCode,
+        "image": weatherImageUrl,
+        "check": true,
+      };
+      return weather;
+    } else if (endDate != '') { //qua il trip non è ancora iniziato quindi forse il wCode[0] non serve
+      List wCode = [];
+      List tMin = [];
+      List tMax = [];
 
-      DateTime today = DateTime.now();
-      DateTime endDateCheck = DateFormat('dd-MM-yyyy').parse(endDate);
-      Duration difference = endDateCheck.difference(today);
-      int daysDifference = difference.inDays;
+      DateTime endInputDate = inputFormat.parse(endDate);
+      Duration endDifference = endInputDate.difference(today);
+      int endDaysDifference = endDifference.inDays;
       String endOutputDate = '';
-      if (daysDifference >= 16) {
-        DateTime endParsedDate = today.add(const Duration(days: 15));
-        endOutputDate = outputFormat.format(endParsedDate);
+
+      if (endDaysDifference >= 16) {
+        DateTime endInputDate = today.add(const Duration(days: 15));
+        endOutputDate = outputFormat.format(endInputDate);
       } else {
-        DateTime endParsedDate = inputFormat.parse(endDate);
-        endOutputDate = outputFormat.format(endParsedDate);
+        DateTime endInputdDate = inputFormat.parse(endDate);
+        endOutputDate = outputFormat.format(endInputdDate);
       }
-      print(endOutputDate);
       final response = await http.get(
         Uri.parse(
             'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$endOutputDate'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        w_code = data['daily']['weather_code'];
-        t_min = data['daily']['temperature_2m_min'];
-        t_max = data['daily']['temperature_2m_max'];
+        wCode = data['daily']['weather_code'];
+        tMin = data['daily']['temperature_2m_min'];
+        tMax = data['daily']['temperature_2m_max'];
 
         double sum = 0;
-        for (double value in t_min) {
+        for (double value in tMin) {
           sum += value;
         }
-        temperature_min = ((sum / t_min.length) < 0)
-            ? (sum / t_min.length).ceil()
-            : (sum / t_min.length).floor();
+        temperatureMin = ((sum / tMin.length) < 0)
+            ? (sum / tMin.length).ceil()
+            : (sum / tMin.length).floor();
 
         sum = 0;
-        for (double value in t_max) {
+        for (double value in tMax) {
           sum += value;
         }
-        temperature_max = ((sum / t_max.length) < 0)
-            ? (sum / t_max.length).ceil()
-            : (sum / t_max.length).floor();
+        temperatureMax = ((sum / tMax.length) < 0)
+            ? (sum / tMax.length).ceil()
+            : (sum / tMax.length).floor();
 
-        t_min.forEach((team) {
-          print(team);
-        });
-        //print('Temperature Min: $temperature_min');
-        //print('Temperature Max: $temperature_max');
       } else {
         throw Exception('Failed to fetch weather data');
       }
-      String weatherImage = 'Weather/${w_code[0]}.png';
-      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
-      weatherImageUrl = await ref.getDownloadURL();
-      return weatherImageUrl;
+      Reference ref =
+          FirebaseStorage.instance.ref().child('Weather/${wCode[0]}.png');
+      String weatherImageUrl = await ref.getDownloadURL();
+      weather = {
+        "t_min": temperatureMin,
+        "t_max": temperatureMax,
+        "w_code": wCode[0],
+        "image": weatherImageUrl,
+        "check": true,
+      };
+      return weather;
     } else {
-      check = true;
       final response = await http.get(
         Uri.parse(
             'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        weather_code = data['daily']['weather_code'][0];
-        temperature_min = (data['daily']['temperature_2m_min'][0] < 0)
+        weatherCode = data['daily']['weather_code'][0];
+        temperatureMin = (data['daily']['temperature_2m_min'][0] < 0)
             ? data['daily']['temperature_2m_min'][0].ceil()
             : data['daily']['temperature_2m_min'][0].floor();
-        temperature_max = (data['daily']['temperature_2m_max'][0] < 0)
+        temperatureMax = (data['daily']['temperature_2m_max'][0] < 0)
             ? data['daily']['temperature_2m_max'][0].ceil()
             : data['daily']['temperature_2m_max'][0].floor();
-        print('Weather_code: $weather_code');
-        print('Temperature Min: $temperature_min');
-        print('Temperature Max: $temperature_max');
       } else {
         throw Exception('Failed to fetch weather data');
       }
-      String weatherImage = 'Weather/$weather_code.png';
-      Reference ref = FirebaseStorage.instance.ref().child(weatherImage);
-      weatherImageUrl = await ref.getDownloadURL();
-      return weatherImageUrl;
+      Reference ref =
+          FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
+      String weatherImageUrl = await ref.getDownloadURL();
+      weather = {
+        "t_min": temperatureMin,
+        "t_max": temperatureMax,
+        "w_code": weatherCode,
+        "image": weatherImageUrl,
+        "check": true,
+      };
+      return weather;
     }
   }
 
@@ -444,18 +447,24 @@ class _BoxState extends State<Box> {
               var title = document['title'];
               var level = document['selectedOption'];
               var startDate = document['startDate'];
-              var endDate = document['endDate'] ?? '';
+              var endDate = document['endDate'];
               var imagePath = document['imagePath'];
               var description = document['description'];
               return FutureBuilder(
                 future: _fetchWeatherData(startDate, endDate),
-                builder: (BuildContext context,
-                    AsyncSnapshot<String> weatherSnapshot) {
+                builder:
+                    (BuildContext context, AsyncSnapshot<Map> weatherSnapshot) {
                   if (weatherSnapshot.connectionState ==
                       ConnectionState.waiting) {
                     return Container();
                   } else {
-                    String? imageUrl = weatherSnapshot.data;
+                    Map? weather = weatherSnapshot.data;
+                    print('t_min: ${weather?["t_min"]}');
+                    print('t_max: ${weather?["t_max"]}');
+                    print('w_code: ${weather?["w_code"]}');
+                    print('image: ${weather?["image"]}');
+                    print('check: ${weather?["check"]}');
+                    print('');
                     return Container(
                       margin: const EdgeInsets.all(10.0),
                       padding: const EdgeInsets.all(15.0),
@@ -483,17 +492,18 @@ class _BoxState extends State<Box> {
                                   width: 100,
                                 ),
                                 Text('Descrizione: $description'),
-                                check
-                                    ? Text('Temp min: $temperature_min')
+                                weather!["check"]
+                                    ? Text('Temp min: ${weather["t_min"]}')
                                     : Container(),
-                                check
-                                    ? Text('Temp max: $temperature_max')
+                                weather["check"]
+                                    ? Text('Temp max: ${weather["t_max"]}')
                                     : Container(),
-                                if (imageUrl == null || imageUrl == '')
+                                if (weather["image"] == null ||
+                                    weather["image"] == '')
                                   const Text('Weather non disponibile')
                                 else
                                   Image(
-                                    image: NetworkImage(imageUrl),
+                                    image: NetworkImage(weather["image"]),
                                     height: 30,
                                     width: 30,
                                   ),
