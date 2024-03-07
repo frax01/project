@@ -227,9 +227,7 @@ class _BoxState extends State<Box> {
             DateTime.parse(formattedStartDate).add(const Duration(days: 365)),
       );
       if (picked != null && picked != DateTime.now()) {
-        setState(() {
           endDate = DateFormat('dd-MM-yyyy').format(picked);
-        });
       }
     }
     return endDate;
@@ -305,7 +303,7 @@ class _BoxState extends State<Box> {
                         imagePath = imageUrl;
                       });
                     },
-                    child: const Text('Cambia immagine'),
+                    child: const Text('Cambia immagine'), //mostrare una barra di caricamento
                   ),
                   const SizedBox(height: 16.0),
                   ...(section == 'weekend' || section == 'extra')

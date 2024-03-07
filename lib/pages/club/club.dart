@@ -210,7 +210,7 @@ class _ClubPageState extends State<ClubPage> {
                       });
                     },
                     child: Text(
-                        imageUploaded ? 'Cambia immagine' : 'Carica Immagine'),
+                        imageUploaded ? 'Cambia immagine' : 'Carica Immagine'), //mostrare una barra di caricamento
                   ),
                   const SizedBox(height: 16.0),
                   ...(selectedOption == 'weekend' || selectedOption == 'extra')
