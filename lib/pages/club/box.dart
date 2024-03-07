@@ -55,8 +55,9 @@ class _BoxState extends State<Box> {
         "check": false,
       };
     } else if (endDate != '' &&
-        startInputDate.isBefore(today) &&
-        today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate))) { //gestire il caso di weatherCode[i] in base ai giorni
+        (startInputDate.isBefore(today) || startInputDate == today) &&
+        (today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate)) ||
+            DateFormat('dd-MM-yyyy').parse(endDate) == today)) {
       final response = await http.get(
         Uri.parse(
             'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
@@ -73,7 +74,8 @@ class _BoxState extends State<Box> {
       } else {
         throw Exception('Failed to fetch weather data');
       }
-      Reference ref = FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
+      Reference ref =
+          FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
       String weatherImageUrl = await ref.getDownloadURL();
       weather = {
         "t_min": temperatureMin,
@@ -83,8 +85,7 @@ class _BoxState extends State<Box> {
         "check": true,
       };
       return weather;
-    } else if (endDate != '') { //qua il trip non è ancora iniziato quindi forse il wCode[0] non serve
-      List wCode = [];
+    } else if (endDate != '') {
       List tMin = [];
       List tMax = [];
 
@@ -106,7 +107,6 @@ class _BoxState extends State<Box> {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        wCode = data['daily']['weather_code'];
         tMin = data['daily']['temperature_2m_min'];
         tMax = data['daily']['temperature_2m_max'];
 
@@ -125,18 +125,14 @@ class _BoxState extends State<Box> {
         temperatureMax = ((sum / tMax.length) < 0)
             ? (sum / tMax.length).ceil()
             : (sum / tMax.length).floor();
-
       } else {
         throw Exception('Failed to fetch weather data');
       }
-      Reference ref =
-          FirebaseStorage.instance.ref().child('Weather/${wCode[0]}.png');
-      String weatherImageUrl = await ref.getDownloadURL();
       weather = {
         "t_min": temperatureMin,
         "t_max": temperatureMax,
-        "w_code": wCode[0],
-        "image": weatherImageUrl,
+        "w_code": '',
+        "image": '',
         "check": true,
       };
       return weather;
@@ -227,7 +223,7 @@ class _BoxState extends State<Box> {
             DateTime.parse(formattedStartDate).add(const Duration(days: 365)),
       );
       if (picked != null && picked != DateTime.now()) {
-          endDate = DateFormat('dd-MM-yyyy').format(picked);
+        endDate = DateFormat('dd-MM-yyyy').format(picked);
       }
     }
     return endDate;
@@ -303,7 +299,8 @@ class _BoxState extends State<Box> {
                         imagePath = imageUrl;
                       });
                     },
-                    child: const Text('Cambia immagine'), //mostrare una barra di caricamento
+                    child: const Text(
+                        'Cambia immagine'), //mostrare una barra di caricamento
                   ),
                   const SizedBox(height: 16.0),
                   ...(section == 'weekend' || section == 'extra')
@@ -498,7 +495,7 @@ class _BoxState extends State<Box> {
                                     : Container(),
                                 if (weather["image"] == null ||
                                     weather["image"] == '')
-                                  const Text('Weather non disponibile')
+                                  Container()
                                 else
                                   Image(
                                     image: NetworkImage(weather["image"]),
