@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "53952636966",
+    "firebase_url": "https://club-60d94-default-rtdb.firebaseio.com",
+    "project_id": "club-60d94",
+    "storage_bucket": "club-60d94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53952636966:android:4913f93f8c6e0fc8959ee7",
+        "android_client_info": {
+          "package_name": "com.mycompany.dima"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkmPm2DpVcfIg6uXMUuj7uLIxGd371qqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

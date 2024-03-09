@@ -10,6 +10,10 @@ import 'package:club/pages/main/setting.dart';
 import 'package:club/pages/club/box.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'torneo.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'location.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -141,7 +145,7 @@ class _ClubPageState extends State<ClubPage> {
       }
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      
+
       await firestore
           .collection('${section.toLowerCase()}_$selectedOption')
           .add({
@@ -159,6 +163,28 @@ class _ClubPageState extends State<ClubPage> {
     }
   }
 
+  Future<List<dynamic>> _getSuggestions(String query) async {
+    const String apiUrl = 'https://api.locationiq.com/v1/autocomplete';
+    const String locationiqKey = 'pk.b63d7f8ea78402e4ce0f6151f5434613';
+
+    final response = await http.get(
+      Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((item) {
+        return Location(
+          displayAddress: item['display_name'],
+          lat: item['lat'],
+          lon: item['lon'],
+        );
+      }).toList();
+      //return data.map((item) => item['display_name']).toList();
+    } else {
+      throw Exception('Failed to load suggestions');
+    }
+  }
+
   Future<void> _showAddEvent(String selectedOption) async {
     String title = '';
     String imagePath = '';
@@ -166,6 +192,16 @@ class _ClubPageState extends State<ClubPage> {
     String startDate = '';
     String endDate = '';
     String description = '';
+
+    final TextEditingController _controller = TextEditingController();
+    String selectedAddress = "";
+
+    Location selectedLocation = Location(
+      displayAddress: '',
+      lat: '',
+      lon: '',
+    );
+
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -181,6 +217,36 @@ class _ClubPageState extends State<ClubPage> {
                     onChanged: (value) {
                       setState(() {
                         title = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  TypeAheadField(
+                    builder: (context, controller, focusNode) {
+                      return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          autofocus: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'City',
+                          ));
+                    },
+                    suggestionsCallback: (pattern) async {
+                      return await _getSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion.displayAddress),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      setState(() {
+                        selectedAddress = suggestion.displayAddress;
+                        _controller.text = suggestion.displayAddress;
+                        print(selectedAddress);
+                        print(suggestion.lat);
+                        print(suggestion.lon);
                       });
                     },
                   ),
@@ -209,8 +275,9 @@ class _ClubPageState extends State<ClubPage> {
                         imagePath = imageUrl;
                       });
                     },
-                    child: Text(
-                        imageUploaded ? 'Cambia immagine' : 'Carica Immagine'), //mostrare una barra di caricamento
+                    child: Text(imageUploaded
+                        ? 'Cambia immagine'
+                        : 'Carica Immagine'), //mostrare una barra di caricamento
                   ),
                   const SizedBox(height: 16.0),
                   ...(selectedOption == 'weekend' || selectedOption == 'extra')
@@ -233,8 +300,9 @@ class _ClubPageState extends State<ClubPage> {
                                       await _startDate(context, startDate);
                                   setState(() {});
                                 },
-                                child: Text(
-                                    startDateUploaded ? '$startDate' : 'Data iniziale'),
+                                child: Text(startDateUploaded
+                                    ? '$startDate'
+                                    : 'Data iniziale'),
                               ),
                               const SizedBox(height: 16.0),
                               ElevatedButton(
@@ -243,8 +311,9 @@ class _ClubPageState extends State<ClubPage> {
                                       context, startDate, endDate);
                                   setState(() {});
                                 },
-                                child:
-                                    Text(endDateUploaded ? '$endDate' : 'Data finale'),
+                                child: Text(endDateUploaded
+                                    ? '$endDate'
+                                    : 'Data finale'),
                               ),
                             ]
                           : [],
@@ -270,8 +339,8 @@ class _ClubPageState extends State<ClubPage> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          await createEvent(title, selectedOption, imagePath, selectedClass,
-                              startDate, endDate, description);
+                          await createEvent(title, selectedOption, imagePath,
+                              selectedClass, startDate, endDate, description);
                         },
                         child: const Text('Crea'),
                       ),
@@ -284,6 +353,11 @@ class _ClubPageState extends State<ClubPage> {
         );
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -302,7 +376,7 @@ class _ClubPageState extends State<ClubPage> {
                 )
               : bottomLevel == "torneo"
                   ? TabScorer(
-                    document: widget.document,
+                      document: widget.document,
                       //email: widget.document["email"],
                       //status: widget.document["status"],
                     )

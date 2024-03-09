@@ -91,7 +91,7 @@ void firebaseMessaging() {
   firebaseMessaging.requestPermission();
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    print('Message data: ${message.from}');
   });
 
   FirebaseMessaging.instance.getToken().then((String? token) {

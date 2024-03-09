@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.document});
@@ -27,6 +30,55 @@ class _TabScorerState extends State<TabScorer> {
     _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
     _scorersStream =
         _scorerCollection.orderBy('goal', descending: true).snapshots();
+
+    sendNotification(
+        'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI',
+        "ciao",
+        "ciao");
+  }
+
+  //void sendFCMMessage() async {
+  //final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+//
+  //// Prepara il messaggio da inviare
+  //final RemoteMessage message = RemoteMessage(
+  //  data: {
+  //    'key1': 'value1',
+  //    'key2': 'value2',
+  //  },
+  //  //notification: RemoteNotification(
+  //  //  title: 'Titolo della notifica',
+  //  //  body: 'Corpo della notifica',
+  //  //),
+  //);
+//
+  //// Invia il messaggio a un dispositivo specifico utilizzando il token del dispositivo
+  //await firebaseMessaging.sendMessage(to: '<DEVICE_TOKEN>', data: message);
+//
+  //print('Messaggio inviato con successo!');
+//}
+
+  Future<void> sendNotification(to, title, body) async {
+    print('Sending notification...');
+    await http.post(
+      Uri.parse('https://fcm.googleapis.com/fcm/send'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'api key',
+      },
+      body: jsonEncode(
+        <String, dynamic>{
+          'notification': <String, dynamic>{'body': body, 'title': title},
+          'priority': 'high',
+          'data': <String, dynamic>{
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'id': '1',
+            'status': 'done'
+          },
+          'to': to,
+        },
+      ),
+    );
   }
 
   Future<void> _showAddDialog(String selectedClass) async {
@@ -95,23 +147,23 @@ class _TabScorerState extends State<TabScorer> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    if(name!="" && surname!="") {
+                    if (name != "" && surname != "") {
                       await FirebaseFirestore.instance
-                        .collection('club_scorer')
-                        .add({
-                      'name': name,
-                      'surname': surname,
-                      'class': selectedClass,
-                      'goal': goalCount,
-                    });
-                    goalCount = 1;
-                    Navigator.of(context).pop();
-                    } else if(name=="") {
+                          .collection('club_scorer')
+                          .add({
+                        'name': name,
+                        'surname': surname,
+                        'class': selectedClass,
+                        'goal': goalCount,
+                      });
+                      goalCount = 1;
+                      Navigator.of(context).pop();
+                    } else if (name == "") {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Inserisci il nome')));
-                    } else if(surname=="") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Inserisci il cognome')));
+                          const SnackBar(content: Text('Inserisci il nome')));
+                    } else if (surname == "") {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Inserisci il cognome')));
                     }
                   },
                   child: const Text('OK'),
