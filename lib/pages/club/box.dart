@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-//pk.b63d7f8ea78402e4ce0f6151f5434613
-
 class Box extends StatefulWidget {
   const Box({
     super.key,
@@ -30,7 +28,7 @@ class _BoxState extends State<Box> {
   String? description;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<Map> _fetchWeatherData(startDate, endDate) async {
+  Future<Map> _fetchWeatherData(startDate, endDate, lat, lon) async {
     Map<String, dynamic> weather = {};
     int weatherCode = 0;
     int temperatureMin = 0;
@@ -62,7 +60,7 @@ class _BoxState extends State<Box> {
             DateFormat('dd-MM-yyyy').parse(endDate) == today)) {
       final response = await http.get(
         Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
+            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -105,7 +103,7 @@ class _BoxState extends State<Box> {
       }
       final response = await http.get(
         Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$endOutputDate'),
+            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$endOutputDate'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -141,7 +139,7 @@ class _BoxState extends State<Box> {
     } else {
       final response = await http.get(
         Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=45.4613&longitude=9.1595&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
+            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -447,8 +445,11 @@ class _BoxState extends State<Box> {
               var endDate = document['endDate'];
               var imagePath = document['imagePath'];
               var description = document['description'];
+              var address = document['address'];
+              var lat = document["lat"];
+              var lon = document["lon"];
               return FutureBuilder(
-                future: _fetchWeatherData(startDate, endDate),
+                future: _fetchWeatherData(startDate, endDate, lat, lon),
                 builder:
                     (BuildContext context, AsyncSnapshot<Map> weatherSnapshot) {
                   if (weatherSnapshot.connectionState ==
@@ -456,12 +457,6 @@ class _BoxState extends State<Box> {
                     return Container();
                   } else {
                     Map? weather = weatherSnapshot.data;
-                    print('t_min: ${weather?["t_min"]}');
-                    print('t_max: ${weather?["t_max"]}');
-                    print('w_code: ${weather?["w_code"]}');
-                    print('image: ${weather?["image"]}');
-                    print('check: ${weather?["check"]}');
-                    print('');
                     return Container(
                       margin: const EdgeInsets.all(10.0),
                       padding: const EdgeInsets.all(15.0),
@@ -489,6 +484,7 @@ class _BoxState extends State<Box> {
                                   width: 100,
                                 ),
                                 Text('Descrizione: $description'),
+                                Text('Dove: $address'),
                                 weather!["check"]
                                     ? Text('Temp min: ${weather["t_min"]}')
                                     : Container(),

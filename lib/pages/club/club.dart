@@ -13,7 +13,7 @@ import 'torneo.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'location.dart';
+import 'package:club/config.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -110,18 +110,11 @@ class _ClubPageState extends State<ClubPage> {
       String selectedClass,
       String startDate,
       String endDate,
-      String description) async {
+      String description,
+      String address,
+      String lat,
+      String lon) async {
     try {
-      if (title == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a title')));
-        return;
-      }
-      if (selectedClass == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a class')));
-        return;
-      }
       if ((selectedOption == 'weekend' || selectedOption == 'extra') &&
           startDate == "") {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,15 +126,15 @@ class _ClubPageState extends State<ClubPage> {
             content: Text('Please select the start and the end date')));
         return;
       }
-      if (description == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a description')));
-        return;
-      }
       if (imagePath == "") {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please select an image')));
         return;
+      }
+      if (address == '') {
+        address = 'Tiber Club';
+        lat = '41.91805195';
+        lon = '12.47788708';
       }
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -156,6 +149,9 @@ class _ClubPageState extends State<ClubPage> {
         'description': description,
         'startDate': startDate,
         'endDate': endDate,
+        'address': address,
+        'lat': lat,
+        'lon': lon,
       });
       Navigator.pop(context);
     } catch (e) {
@@ -164,22 +160,15 @@ class _ClubPageState extends State<ClubPage> {
   }
 
   Future<List<dynamic>> _getSuggestions(String query) async {
-    const String apiUrl = 'https://api.locationiq.com/v1/autocomplete';
-    const String locationiqKey = 'pk.b63d7f8ea78402e4ce0f6151f5434613';
+    const String apiUrl = Config.locationIqUrl;
+    const String locationiqKey = Config.locationIqKey;
 
     final response = await http.get(
       Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((item) {
-        return Location(
-          displayAddress: item['display_name'],
-          lat: item['lat'],
-          lon: item['lon'],
-        );
-      }).toList();
-      //return data.map((item) => item['display_name']).toList();
+      return data;
     } else {
       throw Exception('Failed to load suggestions');
     }
@@ -192,15 +181,15 @@ class _ClubPageState extends State<ClubPage> {
     String startDate = '';
     String endDate = '';
     String description = '';
+    String selectedAddr = "";
+    String? selectedCitta = "";
+    String selectedStato = "";
+    String? selectedNum = "";
+    String selectedLon = "";
+    String selectedLat = "";
+    String indirizzo = '';
 
-    final TextEditingController _controller = TextEditingController();
-    String selectedAddress = "";
-
-    Location selectedLocation = Location(
-      displayAddress: '',
-      lat: '',
-      lon: '',
-    );
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
     return showDialog<void>(
       context: context,
@@ -209,144 +198,215 @@ class _ClubPageState extends State<ClubPage> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text(selectedOption),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Titolo'),
-                    onChanged: (value) {
-                      setState(() {
-                        title = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  TypeAheadField(
-                    builder: (context, controller, focusNode) {
-                      return TextField(
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Titolo'),
+                      onChanged: (value) {
+                        setState(() {
+                          title = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty || value == '') {
+                          return 'Inserire il titolo';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    TypeAheadField(
+                      builder: (context, controller, focusNode) {
+                        String label = (selectedOption == 'trip')
+                            ? 'Dove?'
+                            : 'Dove? (facoltativo)';
+                        return TextFormField(
                           controller: controller,
                           focusNode: focusNode,
-                          autofocus: true,
-                          decoration: const InputDecoration(
+                          autofocus: false,
+                          decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            labelText: 'City',
-                          ));
-                    },
-                    suggestionsCallback: (pattern) async {
-                      return await _getSuggestions(pattern);
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        title: Text(suggestion.displayAddress),
-                      );
-                    },
-                    onSelected: (suggestion) {
-                      setState(() {
-                        selectedAddress = suggestion.displayAddress;
-                        _controller.text = suggestion.displayAddress;
-                        print(selectedAddress);
-                        print(suggestion.lat);
-                        print(suggestion.lon);
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  DropdownButtonFormField<String>(
-                    value: selectedClass,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedClass = value!;
-                      });
-                    },
-                    items: ['', '1° media', '2° media', '3° media']
-                        .map((String option) {
-                      return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(option),
-                      );
-                    }).toList(),
-                    hint: const Text('Seleziona una classe'),
-                  ),
-                  const SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      String imageUrl = await uploadImage(selectedOption);
-                      setState(() {
-                        imagePath = imageUrl;
-                      });
-                    },
-                    child: Text(imageUploaded
-                        ? 'Cambia immagine'
-                        : 'Carica Immagine'), //mostrare una barra di caricamento
-                  ),
-                  const SizedBox(height: 16.0),
-                  ...(selectedOption == 'weekend' || selectedOption == 'extra')
-                      ? [
-                          ElevatedButton(
-                            onPressed: () async {
-                              startDate = await _startDate(context, startDate);
-                              setState(() {});
-                            },
-                            child:
-                                Text(startDateUploaded ? '$startDate' : 'Data'),
+                            labelText: label,
                           ),
-                        ]
-                      : (selectedOption == 'trip' ||
-                              selectedOption == 'tournament')
-                          ? [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  startDate =
-                                      await _startDate(context, startDate);
-                                  setState(() {});
-                                },
-                                child: Text(startDateUploaded
-                                    ? '$startDate'
-                                    : 'Data iniziale'),
-                              ),
-                              const SizedBox(height: 16.0),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  endDate = await _endDate(
-                                      context, startDate, endDate);
-                                  setState(() {});
-                                },
-                                child: Text(endDateUploaded
-                                    ? '$endDate'
-                                    : 'Data finale'),
-                              ),
-                            ]
-                          : [],
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    onChanged: (value) {
-                      description = value;
-                    },
-                    decoration: const InputDecoration(labelText: 'Descrizione'),
-                    maxLines: null,
-                  ),
-                  const SizedBox(height: 16.0),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          imageUploaded = false;
-                          startDateUploaded = false;
-                          endDateUploaded = false;
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Annulla'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await createEvent(title, selectedOption, imagePath,
-                              selectedClass, startDate, endDate, description);
-                        },
-                        child: const Text('Crea'),
-                      ),
-                    ],
-                  )
-                ],
+                          validator: (value) {
+                            if (selectedOption == 'trip' &&
+                                (value == null || value.isEmpty)) {
+                              return 'Inserire un indirizzo';
+                            }
+                            return null;
+                          },
+                        );
+                      },
+                      suggestionsCallback: (pattern) async {
+                        if (pattern == '') {
+                          return [];
+                        } else {
+                          return await _getSuggestions(pattern);
+                        }
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion["display_name"]),
+                        );
+                      },
+                      onSelected: (suggestion) {
+                        setState(() {
+                          selectedAddr = suggestion["address"]["name"];
+                          selectedCitta = suggestion["address"]["city"] ?? '';
+                          selectedStato = suggestion["address"]["country"];
+                          selectedNum = suggestion["address"]["house_number"] ?? '';
+                          selectedLat = suggestion["lat"];
+                          selectedLon = suggestion["lon"];
+
+                          if (selectedCitta != '' && selectedNum != '') {
+                            if (selectedStato != 'Italia') {
+                              indirizzo =
+                                  '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}, $selectedStato';
+                            } else {
+                              indirizzo =
+                                  '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}';
+                            }
+                          } else {
+                            if (selectedStato != 'Italia') {
+                              indirizzo = '$selectedAddr, $selectedStato';
+                            } else {
+                              indirizzo = selectedAddr;
+                            }
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    DropdownButtonFormField<String>(
+                      value: selectedClass,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedClass = value!;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserire la classe';
+                        }
+                        return null;
+                      },
+                      items: ['', '1° media', '2° media', '3° media']
+                          .map((String option) {
+                        return DropdownMenuItem<String>(
+                          value: option,
+                          child: Text(option),
+                        );
+                      }).toList(),
+                      hint: const Text('Seleziona una classe'),
+                    ),
+                    const SizedBox(height: 16.0),
+                    ElevatedButton(
+                      onPressed: () async {
+                        String imageUrl = await uploadImage(selectedOption);
+                        setState(() {
+                          imagePath = imageUrl;
+                        });
+                      },
+
+                      child: Text(imageUploaded
+                          ? 'Cambia immagine'
+                          : 'Carica Immagine'), //mostrare una barra di caricamento
+                    ),
+                    const SizedBox(height: 16.0),
+                    ...(selectedOption == 'weekend' ||
+                            selectedOption == 'extra')
+                        ? [
+                            ElevatedButton(
+                              onPressed: () async {
+                                startDate =
+                                    await _startDate(context, startDate);
+                                setState(() {});
+                              },
+                              child: Text(
+                                  startDateUploaded ? '$startDate' : 'Data'),
+                            ),
+                          ]
+                        : (selectedOption == 'trip' ||
+                                selectedOption == 'tournament')
+                            ? [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    startDate =
+                                        await _startDate(context, startDate);
+                                    setState(() {});
+                                  },
+                                  child: Text(startDateUploaded
+                                      ? '$startDate'
+                                      : 'Data iniziale'),
+                                ),
+                                const SizedBox(height: 16.0),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    endDate = await _endDate(
+                                        context, startDate, endDate);
+                                    setState(() {});
+                                  },
+                                  child: Text(endDateUploaded
+                                      ? '$endDate'
+                                      : 'Data finale'),
+                                ),
+                              ]
+                            : [],
+                    const SizedBox(height: 16.0),
+                    TextFormField(
+                      onChanged: (value) {
+                        description = value;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserire una descrizione';
+                        }
+                        return null;
+                      },
+                      decoration:
+                          const InputDecoration(labelText: 'Descrizione'),
+                      maxLines: null,
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            imageUploaded = false;
+                            startDateUploaded = false;
+                            endDateUploaded = false;
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Annulla'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              await createEvent(
+                                  title,
+                                  selectedOption,
+                                  imagePath,
+                                  selectedClass,
+                                  startDate,
+                                  endDate,
+                                  description,
+                                  indirizzo,
+                                  selectedLat,
+                                  selectedLon);
+                              imageUploaded = false;
+                              startDateUploaded = false;
+                              endDateUploaded = false;
+                            }
+                          },
+                          child: const Text('Crea'),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             );
           },
@@ -377,8 +437,6 @@ class _ClubPageState extends State<ClubPage> {
               : bottomLevel == "torneo"
                   ? TabScorer(
                       document: widget.document,
-                      //email: widget.document["email"],
-                      //status: widget.document["status"],
                     )
                   : SettingsPage(
                       id: widget.document["id"],

@@ -123,7 +123,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           colorScheme: darkColorScheme,
       ),
-      themeMode: ThemeMode.light, // device controls theme
+      themeMode: ThemeMode.light,
       home: const Login(
         title: 'Tiber Club',
       ),
