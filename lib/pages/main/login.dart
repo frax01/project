@@ -140,27 +140,21 @@ class _LoginState extends State<Login> {
         'soccer_class': querySnapshot1.docs.first['soccer_class'],
         'status': querySnapshot1.docs.first['status'],
         'birthdate': querySnapshot1.docs.first['birthdate'],
-        //'token': querySnapshot1.docs.first['token'],
+        'token': querySnapshot1.docs.first['token'],
         'id': querySnapshot1.docs.first.id,
       };
 
+      //gestire il caso di waiting
       setState(() {
-        //if (document['role'] == "") {
-        //  Navigator.pushNamed(context, '/waiting');
-        //} else {
-        //  if (document['club_class'] == "") {
-        //    Navigator.pushNamed(context, '/football');
-        //  } else if (document['soccer_class'] == "") {
-        //    Navigator.pushNamed(context, '/club');
-        //  } else {
-        //    _loadLastPage();
-        //  }
-        //}
-        Navigator.push(
+        if (document['role'] == "") {
+          Navigator.pushNamed(context, '/waiting');
+        } else {
+          Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) =>
                     ClubPage(title: "Tiber Club", document: document)));
+        }
       });
       if (rememberMe) {
         _saveLoginInfo();

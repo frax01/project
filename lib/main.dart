@@ -12,6 +12,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() async {
@@ -29,63 +30,57 @@ void main() async {
   );
 
   deleteOldDocuments();
-
   firebaseMessaging();
-
-  FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
-
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-
-  _firebaseMessaging.requestPermission();
-
   initializeDateFormatting();
-
-  setupNotifications();
 
   runApp(const MyApp());
 }
 
-void setupNotifications() {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-      _showNotification();
-    }
-  });
+@pragma('vm:entry-point')
+Future<void> _backgroundMessageHandler(RemoteMessage message) async {
+  createNotificationChannel();
+  showNotification(message);
 }
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-Future<void> _showNotification() async {
-  print("1");
-  const AndroidNotificationDetails androidPlatformChannelSpecifics =
-      AndroidNotificationDetails(
-    'your_channel_id', // Cambia questo ID del canale
-    'Your Channel Name', // Cambia il nome del canale
-    //'Description of your channel', // Cambia la descrizione del canale
-    importance: Importance.high, // Imposta la priorità su alta
-    priority: Priority.high, // Imposta la priorità su alta
+void createNotificationChannel() {
+  const AndroidNotificationChannel androidNotificationChannel =
+      AndroidNotificationChannel(
+    'default_notification_channel_id',
+    'My Channel Name',
+    importance: Importance.high,
   );
-  print("2");
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(androidNotificationChannel);
+}
+
+void showNotification(RemoteMessage remoteMessage) async {
+  const AndroidNotificationDetails androidNotificationDetails =
+      AndroidNotificationDetails(
+    'default_notification_channel_id',
+    'My Channel Name',
+    importance: Importance.high,
+    priority: Priority.high,
+  );
+
   const NotificationDetails platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
+      NotificationDetails(android: androidNotificationDetails);
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   await flutterLocalNotificationsPlugin.show(
     0,
-    'Titolo della notifica',
-    'Corpo della notifica',
+    remoteMessage.notification!.title,
+    remoteMessage.notification!.body,
     platformChannelSpecifics,
+    payload: 'Default_Sound',
   );
-  print("3");
-}
-
-Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-  print('Got a message whilst in the background!');
-  print('0');
-  print('Message data: ${message.data}');
 }
 
 void deleteOldDocuments() async {
@@ -126,18 +121,12 @@ void deleteOldDocuments() async {
 }
 
 void firebaseMessaging() {
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-
-  firebaseMessaging.requestPermission();
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.from}');
-  });
-
+  FirebaseMessaging.instance.requestPermission();
   FirebaseMessaging.instance.getToken().then((String? token) {
     assert(token != null);
     print('FCM Token: $token');
   });
+  FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
 }
 
 class MyApp extends StatelessWidget {

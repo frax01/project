@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:club/user.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.title});
@@ -26,6 +27,30 @@ class _SignUpFormState extends State<SignUp> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  //Future<String> firebaseMessaging() async {
+  //  FirebaseMessaging.instance.getToken().then((String? token) {
+  //    assert(token != null);
+  //    print('FCM Token: $token');
+  //    if (token != null && token.isNotEmpty) {
+  //      return token;
+  //    } else {
+  //      return '';
+  //    }
+  //  });
+  //}
+
+  Future<String> firebaseMessaging() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    assert(token != null);
+    print('FCM Token: $token');
+
+    if (token != null && token.isNotEmpty) {
+      return token;
+    } else {
+      return '';
+    }
+  }
+
   Future<void> _handleSignUp() async {
     try {
       if (_formKey.currentState?.validate() ?? false) {
@@ -47,6 +72,8 @@ class _SignUpFormState extends State<SignUp> {
           return;
         }
 
+        String tokenKey = await firebaseMessaging();
+
         await _saveUserToDatabase(ClubUser(
             name: name,
             surname: surname,
@@ -57,6 +84,7 @@ class _SignUpFormState extends State<SignUp> {
             club_class: "",
             soccer_class: "",
             status: "",
+            token: tokenKey,
             created_time: DateTime.now()));
 
         print('Sign up successful: ${userCredential.user?.email}');
@@ -86,6 +114,7 @@ class _SignUpFormState extends State<SignUp> {
         'club_class': user.club_class,
         'soccer_class': user.soccer_class,
         'status': user.status,
+        'token': user.token,
         'created_time': user.created_time
       });
     } catch (e) {

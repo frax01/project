@@ -103,6 +103,65 @@ class _ClubPageState extends State<ClubPage> {
     return imageUrl;
   }
 
+  Future<void> sendNotification(
+      List fcmToken, String title, String message) async {
+    const String serverKey = Config.serverKey;
+    const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
+    Uri uri = Uri.parse(fcmUrl);
+
+    for (String token in fcmToken) {
+      final Map<String, dynamic> notification = {
+        'title': title,
+        'body': message,
+      };
+
+      final Map<String, dynamic> data = {
+        'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+        'id': '1',
+        'status': 'done',
+      };
+
+      final Map<String, dynamic> body = {
+        'to': token,
+        'notification': notification,
+        'data': data,
+      };
+
+      final http.Response response = await http.post(
+        uri,
+        body: jsonEncode(body),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization': 'key=$serverKey',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Notifica inviata con successo!');
+      } else {
+        print('Errore nell\'invio della notifica: ${response.reasonPhrase}');
+      }
+    }
+  }
+
+  Future<List<String>> fetchToken(String targetClass) async {
+    List<String> tokens = [];
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('club_class', isEqualTo: targetClass)
+          .get();
+      for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+        String token = documentSnapshot['token'];
+        tokens.add(token);
+      }
+      return tokens;
+    } catch (e) {
+      print('Errore durante l\'accesso a Firestore: $e');
+      return [];
+    }
+  }
+
   Future<void> createEvent(
       String title,
       String selectedOption,
@@ -126,11 +185,11 @@ class _ClubPageState extends State<ClubPage> {
             content: Text('Please select the start and the end date')));
         return;
       }
-      if (imagePath == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an image')));
-        return;
-      }
+      //if (imagePath == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select an image')));
+      //  return;
+      //}
       if (address == '') {
         address = 'Tiber Club';
         lat = '41.91805195';
@@ -154,6 +213,9 @@ class _ClubPageState extends State<ClubPage> {
         'lon': lon,
       });
       Navigator.pop(context);
+      List<String> token = await fetchToken(selectedClass);
+      print(token);
+      sendNotification(token, 'Nuovo programma!', title);
     } catch (e) {
       print('Errore durante la creazione dell\'evento: $e');
     }
@@ -257,7 +319,8 @@ class _ClubPageState extends State<ClubPage> {
                           selectedAddr = suggestion["address"]["name"];
                           selectedCitta = suggestion["address"]["city"] ?? '';
                           selectedStato = suggestion["address"]["country"];
-                          selectedNum = suggestion["address"]["house_number"] ?? '';
+                          selectedNum =
+                              suggestion["address"]["house_number"] ?? '';
                           selectedLat = suggestion["lat"];
                           selectedLon = suggestion["lon"];
 
