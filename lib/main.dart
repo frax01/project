@@ -12,6 +12,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +40,46 @@ void main() async {
 
   initializeDateFormatting();
 
+  setupNotifications();
+
   runApp(const MyApp());
+}
+
+void setupNotifications() {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification}');
+      _showNotification();
+    }
+  });
+}
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _showNotification() async {
+  print("1");
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'your_channel_id', // Cambia questo ID del canale
+    'Your Channel Name', // Cambia il nome del canale
+    //'Description of your channel', // Cambia la descrizione del canale
+    importance: Importance.high, // Imposta la priorità su alta
+    priority: Priority.high, // Imposta la priorità su alta
+  );
+  print("2");
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    'Titolo della notifica',
+    'Corpo della notifica',
+    platformChannelSpecifics,
+  );
+  print("3");
 }
 
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
@@ -96,7 +136,7 @@ void firebaseMessaging() {
 
   FirebaseMessaging.instance.getToken().then((String? token) {
     assert(token != null);
-    //print('FCM Token: $token');
+    print('FCM Token: $token');
   });
 }
 
@@ -116,12 +156,12 @@ class MyApp extends StatelessWidget {
       ],
       title: 'Club App',
       theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: lightColorScheme,
+        useMaterial3: true,
+        colorScheme: lightColorScheme,
       ),
       darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: darkColorScheme,
+        useMaterial3: true,
+        colorScheme: darkColorScheme,
       ),
       themeMode: ThemeMode.light,
       home: const Login(
@@ -147,13 +187,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   String? email;
 
   Future<Map<String, dynamic>> retrieveData() async {
-
     CollectionReference user = FirebaseFirestore.instance.collection('user');
-    QuerySnapshot querySnapshot1 = await user.where('email', isEqualTo: email).get();
+    QuerySnapshot querySnapshot1 =
+        await user.where('email', isEqualTo: email).get();
 
     Map<String, dynamic> document = {
       'name': querySnapshot1.docs.first['name'],
@@ -171,7 +210,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadData() async {
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email');
   }
@@ -185,18 +223,18 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (email == null) {
-      return const ClubPage(title: "Tiber Club", document: {
-        'name': 'fra',
-        'surname': 'marti',
-        'email': 'framarti@gmail.com',
-        'role': 'Boy',
-        'club_class': '2° media',
-        'soccer_class': 'intermediate',
-        'status': 'Admin',
-        'birthdate': 2024 - 01 - 16,
-        'id': 'wJu0WDEgg75gYg91Ejl8'
-      });
-      //return const Login(title: "Asd Tiber Club");
+      //return const ClubPage(title: "Tiber Club", document: {
+      //  'name': 'fra',
+      //  'surname': 'marti',
+      //  'email': 'framarti@gmail.com',
+      //  'role': 'Boy',
+      //  'club_class': '2° media',
+      //  'soccer_class': 'intermediate',
+      //  'status': 'Admin',
+      //  'birthdate': 2024 - 01 - 16,
+      //  'id': 'wJu0WDEgg75gYg91Ejl8'
+      //});
+      return const Login(title: "Asd Tiber Club");
     } else {
       return FutureBuilder<Map<String, dynamic>>(
           future: retrieveData(),
