@@ -33,6 +33,7 @@ class _ClubPageState extends State<ClubPage> {
   bool imageUploaded = false;
   bool startDateUploaded = false;
   bool endDateUploaded = false;
+  bool _isSidebarExtended = false;
 
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -600,12 +601,12 @@ class _ClubPageState extends State<ClubPage> {
                           : 'account';
                 });
               },
-              labelType: NavigationRailLabelType.all,
               destinations: const <NavigationRailDestination>[
                 NavigationRailDestination(
                   icon: Icon(Icons.home),
                   selectedIcon: Icon(Icons.home),
                   label: Text('Home'),
+                  padding: EdgeInsets.only(top: 8.0),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.sports_soccer),
@@ -618,8 +619,36 @@ class _ClubPageState extends State<ClubPage> {
                   label: Text('Account'),
                 ),
               ],
+              extended: _isSidebarExtended,
+              leading: IconButton(
+                icon: Icon(_isSidebarExtended
+                    ? Icons.arrow_back
+                    : Icons.menu),
+                onPressed: () {
+                  setState(() {
+                    _isSidebarExtended = !_isSidebarExtended;
+                  });
+                },
+              ),
+              trailing: Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.logout),
+                          onPressed: _logout,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-            VerticalDivider(thickness: 1, width: 1),
+            const VerticalDivider(thickness: 1, width: 1),
             // This is the main content.
             Expanded(
               child: Scaffold(
