@@ -504,27 +504,31 @@ class _ClubPageState extends State<ClubPage> {
       floatingActionButton:
           widget.document['status'] == 'Admin' && bottomLevel == 'home'
               ? SpeedDial(
+                  icon: Icons.add,
+                  activeIcon: Icons.close,
                   children: [
                     SpeedDialChild(
                       child: Icon(Icons.calendar_today),
+                      label: 'Weekend',
                       onTap: () {
                         _showAddEvent("weekend");
                       },
                     ),
                     SpeedDialChild(
                       child: const Icon(Icons.holiday_village),
+                      label: 'Trip',
                       onTap: () {
                         _showAddEvent("trip");
                       },
                     ),
                     SpeedDialChild(
-                      child: const Icon(Icons.plus_one),
+                      child: const Icon(Icons.star),
+                      label: 'Extra',
                       onTap: () {
                         _showAddEvent("extra");
                       },
                     ),
                   ],
-                  child: const Icon(Icons.add),
                 )
               : null,
       bottomNavigationBar: BottomAppBar(
