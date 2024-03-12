@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:club/config.dart';
+import 'package:adaptive_layout/adaptive_layout.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -483,14 +484,8 @@ class _ClubPageState extends State<ClubPage> {
     super.initState();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget smallScreen() {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
       body: Center(
           child: bottomLevel == "home"
               ? Box(
@@ -582,6 +577,105 @@ class _ClubPageState extends State<ClubPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget bigScreen() {
+    return Scaffold(
+      body: SafeArea(
+        child: Row(
+          children: <Widget>[
+            NavigationRail(
+              selectedIndex: bottomLevel == 'home'
+                  ? 0
+                  : bottomLevel == 'torneo'
+                      ? 1
+                      : 2,
+              onDestinationSelected: (int index) {
+                setState(() {
+                  bottomLevel = index == 0
+                      ? 'home'
+                      : index == 1
+                          ? 'torneo'
+                          : 'account';
+                });
+              },
+              labelType: NavigationRailLabelType.all,
+              destinations: const <NavigationRailDestination>[
+                NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('Home'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.sports_soccer),
+                  selectedIcon: Icon(Icons.sports_soccer),
+                  label: Text('Torneo'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.account_box),
+                  selectedIcon: Icon(Icons.account_box),
+                  label: Text('Account'),
+                ),
+              ],
+            ),
+            VerticalDivider(thickness: 1, width: 1),
+            // This is the main content.
+            Expanded(
+              child: Scaffold(
+                body: Center(
+                    child: bottomLevel == "home"
+                        ? Box(
+                            selectedClass: widget.document['club_class'],
+                            section: section.toLowerCase(),
+                          )
+                        : bottomLevel == "torneo"
+                            ? TabScorer(
+                                document: widget.document,
+                              )
+                            : SettingsPage(
+                                id: widget.document["id"],
+                                document: widget.document,
+                              )),
+                floatingActionButton: widget.document['status'] == 'Admin' &&
+                        bottomLevel == 'home'
+                    ? SpeedDial(
+                        children: [
+                          SpeedDialChild(
+                            child: Icon(Icons.calendar_today),
+                            onTap: () {
+                              _showAddEvent("weekend");
+                            },
+                          ),
+                          SpeedDialChild(
+                            child: const Icon(Icons.holiday_village),
+                            onTap: () {
+                              _showAddEvent("trip");
+                            },
+                          ),
+                          SpeedDialChild(
+                            child: const Icon(Icons.plus_one),
+                            onTap: () {
+                              _showAddEvent("extra");
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.add),
+                      )
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      smallLayout: smallScreen(),
+      largeLayout: bigScreen(),
     );
   }
 }
