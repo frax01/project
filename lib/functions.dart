@@ -2,11 +2,8 @@ import 'package:club/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 
-Future<void> sendNotification(
-      List fcmToken, String title, String message) async {
+Future<void> sendNotification(List fcmToken, String title, String message, String category) async {
     const String serverKey = Config.serverKey;
     const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
     Uri uri = Uri.parse(fcmUrl);
@@ -19,7 +16,7 @@ Future<void> sendNotification(
 
       final Map<String, dynamic> data = {
         'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-        'id': '1',
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'status': 'done',
       };
 
@@ -63,4 +60,18 @@ Future<void> sendNotification(
       return [];
     }
   }
-  
+
+  Future<List<dynamic>> getSuggestions(String query) async {
+    const String apiUrl = Config.locationIqUrl;
+    const String locationiqKey = Config.locationIqKey;
+
+    final response = await http.get(
+      Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data;
+    } else {
+      throw Exception('Failed to load suggestions');
+    }
+  }

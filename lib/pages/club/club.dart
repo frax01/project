@@ -10,10 +10,7 @@ import 'package:club/pages/main/setting.dart';
 import 'package:club/pages/club/box.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'torneo.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:club/config.dart';
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:club/functions.dart';
 
@@ -158,27 +155,26 @@ class _ClubPageState extends State<ClubPage> {
       });
       Navigator.pop(context);
       List<String> token = await fetchToken('club_class', selectedClass);
-      print(token);
-      sendNotification(token, 'Nuovo programma!', title);
+      sendNotification(token, 'Nuovo programma!', title, 'new_event');
     } catch (e) {
       print('Errore durante la creazione dell\'evento: $e');
     }
   }
 
-  Future<List<dynamic>> _getSuggestions(String query) async {
-    const String apiUrl = Config.locationIqUrl;
-    const String locationiqKey = Config.locationIqKey;
-
-    final response = await http.get(
-      Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data;
-    } else {
-      throw Exception('Failed to load suggestions');
-    }
-  }
+  //Future<List<dynamic>> _getSuggestions(String query) async {
+  //  const String apiUrl = Config.locationIqUrl;
+  //  const String locationiqKey = Config.locationIqKey;
+//
+  //  final response = await http.get(
+  //    Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
+  //  );
+  //  if (response.statusCode == 200) {
+  //    final List<dynamic> data = json.decode(response.body);
+  //    return data;
+  //  } else {
+  //    throw Exception('Failed to load suggestions');
+  //  }
+  //}
 
   Future<void> _showAddEvent(String selectedOption) async {
     String title = '';
@@ -234,7 +230,7 @@ class _ClubPageState extends State<ClubPage> {
                           focusNode: focusNode,
                           autofocus: false,
                           decoration: InputDecoration(
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
                             labelText: label,
                           ),
                           validator: (value) {
@@ -250,7 +246,7 @@ class _ClubPageState extends State<ClubPage> {
                         if (pattern == '') {
                           return [];
                         } else {
-                          return await _getSuggestions(pattern);
+                          return await getSuggestions(pattern);
                         }
                       },
                       itemBuilder: (context, suggestion) {
@@ -263,8 +259,7 @@ class _ClubPageState extends State<ClubPage> {
                           selectedAddr = suggestion["address"]["name"];
                           selectedCitta = suggestion["address"]["city"] ?? '';
                           selectedStato = suggestion["address"]["country"];
-                          selectedNum =
-                              suggestion["address"]["house_number"] ?? '';
+                          selectedNum = suggestion["address"]["house_number"] ?? '';
                           selectedLat = suggestion["lat"];
                           selectedLon = suggestion["lon"];
 
@@ -300,7 +295,7 @@ class _ClubPageState extends State<ClubPage> {
                         }
                         return null;
                       },
-                      items: ['', '1° media', '2° media', '3° media']
+                      items: ['', '1° liceo', '2° liceo', '3° liceo', '4° liceo', '5° liceo']
                           .map((String option) {
                         return DropdownMenuItem<String>(
                           value: option,
@@ -332,8 +327,8 @@ class _ClubPageState extends State<ClubPage> {
                                     await _startDate(context, startDate);
                                 setState(() {});
                               },
-                              child: Text(
-                                  startDateUploaded ? '$startDate' : 'Data'),
+                              child:
+                                  Text(startDateUploaded ? startDate : 'Data'),
                             ),
                           ]
                         : (selectedOption == 'trip' ||
@@ -346,7 +341,7 @@ class _ClubPageState extends State<ClubPage> {
                                     setState(() {});
                                   },
                                   child: Text(startDateUploaded
-                                      ? '$startDate'
+                                      ? startDate
                                       : 'Data iniziale'),
                                 ),
                                 const SizedBox(height: 16.0),
@@ -357,7 +352,7 @@ class _ClubPageState extends State<ClubPage> {
                                     setState(() {});
                                   },
                                   child: Text(endDateUploaded
-                                      ? '$endDate'
+                                      ? endDate
                                       : 'Data finale'),
                                 ),
                               ]
@@ -428,10 +423,6 @@ class _ClubPageState extends State<ClubPage> {
   }
 
   Future<void> _refresh() async {
-    // Aggiorna qui i tuoi dati o esegui le operazioni necessarie
-    // Puoi anche chiamare la funzione di recupero dati dal server qui
-
-    // Aggiorna la pagina
     setState(() {});
   }
 
@@ -458,7 +449,7 @@ class _ClubPageState extends State<ClubPage> {
                   activeIcon: Icons.close,
                   children: [
                     SpeedDialChild(
-                      child: Icon(Icons.calendar_today),
+                      child: const Icon(Icons.calendar_today),
                       label: 'Weekend',
                       onTap: () {
                         _showAddEvent("weekend");
@@ -575,9 +566,7 @@ class _ClubPageState extends State<ClubPage> {
               ],
               extended: _isSidebarExtended,
               leading: IconButton(
-                icon: Icon(_isSidebarExtended
-                    ? Icons.arrow_back
-                    : Icons.menu),
+                icon: Icon(_isSidebarExtended ? Icons.arrow_back : Icons.menu),
                 onPressed: () {
                   setState(() {
                     _isSidebarExtended = !_isSidebarExtended;
@@ -625,7 +614,7 @@ class _ClubPageState extends State<ClubPage> {
                     ? SpeedDial(
                         children: [
                           SpeedDialChild(
-                            child: Icon(Icons.calendar_today),
+                            child: const Icon(Icons.calendar_today),
                             onTap: () {
                               _showAddEvent("weekend");
                             },
@@ -656,174 +645,15 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      smallLayout: smallScreen(),
-      largeLayout: bigScreen(),
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: PopScope(
+        canPop: false,
+        child: AdaptiveLayout(
+          smallLayout: smallScreen(),
+          largeLayout: bigScreen(),
+        ),
+      ),
     );
   }
-//                    ),
-//        ),
-//        floatingActionButton: widget.document['status'] == 'Admin' && bottomLevel == 'home'
-//      ? SpeedDial(
-//          children: [
-//            SpeedDialChild(
-//              child: Icon(Icons.calendar_today),
-//              onTap: () {
-//                _showAddEvent("weekend");
-//              },
-//            ),
-//            SpeedDialChild(
-//              child: const Icon(Icons.holiday_village),
-//              onTap: () {
-//                _showAddEvent("trip");
-//              },
-//            ),
-//            SpeedDialChild(
-//              child: const Icon(Icons.plus_one),
-//              onTap: () {
-//                _showAddEvent("extra");
-//              },
-//            ),
-//          ],
-//          child: const Icon(Icons.add),
-//        )
-//      : null,
-//        bottomNavigationBar: BottomAppBar(
-//          child: Row(
-//            mainAxisSize: MainAxisSize.max,
-//            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//            children: <Widget>[
-//              _buildBottomNavBarItem(Icons.home, 'Home', 'home'),
-//              _buildBottomNavBarItem(Icons.sports_soccer, 'Torneo', 'torneo'),
-//              _buildBottomNavBarItem(Icons.account_box, 'Account', 'account'),
-//            ],
-//          ),
-//        ),
-//      ),
-//    ),
-//  );
-//}
-//
-//Widget _buildBottomNavBarItem(IconData icon, String text, String level) {
-//  return InkWell(
-//    onTap: () {
-//      setState(() {
-//        bottomLevel = level;
-//        imageUploaded = false;
-//      });
-//    },
-//    child: Column(
-//      mainAxisSize: MainAxisSize.min,
-//      children: <Widget>[
-//        Icon(icon),
-//        Text(text),
-//      ],
-//    ),
-//  );
-//}
-
-
-  //@override
-  //Widget build(BuildContext context) {
-  //  return RefreshIndicator(
-  //  onRefresh: _refresh,
-  //  child: Scaffold(
-  //    appBar: AppBar(
-  //      title: Text(widget.title),
-  //      centerTitle: true,
-  //      automaticallyImplyLeading: false,
-  //    ),
-  //    body: Center(
-  //        child: bottomLevel == "home"
-  //            ? Box(
-  //                selectedClass: widget.document['club_class'],
-  //                section: section.toLowerCase(),
-  //              )
-  //            : bottomLevel == "torneo"
-  //                ? TabScorer(
-  //                    document: widget.document,
-  //                  )
-  //                : SettingsPage(
-  //                    id: widget.document["id"],
-  //                    document: widget.document,
-  //                  )),
-  //    floatingActionButton:
-  //        widget.document['status'] == 'Admin' && bottomLevel == 'home'
-  //            ? SpeedDial(
-  //                children: [
-  //                  SpeedDialChild(
-  //                    child: Icon(Icons.calendar_today),
-  //                    onTap: () {
-  //                      _showAddEvent("weekend");
-  //                    },
-  //                  ),
-  //                  SpeedDialChild(
-  //                    child: const Icon(Icons.holiday_village),
-  //                    onTap: () {
-  //                      _showAddEvent("trip");
-  //                    },
-  //                  ),
-  //                  SpeedDialChild(
-  //                    child: const Icon(Icons.plus_one),
-  //                    onTap: () {
-  //                      _showAddEvent("extra");
-  //                    },
-  //                  ),
-  //                ],
-  //                child: const Icon(Icons.add),
-  //              )
-  //            : null,
-  //    bottomNavigationBar: BottomAppBar(
-  //      child: Row(
-  //        mainAxisSize: MainAxisSize.max,
-  //        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //        children: <Widget>[
-  //          InkWell(
-  //            onTap: () {
-  //              setState(() {
-  //                bottomLevel = 'home';
-  //                imageUploaded = false;
-  //              });
-  //            },
-  //            child: const Column(
-  //              mainAxisSize: MainAxisSize.min,
-  //              children: <Widget>[
-  //                Icon(Icons.home),
-  //                Text('Home'),
-  //              ],
-  //            ),
-  //          ),
-  //          InkWell(
-  //            onTap: () {
-  //              setState(() {
-  //                bottomLevel = 'torneo';
-  //              });
-  //            },
-  //            child: const Column(
-  //              mainAxisSize: MainAxisSize.min,
-  //              children: <Widget>[
-  //                Icon(Icons.sports_soccer),
-  //                Text('Torneo'),
-  //              ],
-  //            ),
-  //          ),
-  //          InkWell(
-  //            onTap: () {
-  //              setState(() {
-  //                bottomLevel = 'account';
-  //              });
-  //            },
-  //            child: const Column(
-  //              mainAxisSize: MainAxisSize.min,
-  //              children: <Widget>[
-  //                Icon(Icons.account_box),
-  //                Text('Account'),
-  //              ],
-  //            ),
-  //          ),
-  //        ],
-  //      ),
-  //    ),
-  //  ));
-  //}
 }

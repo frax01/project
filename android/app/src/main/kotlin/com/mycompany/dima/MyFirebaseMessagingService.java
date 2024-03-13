@@ -54,4 +54,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             notificationManager.notify(0, builder.build());
         }
     }
+
+    public void onMessageOpenedApp(RemoteMessage remoteMessage) {
+        // Gestisci l'apertura dell'app tramite una notifica push quando l'app è in background o chiusa.
+        System.out.println("Message data payload");
+        // Gestisci il payload della notifica e avvia l'azione desiderata.
+    }
 }

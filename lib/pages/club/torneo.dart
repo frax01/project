@@ -285,19 +285,31 @@ class _TabScorerState extends State<TabScorer> {
                     SpeedDialChild(
                       child: const Text("1°"),
                       onTap: () {
-                        _showAddDialog("1° media");
+                        _showAddDialog("1° liceo");
                       },
                     ),
                     SpeedDialChild(
                       child: const Text("2°"),
                       onTap: () {
-                        _showAddDialog("2° media");
+                        _showAddDialog("2° liceo");
                       },
                     ),
                     SpeedDialChild(
                       child: const Text("3°"),
                       onTap: () {
-                        _showAddDialog("3° media");
+                        _showAddDialog("3° liceo");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Text("4°"),
+                      onTap: () {
+                        _showAddDialog("4° liceo");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Text("5°"),
+                      onTap: () {
+                        _showAddDialog("5° liceo");
                       },
                     ),
                   ],

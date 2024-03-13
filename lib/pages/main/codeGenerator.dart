@@ -20,37 +20,28 @@ class UserDetailsPage extends StatefulWidget {
 class _UserDetailsPageState extends State<UserDetailsPage> {
   String selectedRole = "";
   String selectedClubClass = "";
-  String selectedSoccerClass = "";
   String selectedStatus = "";
 
-  final List<String> roleOptions = ["", "Boy", "Parent", "Tutor", "Coach"];
+  final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor", "Mister"];
   final List<String> clubClassOptions = [
     "",
-    "1° media",
-    "2° media",
-    "3° media"
-  ];
-  final List<String> soccerClassOptions = [
-    "",
-    "Beginner",
-    "Intermediate",
-    "Advanced",
+    "1° liceo",
+    "2° liceo",
+    "3° liceo",
+    "4° liceo",
+    "5° liceo",
   ];
   final List<String> statusOptions = ["", "User", "Admin"];
 
   Future<void> _refresh() async {
-    // Aggiorna qui i tuoi dati o esegui le operazioni necessarie
-    // Puoi anche chiamare la funzione di recupero dati dal server qui
-
-    // Aggiorna la pagina
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _refresh,
+        body: RefreshIndicator(
+      onRefresh: _refresh,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -68,19 +59,14 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     widget.userEmail,
                   ),
                   const SizedBox(height: 16.0),
-                  buildDropdown("Role", roleOptions, (value) {
+                  buildDropdown("Ruolo", roleOptions, (value) {
                     setState(() {
                       selectedRole = value.toString();
                     });
                   }),
-                  buildDropdown("Club Class", clubClassOptions, (value) {
+                  buildDropdown("Classe", clubClassOptions, (value) {
                     setState(() {
                       selectedClubClass = value.toString();
-                    });
-                  }),
-                  buildDropdown("Soccer Class", soccerClassOptions, (value) {
-                    setState(() {
-                      selectedSoccerClass = value.toString();
                     });
                   }),
                   buildDropdown("Status", statusOptions, (value) {
@@ -123,13 +109,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         DropdownButton<String>(
           isExpanded: true,
-          value: label == "Role"
+          value: label == "Ruolo"
               ? selectedRole
-              : label == "Club Class"
-                  ? selectedClubClass
-                  : label == "Soccer Class"
-                      ? selectedSoccerClass
-                      : selectedStatus,
+              : selectedClubClass,
           items: options.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -148,11 +130,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       if (selectedRole == "") {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please select a role')));
-        return;
-      }
-      if (selectedClubClass == "" && selectedSoccerClass == "") {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Please select a club or soccer class')));
         return;
       }
       if (selectedStatus == "") {
@@ -174,12 +151,12 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           .update({
         'role': selectedRole,
         'club_class': selectedClubClass,
-        'soccer_class': selectedSoccerClass,
         'status': selectedStatus,
       });
       List token = [querySnapshot.docs.first["token"]];
       print(token);
-      sendNotification(token, 'Sei stato accettato!', 'Ora puoi entrare nell\'app!');
+      sendNotification(
+          token, 'Tiber Club', 'Sei stato accettato!', 'accepted');
       Navigator.pop(context);
     } catch (e) {
       print('Error updating user details: $e');

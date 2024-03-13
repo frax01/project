@@ -82,7 +82,7 @@ class _SignUpFormState extends State<SignUp> {
         });
         List<String> token = await fetchToken('status', 'Admin');
         print(token);
-        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato");
+        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user');
       }
       // Puoi aggiungere qui la navigazione a una nuova schermata, se necessario
     } catch (e) {

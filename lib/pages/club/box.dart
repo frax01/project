@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:club/functions.dart';
+import 'program.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class Box extends StatefulWidget {
   const Box({
@@ -256,9 +258,18 @@ class _BoxState extends State<Box> {
     String newTitle = data['title'];
     String imagePath = data['imagePath'];
     String selectedClass = data['selectedClass'];
+    String selectedOption = data['selectedOption'];
     String description = data['description'];
     String startDate = data['startDate'] ?? '';
     String endDate = data['endDate'] ?? '';
+    String address = data['address'];
+    String lat = data['lat'];
+    String lon = data['lon'];
+
+    String selectedAddr = "";
+    String? selectedCitta = "";
+    String selectedStato = "";
+    String? selectedNum = "";
 
     return showDialog<void>(
         context: context,
@@ -276,6 +287,65 @@ class _BoxState extends State<Box> {
                     decoration: const InputDecoration(labelText: 'Titolo'),
                   ),
                   const SizedBox(height: 16.0),
+                  TypeAheadField(
+                    builder: (context, controller, focusNode) {
+                      String label = address;
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: label,
+                        ),
+                        validator: (value) {
+                          if (selectedOption == 'trip' &&
+                              (value == null || value.isEmpty)) {
+                            return 'Inserire un indirizzo';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      if (pattern == '') {
+                        return [];
+                      } else {
+                        return await getSuggestions(pattern);
+                      }
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion["display_name"]),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      setState(() {
+                        selectedAddr = suggestion["address"]["name"];
+                        selectedCitta = suggestion["address"]["city"] ?? '';
+                        selectedStato = suggestion["address"]["country"];
+                        selectedNum = suggestion["address"]["house_number"] ?? '';
+                        lat = suggestion["lat"];
+                        lon = suggestion["lon"];
+                        if (selectedCitta != '' && selectedNum != '') {
+                          if (selectedStato != 'Italia') {
+                            address =
+                                '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}, $selectedStato';
+                          } else {
+                            address =
+                                '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}';
+                          }
+                        } else {
+                          if (selectedStato != 'Italia') {
+                            address = '$selectedAddr, $selectedStato';
+                          } else {
+                            address = selectedAddr;
+                          }
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
                   DropdownButtonFormField<String>(
                     value: data['selectedClass'],
                     onChanged: (value) {
@@ -283,8 +353,14 @@ class _BoxState extends State<Box> {
                         selectedClass = value!;
                       });
                     },
-                    items: ['', '1° media', '2° media', '3° media']
-                        .map((String option) {
+                    items: [
+                      '',
+                      '1° liceo',
+                      '2° liceo',
+                      '3° liceo',
+                      '4° liceo',
+                      '5° liceo'
+                    ].map((String option) {
                       return DropdownMenuItem<String>(
                         value: option,
                         child: Text(option),
@@ -360,7 +436,10 @@ class _BoxState extends State<Box> {
                           startDate,
                           endDate,
                           description,
-                          section);
+                          section,
+                          address,
+                          lat,
+                          lon);
                     },
                     child: const Text('Modifica'),
                   ),
@@ -379,7 +458,10 @@ class _BoxState extends State<Box> {
       String startDate,
       String endDate,
       String description,
-      String section) async {
+      String section,
+      String indirizzo,
+      String selectedLat,
+      String selectedLon) async {
     try {
       if (title == "") {
         ScaffoldMessenger.of(context)
@@ -403,10 +485,14 @@ class _BoxState extends State<Box> {
         'description': description,
         'startDate': startDate,
         'endDate': endDate,
+        'address': indirizzo,
+        'lat': selectedLat,
+        'lon': selectedLon,
       });
       List<String> token = await fetchToken('club_class', selectedClass);
       print(token);
-      sendNotification(token, 'Programma modificato!', newTitle);
+      sendNotification(
+          token, 'Programma modificato!', newTitle, 'modified_event');
       Navigator.pop(context);
     } catch (e) {
       print('Errore aggiornamento utente: $e');
@@ -461,103 +547,116 @@ class _BoxState extends State<Box> {
                     return Container();
                   } else {
                     Map? weather = weatherSnapshot.data;
-                    return Container(
-                      margin: const EdgeInsets.all(10.0),
-                      padding: const EdgeInsets.all(15.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Titolo: $title',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                                Text('Data iniziale: $startDate'),
-                                Text('Classe: ${widget.selectedClass}'),
-                                if (document['endDate'] != '')
-                                  Text('Data finale: ${document['endDate']}'),
-                                Image(
-                                  image: NetworkImage(imagePath),
-                                  height: 100,
-                                  width: 100,
-                                ),
-                                Text('Descrizione: $description'),
-                                Text('Dove: $address'),
-                                weather!["check"]
-                                    ? Text('Temp min: ${weather["t_min"]}')
-                                    : Container(),
-                                weather["check"]
-                                    ? Text('Temp max: ${weather["t_max"]}')
-                                    : Container(),
-                                if (weather["image"] == null ||
-                                    weather["image"] == '')
-                                  Container()
-                                else
-                                  Image(
-                                    image: NetworkImage(weather["image"]),
-                                    height: 30,
-                                    width: 30,
-                                  ),
-                              ],
-                            ),
+                    return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ProgramScreen(
+                                    document: document, weather: weather)),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(15.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                          Column(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () async {
-                                  Map<dynamic, dynamic> data = {};
-                                  data = await loadBoxData(id, level);
-                                  _showEditDialog(
-                                      data["selectedOption"], data, level, id);
-                                },
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Titolo: $title',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text('Data iniziale: $startDate'),
+                                    Text('Classe: ${widget.selectedClass}'),
+                                    Text('Categoria: $level'),
+                                    if (document['endDate'] != '')
+                                      Text(
+                                          'Data finale: ${document['endDate']}'),
+                                    Image(
+                                      image: NetworkImage(imagePath),
+                                      height: 100,
+                                      width: 100,
+                                    ),
+                                    Text('Descrizione: $description'),
+                                    Text('Dove: $address'),
+                                    weather!["check"]
+                                        ? Text('Temp min: ${weather["t_min"]}')
+                                        : Container(),
+                                    weather["check"]
+                                        ? Text('Temp max: ${weather["t_max"]}')
+                                        : Container(),
+                                    if (weather["image"] == null ||
+                                        weather["image"] == '')
+                                      Container()
+                                    else
+                                      Image(
+                                        image: NetworkImage(weather["image"]),
+                                        height: 30,
+                                        width: 30,
+                                      ),
+                                  ],
+                                ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  bool? shouldDelete = await showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: const Text('Elimina'),
-                                        content: const Text(
-                                            'Sei sicuro di voler eliminare il programma?'),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            child: const Text('No'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop(false);
-                                            },
-                                          ),
-                                          TextButton(
-                                            child: const Text('Si'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop(true);
-                                            },
-                                          ),
-                                        ],
-                                      );
+                              Column(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () async {
+                                      Map<dynamic, dynamic> data = {};
+                                      data = await loadBoxData(id, level);
+                                      _showEditDialog(data["selectedOption"],
+                                          data, level, id);
                                     },
-                                  );
-                                  if (shouldDelete == true) {
-                                    setState(() {
-                                      deleteDocument(
-                                          '${widget.section}_$level', id);
-                                    });
-                                  }
-                                },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      bool? shouldDelete = await showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text('Elimina'),
+                                            content: const Text(
+                                                'Sei sicuro di voler eliminare il programma?'),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                child: const Text('No'),
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pop(false);
+                                                },
+                                              ),
+                                              TextButton(
+                                                child: const Text('Si'),
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pop(true);
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                      if (shouldDelete == true) {
+                                        setState(() {
+                                          deleteDocument(
+                                              '${widget.section}_$level', id);
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    );
+                        ));
                   }
                 },
               );

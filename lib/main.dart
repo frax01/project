@@ -13,7 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:club/functions.dart';
+import 'functions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +29,18 @@ void main() async {
     ),
   );
 
+  FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
+
   deleteOldDocuments();
-  firebaseMessaging();
   initializeDateFormatting();
 
   runApp(const MyApp());
@@ -40,6 +50,13 @@ void main() async {
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
   createNotificationChannel();
   showNotification(message);
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('A new onMessageOpenedApp event was published!');
+    //  Navigator.pushNamed(
+    //    context,
+    //    '/acceptance');
+    });
 }
 
 void createNotificationChannel() {
@@ -120,15 +137,6 @@ void deleteOldDocuments() async {
   }
 }
 
-void firebaseMessaging() {
-  FirebaseMessaging.instance.requestPermission();
-  FirebaseMessaging.instance.getToken().then((String? token) {
-    assert(token != null);
-    print('FCM Token: $token');
-  });
-  FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -178,27 +186,40 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? email;
 
-  Future<void> setupInteractedMessage() async {
-    //terminated state.
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+//
+  //  FirebaseMessaging.onMessage.listen(showNotification);
+//
+  //  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //    print('A new onMessageOpenedApp event was published!');
+  //    Navigator.pushNamed(context, '/acceptance');
+  //  });
+//
 
-    print('initialMessage: $initialMessage');
-
-    if (initialMessage != null) {
-      print("0");
-      print(initialMessage);
-      Navigator.pushNamed(context, '/acceptance');
-    }
-
-    //background
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-  }
-
-  void _handleMessage(RemoteMessage message) {
-    print("sono qui");
-    Navigator.pushNamed(context, '/acceptance');
-  }
+//
+  //  //primo piano
+  //  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //    print('Got a message whilst in the foreground!');
+  //    print('Message data: ${message.data}');
+//
+  //    //if (message.notification != null) {
+  //    //  Navigator.pushNamed(context, '/acceptance');
+  //    //  print('Message also contained a notification: ${message.notification}');
+  //    //}
+  //  });
+//
+  //  //background
+  //  print("cioaoooo");
+  //  //FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  //}
+//
+  //void _handleMessage(RemoteMessage message) {
+  //  if (message.data["category"] == 'modified_event') {
+  //    print("sono qui");
+  //    Navigator.pushNamed(context, '/acceptance');
+  //  } else {
+  //    print("helloooo");
+  //  }
+  //}
 
   Future<Map<String, dynamic>> retrieveData() async {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
@@ -225,10 +246,62 @@ class _HomePageState extends State<HomePage> {
     return prefs.getString('email') ?? '';
   }
 
+  //String? initialMessage;
+
   @override
   void initState() {
     super.initState();
-    setupInteractedMessage(); //forse non ci manda ad acceptance perchè ci sono le funzioni async
+
+    FirebaseMessaging.instance.getInitialMessage().then(
+  (value) {
+    RemoteMessage? initialMessage = value;
+    String x;
+    if (initialMessage == null || initialMessage.data.isEmpty) {
+      x = 'null';
+      sendNotification([
+      'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI'
+    ], 'questo', 'nessuna categoria', 'prova');
+    } else {
+      x = 'yesss';
+      sendNotification([
+      'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI'
+    ], 'questo', initialMessage.data['category']?? 'nessun valore', 'prova');
+    }
+    sendNotification([
+      'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI'
+    ], 'questo', x, 'prova');
+    Navigator.pushNamed(context, '/acceptance'); //non va perchè poi carica altre pagine
+  },
+);
+
+//FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//      print('A new onMessageOpenedApp event was published!');
+//      Navigator.pushNamed(
+//        context,
+//        '/acceptance');
+//    });
+
+
+    //FirebaseMessaging.instance.getInitialMessage().then(
+    //      (value) => setState(
+    //        () {
+    //          RemoteMessage? initialMessage = value;
+    //          String x;
+    //          if (initialMessage == null || initialMessage == '') {
+    //            x = 'null';
+    //          } 
+    //          else {
+    //            x = 'yesss';
+    //          }
+    //          Navigator.pushNamed(context, '/acceptance');
+    //          sendNotification([
+    //            'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI'
+    //          ], 'questo', x, 'prova');
+    //        },
+    //      ),
+    //    );
+
+    //setupInteractedMessage(); //forse non ci manda ad acceptance perchè ci sono le funzioni async
   }
 
   @override
@@ -263,7 +336,7 @@ class _HomePageState extends State<HomePage> {
               //  'surname': 'marti',
               //  'email': 'framarti@gmail.com',
               //  'role': 'Boy',
-              //  'club_class': '2° media',
+              //  'club_class': '2° liceo',
               //  'soccer_class': 'intermediate',
               //  'status': 'Admin',
               //  'birthdate': 2024 - 01 - 16,
