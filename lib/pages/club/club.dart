@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:club/config.dart';
+import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:club/functions.dart';
 
 class ClubPage extends StatefulWidget {
@@ -33,6 +34,7 @@ class _ClubPageState extends State<ClubPage> {
   bool imageUploaded = false;
   bool startDateUploaded = false;
   bool endDateUploaded = false;
+  bool _isSidebarExtended = false;
 
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -433,19 +435,9 @@ class _ClubPageState extends State<ClubPage> {
     setState(() {});
   }
 
-  @override
-Widget build(BuildContext context) {
-  return PopScope(
-    canPop: true, //l'app diventa nera...
-    child: RefreshIndicator(
-      onRefresh: _refresh,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-        ),
-        body: Center(
+  Widget smallScreen() {
+    return Scaffold(
+      body: Center(
           child: bottomLevel == "home"
               ? Box(
                   selectedClass: widget.document['club_class'],
@@ -458,6 +450,217 @@ Widget build(BuildContext context) {
                   : SettingsPage(
                       id: widget.document["id"],
                       document: widget.document,
+                    )),
+      floatingActionButton:
+          widget.document['status'] == 'Admin' && bottomLevel == 'home'
+              ? SpeedDial(
+                  icon: Icons.add,
+                  activeIcon: Icons.close,
+                  children: [
+                    SpeedDialChild(
+                      child: Icon(Icons.calendar_today),
+                      label: 'Weekend',
+                      onTap: () {
+                        _showAddEvent("weekend");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Icon(Icons.holiday_village),
+                      label: 'Trip',
+                      onTap: () {
+                        _showAddEvent("trip");
+                      },
+                    ),
+                    SpeedDialChild(
+                      child: const Icon(Icons.star),
+                      label: 'Extra',
+                      onTap: () {
+                        _showAddEvent("extra");
+                      },
+                    ),
+                  ],
+                )
+              : null,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            InkWell(
+              onTap: () {
+                setState(() {
+                  bottomLevel = 'home';
+                  imageUploaded = false;
+                });
+              },
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.home),
+                  Text('Home'),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  bottomLevel = 'torneo';
+                });
+              },
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.sports_soccer),
+                  Text('Torneo'),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  bottomLevel = 'account';
+                });
+              },
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.account_box),
+                  Text('Account'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget bigScreen() {
+    return Scaffold(
+      body: SafeArea(
+        child: Row(
+          children: <Widget>[
+            NavigationRail(
+              selectedIndex: bottomLevel == 'home'
+                  ? 0
+                  : bottomLevel == 'torneo'
+                      ? 1
+                      : 2,
+              onDestinationSelected: (int index) {
+                setState(() {
+                  bottomLevel = index == 0
+                      ? 'home'
+                      : index == 1
+                          ? 'torneo'
+                          : 'account';
+                });
+              },
+              destinations: const <NavigationRailDestination>[
+                NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('Home'),
+                  padding: EdgeInsets.only(top: 8.0),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.sports_soccer),
+                  selectedIcon: Icon(Icons.sports_soccer),
+                  label: Text('Torneo'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.account_box),
+                  selectedIcon: Icon(Icons.account_box),
+                  label: Text('Account'),
+                ),
+              ],
+              extended: _isSidebarExtended,
+              leading: IconButton(
+                icon: Icon(_isSidebarExtended
+                    ? Icons.arrow_back
+                    : Icons.menu),
+                onPressed: () {
+                  setState(() {
+                    _isSidebarExtended = !_isSidebarExtended;
+                  });
+                },
+              ),
+              trailing: Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.logout),
+                          onPressed: _logout,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            // This is the main content.
+            Expanded(
+              child: Scaffold(
+                body: Center(
+                    child: bottomLevel == "home"
+                        ? Box(
+                            selectedClass: widget.document['club_class'],
+                            section: section.toLowerCase(),
+                          )
+                        : bottomLevel == "torneo"
+                            ? TabScorer(
+                                document: widget.document,
+                              )
+                            : SettingsPage(
+                                id: widget.document["id"],
+                                document: widget.document,
+                              )),
+                floatingActionButton: widget.document['status'] == 'Admin' &&
+                        bottomLevel == 'home'
+                    ? SpeedDial(
+                        children: [
+                          SpeedDialChild(
+                            child: Icon(Icons.calendar_today),
+                            onTap: () {
+                              _showAddEvent("weekend");
+                            },
+                          ),
+                          SpeedDialChild(
+                            child: const Icon(Icons.holiday_village),
+                            onTap: () {
+                              _showAddEvent("trip");
+                            },
+                          ),
+                          SpeedDialChild(
+                            child: const Icon(Icons.plus_one),
+                            onTap: () {
+                              _showAddEvent("extra");
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.add),
+                      )
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      smallLayout: smallScreen(),
+      largeLayout: bigScreen(),
+    );
+  }
                     ),
         ),
         floatingActionButton: widget.document['status'] == 'Admin' && bottomLevel == 'home'
