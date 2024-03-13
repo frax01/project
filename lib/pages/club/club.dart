@@ -661,66 +661,66 @@ class _ClubPageState extends State<ClubPage> {
       largeLayout: bigScreen(),
     );
   }
-                    ),
-        ),
-        floatingActionButton: widget.document['status'] == 'Admin' && bottomLevel == 'home'
-      ? SpeedDial(
-          children: [
-            SpeedDialChild(
-              child: Icon(Icons.calendar_today),
-              onTap: () {
-                _showAddEvent("weekend");
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.holiday_village),
-              onTap: () {
-                _showAddEvent("trip");
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.plus_one),
-              onTap: () {
-                _showAddEvent("extra");
-              },
-            ),
-          ],
-          child: const Icon(Icons.add),
-        )
-      : null,
-        bottomNavigationBar: BottomAppBar(
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              _buildBottomNavBarItem(Icons.home, 'Home', 'home'),
-              _buildBottomNavBarItem(Icons.sports_soccer, 'Torneo', 'torneo'),
-              _buildBottomNavBarItem(Icons.account_box, 'Account', 'account'),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _buildBottomNavBarItem(IconData icon, String text, String level) {
-  return InkWell(
-    onTap: () {
-      setState(() {
-        bottomLevel = level;
-        imageUploaded = false;
-      });
-    },
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Icon(icon),
-        Text(text),
-      ],
-    ),
-  );
-}
+//                    ),
+//        ),
+//        floatingActionButton: widget.document['status'] == 'Admin' && bottomLevel == 'home'
+//      ? SpeedDial(
+//          children: [
+//            SpeedDialChild(
+//              child: Icon(Icons.calendar_today),
+//              onTap: () {
+//                _showAddEvent("weekend");
+//              },
+//            ),
+//            SpeedDialChild(
+//              child: const Icon(Icons.holiday_village),
+//              onTap: () {
+//                _showAddEvent("trip");
+//              },
+//            ),
+//            SpeedDialChild(
+//              child: const Icon(Icons.plus_one),
+//              onTap: () {
+//                _showAddEvent("extra");
+//              },
+//            ),
+//          ],
+//          child: const Icon(Icons.add),
+//        )
+//      : null,
+//        bottomNavigationBar: BottomAppBar(
+//          child: Row(
+//            mainAxisSize: MainAxisSize.max,
+//            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//            children: <Widget>[
+//              _buildBottomNavBarItem(Icons.home, 'Home', 'home'),
+//              _buildBottomNavBarItem(Icons.sports_soccer, 'Torneo', 'torneo'),
+//              _buildBottomNavBarItem(Icons.account_box, 'Account', 'account'),
+//            ],
+//          ),
+//        ),
+//      ),
+//    ),
+//  );
+//}
+//
+//Widget _buildBottomNavBarItem(IconData icon, String text, String level) {
+//  return InkWell(
+//    onTap: () {
+//      setState(() {
+//        bottomLevel = level;
+//        imageUploaded = false;
+//      });
+//    },
+//    child: Column(
+//      mainAxisSize: MainAxisSize.min,
+//      children: <Widget>[
+//        Icon(icon),
+//        Text(text),
+//      ],
+//    ),
+//  );
+//}
 
 
   //@override
