@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:club/functions.dart';
 
 class Box extends StatefulWidget {
   const Box({
@@ -403,6 +404,9 @@ class _BoxState extends State<Box> {
         'startDate': startDate,
         'endDate': endDate,
       });
+      List<String> token = await fetchToken('club_class', selectedClass);
+      print(token);
+      sendNotification(token, 'Programma modificato!', newTitle);
       Navigator.pop(context);
     } catch (e) {
       print('Errore aggiornamento utente: $e');

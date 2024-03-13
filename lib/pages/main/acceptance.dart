@@ -12,6 +12,14 @@ class AcceptancePage extends StatefulWidget {
 }
 
 class _AcceptancePageState extends State<AcceptancePage> {
+  Future<void> _refresh() async {
+    // Aggiorna qui i tuoi dati o esegui le operazioni necessarie
+    // Puoi anche chiamare la funzione di recupero dati dal server qui
+
+    // Aggiorna la pagina
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,8 +27,10 @@ class _AcceptancePageState extends State<AcceptancePage> {
         title: Text(widget.title),
         centerTitle: true,
       ),
-      body: const UserList(),
-    );
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+      child: const UserList(),
+    ));
   }
 }
 

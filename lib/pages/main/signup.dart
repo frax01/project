@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:club/user.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:club/functions.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.title});
@@ -26,18 +27,6 @@ class _SignUpFormState extends State<SignUp> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  //Future<String> firebaseMessaging() async {
-  //  FirebaseMessaging.instance.getToken().then((String? token) {
-  //    assert(token != null);
-  //    print('FCM Token: $token');
-  //    if (token != null && token.isNotEmpty) {
-  //      return token;
-  //    } else {
-  //      return '';
-  //    }
-  //  });
-  //}
 
   Future<String> firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
@@ -91,6 +80,9 @@ class _SignUpFormState extends State<SignUp> {
         setState(() {
           Navigator.pushNamed(context, '/waiting');
         });
+        List<String> token = await fetchToken('status', 'Admin');
+        print(token);
+        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato");
       }
       // Puoi aggiungere qui la navigazione a una nuova schermata, se necessario
     } catch (e) {

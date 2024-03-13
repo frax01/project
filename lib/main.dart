@@ -12,8 +12,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:club/functions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -178,6 +178,28 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? email;
 
+  Future<void> setupInteractedMessage() async {
+    //terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    print('initialMessage: $initialMessage');
+
+    if (initialMessage != null) {
+      print("0");
+      print(initialMessage);
+      Navigator.pushNamed(context, '/acceptance');
+    }
+
+    //background
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void _handleMessage(RemoteMessage message) {
+    print("sono qui");
+    Navigator.pushNamed(context, '/acceptance');
+  }
+
   Future<Map<String, dynamic>> retrieveData() async {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     QuerySnapshot querySnapshot1 =
@@ -198,66 +220,92 @@ class _HomePageState extends State<HomePage> {
     return document;
   }
 
-  Future<void> loadData() async {
+  Future<String> loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    email = prefs.getString('email');
+    return prefs.getString('email') ?? '';
   }
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    setupInteractedMessage(); //forse non ci manda ad acceptance perchè ci sono le funzioni async
   }
 
   @override
   Widget build(BuildContext context) {
-    if (email == null) {
-      //return const ClubPage(title: "Tiber Club", document: {
-      //  'name': 'fra',
-      //  'surname': 'marti',
-      //  'email': 'framarti@gmail.com',
-      //  'role': 'Boy',
-      //  'club_class': '2° media',
-      //  'soccer_class': 'intermediate',
-      //  'status': 'Admin',
-      //  'birthdate': 2024 - 01 - 16,
-      //  'id': 'wJu0WDEgg75gYg91Ejl8'
-      //});
-      return const Login(title: "Asd Tiber Club");
-    } else {
-      return FutureBuilder<Map<String, dynamic>>(
-          future: retrieveData(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Scaffold(
-                body: Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Image.asset('images/logo.png'),
-                        const SizedBox(height: 20.0),
-                        const CircularProgressIndicator(),
-                      ]),
+    return FutureBuilder<String>(
+        future: loadData(), // Chiamare loadData() direttamente qui
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Image.asset('images/logo.png'),
+                    const SizedBox(height: 20.0),
+                    const CircularProgressIndicator(),
+                  ],
                 ),
-              );
-            } else if (snapshot.hasError) {
-              return const Scaffold(
-                body: Center(
-                  child: Text("Errore durante il recupero dei dati."),
-                ),
-              );
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return const Scaffold(
+              body: Center(
+                child: Text("Errore durante il recupero dei dati."),
+              ),
+            );
+          } else {
+            String email = snapshot.data ?? '';
+            if (email == '') {
+              //return const ClubPage(title: "Tiber Club", document: {
+              //  'name': 'fra',
+              //  'surname': 'marti',
+              //  'email': 'framarti@gmail.com',
+              //  'role': 'Boy',
+              //  'club_class': '2° media',
+              //  'soccer_class': 'intermediate',
+              //  'status': 'Admin',
+              //  'birthdate': 2024 - 01 - 16,
+              //  'id': 'wJu0WDEgg75gYg91Ejl8'
+              //});
+              return const Login(title: "Asd Tiber Club");
             } else {
-              Map<String, dynamic> document = snapshot.data ?? {};
-              Future.delayed(Duration.zero, () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ClubPage(title: "Tiber Club", document: document)));
-              });
-              return Container();
+              return FutureBuilder<Map<String, dynamic>>(
+                  future: retrieveData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Scaffold(
+                        body: Center(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Image.asset('images/logo.png'),
+                                const SizedBox(height: 20.0),
+                                const CircularProgressIndicator(),
+                              ]),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return const Scaffold(
+                        body: Center(
+                          child: Text("Errore durante il recupero dei dati."),
+                        ),
+                      );
+                    } else {
+                      Map<String, dynamic> document = snapshot.data ?? {};
+                      Future.delayed(Duration.zero, () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ClubPage(
+                                    title: "Tiber Club", document: document)));
+                      });
+                      return Container();
+                    }
+                  });
             }
-          });
-    }
+          }
+        });
   }
 }

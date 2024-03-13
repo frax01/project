@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:club/config.dart';
 
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.document});
-
-  //final String email;
-  //final String status;
   final Map document;
 
   @override
@@ -30,47 +24,6 @@ class _TabScorerState extends State<TabScorer> {
     _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
     _scorersStream =
         _scorerCollection.orderBy('goal', descending: true).snapshots();
-
-    sendNotification(
-        'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI');
-  }
-
-  Future<void> sendNotification(String fcmToken) async {
-    final String serverKey = Config.serverKey;
-    final String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
-    Uri uri = Uri.parse(fcmUrl);
-
-    final Map<String, dynamic> notification = {
-      'title': 'Nuovo aggiornamento torneo',
-      'body': 'Scopri le ultime novità nel torneo!',
-    };
-
-    final Map<String, dynamic> data = {
-      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-      'id': '1',
-      'status': 'done',
-    };
-
-    final Map<String, dynamic> body = {
-      'to': fcmToken,
-      'notification': notification,
-      'data': data,
-    };
-
-    final http.Response response = await http.post(
-      uri,
-      body: jsonEncode(body),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'key=$serverKey',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      print('Notifica inviata con successo!');
-    } else {
-      print('Errore nell\'invio della notifica: ${response.reasonPhrase}');
-    }
   }
 
   Future<void> _showAddDialog(String selectedClass) async {

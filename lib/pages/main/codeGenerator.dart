@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/functions.dart';
 
 class UserDetailsPage extends StatefulWidget {
   const UserDetailsPage(
@@ -37,10 +38,20 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   ];
   final List<String> statusOptions = ["", "User", "Admin"];
 
+  Future<void> _refresh() async {
+    // Aggiorna qui i tuoi dati o esegui le operazioni necessarie
+    // Puoi anche chiamare la funzione di recupero dati dal server qui
+
+    // Aggiorna la pagina
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
@@ -101,7 +112,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget buildDropdown(
@@ -166,6 +177,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'soccer_class': selectedSoccerClass,
         'status': selectedStatus,
       });
+      List token = [querySnapshot.docs.first["token"]];
+      print(token);
+      sendNotification(token, 'Sei stato accettato!', 'Ora puoi entrare nell\'app!');
       Navigator.pop(context);
     } catch (e) {
       print('Error updating user details: $e');
