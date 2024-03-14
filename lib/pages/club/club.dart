@@ -472,56 +472,38 @@ class _ClubPageState extends State<ClubPage> {
                   ],
                 )
               : null,
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            InkWell(
-              onTap: () {
-                setState(() {
-                  bottomLevel = 'home';
-                  imageUploaded = false;
-                });
-              },
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(Icons.home),
-                  Text('Home'),
-                ],
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  bottomLevel = 'torneo';
-                });
-              },
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(Icons.sports_soccer),
-                  Text('Torneo'),
-                ],
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  bottomLevel = 'account';
-                });
-              },
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(Icons.account_box),
-                  Text('Account'),
-                ],
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: bottomLevel == 'home'
+            ? 0
+            : bottomLevel == 'torneo'
+                ? 1
+                : 2,
+        onDestinationSelected: (int index) {
+          setState(() {
+            bottomLevel = index == 0
+                ? 'home'
+                : index == 1
+                    ? 'torneo'
+                    : 'account';
+          });
+        },
+        destinations: const <NavigationDestination>[
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.sports_soccer),
+            selectedIcon: Icon(Icons.sports_soccer),
+            label: 'Torneo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outlined),
+            selectedIcon: Icon(Icons.person),
+            label: 'Utente',
+          ),
+        ],
       ),
     );
   }

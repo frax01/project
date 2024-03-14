@@ -270,7 +270,7 @@ class _HomePageState extends State<HomePage> {
     sendNotification([
       'f1QP4F2hQ4G8c21NnliqST:APA91bHb5beI32WGr-Olb95hDitqSy06FL0yfhf0VR5Xism6pIcem2tzLEMHOju57sUXcU3S7VYKI5tL1kHOWsjJpEdpv7GkeSu2YnRTXrX-IxlFNkp0D1Iy4S7gVL73ahODo0n0oXpI'
     ], 'questo', x, 'prova');
-    Navigator.pushNamed(context, '/acceptance'); //non va perchè poi carica altre pagine
+    //Navigator.pushNamed(context, '/acceptance'); //non va perchè poi carica altre pagine
   },
 );
 
