@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
@@ -350,6 +351,97 @@ class _BoxState extends State<Box> {
     final String imageUrl = await snapshot.ref.getDownloadURL();
 
     return imageUrl;
+  }
+
+  Widget buildCard(
+      title, startDate, endDate, imagePath, level, classe, weather) {
+    return Card(
+      borderOnForeground: true,
+      clipBehavior: Clip.antiAlias,
+      surfaceTintColor: Colors.white,
+      elevation: 5.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20.0)),
+                    Column(
+                      children: [Text(startDate), Text(endDate)],
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: Image.network(
+                  imagePath,
+                ),
+              ),
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4.0,
+                            ),
+                          ],
+                        ),
+                        child: Text(level.toUpperCase(),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12.0)),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4.0,
+                            ),
+                          ],
+                        ),
+                        child: Text(classe,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12.0)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
