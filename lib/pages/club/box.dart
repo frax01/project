@@ -3,11 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:club/functions.dart';
+import 'package:club/functions/notificationFunctions.dart';
 import 'program.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:club/functions/geoFunctions.dart';
+import 'package:club/functions/dataFunctions.dart';
+import 'package:club/functions/weatherFunctions.dart';
+import 'package:club/functions/generalFunctions.dart';
 
 class Box extends StatefulWidget {
   const Box({
@@ -24,175 +26,10 @@ class Box extends StatefulWidget {
 }
 
 class _BoxState extends State<Box> {
-  List<Map<String, dynamic>> allDocuments = [];
   String? title;
   String? startDate;
   String? imagePath;
   String? description;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  Future<Map> _fetchWeatherData(startDate, endDate, lat, lon) async {
-    Map<String, dynamic> weather = {};
-    int weatherCode = 0;
-    int temperatureMin = 0;
-    int temperatureMax = 0;
-
-    DateFormat inputFormat = DateFormat("dd-MM-yyyy");
-    DateFormat outputFormat = DateFormat("yyyy-MM-dd");
-
-    DateTime startInputDate = inputFormat.parse(startDate);
-    String startOutputDate = outputFormat.format(startInputDate);
-
-    DateTime today = DateTime.now();
-    String todayOutputFormat = outputFormat.format(today);
-
-    Duration startDifference = startInputDate.difference(today);
-    int startDaysDifference = startDifference.inDays;
-
-    if (startDaysDifference >= 16) {
-      return {
-        "t_min": '',
-        "t_max": '',
-        "w_code": '',
-        "image": '',
-        "check": false,
-      };
-    } else if (endDate != '' &&
-        (startInputDate.isBefore(today) || startInputDate == today) &&
-        (today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate)) ||
-            DateFormat('dd-MM-yyyy').parse(endDate) == today)) {
-      final response = await http.get(
-        Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        weatherCode = data['daily']['weather_code'][0];
-        temperatureMin = (data['daily']['temperature_2m_min'][0] < 0)
-            ? data['daily']['temperature_2m_min'][0].ceil()
-            : data['daily']['temperature_2m_min'][0].floor();
-        temperatureMax = (data['daily']['temperature_2m_max'][0] < 0)
-            ? data['daily']['temperature_2m_max'][0].ceil()
-            : data['daily']['temperature_2m_max'][0].floor();
-      } else {
-        throw Exception('Failed to fetch weather data');
-      }
-      Reference ref =
-          FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
-      String weatherImageUrl = await ref.getDownloadURL();
-      weather = {
-        "t_min": temperatureMin,
-        "t_max": temperatureMax,
-        "w_code": weatherCode,
-        "image": weatherImageUrl,
-        "check": true,
-      };
-      return weather;
-    } else if (endDate != '') {
-      List tMin = [];
-      List tMax = [];
-
-      DateTime endInputDate = inputFormat.parse(endDate);
-      Duration endDifference = endInputDate.difference(today);
-      int endDaysDifference = endDifference.inDays;
-      String endOutputDate = '';
-
-      if (endDaysDifference >= 16) {
-        DateTime endInputDate = today.add(const Duration(days: 15));
-        endOutputDate = outputFormat.format(endInputDate);
-      } else {
-        DateTime endInputdDate = inputFormat.parse(endDate);
-        endOutputDate = outputFormat.format(endInputdDate);
-      }
-      final response = await http.get(
-        Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$endOutputDate'),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        tMin = data['daily']['temperature_2m_min'];
-        tMax = data['daily']['temperature_2m_max'];
-
-        double sum = 0;
-        for (double value in tMin) {
-          sum += value;
-        }
-        temperatureMin = ((sum / tMin.length) < 0)
-            ? (sum / tMin.length).ceil()
-            : (sum / tMin.length).floor();
-
-        sum = 0;
-        for (double value in tMax) {
-          sum += value;
-        }
-        temperatureMax = ((sum / tMax.length) < 0)
-            ? (sum / tMax.length).ceil()
-            : (sum / tMax.length).floor();
-      } else {
-        throw Exception('Failed to fetch weather data');
-      }
-      weather = {
-        "t_min": temperatureMin,
-        "t_max": temperatureMax,
-        "w_code": '',
-        "image": '',
-        "check": true,
-      };
-      return weather;
-    } else {
-      final response = await http.get(
-        Uri.parse(
-            'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$startOutputDate&end_date=$startOutputDate'),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        weatherCode = data['daily']['weather_code'][0];
-        temperatureMin = (data['daily']['temperature_2m_min'][0] < 0)
-            ? data['daily']['temperature_2m_min'][0].ceil()
-            : data['daily']['temperature_2m_min'][0].floor();
-        temperatureMax = (data['daily']['temperature_2m_max'][0] < 0)
-            ? data['daily']['temperature_2m_max'][0].ceil()
-            : data['daily']['temperature_2m_max'][0].floor();
-      } else {
-        throw Exception('Failed to fetch weather data');
-      }
-      Reference ref =
-          FirebaseStorage.instance.ref().child('Weather/$weatherCode.png');
-      String weatherImageUrl = await ref.getDownloadURL();
-      weather = {
-        "t_min": temperatureMin,
-        "t_max": temperatureMax,
-        "w_code": weatherCode,
-        "image": weatherImageUrl,
-        "check": true,
-      };
-      return weather;
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> _fetchData() async {
-    allDocuments = [];
-    List<String> clubCollections = ['club_weekend', 'club_trip', 'club_extra'];
-
-    for (String collectionName in clubCollections) {
-      CollectionReference collection =
-          FirebaseFirestore.instance.collection(collectionName);
-
-      QuerySnapshot querySnapshot = await collection
-          .where('selectedClass', isEqualTo: widget.selectedClass)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        List<Map<String, dynamic>> documents = querySnapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
-            .toList();
-
-        allDocuments.addAll(documents);
-      }
-    }
-
-    return allDocuments;
-  }
 
   Future<String> _startDate(BuildContext context, String startDate) async {
     final DateTime? picked = await showDatePicker(
@@ -230,21 +67,6 @@ class _BoxState extends State<Box> {
       }
     }
     return endDate;
-  }
-
-  Future<Map> loadBoxData(String id, String level) async {
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('${widget.section}_$level')
-        .doc(id)
-        .get();
-
-    Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-
-    return data;
-  }
-
-  Future<void> deleteDocument(String collection, String docId) async {
-    await _firestore.collection(collection).doc(docId).delete();
   }
 
   Future<void> _showEditDialog(String level, Map<dynamic, dynamic> data,
@@ -324,7 +146,8 @@ class _BoxState extends State<Box> {
                         selectedAddr = suggestion["address"]["name"];
                         selectedCitta = suggestion["address"]["city"] ?? '';
                         selectedStato = suggestion["address"]["country"];
-                        selectedNum = suggestion["address"]["house_number"] ?? '';
+                        selectedNum =
+                            suggestion["address"]["house_number"] ?? '';
                         lat = suggestion["lat"];
                         lon = suggestion["lon"];
                         if (selectedCitta != '' && selectedNum != '') {
@@ -474,6 +297,21 @@ class _BoxState extends State<Box> {
         return;
       }
 
+      Map weather = await fetchWeatherData(startDate, endDate, selectedLat, selectedLon);
+
+      Map document = {
+        'title': newTitle,
+        'imagePath': imagePath,
+        'selectedClass': selectedClass,
+        'selectedOption': section,
+        'description': description,
+        'startDate': startDate,
+        'endDate': endDate,
+        'address': indirizzo,
+        'lat': selectedLat,
+        'lon': selectedLon,
+      };
+
       await FirebaseFirestore.instance
           .collection('${widget.section}_$section')
           .doc(id)
@@ -491,8 +329,8 @@ class _BoxState extends State<Box> {
       });
       List<String> token = await fetchToken('club_class', selectedClass);
       print(token);
-      sendNotification(
-          token, 'Programma modificato!', newTitle, 'modified_event');
+      sendNotification(token, 'Programma modificato!', newTitle,
+          'modified_event', document, weather);
       Navigator.pop(context);
     } catch (e) {
       print('Errore aggiornamento utente: $e');
@@ -517,151 +355,162 @@ class _BoxState extends State<Box> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _fetchData(),
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+      future: fetchData([], widget.selectedClass),
+      builder: (BuildContext context,
+          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
         } else {
-          allDocuments.sort((a, b) =>
-              (a['startDate'] as String).compareTo(b['startDate'] as String));
-          return ListView.builder(
-            itemCount: allDocuments.length,
-            itemBuilder: (context, index) {
-              var document = allDocuments[index];
-              var id = document['id'];
-              var title = document['title'];
-              var level = document['selectedOption'];
-              var startDate = document['startDate'];
-              var endDate = document['endDate'];
-              var imagePath = document['imagePath'];
-              var description = document['description'];
-              var address = document['address'];
-              var lat = document["lat"];
-              var lon = document["lon"];
-              return FutureBuilder(
-                future: _fetchWeatherData(startDate, endDate, lat, lon),
-                builder:
-                    (BuildContext context, AsyncSnapshot<Map> weatherSnapshot) {
-                  if (weatherSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Container();
-                  } else {
-                    Map? weather = weatherSnapshot.data;
-                    return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProgramScreen(
-                                    document: document, weather: weather)),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.all(10.0),
-                          padding: const EdgeInsets.all(15.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Titolo: $title',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    Text('Data iniziale: $startDate'),
-                                    Text('Classe: ${widget.selectedClass}'),
-                                    Text('Categoria: $level'),
-                                    if (document['endDate'] != '')
-                                      Text(
-                                          'Data finale: ${document['endDate']}'),
-                                    Image(
-                                      image: NetworkImage(imagePath),
-                                      height: 100,
-                                      width: 100,
-                                    ),
-                                    Text('Descrizione: $description'),
-                                    Text('Dove: $address'),
-                                    weather!["check"]
-                                        ? Text('Temp min: ${weather["t_min"]}')
-                                        : Container(),
-                                    weather["check"]
-                                        ? Text('Temp max: ${weather["t_max"]}')
-                                        : Container(),
-                                    if (weather["image"] == null ||
-                                        weather["image"] == '')
-                                      Container()
-                                    else
+          if (snapshot.hasData) {
+            List<Map<String, dynamic>> allDocuments = snapshot.data!;
+            allDocuments.sort((a, b) =>
+                (a['startDate'] as String).compareTo(b['startDate'] as String));
+            return ListView.builder(
+              itemCount: allDocuments.length,
+              itemBuilder: (context, index) {
+                var document = allDocuments[index];
+                var id = document['id'];
+                var title = document['title'];
+                var level = document['selectedOption'];
+                var startDate = document['startDate'];
+                var endDate = document['endDate'];
+                var imagePath = document['imagePath'];
+                var description = document['description'];
+                var address = document['address'];
+                var lat = document["lat"];
+                var lon = document["lon"];
+                return FutureBuilder(
+                  future: fetchWeatherData(startDate, endDate, lat, lon),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<Map> weatherSnapshot) {
+                    if (weatherSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return Container();
+                    } else {
+                      Map? weather = weatherSnapshot.data;
+                      return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ProgramScreen(
+                                      document: document, weather: weather)),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(15.0),
+                            decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Titolo: $title',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      Text('Data iniziale: $startDate'),
+                                      Text('Classe: ${widget.selectedClass}'),
+                                      Text('Categoria: $level'),
+                                      if (document['endDate'] != '')
+                                        Text(
+                                            'Data finale: ${document['endDate']}'),
                                       Image(
-                                        image: NetworkImage(weather["image"]),
-                                        height: 30,
-                                        width: 30,
+                                        image: NetworkImage(imagePath),
+                                        height: 100,
+                                        width: 100,
                                       ),
+                                      Text('Descrizione: $description'),
+                                      Text('Dove: $address'),
+                                      weather!["check"]
+                                          ? Text(
+                                              'Temp min: ${weather["t_min"]}')
+                                          : Container(),
+                                      weather["check"]
+                                          ? Text(
+                                              'Temp max: ${weather["t_max"]}')
+                                          : Container(),
+                                      if (weather["image"] == null ||
+                                          weather["image"] == '')
+                                        Container()
+                                      else
+                                        Image(
+                                          image: NetworkImage(weather["image"]),
+                                          height: 30,
+                                          width: 30,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () async {
+                                        Map<dynamic, dynamic> data = {};
+                                        data = await loadBoxData(id, level, widget.section);
+                                        _showEditDialog(data["selectedOption"],
+                                            data, level, id);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () async {
+                                        bool? shouldDelete = await showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text('Elimina'),
+                                              content: const Text(
+                                                  'Sei sicuro di voler eliminare il programma?'),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  child: const Text('No'),
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop(false);
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: const Text('Si'),
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop(true);
+                                                  },
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (shouldDelete == true) {
+                                          setState(() {
+                                            deleteDocument(
+                                                '${widget.section}_$level', id);
+                                          });
+                                        }
+                                      },
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Column(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () async {
-                                      Map<dynamic, dynamic> data = {};
-                                      data = await loadBoxData(id, level);
-                                      _showEditDialog(data["selectedOption"],
-                                          data, level, id);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () async {
-                                      bool? shouldDelete = await showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: const Text('Elimina'),
-                                            content: const Text(
-                                                'Sei sicuro di voler eliminare il programma?'),
-                                            actions: <Widget>[
-                                              TextButton(
-                                                child: const Text('No'),
-                                                onPressed: () {
-                                                  Navigator.of(context)
-                                                      .pop(false);
-                                                },
-                                              ),
-                                              TextButton(
-                                                child: const Text('Si'),
-                                                onPressed: () {
-                                                  Navigator.of(context)
-                                                      .pop(true);
-                                                },
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                      if (shouldDelete == true) {
-                                        setState(() {
-                                          deleteDocument(
-                                              '${widget.section}_$level', id);
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ));
-                  }
-                },
-              );
-            },
-          );
+                              ],
+                            ),
+                          ));
+                    }
+                  },
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Text('Errore: ${snapshot.error}');
+          } else {
+            return const Text('Nessun dato disponibile');
+          }
         }
       },
     );

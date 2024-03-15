@@ -36,8 +36,8 @@ class ProgramScreen extends StatelessWidget {
               Image.network(document['imagePath'], height: 100, width: 100),
               Text('Descrizione: ${document['description']}'),
               Text('Dove: ${document['address']}'),
-              if (weather["check"]) Text('Temp min: ${weather["t_min"]}'),
-              if (weather["check"]) Text('Temp max: ${weather["t_max"]}'),
+              if (weather["check"]==true) Text('Temp min: ${weather["t_min"]}'),
+              if (weather["check"]==true) Text('Temp max: ${weather["t_max"]}'),
               if (weather["image"] != null && weather["image"]!.isNotEmpty)
                 Image.network(weather["image"], height: 30, width: 30),
             ],

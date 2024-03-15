@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:club/user.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:club/functions.dart';
+import 'package:club/functions/notificationFunctions.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key, required this.title});
@@ -82,7 +82,7 @@ class _SignUpFormState extends State<SignUp> {
         });
         List<String> token = await fetchToken('status', 'Admin');
         print(token);
-        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user');
+        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user', {}, {});
       }
       // Puoi aggiungere qui la navigazione a una nuova schermata, se necessario
     } catch (e) {

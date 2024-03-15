@@ -12,7 +12,9 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'torneo.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:adaptive_layout/adaptive_layout.dart';
-import 'package:club/functions.dart';
+import 'package:club/functions/notificationFunctions.dart';
+import 'package:club/functions/geoFunctions.dart';
+import 'package:club/functions/weatherFunctions.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -126,11 +128,11 @@ class _ClubPageState extends State<ClubPage> {
             content: Text('Please select the start and the end date')));
         return;
       }
-      //if (imagePath == "") {
-      //  ScaffoldMessenger.of(context).showSnackBar(
-      //      const SnackBar(content: Text('Please select an image')));
-      //  return;
-      //}
+      if (imagePath == "") {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select an image')));
+        return;
+      }
       if (address == '') {
         address = 'Tiber Club';
         lat = '41.91805195';
@@ -138,6 +140,21 @@ class _ClubPageState extends State<ClubPage> {
       }
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      Map weather = await fetchWeatherData(startDate, endDate, lat, lon);
+
+      Map document = {
+        'title': title,
+        'selectedOption': selectedOption,
+        'imagePath': imagePath,
+        'selectedClass': selectedClass,
+        'description': description,
+        'startDate': startDate,
+        'endDate': endDate,
+        'address': address,
+        'lat': lat,
+        'lon': lon,
+      };
 
       await firestore
           .collection('${section.toLowerCase()}_$selectedOption')
@@ -155,26 +172,12 @@ class _ClubPageState extends State<ClubPage> {
       });
       Navigator.pop(context);
       List<String> token = await fetchToken('club_class', selectedClass);
-      sendNotification(token, 'Nuovo programma!', title, 'new_event');
+      sendNotification(
+          token, 'Nuovo programma!', title, 'new_event', document, weather);
     } catch (e) {
       print('Errore durante la creazione dell\'evento: $e');
     }
   }
-
-  //Future<List<dynamic>> _getSuggestions(String query) async {
-  //  const String apiUrl = Config.locationIqUrl;
-  //  const String locationiqKey = Config.locationIqKey;
-//
-  //  final response = await http.get(
-  //    Uri.parse('$apiUrl?q=$query&key=$locationiqKey&format=json&limit=5'),
-  //  );
-  //  if (response.statusCode == 200) {
-  //    final List<dynamic> data = json.decode(response.body);
-  //    return data;
-  //  } else {
-  //    throw Exception('Failed to load suggestions');
-  //  }
-  //}
 
   Future<void> _showAddEvent(String selectedOption) async {
     String title = '';
@@ -259,7 +262,8 @@ class _ClubPageState extends State<ClubPage> {
                           selectedAddr = suggestion["address"]["name"];
                           selectedCitta = suggestion["address"]["city"] ?? '';
                           selectedStato = suggestion["address"]["country"];
-                          selectedNum = suggestion["address"]["house_number"] ?? '';
+                          selectedNum =
+                              suggestion["address"]["house_number"] ?? '';
                           selectedLat = suggestion["lat"];
                           selectedLon = suggestion["lon"];
 
@@ -295,8 +299,14 @@ class _ClubPageState extends State<ClubPage> {
                         }
                         return null;
                       },
-                      items: ['', '1° liceo', '2° liceo', '3° liceo', '4° liceo', '5° liceo']
-                          .map((String option) {
+                      items: [
+                        '',
+                        '1° liceo',
+                        '2° liceo',
+                        '3° liceo',
+                        '4° liceo',
+                        '5° liceo'
+                      ].map((String option) {
                         return DropdownMenuItem<String>(
                           value: option,
                           child: Text(option),

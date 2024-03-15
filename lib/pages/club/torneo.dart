@@ -22,8 +22,7 @@ class _TabScorerState extends State<TabScorer> {
   void initState() {
     super.initState();
     _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
-    _scorersStream =
-        _scorerCollection.orderBy('goal', descending: true).snapshots();
+    _scorersStream = _scorerCollection.orderBy('goal', descending: true).snapshots();
   }
 
   Future<void> _showAddDialog(String selectedClass) async {
