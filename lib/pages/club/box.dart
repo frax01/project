@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
@@ -324,7 +325,8 @@ class _BoxState extends State<Box> {
                         selectedAddr = suggestion["address"]["name"];
                         selectedCitta = suggestion["address"]["city"] ?? '';
                         selectedStato = suggestion["address"]["country"];
-                        selectedNum = suggestion["address"]["house_number"] ?? '';
+                        selectedNum =
+                            suggestion["address"]["house_number"] ?? '';
                         lat = suggestion["lat"];
                         lon = suggestion["lon"];
                         if (selectedCitta != '' && selectedNum != '') {
@@ -514,6 +516,97 @@ class _BoxState extends State<Box> {
     return imageUrl;
   }
 
+  Widget buildCard(
+      title, startDate, endDate, imagePath, level, classe, weather) {
+    return Card(
+      borderOnForeground: true,
+      clipBehavior: Clip.antiAlias,
+      surfaceTintColor: Colors.white,
+      elevation: 5.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20.0)),
+                    Column(
+                      children: [Text(startDate), Text(endDate)],
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: Image.network(
+                  imagePath,
+                ),
+              ),
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4.0,
+                            ),
+                          ],
+                        ),
+                        child: Text(level.toUpperCase(),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12.0)),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10.0),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4.0,
+                            ),
+                          ],
+                        ),
+                        child: Text(classe,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12.0)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -524,30 +617,46 @@ class _BoxState extends State<Box> {
         } else {
           allDocuments.sort((a, b) =>
               (a['startDate'] as String).compareTo(b['startDate'] as String));
-          return ListView.builder(
-            itemCount: allDocuments.length,
-            itemBuilder: (context, index) {
-              var document = allDocuments[index];
-              var id = document['id'];
-              var title = document['title'];
-              var level = document['selectedOption'];
-              var startDate = document['startDate'];
-              var endDate = document['endDate'];
-              var imagePath = document['imagePath'];
-              var description = document['description'];
-              var address = document['address'];
-              var lat = document["lat"];
-              var lon = document["lon"];
-              return FutureBuilder(
-                future: _fetchWeatherData(startDate, endDate, lat, lon),
-                builder:
-                    (BuildContext context, AsyncSnapshot<Map> weatherSnapshot) {
-                  if (weatherSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Container();
-                  } else {
-                    Map? weather = weatherSnapshot.data;
-                    return GestureDetector(
+          double width = MediaQuery.of(context).size.width;
+          int crossAxisCount = 0;
+          if (width > 1200) {
+            crossAxisCount = 4;
+          } else if (width > 900) {
+            crossAxisCount = 3;
+          } else if (width >= 500) {
+            crossAxisCount = 2;
+          } else {
+            crossAxisCount = 1;
+          }
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MasonryGridView.count(
+              crossAxisCount: crossAxisCount,
+              itemCount: allDocuments.length,
+              mainAxisSpacing: 20.0,
+              crossAxisSpacing: 20.0,
+              itemBuilder: (context, index) {
+                var document = allDocuments[index];
+                var id = document['id'];
+                var title = document['title'];
+                var level = document['selectedOption'];
+                var startDate = document['startDate'];
+                var endDate = document['endDate'];
+                var imagePath = document['imagePath'];
+                var description = document['description'];
+                var address = document['address'];
+                var lat = document["lat"];
+                var lon = document["lon"];
+                return FutureBuilder(
+                  future: _fetchWeatherData(startDate, endDate, lat, lon),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<Map> weatherSnapshot) {
+                    if (weatherSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return Container();
+                    } else {
+                      Map? weather = weatherSnapshot.data;
+                      return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
@@ -556,111 +665,14 @@ class _BoxState extends State<Box> {
                                     document: document, weather: weather)),
                           );
                         },
-                        child: Container(
-                          margin: const EdgeInsets.all(10.0),
-                          padding: const EdgeInsets.all(15.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Titolo: $title',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    Text('Data iniziale: $startDate'),
-                                    Text('Classe: ${widget.selectedClass}'),
-                                    Text('Categoria: $level'),
-                                    if (document['endDate'] != '')
-                                      Text(
-                                          'Data finale: ${document['endDate']}'),
-                                    Image(
-                                      image: NetworkImage(imagePath),
-                                      height: 100,
-                                      width: 100,
-                                    ),
-                                    Text('Descrizione: $description'),
-                                    Text('Dove: $address'),
-                                    weather!["check"]
-                                        ? Text('Temp min: ${weather["t_min"]}')
-                                        : Container(),
-                                    weather["check"]
-                                        ? Text('Temp max: ${weather["t_max"]}')
-                                        : Container(),
-                                    if (weather["image"] == null ||
-                                        weather["image"] == '')
-                                      Container()
-                                    else
-                                      Image(
-                                        image: NetworkImage(weather["image"]),
-                                        height: 30,
-                                        width: 30,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () async {
-                                      Map<dynamic, dynamic> data = {};
-                                      data = await loadBoxData(id, level);
-                                      _showEditDialog(data["selectedOption"],
-                                          data, level, id);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () async {
-                                      bool? shouldDelete = await showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: const Text('Elimina'),
-                                            content: const Text(
-                                                'Sei sicuro di voler eliminare il programma?'),
-                                            actions: <Widget>[
-                                              TextButton(
-                                                child: const Text('No'),
-                                                onPressed: () {
-                                                  Navigator.of(context)
-                                                      .pop(false);
-                                                },
-                                              ),
-                                              TextButton(
-                                                child: const Text('Si'),
-                                                onPressed: () {
-                                                  Navigator.of(context)
-                                                      .pop(true);
-                                                },
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                      if (shouldDelete == true) {
-                                        setState(() {
-                                          deleteDocument(
-                                              '${widget.section}_$level', id);
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ));
-                  }
-                },
-              );
-            },
+                        child: buildCard(title, startDate, endDate, imagePath,
+                            level, widget.selectedClass, weather!),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
           );
         }
       },
