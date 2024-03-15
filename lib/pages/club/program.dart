@@ -11,7 +11,7 @@ class ProgramScreen extends StatelessWidget {
   final Map weather;
 
   Widget weatherTile(Map weather) {
-    if (weather["check"]) {
+    if (weather["check"]==true) {
       return ListTile(
         leading: Image.network(weather["image"], width: 50, height: 50),
         title: Text('${weather["t_max"]}ºC'),
