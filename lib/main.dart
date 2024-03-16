@@ -13,7 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'functions/notificationFunctions.dart';
 import 'functions/generalFunctions.dart';
-import 'package:club/pages/club/program.dart';
+import 'package:club/pages/club/programPage.dart';
 import 'functions/dataFunctions.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 
@@ -91,9 +91,9 @@ class MyApp extends StatelessWidget {
       home: const Login(
         title: 'Tiber Club',
       ),
-      initialRoute: '/homepage',
+      initialRoute: '/home',
       routes: {
-        '/homepage': (context) => const HomePage(),
+        '/home': (context) => const HomePage(),
         '/login': (context) => const Login(title: 'Tiber Club'),
         '/signup': (context) => const SignUp(title: 'Tiber Club'),
         '/waiting': (context) => const Waiting(title: 'Tiber Club'),
@@ -218,17 +218,20 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           );
-        } else if (snapshot.hasError) {
+        }
+        else if (snapshot.hasError) {
           return const Scaffold(
             body: Center(
-              child: Text("Errore durante il recupero dei dati."),
+              child: Text("Errore durante il recupero dei dati :("),
             ),
           );
-        } else {
-          String email = snapshot.data ?? '';
+        }
+        else {
+          email = snapshot.data ?? '';
           if (email == '') {
             return const Login(title: "Asd Tiber Club");
-          } else {
+          }
+          else {
             return FutureBuilder<Map<String, dynamic>>(
               future: retrieveData(),
               builder: (context, snapshot) {
@@ -244,14 +247,15 @@ class _HomePageState extends State<HomePage> {
                           ]),
                     ),
                   );
-                } else if (snapshot.hasError) {
+                }
+                else if (snapshot.hasError) {
                   return const Scaffold(
                     body: Center(
                       child: Text("Errore durante il recupero dei dati."),
                     ),
                   );
-                } else if (terminated == false) {
-                  //o vai alla homepage o vai a quello che ti dice terminated
+                }
+                else if (terminated == false) {
                   Map<String, dynamic> document = snapshot.data ?? {};
                   Future.delayed(Duration.zero, () {
                     Navigator.push(
@@ -261,7 +265,8 @@ class _HomePageState extends State<HomePage> {
                                 title: "Tiber Club", document: document)));
                   });
                   return Container();
-                } else {
+                }
+                else {
                   return Container();
                 }
               },

@@ -6,15 +6,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:club/functions/notificationFunctions.dart';
-import 'program.dart';
+import 'programPage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:club/functions/geoFunctions.dart';
 import 'package:club/functions/dataFunctions.dart';
 import 'package:club/functions/weatherFunctions.dart';
 import 'package:club/functions/generalFunctions.dart';
 
-class Box extends StatefulWidget {
-  const Box({
+class HomePage extends StatefulWidget {
+  const HomePage({
     super.key,
     required this.selectedClass,
     required this.section,
@@ -24,10 +24,10 @@ class Box extends StatefulWidget {
   final String section;
 
   @override
-  State<Box> createState() => _BoxState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _BoxState extends State<Box> {
+class _HomePageState extends State<HomePage> {
   String? title;
   String? startDate;
   String? imagePath;
@@ -400,7 +400,7 @@ class _BoxState extends State<Box> {
                             ],
                           ),
                           child: endDate != ""
-                            ? Text('$startDate ~ $endDate')
+                            ? Text('$startDate ～ $endDate')
                             : Text('$startDate'),
                         ),
                       ),

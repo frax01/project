@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,10 +7,10 @@ import 'package:club/pages/main/login.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:club/pages/club/setting.dart';
-import 'package:club/pages/club/box.dart';
+import 'package:club/pages/club/settingsPage.dart';
+import 'package:club/pages/club/homePage.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'torneo.dart';
+import 'package:club/pages/club/torneoPage.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:club/functions/notificationFunctions.dart';
@@ -27,13 +28,33 @@ class ClubPage extends StatefulWidget {
 }
 
 class _ClubPageState extends State<ClubPage> {
-  String section = 'CLUB';
-  String bottomLevel = 'home';
-  String selectedOption = '';
+  static const String section = 'CLUB';
+  int _selectedIndex = 0;
+  late List<Widget> _widgetOptions;
+
+  bool _isSidebarExtended = false;
+
   bool imageUploaded = false;
   bool startDateUploaded = false;
   bool endDateUploaded = false;
-  bool _isSidebarExtended = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      HomePage(
+        selectedClass: widget.document['club_class'],
+        section: section.toLowerCase(),
+      ),
+      TabScorer(
+        document: widget.document,
+      ),
+      SettingsPage(
+        id: widget.document["id"],
+        document: widget.document,
+      ),
+    ];
+  }
 
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -427,33 +448,25 @@ class _ClubPageState extends State<ClubPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> _refresh() async {
     setState(() {});
   }
 
   Widget smallScreen() {
     return Scaffold(
-      body: Center(
-          child: bottomLevel == "home"
-              ? Box(
-                  selectedClass: widget.document['club_class'],
-                  section: section.toLowerCase(),
-                )
-              : bottomLevel == "torneo"
-                  ? TabScorer(
-                      document: widget.document,
-                    )
-                  : SettingsPage(
-                      id: widget.document["id"],
-                      document: widget.document,
-                    )),
+      body: PageTransitionSwitcher(
+        transitionBuilder: (Widget child, Animation<double> animation,
+            Animation<double> secondaryAnimation) {
+          return FadeThroughTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            child: child,
+          );
+        },
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       floatingActionButton:
-          widget.document['status'] == 'Admin' && bottomLevel == 'home'
+          widget.document['status'] == 'Admin' && _selectedIndex == 0
               ? SpeedDial(
                   icon: Icons.add,
                   activeIcon: Icons.close,
@@ -483,18 +496,10 @@ class _ClubPageState extends State<ClubPage> {
                 )
               : null,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: bottomLevel == 'home'
-            ? 0
-            : bottomLevel == 'torneo'
-                ? 1
-                : 2,
+        selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
           setState(() {
-            bottomLevel = index == 0
-                ? 'home'
-                : index == 1
-                    ? 'torneo'
-                    : 'account';
+            _selectedIndex = index;
           });
         },
         destinations: const <NavigationDestination>[
@@ -524,18 +529,10 @@ class _ClubPageState extends State<ClubPage> {
         child: Row(
           children: <Widget>[
             NavigationRail(
-              selectedIndex: bottomLevel == 'home'
-                  ? 0
-                  : bottomLevel == 'torneo'
-                      ? 1
-                      : 2,
+              selectedIndex: _selectedIndex,
               onDestinationSelected: (int index) {
                 setState(() {
-                  bottomLevel = index == 0
-                      ? 'home'
-                      : index == 1
-                          ? 'torneo'
-                          : 'account';
+                  _selectedIndex = index;
                 });
               },
               destinations: const <NavigationRailDestination>[
@@ -587,46 +584,43 @@ class _ClubPageState extends State<ClubPage> {
             // This is the main content.
             Expanded(
               child: Scaffold(
-                body: Center(
-                    child: bottomLevel == "home"
-                        ? Box(
-                            selectedClass: widget.document['club_class'],
-                            section: section.toLowerCase(),
+                body: PageTransitionSwitcher(
+                  transitionBuilder: (Widget child, Animation<double> animation,
+                      Animation<double> secondaryAnimation) {
+                    return FadeThroughTransition(
+                      animation: animation,
+                      secondaryAnimation: secondaryAnimation,
+                      child: child,
+                    );
+                  },
+                  child: _widgetOptions.elementAt(_selectedIndex),
+                ),
+                floatingActionButton:
+                    widget.document['status'] == 'Admin' && _selectedIndex == 0
+                        ? SpeedDial(
+                            children: [
+                              SpeedDialChild(
+                                child: const Icon(Icons.calendar_today),
+                                onTap: () {
+                                  _showAddEvent("weekend");
+                                },
+                              ),
+                              SpeedDialChild(
+                                child: const Icon(Icons.holiday_village),
+                                onTap: () {
+                                  _showAddEvent("trip");
+                                },
+                              ),
+                              SpeedDialChild(
+                                child: const Icon(Icons.plus_one),
+                                onTap: () {
+                                  _showAddEvent("extra");
+                                },
+                              ),
+                            ],
+                            child: const Icon(Icons.add),
                           )
-                        : bottomLevel == "torneo"
-                            ? TabScorer(
-                                document: widget.document,
-                              )
-                            : SettingsPage(
-                                id: widget.document["id"],
-                                document: widget.document,
-                              )),
-                floatingActionButton: widget.document['status'] == 'Admin' &&
-                        bottomLevel == 'home'
-                    ? SpeedDial(
-                        children: [
-                          SpeedDialChild(
-                            child: const Icon(Icons.calendar_today),
-                            onTap: () {
-                              _showAddEvent("weekend");
-                            },
-                          ),
-                          SpeedDialChild(
-                            child: const Icon(Icons.holiday_village),
-                            onTap: () {
-                              _showAddEvent("trip");
-                            },
-                          ),
-                          SpeedDialChild(
-                            child: const Icon(Icons.plus_one),
-                            onTap: () {
-                              _showAddEvent("extra");
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.add),
-                      )
-                    : null,
+                        : null,
               ),
             ),
           ],
