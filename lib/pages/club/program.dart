@@ -11,7 +11,9 @@ class ProgramScreen extends StatelessWidget {
   final Map weather;
 
   Widget weatherTile(Map weather) {
-    if (weather["check"]==true) {
+    print("weather: $weather");
+    print("check: ${weather["check"]}");
+    if (weather["check"] == "true" || weather["check"]) {
       return ListTile(
         leading: Image.network(weather["image"], width: 50, height: 50),
         title: Text('${weather["t_max"]}ºC'),
@@ -88,16 +90,22 @@ class ProgramScreen extends StatelessWidget {
                               : document['selectedOption'] == 'trip'
                                   ? const Icon(Icons.holiday_village)
                                   : const Icon(Icons.star),
-                          label: Text(document['selectedOption'].toString().toUpperCase()),
-                          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          label: Text(document['selectedOption']
+                              .toString()
+                              .toUpperCase()),
+                          labelStyle: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
                           labelPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
                           ),
                         ),
                         const SizedBox(width: 10),
                         Chip(
-                          label: Text(document['selectedClass'].toString().toUpperCase()),
-                          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          label: Text(document['selectedClass']
+                              .toString()
+                              .toUpperCase()),
+                          labelStyle: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
                           labelPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
                           ),

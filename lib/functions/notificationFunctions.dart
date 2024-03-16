@@ -102,6 +102,7 @@ void showNotification(RemoteMessage remoteMessage) async {
     'My Channel Name',
     importance: Importance.high,
     priority: Priority.high,
+    icon: '@mipmap/logo',
   );
 
   const NotificationDetails platformChannelSpecifics =

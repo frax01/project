@@ -6,7 +6,7 @@ import 'package:club/pages/main/login.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:club/pages/main/setting.dart';
+import 'package:club/pages/club/setting.dart';
 import 'package:club/pages/club/box.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'torneo.dart';
@@ -506,7 +506,7 @@ class _ClubPageState extends State<ClubPage> {
           NavigationDestination(
             icon: Icon(Icons.sports_soccer),
             selectedIcon: Icon(Icons.sports_soccer),
-            label: 'Torneo',
+            label: '11 ideale',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outlined),
@@ -548,7 +548,7 @@ class _ClubPageState extends State<ClubPage> {
                 NavigationRailDestination(
                   icon: Icon(Icons.sports_soccer),
                   selectedIcon: Icon(Icons.sports_soccer),
-                  label: Text('Torneo'),
+                  label: Text('11 ideale'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.account_box),

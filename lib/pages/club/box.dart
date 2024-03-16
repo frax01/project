@@ -298,7 +298,8 @@ class _BoxState extends State<Box> {
         return;
       }
 
-      Map weather = await fetchWeatherData(startDate, endDate, selectedLat, selectedLon);
+      Map weather =
+          await fetchWeatherData(startDate, endDate, selectedLat, selectedLon);
 
       Map document = {
         'title': newTitle,
@@ -328,11 +329,10 @@ class _BoxState extends State<Box> {
         'lat': selectedLat,
         'lon': selectedLon,
       });
+      Navigator.pop(context);
       List<String> token = await fetchToken('club_class', selectedClass);
-      print(token);
       sendNotification(token, 'Programma modificato!', newTitle,
           'modified_event', document, weather);
-      Navigator.pop(context);
     } catch (e) {
       print('Errore aggiornamento utente: $e');
     }
@@ -354,7 +354,7 @@ class _BoxState extends State<Box> {
   }
 
   Widget buildCard(
-      title, startDate, endDate, imagePath, level, classe, weather) {
+      title, startDate, endDate, imagePath, level, classe, weather, id) {
     return Card(
       borderOnForeground: true,
       clipBehavior: Clip.antiAlias,
@@ -437,6 +437,52 @@ class _BoxState extends State<Box> {
                   ],
                 ),
               ),
+              Column(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      Map<dynamic, dynamic> data = {};
+                      data = await loadBoxData(id, level, widget.section);
+                      _showEditDialog(data["selectedOption"], data, level, id);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      bool? shouldDelete = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Elimina'),
+                            content: const Text(
+                                'Sei sicuro di voler eliminare il programma?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('No'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Si'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (shouldDelete == true) {
+                        setState(() {
+                          deleteDocument('${widget.section}_$level', id);
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         ],
@@ -457,147 +503,67 @@ class _BoxState extends State<Box> {
             List<Map<String, dynamic>> allDocuments = snapshot.data!;
             allDocuments.sort((a, b) =>
                 (a['startDate'] as String).compareTo(b['startDate'] as String));
-            return ListView.builder(
-              itemCount: allDocuments.length,
-              itemBuilder: (context, index) {
-                var document = allDocuments[index];
-                var id = document['id'];
-                var title = document['title'];
-                var level = document['selectedOption'];
-                var startDate = document['startDate'];
-                var endDate = document['endDate'];
-                var imagePath = document['imagePath'];
-                var description = document['description'];
-                var address = document['address'];
-                var lat = document["lat"];
-                var lon = document["lon"];
-                return FutureBuilder(
-                  future: fetchWeatherData(startDate, endDate, lat, lon),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<Map> weatherSnapshot) {
-                    if (weatherSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return Container();
-                    } else {
-                      Map? weather = weatherSnapshot.data;
-                      return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ProgramScreen(
-                                      document: document, weather: weather)),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.all(10.0),
-                            padding: const EdgeInsets.all(15.0),
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Titolo: $title',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text('Data iniziale: $startDate'),
-                                      Text('Classe: ${widget.selectedClass}'),
-                                      Text('Categoria: $level'),
-                                      if (document['endDate'] != '')
-                                        Text(
-                                            'Data finale: ${document['endDate']}'),
-                                      Image(
-                                        image: NetworkImage(imagePath),
-                                        height: 100,
-                                        width: 100,
-                                      ),
-                                      Text('Descrizione: $description'),
-                                      Text('Dove: $address'),
-                                      weather!["check"]
-                                          ? Text(
-                                              'Temp min: ${weather["t_min"]}')
-                                          : Container(),
-                                      weather["check"]
-                                          ? Text(
-                                              'Temp max: ${weather["t_max"]}')
-                                          : Container(),
-                                      if (weather["image"] == null ||
-                                          weather["image"] == '')
-                                        Container()
-                                      else
-                                        Image(
-                                          image: NetworkImage(weather["image"]),
-                                          height: 30,
-                                          width: 30,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () async {
-                                        Map<dynamic, dynamic> data = {};
-                                        data = await loadBoxData(id, level, widget.section);
-                                        _showEditDialog(data["selectedOption"],
-                                            data, level, id);
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () async {
-                                        bool? shouldDelete = await showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: const Text('Elimina'),
-                                              content: const Text(
-                                                  'Sei sicuro di voler eliminare il programma?'),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  child: const Text('No'),
-                                                  onPressed: () {
-                                                    Navigator.of(context)
-                                                        .pop(false);
-                                                  },
-                                                ),
-                                                TextButton(
-                                                  child: const Text('Si'),
-                                                  onPressed: () {
-                                                    Navigator.of(context)
-                                                        .pop(true);
-                                                  },
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                        if (shouldDelete == true) {
-                                          setState(() {
-                                            deleteDocument(
-                                                '${widget.section}_$level', id);
-                                          });
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ));
-                    }
+            double width = MediaQuery.of(context).size.width;
+            int crossAxisCount = 0;
+            if (width > 1200) {
+              crossAxisCount = 4;
+            } else if (width > 900) {
+              crossAxisCount = 3;
+            } else if (width >= 500) {
+              crossAxisCount = 2;
+            } else {
+              crossAxisCount = 1;
+            }
+            return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MasonryGridView.count(
+                  crossAxisCount: crossAxisCount,
+                  itemCount: allDocuments.length,
+                  mainAxisSpacing: 20.0,
+                  crossAxisSpacing: 20.0,
+                  itemBuilder: (context, index) {
+                    var document = allDocuments[index];
+                    var id = document['id'];
+                    var title = document['title'];
+                    var level = document['selectedOption'];
+                    var startDate = document['startDate'];
+                    var endDate = document['endDate'];
+                    var imagePath = document['imagePath'];
+                    var lat = document["lat"];
+                    var lon = document["lon"];
+                    return FutureBuilder(
+                      future: fetchWeatherData(startDate, endDate, lat, lon),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<Map> weatherSnapshot) {
+                        if (weatherSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Container();
+                        } else {
+                          Map? weather = weatherSnapshot.data;
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ProgramScreen(
+                                        document: document, weather: weather)),
+                              );
+                            },
+                            child: buildCard(
+                                title,
+                                startDate,
+                                endDate,
+                                imagePath,
+                                level,
+                                widget.selectedClass,
+                                weather!,
+                                id),
+                          );
+                        }
+                      },
+                    );
                   },
-                );
-              },
-            );
+                ));
           } else if (snapshot.hasError) {
             return Text('Errore: ${snapshot.error}');
           } else {
