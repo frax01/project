@@ -173,7 +173,11 @@ class _HomePageState extends State<HomePage> {
     };
     print('Messaggio aperto mentre l\'app è in background: $message');
     if (message.data['category'] == 'new_user') {
-      Navigator.pushNamed(context, '/acceptance');
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const AcceptancePage(title: 'Tiber Club')));
+      //Navigator.pushNamed(context, '/acceptance');
     } else if (message.data['category'] == 'accepted') {
       Navigator.push(
           context,
@@ -255,6 +259,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 }
+                //else {
                 else if (terminated == false) {
                   Map<String, dynamic> document = snapshot.data ?? {};
                   Future.delayed(Duration.zero, () {

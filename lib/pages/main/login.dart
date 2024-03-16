@@ -9,8 +9,6 @@ class Login extends StatefulWidget {
 
   final String title;
 
-  //final bool logout;
-
   @override
   _LoginState createState() => _LoginState();
 }
@@ -30,47 +28,27 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    //if (widget.logout == true) {
-    //  emailController.text = '';
-    //  passwordController.text = '';
-    //  rememberMe = false;
-    //  //emailController.addListener(_fillPassword);
-    //} else {
-    //  _loadLoginInfo().then((_) {
-    //    if (rememberMe &&
-    //        emailController.text.isNotEmpty &&
-    //        passwordController.text.isNotEmpty) {
-    //      _handleLogin();
-    //    }
-    //  });
-    //}
   }
 
-  _loadLoginInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      emailController.text = (prefs.getString('email') ?? '');
-      passwordController.text = (prefs.getString('password') ?? '');
-      rememberMe = (prefs.getBool('rememberMe') ?? false);
-      emailSuggestions = (prefs.getStringList('emailSuggestions') ?? []);
-    });
-  }
-
-  //_fillPassword() {
-  //  if (savedCredentials.containsKey(emailController.text)) {
-  //    passwordController.text = savedCredentials[emailController.text]!;
-  //  }
+  //_loadLoginInfo() async {
+  //  SharedPreferences prefs = await SharedPreferences.getInstance();
+  //  setState(() {
+  //    emailController.text = (prefs.getString('email') ?? '');
+  //    passwordController.text = (prefs.getString('password') ?? '');
+  //    rememberMe = (prefs.getBool('rememberMe') ?? false);
+  //    emailSuggestions = (prefs.getStringList('emailSuggestions') ?? []);
+  //  });
   //}
 
   _saveLoginInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('email', emailController.text);
-    prefs.setString('password', passwordController.text);
-    prefs.setBool('rememberMe', rememberMe);
-    if (!emailSuggestions.contains(emailController.text)) {
-      emailSuggestions.add(emailController.text);
-      prefs.setStringList('emailSuggestions', emailSuggestions);
-    }
+    //prefs.setString('password', passwordController.text);
+    //prefs.setBool('rememberMe', rememberMe);
+    //if (!emailSuggestions.contains(emailController.text)) {
+    //  emailSuggestions.add(emailController.text);
+    //  prefs.setStringList('emailSuggestions', emailSuggestions);
+    //}
 
     Map<String, dynamic> allPrefs = prefs.getKeys().fold<Map<String, dynamic>>(
       {},
@@ -83,17 +61,17 @@ class _LoginState extends State<Login> {
     print("SharedPreferences: $allPrefs");
   }
 
-  _loadLastPage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String lastPage = (prefs.getString('lastPage') ?? 'FootballPage');
-
-    if (lastPage == 'ClubPage') {
-      loadClubPage(status);
-    } //else if (lastPage == 'FootballPage') {
-    //  print(emailController.text);
-    //  loadFootballPage(status);
-    //}
-  }
+  //_loadLastPage() async {
+  //  SharedPreferences prefs = await SharedPreferences.getInstance();
+  //  String lastPage = (prefs.getString('lastPage') ?? 'FootballPage');
+//
+  //  if (lastPage == 'ClubPage') {
+  //    loadClubPage(status);
+  //  } //else if (lastPage == 'FootballPage') {
+  //  //  print(emailController.text);
+  //  //  loadFootballPage(status);
+  //  //}
+  //}
 
   loadClubPage(status) {
     Navigator.push(
@@ -111,10 +89,10 @@ class _LoginState extends State<Login> {
   //              FootballPage(title: "Phoenix United", document: document)));
   //}
 
-  _saveLastPage(String page) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('lastPage', page);
-  }
+  //_saveLastPage(String page) async {
+  //  SharedPreferences prefs = await SharedPreferences.getInstance();
+  //  prefs.setString('lastPage', page);
+  //}
 
   Future<void> _handleLogin() async {
     try {
@@ -144,23 +122,24 @@ class _LoginState extends State<Login> {
         'id': querySnapshot1.docs.first.id,
       };
 
-      //gestire il caso di waiting
       setState(() {
         if (document['role'] == "") {
           Navigator.pushNamed(context, '/waiting');
         } else {
           Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    ClubPage(title: "Tiber Club", document: document)));
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      ClubPage(title: "Tiber Club", document: document)));
         }
       });
       if (rememberMe) {
         _saveLoginInfo();
       }
     } catch (e) {
-      print('Error during login: $e');
+      setState(() {
+        error = 'Email o password errati';
+      });
     }
   }
 
@@ -175,36 +154,33 @@ class _LoginState extends State<Login> {
     print('Forgot Password tapped');
   }
 
+  String? error;
+
   Column buildForm() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Center(
-          child: Column(
-            children: [
-              Text('Log In',
-                  style:
-                      TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
-              Text('Complete the fields below',
-                  style: TextStyle(fontSize: 14.0)),
-            ],
-          ),
-        ),
         TextField(
           controller: emailController,
-          decoration: const InputDecoration(labelText: 'Email'),
+          decoration: InputDecoration(
+            labelText: 'Email',
+            errorText: error,
+          ),
           onSubmitted: (_) => _handleLogin(),
         ),
         const SizedBox(height: 6),
         TextField(
           controller: passwordController,
           obscureText: true,
-          decoration: const InputDecoration(labelText: 'Password'),
+          decoration: InputDecoration(
+            labelText: 'Password',
+            errorText: error,
+          ),
           onSubmitted: (_) => _handleLogin(),
         ),
         const SizedBox(height: 15.0),
         CheckboxListTile(
-          title: const Text('Remember me'),
+          title: const Text('Ricordami'),
           value: rememberMe,
           onChanged: (bool? value) {
             setState(() {
@@ -245,20 +221,20 @@ class _LoginState extends State<Login> {
                 TextEditingController resetEmailController =
                     TextEditingController();
                 return AlertDialog(
-                  title: const Text('Recover password'),
+                  title: const Text('Recupera password'),
                   content: TextField(
                     controller: resetEmailController,
                     decoration: const InputDecoration(labelText: 'Email'),
                   ),
                   actions: [
                     TextButton(
-                      child: const Text('Cancel'),
+                      child: const Text('Cancella'),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
                     ),
                     TextButton(
-                      child: const Text('Send'),
+                      child: const Text('Invia'),
                       onPressed: () async {
                         if (resetEmailController.text.isNotEmpty) {
                           try {
@@ -266,8 +242,8 @@ class _LoginState extends State<Login> {
                                 email: resetEmailController.text);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content:
-                                      Text('Password recovery email sent')),
+                                  content: Text(
+                                      'Email per il recupero della password inviata')),
                             );
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -278,8 +254,7 @@ class _LoginState extends State<Login> {
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Insert a mail address')),
+                            const SnackBar(content: Text('Inserisci l\'email')),
                           );
                         }
                         Navigator.of(context).pop();
@@ -291,7 +266,7 @@ class _LoginState extends State<Login> {
             );
           },
           child: const Text(
-            'Forgot password?',
+            'Password dimenticata?',
           ),
         ),
       ],

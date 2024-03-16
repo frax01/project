@@ -83,6 +83,7 @@ flutter:
   assets:
     - images/
     - android/app/src/main/res/mipmap/logo.png
+    - android/app/src/main/res/drawable/logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

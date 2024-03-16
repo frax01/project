@@ -371,11 +371,11 @@ class _HomePageState extends State<HomePage> {
             content: Text('Please select the start and the end date')));
         return;
       }
-      if (imagePath == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an image')));
-        return;
-      }
+      //if (imagePath == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select an image')));
+      //  return;
+      //}
       if (address == '') {
         address = 'Tiber Club';
         lat = '41.91805195';
