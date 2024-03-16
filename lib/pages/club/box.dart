@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -353,140 +354,94 @@ class _BoxState extends State<Box> {
     return imageUrl;
   }
 
-  Widget buildCard(
-      title, startDate, endDate, imagePath, level, classe, weather, id) {
-    return Card(
-      borderOnForeground: true,
+  Widget buildCard(document, weather) {
+    var id = document['id'];
+    var title = document['title'];
+    var level = document['selectedOption'];
+    var startDate = document['startDate'];
+    var endDate = document['endDate'];
+    var imagePath = document['imagePath'];
+    return OpenContainer(
       clipBehavior: Clip.antiAlias,
-      surfaceTintColor: Colors.white,
-      elevation: 5.0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      closedElevation: 5.0,
+      closedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      closedBuilder: (context, action) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20.0)),
-                    Column(
-                      children: [Text(startDate), Text(endDate)],
-                    )
-                  ],
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.network(
+                    imagePath,
+                  ),
+                ),
+                Positioned(
+                  left: 10,
+                  bottom: 10,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(7.0),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black54,
+                                blurRadius: 7.0,
+                              ),
+                            ],
+                          ),
+                          child: endDate != ""
+                            ? Text('$startDate ~ $endDate')
+                            : Text('$startDate'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: Image.network(
-                  imagePath,
-                ),
-              ),
-              Positioned(
-                left: 10,
-                bottom: 10,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4.0,
-                            ),
-                          ],
-                        ),
-                        child: Text(level.toUpperCase(),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12.0)),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4.0,
-                            ),
-                          ],
-                        ),
-                        child: Text(classe,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12.0)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
+            Container(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () async {
-                      Map<dynamic, dynamic> data = {};
-                      data = await loadBoxData(id, level, widget.section);
-                      _showEditDialog(data["selectedOption"], data, level, id);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () async {
-                      bool? shouldDelete = await showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Elimina'),
-                            content: const Text(
-                                'Sei sicuro di voler eliminare il programma?'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text('No'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(false);
-                                },
-                              ),
-                              TextButton(
-                                child: const Text('Si'),
-                                onPressed: () {
-                                  Navigator.of(context).pop(true);
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (shouldDelete == true) {
-                        setState(() {
-                          deleteDocument('${widget.section}_$level', id);
-                        });
-                      }
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20.0)),
+                      Text(
+                        level == 'weekend'
+                            ? 'Weekend'
+                            : level == 'extra'
+                            ? 'Extra'
+                            : level == 'trip'
+                            ? 'Gita'
+                            : 'Torneo',
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        );
+      },
+      openBuilder: (context, action) {
+        return ProgramScreen(
+            document: document, weather: weather!);
+      },
     );
   }
 
@@ -523,12 +478,8 @@ class _BoxState extends State<Box> {
                   crossAxisSpacing: 20.0,
                   itemBuilder: (context, index) {
                     var document = allDocuments[index];
-                    var id = document['id'];
-                    var title = document['title'];
-                    var level = document['selectedOption'];
                     var startDate = document['startDate'];
                     var endDate = document['endDate'];
-                    var imagePath = document['imagePath'];
                     var lat = document["lat"];
                     var lon = document["lon"];
                     return FutureBuilder(
@@ -540,25 +491,7 @@ class _BoxState extends State<Box> {
                           return Container();
                         } else {
                           Map? weather = weatherSnapshot.data;
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ProgramScreen(
-                                        document: document, weather: weather)),
-                              );
-                            },
-                            child: buildCard(
-                                title,
-                                startDate,
-                                endDate,
-                                imagePath,
-                                level,
-                                widget.selectedClass,
-                                weather!,
-                                id),
-                          );
+                          return buildCard(document, weather!);
                         }
                       },
                     );

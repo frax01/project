@@ -15,8 +15,11 @@ import 'functions/notificationFunctions.dart';
 import 'functions/generalFunctions.dart';
 import 'package:club/pages/club/program.dart';
 import 'functions/dataFunctions.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
+
 
 void main() async {
+  //timeDilation = 2.0;
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -200,70 +203,72 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-        future: loadData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Image.asset('images/logo.png'),
-                    const SizedBox(height: 20.0),
-                    const CircularProgressIndicator(),
-                  ],
-                ),
+      future: loadData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset('images/logo.png'),
+                  const SizedBox(height: 20.0),
+                  const CircularProgressIndicator(),
+                ],
               ),
-            );
-          } else if (snapshot.hasError) {
-            return const Scaffold(
-              body: Center(
-                child: Text("Errore durante il recupero dei dati."),
-              ),
-            );
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(
+              child: Text("Errore durante il recupero dei dati."),
+            ),
+          );
+        } else {
+          String email = snapshot.data ?? '';
+          if (email == '') {
+            return const Login(title: "Asd Tiber Club");
           } else {
-            String email = snapshot.data ?? '';
-            if (email == '') {
-              return const Login(title: "Asd Tiber Club");
-            } else {
-              return FutureBuilder<Map<String, dynamic>>(
-                  future: retrieveData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Scaffold(
-                        body: Center(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Image.asset('images/logo.png'),
-                                const SizedBox(height: 20.0),
-                                const CircularProgressIndicator(),
-                              ]),
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return const Scaffold(
-                        body: Center(
-                          child: Text("Errore durante il recupero dei dati."),
-                        ),
-                      );
-                    } else if (terminated == false) {
-                      //o vai alla homepage o vai a quello che ti dice terminated
-                      Map<String, dynamic> document = snapshot.data ?? {};
-                      Future.delayed(Duration.zero, () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ClubPage(
-                                    title: "Tiber Club", document: document)));
-                      });
-                      return Container();
-                    } else {
-                      return Container();
-                    }
+            return FutureBuilder<Map<String, dynamic>>(
+              future: retrieveData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Scaffold(
+                    body: Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset('images/logo.png'),
+                            const SizedBox(height: 20.0),
+                            const CircularProgressIndicator(),
+                          ]),
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return const Scaffold(
+                    body: Center(
+                      child: Text("Errore durante il recupero dei dati."),
+                    ),
+                  );
+                } else if (terminated == false) {
+                  //o vai alla homepage o vai a quello che ti dice terminated
+                  Map<String, dynamic> document = snapshot.data ?? {};
+                  Future.delayed(Duration.zero, () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ClubPage(
+                                title: "Tiber Club", document: document)));
                   });
-            }
+                  return Container();
+                } else {
+                  return Container();
+                }
+              },
+            );
           }
-        });
+        }
+      },
+    );
   }
 }
