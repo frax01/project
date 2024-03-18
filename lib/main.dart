@@ -1,21 +1,21 @@
-import 'package:club/pages/club/club.dart';
-import 'package:club/pages/main/signup.dart';
-import 'package:flutter/material.dart';
-import 'color_schemes.dart';
-import 'pages/main/login.dart';
-import 'pages/main/waiting.dart';
-import 'pages/main/acceptance.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/pages/club/club.dart';
+import 'package:club/pages/club/programPage.dart';
+import 'package:club/pages/main/signup.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'functions/notificationFunctions.dart';
-import 'functions/generalFunctions.dart';
-import 'package:club/pages/club/programPage.dart';
+
+import 'color_schemes.dart';
+import 'config.dart';
 import 'functions/dataFunctions.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
+import 'functions/generalFunctions.dart';
+import 'functions/notificationFunctions.dart';
+import 'pages/main/acceptance.dart';
+import 'pages/main/login.dart';
+import 'pages/main/waiting.dart';
 
 void main() async {
   //timeDilation = 2.0;
@@ -188,13 +188,13 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  ProgramScreen(document: document, weather: weather)));
+                  ProgramPage(document: document, weather: weather)));
     } else if (message.data['category'] == 'modified_event') {
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  ProgramScreen(document: document, weather: weather)));
+                  ProgramPage(document: document, weather: weather)));
     }
   }
 
@@ -297,14 +297,14 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ProgramScreen(
+                            builder: (context) => ProgramPage(
                                 document: notificationDocument, weather: weather)));
                     return ClubPage(title: "Tiber Club", document: document);
                   } else {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ProgramScreen(
+                            builder: (context) => ProgramPage(
                                 document: notificationDocument, weather: weather)));
                     return ClubPage(title: "Tiber Club", document: document);
                   }
