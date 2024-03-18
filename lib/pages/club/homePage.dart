@@ -55,8 +55,9 @@ class _HomePageState extends State<HomePage> {
     return startDate;
   }
 
-  Future<String> _endDate(BuildContext context, String startDate,
-      String endDate, {bool isCreate = false}) async {
+  Future<String> _endDate(
+      BuildContext context, String startDate, String endDate,
+      {bool isCreate = false}) async {
     if (startDate == "") {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inserisci prima la data iniziale')));
@@ -371,11 +372,11 @@ class _HomePageState extends State<HomePage> {
             content: Text('Please select the start and the end date')));
         return;
       }
-      if (imagePath == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an image')));
-        return;
-      }
+      //if (imagePath == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select an image')));
+      //  return;
+      //}
       if (address == '') {
         address = 'Tiber Club';
         lat = '41.91805195';
@@ -783,9 +784,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: fetchData([], widget.selectedClass),
-      builder: (BuildContext context,
-          AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+        future: fetchData([], widget.selectedClass),
+        builder: (BuildContext context,
+            AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
         } else {
@@ -864,13 +865,14 @@ class _HomePageState extends State<HomePage> {
                     )
                   : null,
             );
-          } else if (snapshot.hasError) {
+          } else if(snapshot.hasError) {
             return Text('Errore: ${snapshot.error}');
-          } else {
+          }
+          else {
             return const Text('Nessun dato disponibile');
           }
         }
-      },
-    );
+        },
+        );
   }
 }

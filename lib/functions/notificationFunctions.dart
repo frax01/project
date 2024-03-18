@@ -81,7 +81,7 @@ Future<List<String>> fetchToken(String section, String target) async {
 void createNotificationChannel() {
   const AndroidNotificationChannel androidNotificationChannel =
       AndroidNotificationChannel(
-    'default_notification_channel_id',
+    'my_channel_id',
     'My Channel Name',
     importance: Importance.high,
   );
@@ -98,11 +98,12 @@ void createNotificationChannel() {
 void showNotification(RemoteMessage remoteMessage) async {
   const AndroidNotificationDetails androidNotificationDetails =
       AndroidNotificationDetails(
-    'default_notification_channel_id',
+    'my_channel_id',
     'My Channel Name',
     importance: Importance.high,
     priority: Priority.high,
-    icon: '@mipmap/logo',
+    icon: '@drawable/logo',
+    largeIcon: DrawableResourceAndroidBitmap('@drawable/logo')
   );
 
   const NotificationDetails platformChannelSpecifics =
@@ -119,5 +120,3 @@ void showNotification(RemoteMessage remoteMessage) async {
     payload: 'Default_Sound',
   );
 }
-
-

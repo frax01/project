@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="project"
+        android:label="Tiber Club"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/logo">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -40,5 +40,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!--<meta-data
+          android:name="com.google.firebase.messaging.default_notification_icon"
+          android:resource="@drawable/logo" />
+
+        <meta-data
+          android:name="com.google.firebase.messaging.default_notification_color"
+          android:resource="@android:color/black" />-->
     </application>
 </manifest>

@@ -11,13 +11,14 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import android.app.PendingIntent;
+import android.content.Intent;
+
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
-    //@Override
-    //public void onMessageReceived(RemoteMessage remoteMessage) {
-    //    // Gestisci la ricezione della notifica push qui
-    //}
-    
     //@Override
     //public void onMessageReceived(RemoteMessage remoteMessage) {
     //    System.out.println("From: " + remoteMessage.getFrom());
@@ -47,22 +48,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //}
 //
     //private void showNotification(RemoteMessage remoteMessage) {
+    //    Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
     //    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "my_channel_id")
-    //            .setSmallIcon(R.drawable.photo)
+    //            .setSmallIcon(R.drawable.logo)
+    //            .setLargeIcon(largeIcon)
     //            .setContentTitle(remoteMessage.getNotification().getTitle())
     //            .setContentText(remoteMessage.getNotification().getBody())
     //            .setPriority(NotificationCompat.PRIORITY_HIGH);
+//
+    //    //Intent intent = new Intent(this, Login.class);
+    //    //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Cancella altre attività e apri questa
+    //    //PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);  
+    //    //// Imposta l'intent sulla notifica
+    //    //builder.setContentIntent(pendingIntent);
 //
     //    NotificationManager notificationManager = getSystemService(NotificationManager.class);
 //
     //    if (notificationManager != null) {
     //        notificationManager.notify(0, builder.build());
     //    }
-    //}
-    //
-    //public void onMessageOpenedApp(RemoteMessage remoteMessage) {
-    //    // Gestisci l'apertura dell'app tramite una notifica push quando l'app è in background o chiusa.
-    //    System.out.println("Message data payload");
-    //    // Gestisci il payload della notifica e avvia l'azione desiderata.
     //}
 }

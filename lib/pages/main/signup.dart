@@ -49,11 +49,8 @@ class _SignUpFormState extends State<SignUp> {
         String password = passwordController.text;
         String birthdate = birthdateController.text;
 
-        UserCredential userCredential =
-            await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+        //await userCredential.user!.sendEmailVerification();
 
         String confirmPassword = passwordConfirmController.text;
         if (password != confirmPassword) {
@@ -85,9 +82,14 @@ class _SignUpFormState extends State<SignUp> {
         sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user', {}, {});
       }
       // Puoi aggiungere qui la navigazione a una nuova schermata, se necessario
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
     } catch (e) {
-      // Gestisci gli errori di registrazione qui
-      print('Error during Sign up: $e');
+      print(e);
     }
   }
 
