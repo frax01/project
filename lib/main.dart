@@ -31,7 +31,7 @@ void main() async {
       appId: Config.appId,
     ),
   );
-  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  
   FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: false,
