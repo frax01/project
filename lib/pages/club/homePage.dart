@@ -508,7 +508,8 @@ class _HomePageState extends State<HomePage> {
         );
       },
       openBuilder: (context, action) {
-        return ProgramPage(document: document, weather: weather!);
+        return ProgramPage(
+            document: document, weather: weather!, isAdmin: widget.isAdmin);
       },
     );
   }

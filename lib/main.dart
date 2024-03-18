@@ -187,14 +187,20 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  ProgramPage(document: document, weather: weather)));
+              builder: (context) => ProgramPage(
+                    document: document,
+                    weather: weather,
+                    isAdmin: document['status'] == 'Admin',
+                  )));
     } else if (message.data['category'] == 'modified_event') {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  ProgramPage(document: document, weather: weather)));
+              builder: (context) => ProgramPage(
+                    document: document,
+                    weather: weather,
+                    isAdmin: document['status'] == 'Admin',
+                  )));
     }
   }
 
@@ -298,14 +304,20 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => ProgramPage(
-                                document: notificationDocument, weather: weather)));
+                                  document: notificationDocument,
+                                  weather: weather,
+                                  isAdmin: document['status'] == 'Admin',
+                                )));
                     return ClubPage(title: "Tiber Club", document: document);
                   } else {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ProgramPage(
-                                document: notificationDocument, weather: weather)));
+                                  document: notificationDocument,
+                                  weather: weather,
+                                  isAdmin: document['status'] == 'Admin',
+                                )));
                     return ClubPage(title: "Tiber Club", document: document);
                   }
                   //Navigator.push(

@@ -17,10 +17,12 @@ class ProgramPage extends StatefulWidget {
     Key? key,
     required this.document,
     required this.weather,
+    required this.isAdmin,
   }) : super(key: key);
 
   final Map document;
   final Map weather;
+  final bool isAdmin;
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
@@ -645,22 +647,28 @@ class _ProgramPageState extends State<ProgramPage> {
               Icons.share,
             ),
           ),
-          PopupMenuButton(itemBuilder: (BuildContext context) {
-            return [
-              PopupMenuItem(
-                child: const Text('Modifica'),
-                onTap: () {
-                  _showEditDialog(context, 'Modifica', widget.document,
-                      widget.document['selectedOption'], widget.document['id']);
-                },
-              ),
-              PopupMenuItem(
-                  child: Text('Elimina'),
-                  onTap: () {
-                    _showDeleteDialog(context, widget.document['id']);
-                  }),
-            ];
-          })
+          widget.isAdmin
+              ? PopupMenuButton(itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(
+                      child: const Text('Modifica'),
+                      onTap: () {
+                        _showEditDialog(
+                            context,
+                            'Modifica',
+                            widget.document,
+                            widget.document['selectedOption'],
+                            widget.document['id']);
+                      },
+                    ),
+                    PopupMenuItem(
+                        child: Text('Elimina'),
+                        onTap: () {
+                          _showDeleteDialog(context, widget.document['id']);
+                        }),
+                  ];
+                })
+              : const SizedBox.shrink(),
         ],
       ),
       body: AdaptiveLayout(
