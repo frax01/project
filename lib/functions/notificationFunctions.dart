@@ -5,23 +5,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-Future<void> sendNotification(List fcmToken, String title, String message,
+Future<void> sendNotification(List fcmToken, String notTitle, String message,
     String category, Map? document, Map? weather) async {
   const String serverKey = Config.serverKey;
   const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
-    final Map<String, dynamic> notification = {
-      'title': title,
-      'body': message,
-    };
+    //final Map<String, dynamic> notification = {
+    //  //'title': title,
+    //  //'body': message,
+    //};
 
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'status': 'done',
       'category': category,
+      'notTitle': notTitle,
+      'notBody': message,
       'title': document?["title"],
       'imagePath': document?["imagePath"],
       'selectedClass': document?["selectedClass"],
@@ -39,7 +41,7 @@ Future<void> sendNotification(List fcmToken, String title, String message,
 
     final Map<String, dynamic> body = {
       'to': token,
-      'notification': notification,
+      //'notification': notification,
       'data': data,
     };
 
@@ -81,7 +83,7 @@ Future<List<String>> fetchToken(String section, String target) async {
 void createNotificationChannel() {
   const AndroidNotificationChannel androidNotificationChannel =
       AndroidNotificationChannel(
-    'my_channel_id',
+    'default_notification_channel_id',
     'My Channel Name',
     importance: Importance.high,
   );
@@ -98,12 +100,12 @@ void createNotificationChannel() {
 void showNotification(RemoteMessage remoteMessage) async {
   const AndroidNotificationDetails androidNotificationDetails =
       AndroidNotificationDetails(
-    'my_channel_id',
+    'default_notification_channel_id',
     'My Channel Name',
     importance: Importance.high,
     priority: Priority.high,
-    icon: '@drawable/logo',
-    largeIcon: DrawableResourceAndroidBitmap('@drawable/logo')
+    //icon: '@mipmap/logo',
+    //largeIcon: DrawableResourceAndroidBitmap('@mipmap/logo')
   );
 
   const NotificationDetails platformChannelSpecifics =
@@ -114,8 +116,8 @@ void showNotification(RemoteMessage remoteMessage) async {
 
   await flutterLocalNotificationsPlugin.show(
     0,
-    remoteMessage.notification!.title,
-    remoteMessage.notification!.body,
+    remoteMessage.data["notTitle"],
+    remoteMessage.data["notBody"],
     platformChannelSpecifics,
     payload: 'Default_Sound',
   );
