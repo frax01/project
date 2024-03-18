@@ -13,16 +13,115 @@ class ProgramScreen extends StatelessWidget {
 
   Widget weatherTile(Map weather) {
     if (weather["check"] == "true" || weather["check"]) {
-      return ListTile(
-        leading: Image.network(weather["image"], width: 50, height: 50),
-        title: Text('${weather["t_max"]}ºC'),
-        subtitle: Text('${weather["t_min"]}ºC'),
+      return Row(
+        children: [
+          Image.network(weather["image"], width: 50, height: 50),
+          const SizedBox(width: 10),
+          Column(
+            children: [
+              Text('${weather["t_max"]}ºC'),
+              Text('${weather["t_min"]}ºC'),
+            ],
+          ),
+        ],
       );
     } else {
       return const ListTile(
-        title: Text('Nessuna informazione meteo'),
+        title:
+            Text('Nessuna informazione\nmeteo', style: TextStyle(fontSize: 15)),
       );
     }
+  }
+
+  Widget details(document, weather) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Chip(
+              label: Text(document['selectedOption'].toString().toUpperCase()),
+              labelStyle:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              labelPadding: const EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Chip(
+              label: Text(document['selectedClass'].toString().toUpperCase()),
+              labelStyle:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              labelPadding: const EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Chip(
+              label: Text(
+                document['endDate'].isNotEmpty
+                    ? '${document['startDate']} ~ ${document['endDate']}'
+                    : document['startDate'],
+              ),
+              labelStyle:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              labelPadding: const EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20.0),
+        Card(
+          surfaceTintColor: Colors.white,
+          elevation: 5,
+          margin: const EdgeInsets.all(0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      document['address'],
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  weatherTile(weather),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20.0),
+        Card(
+          surfaceTintColor: Colors.white,
+          elevation: 5,
+          margin: const EdgeInsets.all(0),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Descrizione',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Text(
+                  document['description'],
+                  style: const TextStyle(fontSize: 17),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget smallScreen() {
@@ -77,80 +176,7 @@ class ProgramScreen extends StatelessWidget {
               const SizedBox(height: 30.0),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Chip(
-                          avatar: document['selectedOption'] == 'weekend'
-                              ? const Icon(Icons.calendar_today)
-                              : document['selectedOption'] == 'trip'
-                                  ? const Icon(Icons.holiday_village)
-                                  : const Icon(Icons.star),
-                          label: Text(document['selectedOption']
-                              .toString()
-                              .toUpperCase()),
-                          labelStyle: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Chip(
-                          label: Text(document['selectedClass']
-                              .toString()
-                              .toUpperCase()),
-                          labelStyle: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                    const Text(
-                      'Descrizione',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      document['description'],
-                      style: const TextStyle(fontSize: 17),
-                    ),
-                    const SizedBox(height: 20.0),
-                    const Text(
-                      'Quando',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      document['endDate'].isNotEmpty
-                          ? '${document['startDate']} ~ ${document['endDate']}'
-                          : document['startDate'],
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(height: 20.0),
-                    const Text(
-                      'Dove',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      document['address'],
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                    weatherTile(weather),
-                  ],
-                ),
+                child: details(document, weather),
               ),
             ],
           ),
@@ -216,83 +242,10 @@ class ProgramScreen extends StatelessWidget {
                 ),
               ),
               Expanded(
-                flex: 2,
+                // flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(60, 20, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Chip(
-                            avatar: document['selectedOption'] == 'weekend'
-                                ? const Icon(Icons.calendar_today)
-                                : document['selectedOption'] == 'trip'
-                                    ? const Icon(Icons.holiday_village)
-                                    : const Icon(Icons.star),
-                            label: Text(document['selectedOption']
-                                .toString()
-                                .toUpperCase()),
-                            labelStyle: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                            labelPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Chip(
-                            label: Text(document['selectedClass']
-                                .toString()
-                                .toUpperCase()),
-                            labelStyle: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                            labelPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Descrizione',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        document['description'],
-                        style: const TextStyle(fontSize: 17),
-                      ),
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Quando',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        document['endDate'].isNotEmpty
-                            ? '${document['startDate']} ~ ${document['endDate']}'
-                            : document['startDate'],
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Dove',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        document['address'],
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      weatherTile(weather),
-                    ],
-                  ),
+                  child: details(document, weather),
                 ),
               ),
             ],
