@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.document});
+
   final Map document;
 
   @override
@@ -23,8 +25,10 @@ class _TabScorerState extends State<TabScorer> {
   void initState() {
     super.initState();
     _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
-    _scorersStream =
-        _scorerCollection.orderBy('points', descending: true).orderBy('goals', descending: true).snapshots();
+    _scorersStream = _scorerCollection
+        .orderBy('points', descending: true)
+        .orderBy('goals', descending: true)
+        .snapshots();
   }
 
   Future<void> _showAddDialog(String selectedClass) async {
@@ -285,6 +289,104 @@ class _TabScorerState extends State<TabScorer> {
     }
   }
 
+  List<Widget> _buildList(List<QueryDocumentSnapshot> scorers) {
+    var i = 0;
+    return scorers.map((scorer) {
+      Map<String, dynamic> scorerData = scorer.data() as Map<String, dynamic>;
+      String scorerId = scorer.id;
+      ++i;
+      return Card(
+        elevation: 5.0,
+        surfaceTintColor: Colors.white,
+        child: ListTile(
+          titleAlignment: ListTileTitleAlignment.center,
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              i == 1
+                  ? const FaIcon(
+                      FontAwesomeIcons.medal,
+                      color: Colors.amber,
+                    )
+                  : i == 2
+                      ? const FaIcon(
+                          FontAwesomeIcons.medal,
+                          color: Colors.grey,
+                        )
+                      : i == 3
+                          ? const FaIcon(
+                              FontAwesomeIcons.medal,
+                              color: Colors.brown,
+                            )
+                          : Text('$i',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          title: Text('${scorerData['name']} ${scorerData['surname']}'),
+          subtitle: Text(scorerData['class']),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '${scorerData['points']}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                  const SizedBox(width: 2.0),
+                  const Icon(Icons.star, color: Colors.amber, size: 25.0)
+                ],
+              ),
+              const SizedBox(width: 8.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '${scorerData['goals']}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                  const SizedBox(width: 2.0),
+                  const Icon(Icons.sports_soccer,
+                      color: Colors.green, size: 25.0)
+                ],
+              ),
+              const SizedBox(width: 8.0),
+              widget.document["status"] == 'Admin'
+                  ? IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        _showDialog(
+                            scorerData['name'],
+                            scorerData['surname'],
+                            scorerData['class'],
+                            scorerData['points'],
+                            scorerData['goals'],
+                            scorerId);
+                      },
+                    )
+                  : Container(),
+              widget.document["status"] == 'Admin'
+                  ? IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        _deleteScorer(scorerId);
+                      },
+                    )
+                  : Container(),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -297,51 +399,42 @@ class _TabScorerState extends State<TabScorer> {
           if (snapshot.hasError) {
             return Center(child: Text('Errore: ${snapshot.error}'));
           }
-
           List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: scorers.length,
-            itemBuilder: (context, index) {
-              Map<String, dynamic> scorerData =
-                  scorers[index].data() as Map<String, dynamic>;
-              String scorerId = scorers[index].id;
-
-              return Card(
-                child: ListTile(
-                  title: Text('${scorerData['name']} ${scorerData['surname']}'),
-                  subtitle: Text(
-                      'Classe: ${scorerData['class']}, Punti: ${scorerData['points']}, Goal: ${scorerData['goals']}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      widget.document["status"] == 'Admin'
-                          ? IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                _showDialog(
-                                    scorerData['name'],
-                                    scorerData['surname'],
-                                    scorerData['class'],
-                                    scorerData['points'],
-                                    scorerData['goals'],
-                                    scorerId);
-                              },
-                            )
-                          : Container(),
-                      widget.document["status"] == 'Admin'
-                          ? IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                _deleteScorer(scorerId);
-                              },
-                            )
-                          : Container(),
-                    ],
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                forceElevated: true,
+                expandedHeight: 250.0,
+                automaticallyImplyLeading: false,
+                centerTitle: true,
+                pinned: true,
+                floating: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: const Text("11 ideale",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
+                  centerTitle: true,
+                  expandedTitleScale: 3.0,
+                  stretchModes: const [
+                    StretchMode.zoomBackground,
+                    StretchMode.fadeTitle,
+                  ],
+                  background: Image.asset(
+                    'images/CC.jpeg',
+                    fit: BoxFit.cover,
+                    color: Colors.black.withOpacity(0.5),
+                    colorBlendMode: BlendMode.darken,
                   ),
                 ),
-              );
-            },
+              ),
+              SliverList(
+                delegate: SliverChildListDelegate(
+                  _buildList(scorers),
+                ),
+              ),
+            ],
           );
         },
       ),
