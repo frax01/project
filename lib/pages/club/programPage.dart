@@ -44,7 +44,7 @@ class ProgramScreen extends StatelessWidget {
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               labelPadding: const EdgeInsets.symmetric(
-                horizontal: 10,
+                horizontal: 7,
               ),
             ),
             const SizedBox(width: 10),
@@ -53,7 +53,7 @@ class ProgramScreen extends StatelessWidget {
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               labelPadding: const EdgeInsets.symmetric(
-                horizontal: 10,
+                horizontal: 7,
               ),
             ),
             const SizedBox(width: 10),
@@ -66,7 +66,7 @@ class ProgramScreen extends StatelessWidget {
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               labelPadding: const EdgeInsets.symmetric(
-                horizontal: 10,
+                horizontal: 7,
               ),
             ),
           ],
@@ -100,7 +100,7 @@ class ProgramScreen extends StatelessWidget {
           elevation: 5,
           margin: const EdgeInsets.all(0),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

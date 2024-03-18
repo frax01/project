@@ -737,8 +737,12 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           child: endDate != ""
-                              ? Text('$startDate ～ $endDate')
-                              : Text('$startDate'),
+                              ? Text('$startDate ～ $endDate',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold))
+                              : Text('$startDate',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
