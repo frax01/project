@@ -17,7 +17,6 @@ import 'package:club/pages/club/programPage.dart';
 import 'functions/dataFunctions.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 
-
 void main() async {
   //timeDilation = 2.0;
   WidgetsFlutterBinding.ensureInitialized();
@@ -134,14 +133,16 @@ class _HomePageState extends State<HomePage> {
     return document;
   }
 
+  RemoteMessage? initialMessage;
+
   Future<void> setupInteractedMessage() async {
     //terminated: funziona
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    initialMessage = await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
-      terminated = true;
-      _handleMessage(initialMessage);
+      setState(() {
+        terminated = true;
+      });
     }
 
     //background: funziona
@@ -177,7 +178,6 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => const AcceptancePage(title: 'Tiber Club')));
-      //Navigator.pushNamed(context, '/acceptance');
     } else if (message.data['category'] == 'accepted') {
       Navigator.push(
           context,
@@ -222,20 +222,17 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           );
-        }
-        else if (snapshot.hasError) {
+        } else if (snapshot.hasError) {
           return const Scaffold(
             body: Center(
-              child: Text("Errore durante il recupero dei dati :("),
+              child: Text("Errore durante il recupero dei dati"),
             ),
           );
-        }
-        else {
+        } else {
           email = snapshot.data ?? '';
           if (email == '') {
             return const Login(title: "Asd Tiber Club");
-          }
-          else {
+          } else {
             return FutureBuilder<Map<String, dynamic>>(
               future: retrieveData(),
               builder: (context, snapshot) {
@@ -251,28 +248,74 @@ class _HomePageState extends State<HomePage> {
                           ]),
                     ),
                   );
-                }
-                else if (snapshot.hasError) {
+                } else if (snapshot.hasError) {
                   return const Scaffold(
                     body: Center(
                       child: Text("Errore durante il recupero dei dati."),
                     ),
                   );
-                }
-                //else {
-                else if (terminated == false) {
+                } else if (terminated == false) {
                   Map<String, dynamic> document = snapshot.data ?? {};
-                  Future.delayed(Duration.zero, () {
+                  return ClubPage(title: "Tiber Club", document: document);
+                  //Future.delayed(Duration.zero, () {
+                  //  Navigator.push(
+                  //      context,
+                  //      MaterialPageRoute(
+                  //          builder: (context) => ClubPage(
+                  //              title: "Tiber Club", document: document)));
+                  //});
+                  //return Container();
+                } else {
+                  Map<String, dynamic> document = snapshot.data ?? {};
+                  Map notificationDocument = {
+                    'title': initialMessage?.data["title"],
+                    'imagePath': initialMessage?.data["imagePath"],
+                    'selectedClass': initialMessage?.data["selectedClass"],
+                    'selectedOption': initialMessage?.data["selectedOption"],
+                    'description': initialMessage?.data["description"],
+                    'startDate': initialMessage?.data["startDate"],
+                    'endDate': initialMessage?.data["endDate"],
+                    'address': initialMessage?.data["address"],
+                  };
+                  Map weather = {
+                    't_min': initialMessage?.data["t_min"],
+                    't_max': initialMessage?.data["t_max"],
+                    'w_code': initialMessage?.data["w_code"],
+                    'image': initialMessage?.data["image"],
+                    'check': initialMessage?.data["check"],
+                  };
+                  if (initialMessage?.data['category'] == 'new_user') {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ClubPage(
-                                title: "Tiber Club", document: document)));
-                  });
-                  return Container();
-                }
-                else {
-                  return Container();
+                            builder: (context) =>
+                                const AcceptancePage(title: 'Tiber Club')));
+                    return ClubPage(title: "Tiber Club", document: document);
+                  } else if (initialMessage?.data['category'] == 'accepted') {
+                    return const Login(title: 'Tiber Club');
+                  } else if (initialMessage?.data['category'] == 'new_event') {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProgramScreen(
+                                document: notificationDocument, weather: weather)));
+                    return ClubPage(title: "Tiber Club", document: document);
+                  } else {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProgramScreen(
+                                document: notificationDocument, weather: weather)));
+                    return ClubPage(title: "Tiber Club", document: document);
+                  }
+                  //Navigator.push(
+                  //  context,
+                  //  MaterialPageRoute(
+                  //    builder: (context) => ProgramScreen(
+                  //        document: notificationDocument, weather: weather),
+                  //  ),
+                  //);
+                  //return ClubPage(title: "Tiber Club", document: document);
                 }
               },
             );

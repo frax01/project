@@ -16,13 +16,15 @@ class _TabScorerState extends State<TabScorer> {
   String name = '';
   String surname = '';
   String bottomLevel = 'torneo';
+  int pointCount = 1;
   int goalCount = 1;
 
   @override
   void initState() {
     super.initState();
     _scorerCollection = FirebaseFirestore.instance.collection('club_scorer');
-    _scorersStream = _scorerCollection.orderBy('goal', descending: true).snapshots();
+    _scorersStream =
+        _scorerCollection.orderBy('points', descending: true).orderBy('goals', descending: true).snapshots();
   }
 
   Future<void> _showAddDialog(String selectedClass) async {
@@ -58,6 +60,35 @@ class _TabScorerState extends State<TabScorer> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
+                          if (pointCount > 1) {
+                            setState(() {
+                              pointCount = pointCount - 1;
+                            });
+                          }
+                        },
+                        child: const Icon(Icons.remove),
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text('$pointCount'),
+                      const SizedBox(width: 8.0),
+                      const Text('Points'),
+                      const SizedBox(width: 8.0),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            pointCount = pointCount + 1;
+                          });
+                        },
+                        child: const Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
                           if (goalCount > 1) {
                             setState(() {
                               goalCount = goalCount - 1;
@@ -68,6 +99,8 @@ class _TabScorerState extends State<TabScorer> {
                       ),
                       const SizedBox(width: 8.0),
                       Text('$goalCount'),
+                      const SizedBox(width: 8.0),
+                      const Text('Goals'),
                       const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
@@ -85,6 +118,7 @@ class _TabScorerState extends State<TabScorer> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    pointCount = 1;
                     goalCount = 1;
                   },
                   child: const Text('Annulla'),
@@ -98,8 +132,10 @@ class _TabScorerState extends State<TabScorer> {
                         'name': name,
                         'surname': surname,
                         'class': selectedClass,
-                        'goal': goalCount,
+                        'points': pointCount,
+                        'goals': goalCount,
                       });
+                      pointCount = 1;
                       goalCount = 1;
                       Navigator.of(context).pop();
                     } else if (name == "") {
@@ -121,11 +157,12 @@ class _TabScorerState extends State<TabScorer> {
   }
 
   Future<void> _showDialog(String name, String surname, String selectedClass,
-      int counter, String scorerId) async {
+      int counter, int goal, String scorerId) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         int localCounter = counter;
+        int goalCounter = goal;
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
@@ -152,10 +189,40 @@ class _TabScorerState extends State<TabScorer> {
                       const SizedBox(width: 8.0),
                       Text('$localCounter'),
                       const SizedBox(width: 8.0),
+                      const Text('Points'),
+                      const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
                             localCounter++;
+                          });
+                        },
+                        child: const Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          if (goalCounter > 1) {
+                            setState(() {
+                              goalCounter--;
+                            });
+                          }
+                        },
+                        child: const Icon(Icons.remove),
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text('$goalCounter'),
+                      const SizedBox(width: 8.0),
+                      const Text('Goals'),
+                      const SizedBox(width: 8.0),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            goalCounter++;
                           });
                         },
                         child: const Icon(Icons.add),
@@ -175,7 +242,7 @@ class _TabScorerState extends State<TabScorer> {
                   onPressed: () async {
                     await _scorerCollection
                         .doc(scorerId)
-                        .update({'goal': localCounter});
+                        .update({'points': localCounter, 'goals': goalCounter});
                     Navigator.of(context).pop();
                   },
                   child: const Text('OK'),
@@ -244,7 +311,7 @@ class _TabScorerState extends State<TabScorer> {
                 child: ListTile(
                   title: Text('${scorerData['name']} ${scorerData['surname']}'),
                   subtitle: Text(
-                      'Class: ${scorerData['class']}, Goals: ${scorerData['goal']}'),
+                      'Classe: ${scorerData['class']}, Punti: ${scorerData['points']}, Goal: ${scorerData['goals']}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -256,7 +323,8 @@ class _TabScorerState extends State<TabScorer> {
                                     scorerData['name'],
                                     scorerData['surname'],
                                     scorerData['class'],
-                                    scorerData['goal'],
+                                    scorerData['points'],
+                                    scorerData['goals'],
                                     scorerId);
                               },
                             )
