@@ -30,7 +30,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     //  
     //private void createNotificationChannel() {
     //    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    //        String channelId = "my_channel_id";
+    //        String channelId = "default_notification_channel_id";
     //        String channelName = "My Channel Name";
     //        
     //        NotificationChannel channel = new NotificationChannel(
@@ -49,7 +49,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 //
     //private void showNotification(RemoteMessage remoteMessage) {
     //    Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-    //    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "my_channel_id")
+    //    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default_notification_channel_id")
     //            .setSmallIcon(R.drawable.logo)
     //            .setLargeIcon(largeIcon)
     //            .setContentTitle(remoteMessage.getNotification().getTitle())

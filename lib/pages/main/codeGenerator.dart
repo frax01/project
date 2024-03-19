@@ -111,7 +111,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           isExpanded: true,
           value: label == "Ruolo"
               ? selectedRole
-              : selectedClubClass,
+              : label == "Classe" 
+              ? selectedClubClass
+              : selectedStatus,
           items: options.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
