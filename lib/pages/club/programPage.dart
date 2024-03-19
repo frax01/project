@@ -312,7 +312,7 @@ class _ProgramPageState extends State<ProgramPage> {
       String selectedLat,
       String selectedLon) async {
     try {
-      if (title == "") {
+      if (newTitle == "") {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Inserisci un titolo')));
         return;
@@ -340,7 +340,7 @@ class _ProgramPageState extends State<ProgramPage> {
       };
 
       await FirebaseFirestore.instance
-          .collection('CLUB_$section')
+          .collection('club_$section')
           .doc(id)
           .update({
         'title': newTitle,
@@ -380,7 +380,8 @@ class _ProgramPageState extends State<ProgramPage> {
             TextButton(
               onPressed: () async {
                 setState(() {
-                  deleteDocument('CLUB_${widget.document["level"]}', id);
+                  deleteDocument(
+                      'club_${widget.document["selectedOption"]}', id);
                 });
                 Navigator.pop(context);
                 Navigator.pop(context);
