@@ -10,7 +10,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'programPage.dart';
 
 class HomePage extends StatefulWidget {
@@ -44,6 +44,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _loadItems() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+    print('Firebase Messaging token: $token');
     var items = await fetchData([], widget.selectedClass);
     var weather = [];
     for (var item in items) {

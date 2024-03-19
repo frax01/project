@@ -31,7 +31,7 @@ void main() async {
       appId: Config.appId,
     ),
   );
-  
+
   FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: false,
@@ -41,7 +41,7 @@ void main() async {
     provisional: false,
     sound: true,
   );
-  //createNotificationChannel();
+  createNotificationChannel();
   FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
 
   deleteOldDocuments();
@@ -53,7 +53,7 @@ void main() async {
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
   print("sono in background");
-  //showNotification(message);
+  showNotification(message);
 }
 
 //Future<void> _onForegroundMessageHandler(RemoteMessage message) async {
@@ -139,6 +139,7 @@ class _HomePageState extends State<HomePage> {
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
+      print("sono sopra");
       setState(() {
         terminated = true;
       });
@@ -146,6 +147,7 @@ class _HomePageState extends State<HomePage> {
 
     //background: funziona
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("sono qui");
       _handleMessage(message);
     });
 
@@ -156,6 +158,7 @@ class _HomePageState extends State<HomePage> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
+      showNotification(message);
 
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
@@ -167,7 +170,6 @@ class _HomePageState extends State<HomePage> {
   //  print("sono in foreground");
   //  showNotification(message);
   //}
-  
 
   void _handleMessage(RemoteMessage message) {
     Map document = {

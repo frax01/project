@@ -12,10 +12,6 @@ Future<void> sendNotification(List fcmToken, String notTitle, String message,
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
-    //final Map<String, dynamic> notification = {
-    //  //'title': title,
-    //  //'body': message,
-    //};
 
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
@@ -39,20 +35,24 @@ Future<void> sendNotification(List fcmToken, String notTitle, String message,
       'check': weather?['check'],
     };
 
-    final Map<String, dynamic> body = {
-      'to': token,
-      //'notification': notification,
-      'data': data,
-    };
+    //'message': {
+    //   'to': token,
+    //   'data': data,
+    // }
 
-    final http.Response response = await http.post(
-      uri,
-      body: jsonEncode(body),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'key=$serverKey',
-      },
-    );
+  final Map<String, dynamic> xmessage = {
+    'to': token,
+    'data': data,
+  };
+
+  final http.Response response = await http.post(
+    uri,
+    body: jsonEncode(xmessage),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$serverKey',
+    },
+  );
 
     if (response.statusCode == 200) {
       print('Notifica inviata con successo!');
@@ -61,6 +61,58 @@ Future<void> sendNotification(List fcmToken, String notTitle, String message,
     }
   }
 }
+
+//Future<void> sendNotification(List fcmToken, String notTitle, String message,
+//    String category, Map? document, Map? weather) async {
+//  const String serverKey = Config.serverKey;
+//  const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
+//  Uri uri = Uri.parse(fcmUrl);
+//
+//  for (String token in fcmToken) {
+//
+//    final Map<String, dynamic> data = {
+//      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+//      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+//      'status': 'done',
+//      'category': category,
+//      'notTitle': notTitle,
+//      'notBody': message,
+//      'title': document?["title"],
+//      'imagePath': document?["imagePath"],
+//      'selectedClass': document?["selectedClass"],
+//      'selectedOption': document?["selectedOption"],
+//      'description': document?["description"],
+//      'startDate': document?["startDate"],
+//      'endDate': document?["endDate"],
+//      'address': document?["address"],
+//      't_min': weather?["t_min"],
+//      't_max': weather?["t_max"],
+//      'w_code': weather?["w_code"],
+//      'image': weather?["image"],
+//      'check': weather?['check'],
+//    };
+//
+//    final Map<String, dynamic> body = {
+//      'to': token,
+//      'data': data,
+//    };
+//
+//    final http.Response response = await http.post(
+//      uri,
+//      body: jsonEncode(body),
+//      headers: <String, String>{
+//        'Content-Type': 'application/json',
+//        'Authorization': 'key=$serverKey',
+//      },
+//    );
+//
+//    if (response.statusCode == 200) {
+//      print('Notifica inviata con successo!');
+//    } else {
+//      print('Errore nell\'invio della notifica: ${response.reasonPhrase}');
+//    }
+//  }
+//}
 
 Future<List<String>> fetchToken(String section, String target) async {
   List<String> tokens = [];
@@ -104,8 +156,8 @@ void showNotification(RemoteMessage remoteMessage) async {
     'My Channel Name',
     importance: Importance.high,
     priority: Priority.high,
-    //icon: '@mipmap/logo',
-    //largeIcon: DrawableResourceAndroidBitmap('@mipmap/logo')
+    icon: '@mipmap/ic_launcher',
+    largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher')
   );
 
   const NotificationDetails platformChannelSpecifics =
