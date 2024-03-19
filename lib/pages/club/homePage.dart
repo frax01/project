@@ -7,7 +7,6 @@ import 'package:club/functions/weatherFunctions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -31,10 +30,41 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool imageUploaded = false;
   bool startDateUploaded = false;
   bool endDateUploaded = false;
+
+  final _listItems = <Widget>[];
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  void _loadItems() async {
+    var items = await fetchData([], widget.selectedClass);
+    var weather = [];
+    for (var item in items) {
+      var startDate = item['startDate'];
+      var endDate = item['endDate'];
+      var lat = item["lat"];
+      var lon = item["lon"];
+      var weatherData = await fetchWeatherData(startDate, endDate, lat, lon);
+      weather.add(weatherData);
+    }
+
+    var future = Future(() {});
+    for (var i = 0; i < items.length; i++) {
+      future = future.then((_) {
+        return Future.delayed(const Duration(milliseconds: 100), () {
+          _listItems.add(buildCard(items[i], weather[i]));
+          _listKey.currentState!.insertItem(i);
+        });
+      });
+    }
+  }
 
   Future<String> _startDate(BuildContext context, String startDate,
       {bool isCreate = false}) async {
@@ -426,186 +456,158 @@ class _HomePageState extends State<HomePage> {
     var startDate = document['startDate'];
     var endDate = document['endDate'];
     var imagePath = document['imagePath'];
-    return OpenContainer(
-      clipBehavior: Clip.antiAlias,
-      closedElevation: 5.0,
-      closedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      closedBuilder: (context, action) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Image.network(
-                    imagePath,
-                  ),
-                ),
-                Positioned(
-                  left: 10,
-                  bottom: 10,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(7.0),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black54,
-                                blurRadius: 7.0,
-                              ),
-                            ],
-                          ),
-                          child: endDate != ""
-                              ? Text('$startDate ～ $endDate',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold))
-                              : Text('$startDate',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+      child: OpenContainer(
+        clipBehavior: Clip.antiAlias,
+        closedElevation: 5.0,
+        closedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        closedBuilder: (context, action) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(title,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20.0)),
-                      Text(
-                        level == 'weekend'
-                            ? 'Weekend'
-                            : level == 'extra'
-                                ? 'Extra'
-                                : level == 'trip'
-                                    ? 'Gita'
-                                    : 'Torneo',
-                        style: const TextStyle(color: Colors.black54),
-                      ),
-                    ],
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.network(
+                      imagePath,
+                      width: 400,
+                      height: 250,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (BuildContext context, Widget child,
+                          ImageChunkEvent? loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        } else {
+                          return const Center(
+                            child: SizedBox(
+                              width: 400,
+                              height: 250,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    left: 10,
+                    bottom: 10,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(7.0),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black54,
+                                  blurRadius: 7.0,
+                                ),
+                              ],
+                            ),
+                            child: endDate != ""
+                                ? Text('$startDate ～ $endDate',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold))
+                                : Text('$startDate',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
-        );
-      },
-      openBuilder: (context, action) {
-        return ProgramPage(
-            document: document, weather: weather!, isAdmin: widget.isAdmin);
-      },
+              Container(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20.0)),
+                        Text(
+                          level == 'weekend'
+                              ? 'Weekend'
+                              : level == 'extra'
+                                  ? 'Extra'
+                                  : level == 'trip'
+                                      ? 'Gita'
+                                      : 'Torneo',
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+        openBuilder: (context, action) {
+          return ProgramPage(
+              document: document, weather: weather!, isAdmin: widget.isAdmin);
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: fetchData([], widget.selectedClass),
-        builder: (BuildContext context,
-            AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else {
-          if (snapshot.hasData) {
-            List<Map<String, dynamic>> allDocuments = snapshot.data!;
-            allDocuments.sort((a, b) =>
-                (a['startDate'] as String).compareTo(b['startDate'] as String));
-            double width = MediaQuery.of(context).size.width;
-            int crossAxisCount = 0;
-            if (width > 1200) {
-              crossAxisCount = 4;
-            } else if (width > 900) {
-              crossAxisCount = 3;
-            } else if (width >= 500) {
-              crossAxisCount = 2;
-            } else {
-              crossAxisCount = 1;
-            }
-            return Scaffold(
-              body: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: MasonryGridView.count(
-                  crossAxisCount: crossAxisCount,
-                  itemCount: allDocuments.length,
-                  mainAxisSpacing: 20.0,
-                  crossAxisSpacing: 20.0,
-                  itemBuilder: (context, index) {
-                    var document = allDocuments[index];
-                    var startDate = document['startDate'];
-                    var endDate = document['endDate'];
-                    var lat = document["lat"];
-                    var lon = document["lon"];
-                    return FutureBuilder(
-                      future: fetchWeatherData(startDate, endDate, lat, lon),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<Map> weatherSnapshot) {
-                        if (weatherSnapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Container();
-                        } else {
-                          Map? weather = weatherSnapshot.data;
-                          return buildCard(document, weather!);
-                        }
-                      },
-                    );
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: AnimatedList(
+          key: _listKey,
+          initialItemCount: _listItems.length,
+          itemBuilder: (context, index, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: _listItems[index],
+            );
+          },
+        ),
+      ),
+      floatingActionButton: widget.isAdmin
+          ? SpeedDial(
+              icon: Icons.add,
+              activeIcon: Icons.close,
+              children: [
+                SpeedDialChild(
+                  child: const Icon(Icons.calendar_today),
+                  label: 'Weekend',
+                  onTap: () {
+                    _showAddEvent("weekend");
                   },
                 ),
-              ),
-              floatingActionButton: widget.isAdmin
-                  ? SpeedDial(
-                      icon: Icons.add,
-                      activeIcon: Icons.close,
-                      children: [
-                        SpeedDialChild(
-                          child: const Icon(Icons.calendar_today),
-                          label: 'Weekend',
-                          onTap: () {
-                            _showAddEvent("weekend");
-                          },
-                        ),
-                        SpeedDialChild(
-                          child: const Icon(Icons.holiday_village),
-                          label: 'Trip',
-                          onTap: () {
-                            _showAddEvent("trip");
-                          },
-                        ),
-                        SpeedDialChild(
-                          child: const Icon(Icons.star),
-                          label: 'Extra',
-                          onTap: () {
-                            _showAddEvent("extra");
-                          },
-                        ),
-                      ],
-                    )
-                  : null,
-            );
-          } else if(snapshot.hasError) {
-            return Text('Errore: ${snapshot.error}');
-          }
-          else {
-            return const Text('Nessun dato disponibile');
-          }
-        }
-        },
-        );
+                SpeedDialChild(
+                  child: const Icon(Icons.holiday_village),
+                  label: 'Trip',
+                  onTap: () {
+                    _showAddEvent("trip");
+                  },
+                ),
+                SpeedDialChild(
+                  child: const Icon(Icons.star),
+                  label: 'Extra',
+                  onTap: () {
+                    _showAddEvent("extra");
+                  },
+                ),
+              ],
+            )
+          : null,
+    );
   }
 }
