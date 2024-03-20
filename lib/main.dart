@@ -12,10 +12,10 @@ import 'color_schemes.dart';
 import 'config.dart';
 import 'functions/dataFunctions.dart';
 import 'functions/generalFunctions.dart';
-import 'functions/notificationFunctions.dart';
 import 'pages/main/acceptance.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
+import 'services/local_notification.dart';
 
 void main() async {
   //timeDilation = 2.0;
@@ -41,7 +41,6 @@ void main() async {
     provisional: false,
     sound: true,
   );
-  createNotificationChannel();
   FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
 
   deleteOldDocuments();
@@ -53,13 +52,7 @@ void main() async {
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
   print("sono in background");
-  showNotification(message);
 }
-
-//Future<void> _onForegroundMessageHandler(RemoteMessage message) async {
-//  print("sono in foreground");
-//  showNotification(message);
-//}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -135,9 +128,10 @@ class _HomePageState extends State<HomePage> {
   RemoteMessage? initialMessage;
 
   Future<void> setupInteractedMessage() async {
+    LocalNotificationService.initialize(handleMessage);
+
     //terminated: funziona
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-
     if (initialMessage != null) {
       print("sono sopra");
       setState(() {
@@ -145,33 +139,19 @@ class _HomePageState extends State<HomePage> {
       });
     }
 
-    //background: funziona
+    //background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print("sono qui");
-      _handleMessage(message);
+      handleMessage(message);
     });
 
-    //foreground: non funziona
-    //FirebaseMessaging.onMessage.listen(_onForegroundMessageHandler);
-
-    //questo fa vedere la notifica a discesa
+    //foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-      showNotification(message);
-
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-      }
+      LocalNotificationService.showNotificationOnForeground(message);
     });
   }
 
-  //Future<void> _onForegroundMessageHandler(RemoteMessage message) async {
-  //  print("sono in foreground");
-  //  showNotification(message);
-  //}
-
-  void _handleMessage(RemoteMessage message) {
+  void handleMessage(RemoteMessage message) {
     Map document = {
       'title': message.data["title"],
       'imagePath': message.data["imagePath"],
@@ -210,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                     isAdmin: document['status'] == 'Admin',
                   )));
     } else if (message.data['category'] == 'modified_event') {
-      Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
@@ -337,14 +317,6 @@ class _HomePageState extends State<HomePage> {
                                 )));
                     return ClubPage(title: "Tiber Club", document: document);
                   }
-                  //Navigator.push(
-                  //  context,
-                  //  MaterialPageRoute(
-                  //    builder: (context) => ProgramScreen(
-                  //        document: notificationDocument, weather: weather),
-                  //  ),
-                  //);
-                  //return ClubPage(title: "Tiber Club", document: document);
                 }
               },
             );
