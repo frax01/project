@@ -52,8 +52,7 @@ class _ClubPageState extends State<ClubPage> {
     setState(() {
       Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => const Login(title: 'Tiber Club')));
+          MaterialPageRoute(builder: (context) => const Login()));
     });
   }
 

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/main/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -58,8 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => const Login(title: 'Tiber Club')));
+          MaterialPageRoute(builder: (context) => const Login()));
     });
   }
 

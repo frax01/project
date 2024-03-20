@@ -79,13 +79,11 @@ class MyApp extends StatelessWidget {
         colorScheme: darkColorScheme,
       ),
       themeMode: ThemeMode.light,
-      home: const Login(
-        title: 'Tiber Club',
-      ),
+      home: const Login(),
       initialRoute: '/home',
       routes: {
         '/home': (context) => const HomePage(),
-        '/login': (context) => const Login(title: 'Tiber Club'),
+        '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(title: 'Tiber Club'),
         '/waiting': (context) => const Waiting(title: 'Tiber Club'),
         '/acceptance': (context) => const AcceptancePage(title: 'Tiber Club'),
@@ -178,8 +176,7 @@ class _HomePageState extends State<HomePage> {
     } else if (message.data['category'] == 'accepted') {
       Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => const Login(title: 'Tiber Club')));
+          MaterialPageRoute(builder: (context) => const Login()));
     } else if (message.data['category'] == 'new_event') {
       Navigator.push(
           context,
@@ -234,7 +231,7 @@ class _HomePageState extends State<HomePage> {
         } else {
           email = snapshot.data ?? '';
           if (email == '') {
-            return const Login(title: "Asd Tiber Club");
+            return const Login();
           } else {
             return FutureBuilder<Map<String, dynamic>>(
               future: retrieveData(),
@@ -295,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                                 const AcceptancePage(title: 'Tiber Club')));
                     return ClubPage(title: "Tiber Club", document: document);
                   } else if (initialMessage?.data['category'] == 'accepted') {
-                    return const Login(title: 'Tiber Club');
+                    return const Login();
                   } else if (initialMessage?.data['category'] == 'new_event') {
                     Navigator.push(
                         context,
