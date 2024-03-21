@@ -19,7 +19,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _loginFailed = false;
-  bool _rememberMe = false;
+  bool _rememberMe = true;
   Map<String, dynamic> _document = {};
 
   _goToWaiting() {
@@ -144,7 +144,6 @@ class _LoginState extends State<Login> {
             controller: _emailController,
             decoration: const InputDecoration(
               labelText: 'Mail',
-              border: OutlineInputBorder(),
               icon: Icon(Icons.mail),
             ),
             keyboardType: TextInputType.emailAddress,
@@ -164,7 +163,6 @@ class _LoginState extends State<Login> {
             obscureText: true,
             decoration: const InputDecoration(
               labelText: 'Password',
-              border: OutlineInputBorder(),
               icon: Icon(Icons.key),
             ),
             keyboardType: TextInputType.visiblePassword,
@@ -185,7 +183,6 @@ class _LoginState extends State<Login> {
                 const SizedBox(width: 20),
                 Switch(
                   value: _rememberMe,
-                  inactiveTrackColor: Colors.white,
                   onChanged: (value) {
                     setState(() {
                       _rememberMe = value;
@@ -202,7 +199,7 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: FilledButton(
+                  child: ElevatedButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/signup');
                     },
@@ -214,7 +211,7 @@ class _LoginState extends State<Login> {
                 ),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: FilledButton(
+                  child: ElevatedButton(
                     onPressed: _handleLogin,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(20),

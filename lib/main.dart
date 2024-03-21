@@ -70,14 +70,8 @@ class MyApp extends StatelessWidget {
         Locale('it', 'IT'),
       ],
       title: 'Tiber Club',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: lightColorScheme,
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: darkColorScheme,
-      ),
+      theme: lightColorScheme,
+      darkTheme: darkColorScheme,
       themeMode: ThemeMode.light,
       home: const Login(),
       initialRoute: '/home',
