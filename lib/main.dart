@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
-        '/waiting': (context) => const Waiting(title: 'Tiber Club'),
+        '/waiting': (context) => const Waiting(),
         '/acceptance': (context) => const AcceptancePage(title: 'Tiber Club'),
       },
     );
