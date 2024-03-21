@@ -87,7 +87,10 @@ class _LoginState extends State<Login> {
           title: const Text('Recupera password'),
           content: TextField(
             controller: resetEmailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              icon: Icon(Icons.mail),
+            ),
           ),
           actions: [
             TextButton(
@@ -129,7 +132,7 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget form() {
+  _form() {
     return Form(
       key: _formKey,
       child: Column(
@@ -203,9 +206,6 @@ class _LoginState extends State<Login> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/signup');
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(20),
-                    ),
                     child: const Text('Registrati'),
                   ),
                 ),
@@ -213,9 +213,6 @@ class _LoginState extends State<Login> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(20),
-                    ),
                     child: const Text('Accedi'),
                   ),
                 ),
@@ -234,7 +231,7 @@ class _LoginState extends State<Login> {
     );
   }
 
-  smallScreen() {
+  _smallScreen() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -247,13 +244,13 @@ class _LoginState extends State<Login> {
             style: TextStyle(fontSize: 30),
           ),
           const SizedBox(height: 20),
-          form(),
+          _form(),
         ],
       ),
     );
   }
 
-  bigScreen() {
+  _bigScreen() {
     return Stack(
       children: [
         Image.asset(
@@ -264,8 +261,8 @@ class _LoginState extends State<Login> {
         ),
         Center(
           child: SizedBox(
-            width: 600,
-            height: 620,
+            width: 700,
+            height: 700,
             child: Card(
               elevation: 10,
               surfaceTintColor: Colors.white,
@@ -283,7 +280,7 @@ class _LoginState extends State<Login> {
                         style: TextStyle(fontSize: 30),
                       ),
                       const SizedBox(height: 20),
-                      form(),
+                      _form(),
                     ],
                   ),
                 ),
@@ -299,8 +296,8 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AdaptiveLayout(
-        smallLayout: smallScreen(),
-        largeLayout: bigScreen(),
+        smallLayout: _smallScreen(),
+        largeLayout: _bigScreen(),
       ),
     );
   }

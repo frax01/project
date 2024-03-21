@@ -1,105 +1,44 @@
+import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/functions/notificationFunctions.dart';
+import 'package:club/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:club/user.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:club/functions/notificationFunctions.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key, required this.title});
-
-  final String title;
+  const SignUp({super.key});
 
   @override
-  _SignUpFormState createState() => _SignUpFormState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _SignUpFormState extends State<SignUp> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController surnameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController passwordConfirmController =
-      TextEditingController();
-  final TextEditingController birthdateController = TextEditingController();
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+class _SignUpState extends State<SignUp> {
+  final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<String> firebaseMessaging() async {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surnameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordConfirmController =
+      TextEditingController();
+  final TextEditingController _birthdateController = TextEditingController();
+
+  String? _emailErrorMsg;
+  String? _passwordErrorMsg;
+
+  _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
     assert(token != null);
-    print('FCM Token: $token');
-
-    if (token != null && token.isNotEmpty) {
-      return token;
-    } else {
-      return '';
-    }
+    return token != null && token.isNotEmpty ? token : '';
   }
 
-  Future<void> _handleSignUp() async {
+  _saveUser(ClubUser user) async {
     try {
-      if (_formKey.currentState?.validate() ?? false) {
-        String name = nameController.text;
-        String surname = surnameController.text;
-        String email = emailController.text;
-        String password = passwordController.text;
-        String birthdate = birthdateController.text;
-
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-        //await userCredential.user!.sendEmailVerification();
-
-        String confirmPassword = passwordConfirmController.text;
-        if (password != confirmPassword) {
-          print('Passwords do not match');
-          return;
-        }
-
-        String tokenKey = await firebaseMessaging();
-
-        await _saveUserToDatabase(ClubUser(
-            name: name,
-            surname: surname,
-            email: email,
-            password: password,
-            birthdate: birthdate,
-            role: "",
-            club_class: "",
-            soccer_class: "",
-            status: "",
-            token: tokenKey,
-            created_time: DateTime.now()));
-
-        print('Sign up successful: ${userCredential.user?.email}');
-        setState(() {
-          Navigator.pushNamed(context, '/waiting');
-        });
-        List<String> token = await fetchToken('status', 'Admin');
-        print(token);
-        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user', {}, {});
-      }
-      // Puoi aggiungere qui la navigazione a una nuova schermata, se necessario
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> _saveUserToDatabase(ClubUser user) async {
-    try {
-      // Ottieni un riferimento al tuo database Firestore
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-      // Aggiungi l'utente al database
-      await firestore.collection('user').add({
+      await _firestore.collection('user').add({
         'name': user.name,
         'surname': user.surname,
         'email': user.email,
@@ -116,7 +55,63 @@ class _SignUpFormState extends State<SignUp> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  _handleSignup() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        String name = _nameController.text;
+        String surname = _surnameController.text;
+        String email = _emailController.text;
+        String password = _passwordController.text;
+        String birthdate = _birthdateController.text;
+
+        UserCredential credential = await _auth.createUserWithEmailAndPassword(
+            email: email, password: password);
+
+        String tokenKey = await _firebaseMessaging();
+
+        var user = ClubUser(
+          name: name,
+          surname: surname,
+          email: email,
+          password: password,
+          birthdate: birthdate,
+          role: '',
+          club_class: '',
+          soccer_class: '',
+          status: '',
+          token: tokenKey,
+          created_time: DateTime.now(),
+        );
+
+        await _saveUser(user);
+
+        List<String> token = await fetchToken('status', 'Admin');
+        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato",
+            'new_user', {}, {});
+
+        setState(() {
+          Navigator.pushNamed(context, '/');
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registrazione avvenuta con successo'),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'weak-password') {
+          setState(() {
+            _passwordErrorMsg = 'La password è troppo debole';
+          });
+        } else if (e.code == 'email-already-in-use') {
+          setState(() {
+            _emailErrorMsg = 'Questa mail è già in uso';
+          });
+        }
+      }
+    }
+  }
+
+  _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -126,152 +121,203 @@ class _SignUpFormState extends State<SignUp> {
     if (picked != null && picked != DateTime.now()) {
       String formattedDate = DateFormat('dd-MM-yyyy').format(picked);
       setState(() {
-        birthdateController.text = formattedDate;
+        _birthdateController.text = formattedDate;
       });
     }
   }
 
-  Form buildForm() {
+  _form() {
     return Form(
       key: _formKey,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const BackButton(),
-          const Center(
-            child: Column(
-              children: [
-                Text('Sign up',
-                    style:
-                        TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
-                Text('Complete the fields below',
-                    style: TextStyle(fontSize: 14.0)),
-              ],
+          TextFormField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Nome',
+              icon: Icon(Icons.person),
             ),
-          ),
-          TextFormField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Name is required';
+                return 'Inserisci il tuo nome';
               }
-              return null; // Il valore è valido
+              return null;
             },
           ),
+          const SizedBox(height: 20),
           TextFormField(
-            controller: surnameController,
-            decoration: const InputDecoration(labelText: 'Surname'),
+            controller: _surnameController,
+            decoration: const InputDecoration(
+              labelText: 'Cognome',
+              icon: Icon(Icons.person),
+            ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Surname is required';
+                return 'Inserisci il tuo cognome';
               }
-              return null; // Il valore è valido
+              return null;
             },
           ),
+          const SizedBox(height: 20),
           TextFormField(
-            controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+            controller: _emailController,
+            decoration: InputDecoration(
+              labelText: 'Mail',
+              icon: const Icon(Icons.mail),
+              errorText: _emailErrorMsg,
+            ),
+            keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Email is required';
+                return 'Inserisci la tua mail';
               }
-              return null; // Il valore è valido
+              if (!value.contains('@') || !value.contains('.')) {
+                return 'Inserisci una mail valida';
+              }
+              return null;
             },
           ),
+          const SizedBox(height: 20),
           TextFormField(
-            controller: passwordController,
+            controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration: InputDecoration(
+              labelText: 'Password',
+              icon: const Icon(Icons.password_rounded),
+              errorText: _passwordErrorMsg,
+            ),
+            keyboardType: TextInputType.visiblePassword,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Password is required';
+                return 'Inserisci la tua password';
               }
-              return null; // Il valore è valido
+              if (value.length < 6) {
+                return 'La password deve essere lunga almeno 6 caratteri';
+              }
+              return null;
             },
           ),
+          const SizedBox(height: 20),
           TextFormField(
-            controller: passwordConfirmController,
+            controller: _passwordConfirmController,
             obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password confirm'),
+            decoration: const InputDecoration(
+              labelText: 'Conferma password',
+              icon: Icon(Icons.password_rounded),
+            ),
+            keyboardType: TextInputType.visiblePassword,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Password confirm is required';
+                return 'Conferma la tua password';
               }
-              return null; // Il valore è valido
+              if (value != _passwordController.text) {
+                _passwordConfirmController.clear();
+                return 'Le password non corrispondono';
+              }
+              return null;
             },
           ),
+          const SizedBox(height: 20),
           InkWell(
             onTap: () => _selectDate(context),
             child: IgnorePointer(
               child: TextFormField(
-                controller: birthdateController,
-                decoration: const InputDecoration(labelText: 'Birthdate'),
+                controller: _birthdateController,
+                decoration: const InputDecoration(
+                  labelText: 'Birthdate',
+                  icon: Icon(Icons.calendar_today_rounded),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Birthdate is required';
                   }
-                  return null; // Il valore è valido
+                  return null;
                 },
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: _handleSignUp,
-            style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                ),
-              ),
-            ),
-            child: const Text('Sign up'),
+            onPressed: _handleSignup,
+            child: const Text('Registrati'),
           ),
         ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Stack(
+  _smallScreen() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            "images/CC.jpeg",
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            fit: BoxFit.cover,
+          const BackButton(),
+          const SizedBox(height: 20),
+          const Text(
+            'Registrazione',
+            style: TextStyle(fontSize: 30),
           ),
-          Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Center(
-              child: SizedBox(
-                width: 600,
-                height: 620,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                    elevation: 10.0,
-                    shadowColor: Colors.black,
-                    surfaceTintColor: Colors.white54,
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(25),
-                        child: buildForm(),
+          const SizedBox(height: 20),
+          _form(),
+        ],
+      ),
+    );
+  }
+
+  _bigScreen() {
+    return Stack(
+      children: [
+        Image.asset(
+          "images/CC.jpeg",
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          fit: BoxFit.cover,
+        ),
+        Center(
+          child: SizedBox(
+            width: 700,
+            height: 700,
+            child: Card(
+              elevation: 10,
+              surfaceTintColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Stack(
+                  children: [
+                    const BackButton(),
+                    SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Registrazione',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                          const SizedBox(height: 20),
+                          _form(),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      );
-    });
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: AdaptiveLayout(
+        smallLayout: _smallScreen(),
+        largeLayout: _bigScreen(),
+      ),
+    );
   }
 }

@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const HomePage(),
         '/login': (context) => const Login(),
-        '/signup': (context) => const SignUp(title: 'Tiber Club'),
+        '/signup': (context) => const SignUp(),
         '/waiting': (context) => const Waiting(title: 'Tiber Club'),
         '/acceptance': (context) => const AcceptancePage(title: 'Tiber Club'),
       },
