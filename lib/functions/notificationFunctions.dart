@@ -65,7 +65,7 @@ Future<List<String>> fetchToken(String section, String target) async {
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('user')
-        .where(section, isEqualTo: target)
+        .where(section, arrayContains: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
       for (String value in documentSnapshot['token']) {

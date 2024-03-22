@@ -7,22 +7,24 @@ Future<String> loadData() async {
 }
 
 Future<List<Map<String, dynamic>>> fetchData(
-    List<Map<String, dynamic>> allDocuments, String selectedClass) async {
+    List<Map<String, dynamic>> allDocuments, List selectedClass) async {
   List<String> clubCollections = ['club_weekend', 'club_trip', 'club_extra'];
 
   for (String collectionName in clubCollections) {
     CollectionReference collection =
         FirebaseFirestore.instance.collection(collectionName);
+    
+    for (String value in selectedClass) {
+      QuerySnapshot querySnapshot =
+        await collection.where('selectedClass', arrayContains: value).get();
 
-    QuerySnapshot querySnapshot =
-        await collection.where('selectedClass', arrayContains: selectedClass).get();
+      if (querySnapshot.docs.isNotEmpty) {
+        List<Map<String, dynamic>> documents = querySnapshot.docs
+            .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+            .toList();
 
-    if (querySnapshot.docs.isNotEmpty) {
-      List<Map<String, dynamic>> documents = querySnapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
-          .toList();
-
-      allDocuments.addAll(documents);
+        allDocuments.addAll(documents);
+      }
     }
   }
 

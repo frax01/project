@@ -22,7 +22,7 @@ class HomePage extends StatefulWidget {
     required this.isAdmin,
   });
 
-  final String selectedClass;
+  final List selectedClass;
   final String section;
   final bool isAdmin;
 
@@ -488,7 +488,9 @@ class _HomePageState extends State<HomePage> {
       for (String value in selectedFormClass) {
         List<String> items = await fetchToken('club_class', value);
         for (String elem in items) {
-          token.add(elem);
+          if (!token.contains(elem)) {
+            token.add(elem);
+          }
         }
       }
       print("token: $token");

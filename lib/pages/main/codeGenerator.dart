@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/notificationFunctions.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class UserDetailsPage extends StatefulWidget {
   const UserDetailsPage(
@@ -21,10 +22,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   String selectedRole = "";
   String selectedClubClass = "";
   String selectedStatus = "";
+  List<String> classList = [];
 
   final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor"];
   final List<String> clubClassOptions = [
-    "",
     "1° liceo",
     "2° liceo",
     "3° liceo",
@@ -64,7 +65,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       selectedRole = value.toString();
                     });
                   }),
-                  buildDropdown("Classe", clubClassOptions, (value) {
+                  buildDropdownClasse("Classe", clubClassOptions, (value) {
                     setState(() {
                       selectedClubClass = value.toString();
                     });
@@ -101,6 +102,39 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     ));
   }
 
+  Widget buildDropdownClasse(
+      String label, List<String> options, void Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        MultiSelectDialogField(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          items: options
+              .map((option) => MultiSelectItem<String>(option, option))
+              .toList(),
+          buttonText: const Text('Classe'),
+          confirmText: const Text('Ok'),
+          cancelText: const Text('Annulla'),
+          initialValue: classList,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Inserire almeno una classe';
+            }
+            return null;
+          },
+          onConfirm: (value) {
+            setState(() {
+              classList = value;
+              print("select: $classList");
+            });
+          },
+        ),
+        const SizedBox(height: 8.0),
+      ],
+    );
+  }
+
   Widget buildDropdown(
       String label, List<String> options, void Function(String?) onChanged) {
     return Column(
@@ -109,11 +143,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         DropdownButton<String>(
           isExpanded: true,
-          value: label == "Ruolo"
-              ? selectedRole
-              : label == "Classe" 
-              ? selectedClubClass
-              : selectedStatus,
+          value: label == "Ruolo" ? selectedRole : selectedStatus,
           items: options.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -152,7 +182,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           .doc(documentId)
           .update({
         'role': selectedRole,
-        'club_class': selectedClubClass,
+        'club_class': classList,
         'status': selectedStatus,
       });
       List token = querySnapshot.docs.first["token"];

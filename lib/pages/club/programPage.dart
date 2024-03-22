@@ -391,7 +391,9 @@ class _ProgramPageState extends State<ProgramPage> {
       for (String value in selectedFormClass) {
         List<String> items = await fetchToken('club_class', value);
         for (String elem in items) {
-          token.add(elem);
+          if (!token.contains(elem)) {
+            token.add(elem);
+          }
         }
       }
       //List<String> token = await fetchToken('club_class', selectedClass);

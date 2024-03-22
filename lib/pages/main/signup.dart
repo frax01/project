@@ -34,7 +34,7 @@ class _SignUpState extends State<SignUp> {
   _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
     assert(token != null);
-    return token != null && token.isNotEmpty ? token : '';
+    return token != null && token.isNotEmpty ? [token] : [];
   }
 
   _saveUser(ClubUser user) async {
@@ -67,7 +67,7 @@ class _SignUpState extends State<SignUp> {
 
         await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
-        String tokenKey = await _firebaseMessaging();
+        List tokenKey = await _firebaseMessaging();
 
         var user = ClubUser(
           name: name,
@@ -76,7 +76,7 @@ class _SignUpState extends State<SignUp> {
           password: password,
           birthdate: birthdate,
           role: '',
-          club_class: '',
+          club_class: [],
           soccer_class: '',
           status: '',
           token: tokenKey,
