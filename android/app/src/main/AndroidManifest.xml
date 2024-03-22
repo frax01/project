@@ -2,10 +2,10 @@
     <application
         android:label="Tiber Club"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/logo"> <!--questo è quando l'app viene lanciata-->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />
+            android:resource="@mipmap/ic_stat_t" /> <!--questo è per le notifiche piccole-->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="My Channel Name" />

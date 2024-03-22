@@ -7,7 +7,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'club.dart';
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import '../../functions/weatherFunctions.dart';
@@ -635,6 +635,13 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        //leading: IconButton(
+        //  onPressed: () {
+        //    aggiornaPagina();
+        //    Navigator.pop(context);
+        //  },
+        //  icon: Icon(Icons.arrow_back),
+        //),
         actions: [
           IconButton(
             onPressed: () {

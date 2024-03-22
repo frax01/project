@@ -3,8 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../club/club.dart';
+import 'package:club/pages/club/club.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'waiting.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -23,15 +24,18 @@ class _LoginState extends State<Login> {
   Map<String, dynamic> _document = {};
 
   _goToWaiting() {
-    Navigator.pushNamed(context, '/waiting');
+    Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const Waiting()));
   }
 
   _goToHome() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                ClubPage(title: "Tiber Club", document: _document)));
+    Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      ClubPage(title: "Tiber Club", document: _document)));
   }
 
   _saveLoginInfo() async {
@@ -51,6 +55,17 @@ class _LoginState extends State<Login> {
         var store = FirebaseFirestore.instance.collection('user');
         var user = await store.where('email', isEqualTo: email).get();
 
+        String? token = await FirebaseMessaging.instance.getToken();
+        assert(token != null);
+        DocumentSnapshot userDoc = user.docs.first;
+        List<dynamic> tokens = userDoc["token"];
+        if (user.docs.isNotEmpty) {
+          if (!tokens.contains(token)) {
+            tokens.add(token!);
+            await userDoc.reference.update({'token': tokens});
+          }
+        }
+        
         _document = {
           'name': user.docs.first['name'],
           'surname': user.docs.first['surname'],
@@ -60,10 +75,10 @@ class _LoginState extends State<Login> {
           'soccer_class': user.docs.first['soccer_class'],
           'status': user.docs.first['status'],
           'birthdate': user.docs.first['birthdate'],
-          'token': user.docs.first['token'],
+          'token': tokens,
           'id': user.docs.first.id,
         };
-
+        
         if (_rememberMe) {
           _saveLoginInfo();
         }

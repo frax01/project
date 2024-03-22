@@ -3,6 +3,7 @@ import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, required this.id, required this.document});
@@ -50,9 +51,20 @@ class _SettingsPageState extends State<SettingsPage> {
         .update(updatedData);
   }
 
-  Future<void> _logout() async {
+  Future<void> _logout(String email) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('email', isEqualTo: email)
+        .get();
+    String? token = await FirebaseMessaging.instance.getToken();
+    assert(token != null);
+    DocumentSnapshot userDoc = querySnapshot.docs.first;
+    List<dynamic> tokens = userDoc["token"];
+    tokens.remove(token);
+    await userDoc.reference.update({'token': tokens});
 
     await FirebaseAuth.instance.signOut();
     setState(() {
@@ -73,51 +85,50 @@ class _SettingsPageState extends State<SettingsPage> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: <Widget>[
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image(
-                    image: const AssetImage('images/logo.png'),
-                    width: width > 700 ? width / 4 : width / 8,
-                    height: height / 4,
-                  ),
+            Column(children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image(
+                  image: const AssetImage('images/logo.png'),
+                  width: width > 700 ? width / 4 : width / 8,
+                  height: height / 4,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('${widget.document['name']} ',
-                          style: TextStyle(fontSize: width > 300 ? 18 : 14)),
-                      Text('${widget.document['surname']}',
-                          style: TextStyle(fontSize: width > 300 ? 18 : 14))
-                    ],
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('${widget.document['name']} ',
+                        style: TextStyle(fontSize: width > 300 ? 18 : 14)),
+                    Text('${widget.document['surname']}',
+                        style: TextStyle(fontSize: width > 300 ? 18 : 14))
+                  ],
                 ),
-                Padding(
-                    padding:
-                        const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                    child: Text('${widget.document['club_class']}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: width > 500
-                                ? 14
-                                : width > 300
-                                    ? 10
-                                    : 8))),
-                Padding(
-                    padding:
-                        const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                    child: Text('${widget.document['email']}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: width > 500
-                                ? 14
-                                : width > 300
-                                    ? 10
-                                    : 8))),
-          ]),
+              ),
+              Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                  child: Text('${widget.document['club_class']}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: width > 500
+                              ? 14
+                              : width > 300
+                                  ? 10
+                                  : 8))),
+              Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+                  child: Text('${widget.document['email']}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: width > 500
+                              ? 14
+                              : width > 300
+                                  ? 10
+                                  : 8))),
+            ]),
             const SizedBox(height: 20.0),
             widget.document['status'] == 'Admin'
                 ? ElevatedButton(
@@ -147,7 +158,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         TextButton(
                           child: const Text('Yes'),
                           onPressed: () async {
-                            await _logout();
+                            await _logout(widget.document["email"]);
                           },
                         ),
                       ],

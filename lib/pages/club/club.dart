@@ -28,6 +28,7 @@ class _ClubPageState extends State<ClubPage> {
   @override
   void initState() {
     super.initState();
+
     _widgetOptions = <Widget>[
       HomePage(
         selectedClass: widget.document['club_class'],
@@ -185,13 +186,13 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _refresh,
-      child: PopScope(
-        canPop: false,
-        child: AdaptiveLayout(
-          smallLayout: smallScreen(),
-          largeLayout: bigScreen(),
-        ),
+      //child: PopScope(
+      //canPop: false,
+      child: AdaptiveLayout(
+        smallLayout: smallScreen(),
+        largeLayout: bigScreen(),
       ),
     );
+    //);
   }
 }

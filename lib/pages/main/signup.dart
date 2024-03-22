@@ -2,6 +2,7 @@ import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/notificationFunctions.dart';
 import 'package:club/user.dart';
+import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class _SignUpState extends State<SignUp> {
         'club_class': user.club_class,
         'soccer_class': user.soccer_class,
         'status': user.status,
-        'token': user.token,
+        'token': [user.token],
         'created_time': user.created_time
       });
     } catch (e) {
@@ -64,8 +65,7 @@ class _SignUpState extends State<SignUp> {
         String password = _passwordController.text;
         String birthdate = _birthdateController.text;
 
-        UserCredential credential = await _auth.createUserWithEmailAndPassword(
-            email: email, password: password);
+        await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
         String tokenKey = await _firebaseMessaging();
 
@@ -90,7 +90,10 @@ class _SignUpState extends State<SignUp> {
             'new_user', {}, {});
 
         setState(() {
-          Navigator.pushNamed(context, '/');
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const Login()));
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(
               builder: (context) => const AcceptancePage(title: 'Tiber Club')));
     } else if (message.data['category'] == 'accepted') {
-      Navigator.push(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Login()));
     } else if (message.data['category'] == 'new_event') {

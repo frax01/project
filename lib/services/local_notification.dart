@@ -24,8 +24,8 @@ class LocalNotificationService {
             'default_notification_channel_id', 'My Channel Name',
             importance: Importance.max,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher')));
+            icon: '@mipmap/ic_stat_t',
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/logo')));
 
     _notificationsPlugin.show(
       DateTime.now().microsecond,

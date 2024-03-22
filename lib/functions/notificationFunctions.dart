@@ -10,7 +10,6 @@ Future<void> sendNotification(List fcmToken, String notTitle, String message,
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
-
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -69,8 +68,13 @@ Future<List<String>> fetchToken(String section, String target) async {
         .where(section, isEqualTo: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      String token = documentSnapshot['token'];
-      tokens.add(token);
+      for (String value in documentSnapshot['token']) {
+        print("value: $value");
+        if(!tokens.contains(value)) {
+          tokens.add(value);
+        }
+      }
+      print("tokens: $tokens");
     }
     return tokens;
   } catch (e) {

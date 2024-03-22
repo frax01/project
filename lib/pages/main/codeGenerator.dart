@@ -155,7 +155,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'club_class': selectedClubClass,
         'status': selectedStatus,
       });
-      List token = [querySnapshot.docs.first["token"]];
+      List token = querySnapshot.docs.first["token"];
       print(token);
       sendNotification(
           token, 'Tiber Club', 'Sei stato accettato!', 'accepted', {}, {});
