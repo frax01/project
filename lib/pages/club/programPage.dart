@@ -7,10 +7,10 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'club.dart';
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import '../../functions/weatherFunctions.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
@@ -105,7 +105,7 @@ class _ProgramPageState extends State<ProgramPage> {
 
     String newTitle = data['title'];
     String imagePath = data['imagePath'];
-    String selectedClass = data['selectedClass'];
+    List selectedFormClass = data['selectedClass'];
     String selectedOption = data['selectedOption'];
     String description = data['description'];
     String startDate = data['startDate'] ?? '';
@@ -118,6 +118,16 @@ class _ProgramPageState extends State<ProgramPage> {
     String? selectedCitta = "";
     String selectedStato = "";
     String? selectedNum = "";
+
+    final List<String> allOptions = [
+      '1° liceo',
+      '2° liceo',
+      '3° liceo',
+      '4° liceo',
+      '5° liceo'
+    ];
+    print("selectedFormClass: $selectedFormClass");
+    //List<String> selectedFormClass = ['1° liceo', '3° liceo'];
 
     return showDialog<void>(
         context: context,
@@ -195,28 +205,50 @@ class _ProgramPageState extends State<ProgramPage> {
                     },
                   ),
                   const SizedBox(height: 16.0),
-                  DropdownButtonFormField<String>(
-                    value: data['selectedClass'],
-                    onChanged: (value) {
+                  MultiSelectDialogField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    items: allOptions
+                        .map(
+                            (option) => MultiSelectItem<String>(option, option))
+                        .toList(),
+                    buttonText: const Text('Classe'),
+                    confirmText: const Text('Ok'),
+                    cancelText: const Text('Annulla'),
+                    initialValue: selectedFormClass,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Inserire almeno una classe';
+                      }
+                      return null;
+                    },
+                    onConfirm: (value) {
                       setState(() {
-                        selectedClass = value!;
+                        selectedFormClass = value;
                       });
                     },
-                    items: [
-                      '',
-                      '1° liceo',
-                      '2° liceo',
-                      '3° liceo',
-                      '4° liceo',
-                      '5° liceo'
-                    ].map((String option) {
-                      return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(option),
-                      );
-                    }).toList(),
-                    hint: const Text('Seleziona un\'opzione'),
                   ),
+                  //DropdownButtonFormField<String>(
+                  //  value: data['selectedClass'],
+                  //  onChanged: (value) {
+                  //    setState(() {
+                  //      selectedClass = value!;
+                  //    });
+                  //  },
+                  //  items: [
+                  //    '',
+                  //    '1° liceo',
+                  //    '2° liceo',
+                  //    '3° liceo',
+                  //    '4° liceo',
+                  //    '5° liceo'
+                  //  ].map((String option) {
+                  //    return DropdownMenuItem<String>(
+                  //      value: option,
+                  //      child: Text(option),
+                  //    );
+                  //  }).toList(),
+                  //  hint: const Text('Seleziona un\'opzione'),
+                  //),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () async {
@@ -281,7 +313,7 @@ class _ProgramPageState extends State<ProgramPage> {
                           id,
                           newTitle,
                           imagePath,
-                          selectedClass,
+                          selectedFormClass,
                           startDate,
                           endDate,
                           description,
@@ -303,7 +335,7 @@ class _ProgramPageState extends State<ProgramPage> {
       String id,
       String newTitle,
       String imagePath,
-      String selectedClass,
+      List selectedFormClass,
       String startDate,
       String endDate,
       String description,
@@ -317,7 +349,7 @@ class _ProgramPageState extends State<ProgramPage> {
             .showSnackBar(const SnackBar(content: Text('Inserisci un titolo')));
         return;
       }
-      if (selectedClass == "") {
+      if (selectedFormClass == "") {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Inserisci una classe')));
         return;
@@ -329,7 +361,7 @@ class _ProgramPageState extends State<ProgramPage> {
       Map document = {
         'title': newTitle,
         'imagePath': imagePath,
-        'selectedClass': selectedClass,
+        'selectedClass': selectedFormClass,
         'selectedOption': section,
         'description': description,
         'startDate': startDate,
@@ -345,7 +377,7 @@ class _ProgramPageState extends State<ProgramPage> {
           .update({
         'title': newTitle,
         'imagePath': imagePath,
-        'selectedClass': selectedClass,
+        'selectedClass': selectedFormClass,
         'selectedOption': section,
         'description': description,
         'startDate': startDate,
@@ -355,7 +387,14 @@ class _ProgramPageState extends State<ProgramPage> {
         'lon': selectedLon,
       });
       Navigator.pop(context);
-      List<String> token = await fetchToken('club_class', selectedClass);
+      List<String> token = [];
+      for (String value in selectedFormClass) {
+        List<String> items = await fetchToken('club_class', value);
+        for (String elem in items) {
+          token.add(elem);
+        }
+      }
+      //List<String> token = await fetchToken('club_class', selectedClass);
       sendNotification(token, 'Programma modificato!', newTitle,
           'modified_event', document, weather);
     } catch (e) {

@@ -22,7 +22,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   String selectedClubClass = "";
   String selectedStatus = "";
 
-  final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor", "Mister"];
+  final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor"];
   final List<String> clubClassOptions = [
     "",
     "1° liceo",

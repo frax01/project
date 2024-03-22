@@ -15,7 +15,7 @@ Future<List<Map<String, dynamic>>> fetchData(
         FirebaseFirestore.instance.collection(collectionName);
 
     QuerySnapshot querySnapshot =
-        await collection.where('selectedClass', isEqualTo: selectedClass).get();
+        await collection.where('selectedClass', arrayContains: selectedClass).get();
 
     if (querySnapshot.docs.isNotEmpty) {
       List<Map<String, dynamic>> documents = querySnapshot.docs

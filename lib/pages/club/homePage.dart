@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'programPage.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -130,7 +131,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _showAddEvent(String selectedOption) async {
     String title = '';
     String imagePath = '';
-    String selectedClass = '';
+    //String selectedClass = '';
     String startDate = '';
     String endDate = '';
     String description = '';
@@ -143,6 +144,15 @@ class _HomePageState extends State<HomePage> {
     String indirizzo = '';
 
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+    final List<String> allOptions = [
+      '1° liceo',
+      '2° liceo',
+      '3° liceo',
+      '4° liceo',
+      '5° liceo'
+    ];
+    List<String> selectedFormClass = [];
 
     return showDialog<void>(
       context: context,
@@ -234,34 +244,57 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     const SizedBox(height: 16.0),
-                    DropdownButtonFormField<String>(
-                      value: selectedClass,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedClass = value!;
-                        });
-                      },
+                    MultiSelectDialogField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      items: allOptions
+                          .map((option) =>
+                              MultiSelectItem<String>(option, option))
+                          .toList(),
+                      buttonText: const Text('Classe'),
+                      confirmText: const Text('Ok'),
+                      cancelText: const Text('Annulla'),
+                      initialValue: selectedFormClass,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Inserire la classe';
+                          return 'Inserire almeno una classe';
                         }
                         return null;
                       },
-                      items: [
-                        '',
-                        '1° liceo',
-                        '2° liceo',
-                        '3° liceo',
-                        '4° liceo',
-                        '5° liceo'
-                      ].map((String option) {
-                        return DropdownMenuItem<String>(
-                          value: option,
-                          child: Text(option),
-                        );
-                      }).toList(),
-                      hint: const Text('Seleziona una classe'),
+                      onConfirm: (value) {
+                        setState(() {
+                          selectedFormClass = value;
+                          print("select: $selectedFormClass");
+                        });
+                      },
                     ),
+                    //DropdownButtonFormField<String>(
+                    //  value: selectedClass,
+                    //  onChanged: (value) {
+                    //    setState(() {
+                    //      selectedClass = value!;
+                    //    });
+                    //  },
+                    //  validator: (value) {
+                    //    if (value == null || value.isEmpty) {
+                    //      return 'Inserire la classe';
+                    //    }
+                    //    return null;
+                    //  },
+                    //  items: [
+                    //    '',
+                    //    '1° liceo',
+                    //    '2° liceo',
+                    //    '3° liceo',
+                    //    '4° liceo',
+                    //    '5° liceo'
+                    //  ].map((String option) {
+                    //    return DropdownMenuItem<String>(
+                    //      value: option,
+                    //      child: Text(option),
+                    //    );
+                    //  }).toList(),
+                    //  hint: const Text('Seleziona una classe'),
+                    //),
                     const SizedBox(height: 16.0),
                     ElevatedButton(
                       onPressed: () async {
@@ -277,48 +310,48 @@ class _HomePageState extends State<HomePage> {
                           : 'Carica Immagine'), //mostrare una barra di caricamento
                     ),
                     const SizedBox(height: 16.0),
-                    ...(selectedOption == 'weekend' ||
-                            selectedOption == 'extra')
-                        ? [
-                            ElevatedButton(
-                              onPressed: () async {
-                                startDate = await _startDate(context, startDate,
-                                    isCreate: true);
-                                setState(() {});
-                              },
-                              child:
-                                  Text(startDateUploaded ? startDate : 'Data'),
-                            ),
-                          ]
-                        : (selectedOption == 'trip' ||
-                                selectedOption == 'tournament')
-                            ? [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    startDate = await _startDate(
-                                        context, startDate,
-                                        isCreate: true);
-                                    setState(() {});
-                                  },
-                                  child: Text(startDateUploaded
-                                      ? startDate
-                                      : 'Data iniziale'),
-                                ),
-                                const SizedBox(height: 16.0),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    endDate = await _endDate(
-                                        context, startDate, endDate,
-                                        isCreate: true);
-                                    setState(() {});
-                                  },
-                                  child: Text(endDateUploaded
-                                      ? endDate
-                                      : 'Data finale'),
-                                ),
-                              ]
-                            : [],
-                    const SizedBox(height: 16.0),
+                    //...(selectedOption == 'weekend' ||
+                    //        selectedOption == 'extra')
+                    //    ? [
+                    //        ElevatedButton(
+                    //          onPressed: () async {
+                    //            startDate = await _startDate(context, startDate,
+                    //                isCreate: true);
+                    //            setState(() {});
+                    //          },
+                    //          child:
+                    //              Text(startDateUploaded ? startDate : 'Data'),
+                    //        ),
+                    //      ]
+                    //    : (selectedOption == 'trip' ||
+                    //            selectedOption == 'tournament')
+                    //        ? [
+                    //            ElevatedButton(
+                    //              onPressed: () async {
+                    //                startDate = await _startDate(
+                    //                    context, startDate,
+                    //                    isCreate: true);
+                    //                setState(() {});
+                    //              },
+                    //              child: Text(startDateUploaded
+                    //                  ? startDate
+                    //                  : 'Data iniziale'),
+                    //            ),
+                    //            const SizedBox(height: 16.0),
+                    //            ElevatedButton(
+                    //              onPressed: () async {
+                    //                endDate = await _endDate(
+                    //                    context, startDate, endDate,
+                    //                    isCreate: true);
+                    //                setState(() {});
+                    //              },
+                    //              child: Text(endDateUploaded
+                    //                  ? endDate
+                    //                  : 'Data finale'),
+                    //            ),
+                    //          ]
+                    //        : [],
+                    //const SizedBox(height: 16.0),
                     TextFormField(
                       onChanged: (value) {
                         description = value;
@@ -352,7 +385,7 @@ class _HomePageState extends State<HomePage> {
                                   title,
                                   selectedOption,
                                   imagePath,
-                                  selectedClass,
+                                  selectedFormClass,
                                   startDate,
                                   endDate,
                                   description,
@@ -382,7 +415,7 @@ class _HomePageState extends State<HomePage> {
       String title,
       String selectedOption,
       String imagePath,
-      String selectedClass,
+      List selectedFormClass,
       String startDate,
       String endDate,
       String description,
@@ -390,17 +423,17 @@ class _HomePageState extends State<HomePage> {
       String lat,
       String lon) async {
     try {
-      if ((selectedOption == 'weekend' || selectedOption == 'extra') &&
-          startDate == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a date')));
-        return;
-      }
-      if ((selectedOption == 'trip') && (startDate == "" || endDate == "")) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Please select the start and the end date')));
-        return;
-      }
+      //if ((selectedOption == 'weekend' || selectedOption == 'extra') &&
+      //    startDate == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select a date')));
+      //  return;
+      //}
+      //if ((selectedOption == 'trip') && (startDate == "" || endDate == "")) {
+      //  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //      content: Text('Please select the start and the end date')));
+      //  return;
+      //}
       //if (imagePath == "") {
       //  ScaffoldMessenger.of(context).showSnackBar(
       //      const SnackBar(content: Text('Please select an image')));
@@ -412,15 +445,19 @@ class _HomePageState extends State<HomePage> {
         lon = '12.47788708';
       }
 
+      print("0");
+
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+      //da togliere
+      startDate = '22-03-2024';
+      endDate = '';
       Map weather = await fetchWeatherData(startDate, endDate, lat, lon);
-
+      print("1");
       Map document = {
         'title': title,
         'selectedOption': selectedOption,
         'imagePath': imagePath,
-        'selectedClass': selectedClass,
+        'selectedClass': selectedFormClass,
         'description': description,
         'startDate': startDate,
         'endDate': endDate,
@@ -428,6 +465,9 @@ class _HomePageState extends State<HomePage> {
         'lat': lat,
         'lon': lon,
       };
+      print("2");
+
+      print('section: ${widget.section.toLowerCase()}_$selectedOption');
 
       await firestore
           .collection('${widget.section.toLowerCase()}_$selectedOption')
@@ -435,7 +475,7 @@ class _HomePageState extends State<HomePage> {
         'title': title,
         'selectedOption': selectedOption,
         'imagePath': imagePath,
-        'selectedClass': selectedClass,
+        'selectedClass': selectedFormClass,
         'description': description,
         'startDate': startDate,
         'endDate': endDate,
@@ -444,7 +484,15 @@ class _HomePageState extends State<HomePage> {
         'lon': lon,
       });
       Navigator.pop(context);
-      List<String> token = await fetchToken('club_class', selectedClass);
+      List<String> token = [];
+      for (String value in selectedFormClass) {
+        List<String> items = await fetchToken('club_class', value);
+        for (String elem in items) {
+          token.add(elem);
+        }
+      }
+      print("token: $token");
+      //List<String> token = await fetchToken('club_class', selectedFormClass);
       sendNotification(
           token, 'Nuovo programma!', title, 'new_event', document, weather);
     } catch (e) {
@@ -453,7 +501,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildCard(document, weather) {
-    var id = document['id'];
+    //var id = document['id'];
     var title = document['title'];
     var level = document['selectedOption'];
     var startDate = document['startDate'];
@@ -542,11 +590,11 @@ class _HomePageState extends State<HomePage> {
                                 fontWeight: FontWeight.bold, fontSize: 20.0)),
                         Text(
                           level == 'weekend'
-                              ? 'Weekend'
+                              ? 'Sabato'
                               : level == 'extra'
                                   ? 'Extra'
                                   : level == 'trip'
-                                      ? 'Gita'
+                                      ? 'Viaggio'
                                       : 'Torneo',
                           style: const TextStyle(color: Colors.black54),
                         ),
