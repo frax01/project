@@ -63,6 +63,10 @@ class _ClubPageState extends State<ClubPage> {
 
   Widget smallScreen() {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tiber Club'),
+        automaticallyImplyLeading: false,
+      ),
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
             Animation<double> secondaryAnimation) {
@@ -74,27 +78,27 @@ class _ClubPageState extends State<ClubPage> {
         },
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (int index) {
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (int index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        destinations: const <NavigationDestination>[
-          NavigationDestination(
+        items: const [
+          BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          NavigationDestination(
+          BottomNavigationBarItem(
             icon: Icon(Icons.sports_soccer),
-            selectedIcon: Icon(Icons.sports_soccer),
+            activeIcon: Icon(Icons.sports_soccer),
             label: '11 ideale',
           ),
-          NavigationDestination(
+          BottomNavigationBarItem(
             icon: Icon(Icons.person_outlined),
-            selectedIcon: Icon(Icons.person),
+            activeIcon: Icon(Icons.person),
             label: 'Utente',
           ),
         ],
