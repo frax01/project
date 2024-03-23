@@ -189,6 +189,9 @@ class _LoginState extends State<Login> {
               }
               return null;
             },
+            onFieldSubmitted: (_) {
+              _handleLogin();
+            },
           ),
           const SizedBox(height: 10),
           SizedBox(
