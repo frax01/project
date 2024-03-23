@@ -1,8 +1,8 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/notificationFunctions.dart';
-import 'package:club/user.dart';
 import 'package:club/pages/main/login.dart';
+import 'package:club/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +65,8 @@ class _SignUpState extends State<SignUp> {
         String password = _passwordController.text;
         String birthdate = _birthdateController.text;
 
-        await _auth.createUserWithEmailAndPassword(email: email, password: password);
+        await _auth.createUserWithEmailAndPassword(
+            email: email, password: password);
 
         List tokenKey = await _firebaseMessaging();
 
@@ -91,9 +92,7 @@ class _SignUpState extends State<SignUp> {
 
         setState(() {
           Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const Login()));
+              context, MaterialPageRoute(builder: (context) => const Login()));
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -253,16 +252,25 @@ class _SignUpState extends State<SignUp> {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const BackButton(),
-          const SizedBox(height: 20),
-          const Text(
-            'Registrazione',
-            style: TextStyle(fontSize: 30),
+          const SafeArea(child: BackButton()),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Registrazione',
+                    style: TextStyle(fontSize: 30),
+                  ),
+                  const SizedBox(height: 20),
+                  _form(),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
-          _form(),
         ],
       ),
     );

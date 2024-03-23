@@ -1,10 +1,11 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/pages/club/club.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:club/pages/club/club.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'waiting.dart';
 
 class Login extends StatefulWidget {
@@ -25,17 +26,15 @@ class _LoginState extends State<Login> {
 
   _goToWaiting() {
     Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const Waiting()));
+        context, MaterialPageRoute(builder: (context) => const Waiting()));
   }
 
   _goToHome() {
     Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      ClubPage(title: "Tiber Club", document: _document)));
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                ClubPage(title: "Tiber Club", document: _document)));
   }
 
   _saveLoginInfo() async {
@@ -65,7 +64,7 @@ class _LoginState extends State<Login> {
             await userDoc.reference.update({'token': tokens});
           }
         }
-        
+
         _document = {
           'name': user.docs.first['name'],
           'surname': user.docs.first['surname'],
@@ -78,7 +77,7 @@ class _LoginState extends State<Login> {
           'token': tokens,
           'id': user.docs.first.id,
         };
-        
+
         if (_rememberMe) {
           _saveLoginInfo();
         }
@@ -249,18 +248,22 @@ class _LoginState extends State<Login> {
   _smallScreen() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset("images/logo.png", width: 150),
-          const SizedBox(height: 20),
-          const Text(
-            'Tiber Club',
-            style: TextStyle(fontSize: 30),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset("images/logo.png", width: 150),
+              const SizedBox(height: 20),
+              const Text(
+                'Tiber Club',
+                style: TextStyle(fontSize: 30),
+              ),
+              const SizedBox(height: 20),
+              _form(),
+            ],
           ),
-          const SizedBox(height: 20),
-          _form(),
-        ],
+        ),
       ),
     );
   }
