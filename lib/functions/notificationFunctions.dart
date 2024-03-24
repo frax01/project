@@ -69,12 +69,10 @@ Future<List<String>> fetchToken(String section, String target) async {
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
       for (String value in documentSnapshot['token']) {
-        print("value: $value");
         if(!tokens.contains(value)) {
           tokens.add(value);
         }
       }
-      print("tokens: $tokens");
     }
     return tokens;
   } catch (e) {

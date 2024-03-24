@@ -37,8 +37,13 @@ void deleteOldDocuments() async {
   }
 }
 
-  Future<void> deleteDocument(String collection, String docId) async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore.collection(collection).doc(docId).delete();
-  }
+Future<void> deleteDocument(String collection, String docId) async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  await firestore.collection(collection).doc(docId).delete();
+}
+
+String convertDateFormat(String date) {
+  List<String> parts = date.split('-');
+  return '${parts[0]}/${parts[1]}/${parts[2]}';
+}
   

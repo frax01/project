@@ -120,14 +120,15 @@ class _ProgramPageState extends State<ProgramPage> {
     String? selectedNum = "";
 
     final List<String> allOptions = [
+      '1° media',
+      '2° media',
+      '3° media',
       '1° liceo',
       '2° liceo',
       '3° liceo',
       '4° liceo',
       '5° liceo'
     ];
-    print("selectedFormClass: $selectedFormClass");
-    //List<String> selectedFormClass = ['1° liceo', '3° liceo'];
 
     return showDialog<void>(
         context: context,
@@ -135,7 +136,7 @@ class _ProgramPageState extends State<ProgramPage> {
           return StatefulBuilder(
             builder: (context, setState) {
               return AlertDialog(
-                title: Text(level),
+                title: Text(level, textAlign: TextAlign.center),
                 content: Column(mainAxisSize: MainAxisSize.min, children: [
                   TextFormField(
                     controller: titleController,
@@ -227,28 +228,6 @@ class _ProgramPageState extends State<ProgramPage> {
                       });
                     },
                   ),
-                  //DropdownButtonFormField<String>(
-                  //  value: data['selectedClass'],
-                  //  onChanged: (value) {
-                  //    setState(() {
-                  //      selectedClass = value!;
-                  //    });
-                  //  },
-                  //  items: [
-                  //    '',
-                  //    '1° liceo',
-                  //    '2° liceo',
-                  //    '3° liceo',
-                  //    '4° liceo',
-                  //    '5° liceo'
-                  //  ].map((String option) {
-                  //    return DropdownMenuItem<String>(
-                  //      value: option,
-                  //      child: Text(option),
-                  //    );
-                  //  }).toList(),
-                  //  hint: const Text('Seleziona un\'opzione'),
-                  //),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: () async {
@@ -274,6 +253,8 @@ class _ProgramPageState extends State<ProgramPage> {
                         ]
                       : (section == 'trip' || section == 'tournament')
                           ? [
+                            Row(
+                              children: [
                               ElevatedButton(
                                 onPressed: () async {
                                   String newDate = await _startDate(
@@ -284,7 +265,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                 },
                                 child: Text(startDate),
                               ),
-                              const SizedBox(height: 16.0),
+                              const SizedBox(width: 16.0),
                               ElevatedButton(
                                 onPressed: () async {
                                   String newDate = await _endDate(context,
@@ -294,7 +275,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                   });
                                 },
                                 child: Text(endDate),
-                              ),
+                              ),])
                             ]
                           : [],
                   const SizedBox(height: 16.0),
@@ -396,7 +377,6 @@ class _ProgramPageState extends State<ProgramPage> {
           }
         }
       }
-      //List<String> token = await fetchToken('club_class', selectedClass);
       sendNotification(token, 'Programma modificato!', newTitle,
           'modified_event', document, weather);
     } catch (e) {
@@ -462,16 +442,8 @@ class _ProgramPageState extends State<ProgramPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Chip(
-              label: Text(document['selectedOption'].toString().toUpperCase()),
-              labelStyle:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              labelPadding: const EdgeInsets.symmetric(
-                horizontal: 7,
-              ),
-            ),
-            const SizedBox(width: 10),
             Chip(
               label: Text(document['selectedClass'].toString().toUpperCase()),
               labelStyle:
@@ -479,19 +451,21 @@ class _ProgramPageState extends State<ProgramPage> {
               labelPadding: const EdgeInsets.symmetric(
                 horizontal: 7,
               ),
+              backgroundColor: Colors.white,
             ),
             const SizedBox(width: 10),
             Chip(
-              label: Text(
+              label: Text( //${convertDateFormat(document['startDate'])}
                 document['endDate'].isNotEmpty
-                    ? '${document['startDate']} ~ ${document['endDate']}'
-                    : document['startDate'],
+                    ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
+                    : '${convertDateFormat(document['startDate'])}',
               ),
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               labelPadding: const EdgeInsets.symmetric(
                 horizontal: 7,
               ),
+              backgroundColor: Colors.white,
             ),
           ],
         ),
@@ -676,13 +650,11 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //leading: IconButton(
-        //  onPressed: () {
-        //    aggiornaPagina();
-        //    Navigator.pop(context);
-        //  },
-        //  icon: Icon(Icons.arrow_back),
-        //),
+        title: widget.document['selectedOption']=='weekend'
+              ? const Text('Sabato')
+              : widget.document['selectedOption']=='trip'
+              ? const Text('Viaggio')
+              : const Text('Extra'),
         actions: [
           IconButton(
             onPressed: () {

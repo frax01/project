@@ -18,7 +18,6 @@ import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
 
 void main() async {
-  //timeDilation = 2.0;
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -51,7 +50,6 @@ void main() async {
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-  print("sono in background");
 }
 
 class MyApp extends StatelessWidget {
@@ -125,7 +123,6 @@ class _HomePageState extends State<HomePage> {
     //terminated: funziona
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      print("sono sopra");
       setState(() {
         terminated = true;
       });
@@ -133,7 +130,6 @@ class _HomePageState extends State<HomePage> {
 
     //background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("sono qui");
       handleMessage(message);
     });
 
@@ -161,7 +157,6 @@ class _HomePageState extends State<HomePage> {
       'image': message.data["image"],
       'check': message.data["check"],
     };
-    print('Messaggio aperto mentre l\'app è in background: $message');
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -251,14 +246,6 @@ class _HomePageState extends State<HomePage> {
                 } else if (terminated == false) {
                   Map<String, dynamic> document = snapshot.data ?? {};
                   return ClubPage(title: "Tiber Club", document: document);
-                  //Future.delayed(Duration.zero, () {
-                  //  Navigator.push(
-                  //      context,
-                  //      MaterialPageRoute(
-                  //          builder: (context) => ClubPage(
-                  //              title: "Tiber Club", document: document)));
-                  //});
-                  //return Container();
                 } else {
                   Map<String, dynamic> document = snapshot.data ?? {};
                   Map notificationDocument = {

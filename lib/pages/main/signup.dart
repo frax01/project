@@ -1,7 +1,6 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/notificationFunctions.dart';
-import 'package:club/pages/main/login.dart';
 import 'package:club/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -119,7 +118,7 @@ class _SignUpState extends State<SignUp> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
+      lastDate: DateTime.now(),
     );
     if (picked != null && picked != DateTime.now()) {
       String formattedDate = DateFormat('dd-MM-yyyy').format(picked);

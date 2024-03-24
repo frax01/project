@@ -13,10 +13,6 @@ class AcceptancePage extends StatefulWidget {
 
 class _AcceptancePageState extends State<AcceptancePage> {
   Future<void> _refresh() async {
-    // Aggiorna qui i tuoi dati o esegui le operazioni necessarie
-    // Puoi anche chiamare la funzione di recupero dati dal server qui
-
-    // Aggiorna la pagina
     setState(() {});
   }
 
@@ -89,7 +85,7 @@ class UserList extends StatelessWidget {
         }
         if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
           return const Center(
-            child: Text('There are no new users to accept.'),
+            child: Text('Non ci sono nuovi utenti da accettare'),
           );
         }
         return Column(

@@ -65,6 +65,7 @@ class _ClubPageState extends State<ClubPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tiber Club'),
+        centerTitle: true,
         automaticallyImplyLeading: false,
       ),
       body: PageTransitionSwitcher(

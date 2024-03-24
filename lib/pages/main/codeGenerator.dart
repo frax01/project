@@ -26,6 +26,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor"];
   final List<String> clubClassOptions = [
+    '1° media',
+    '2° media',
+    '3° media',
     "1° liceo",
     "2° liceo",
     "3° liceo",
@@ -126,7 +129,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           onConfirm: (value) {
             setState(() {
               classList = value;
-              print("select: $classList");
             });
           },
         ),
@@ -186,7 +188,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'status': selectedStatus,
       });
       List token = querySnapshot.docs.first["token"];
-      print(token);
       sendNotification(
           token, 'Tiber Club', 'Sei stato accettato!', 'accepted', {}, {});
       Navigator.pop(context);

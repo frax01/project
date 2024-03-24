@@ -75,7 +75,7 @@ class _TabScorerState extends State<TabScorer> {
                       const SizedBox(width: 8.0),
                       Text('$pointCount'),
                       const SizedBox(width: 8.0),
-                      const Text('Points'),
+                      const Text('Punti'),
                       const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
@@ -104,7 +104,7 @@ class _TabScorerState extends State<TabScorer> {
                       const SizedBox(width: 8.0),
                       Text('$goalCount'),
                       const SizedBox(width: 8.0),
-                      const Text('Goals'),
+                      const Text('Goal'),
                       const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
@@ -193,7 +193,7 @@ class _TabScorerState extends State<TabScorer> {
                       const SizedBox(width: 8.0),
                       Text('$localCounter'),
                       const SizedBox(width: 8.0),
-                      const Text('Points'),
+                      const Text('Punti'),
                       const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
@@ -221,7 +221,7 @@ class _TabScorerState extends State<TabScorer> {
                       const SizedBox(width: 8.0),
                       Text('$goalCounter'),
                       const SizedBox(width: 8.0),
-                      const Text('Goals'),
+                      const Text('Goal'),
                       const SizedBox(width: 8.0),
                       ElevatedButton(
                         onPressed: () {
@@ -441,6 +441,10 @@ class _TabScorerState extends State<TabScorer> {
       floatingActionButton:
           widget.document['status'] == 'Admin' && bottomLevel == 'torneo'
               ? SpeedDial(
+                icon: Icons.add,
+                activeIcon: Icons.close,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
                   children: [
                     SpeedDialChild(
                       child: const Text("1°"),
