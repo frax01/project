@@ -5,10 +5,10 @@ class ClubUser {
   final String password;
   final String birthdate;
   final String role;
-  final List club_class;
+  final String club_class;
   final String soccer_class;
   final String status;
-  final List token;
+  final String token;
   final DateTime created_time;
 
   ClubUser(

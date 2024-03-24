@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'verify.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -34,7 +35,7 @@ class _SignUpState extends State<SignUp> {
   _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
     assert(token != null);
-    return token != null && token.isNotEmpty ? [token] : [];
+    return token != null && token.isNotEmpty ? token : '';
   }
 
   _saveUser(ClubUser user) async {
@@ -68,7 +69,7 @@ class _SignUpState extends State<SignUp> {
         await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
 
-        List tokenKey = await _firebaseMessaging();
+        String tokenKey = await _firebaseMessaging();
 
         var user = ClubUser(
           name: name,
@@ -77,7 +78,7 @@ class _SignUpState extends State<SignUp> {
           password: password,
           birthdate: birthdate,
           role: '',
-          club_class: [],
+          club_class: '',
           soccer_class: '',
           status: '',
           token: tokenKey,
@@ -91,8 +92,8 @@ class _SignUpState extends State<SignUp> {
             'new_user', {}, {});
 
         setState(() {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => const Login()));
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => VerifyEmailPage()));
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
