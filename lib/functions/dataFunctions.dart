@@ -19,11 +19,16 @@ Future<List<Map<String, dynamic>>> fetchData(
         await collection.where('selectedClass', arrayContains: value).get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        List<Map<String, dynamic>> documents = querySnapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
-            .toList();
+        for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+          Map<String, dynamic> documentData =
+              {'id': doc.id, ...doc.data() as Map<String, dynamic>};
 
-        allDocuments.addAll(documents);
+          bool isUniqueId = allDocuments.every((map) => map['id'] != doc.id);
+
+          if (isUniqueId) {
+            allDocuments.add(documentData);
+          }
+        }
       }
     }
   }

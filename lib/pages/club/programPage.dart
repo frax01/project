@@ -253,29 +253,29 @@ class _ProgramPageState extends State<ProgramPage> {
                         ]
                       : (section == 'trip' || section == 'tournament')
                           ? [
-                            Row(
-                              children: [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  String newDate = await _startDate(
-                                      context, data['startDate']);
-                                  setState(() {
-                                    startDate = newDate;
-                                  });
-                                },
-                                child: Text(startDate),
-                              ),
-                              const SizedBox(width: 16.0),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  String newDate = await _endDate(context,
-                                      data['startDate'], data['endDate']);
-                                  setState(() {
-                                    endDate = newDate;
-                                  });
-                                },
-                                child: Text(endDate),
-                              ),])
+                              Row(children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    String newDate = await _startDate(
+                                        context, data['startDate']);
+                                    setState(() {
+                                      startDate = newDate;
+                                    });
+                                  },
+                                  child: Text(startDate),
+                                ),
+                                const SizedBox(width: 16.0),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    String newDate = await _endDate(context,
+                                        data['startDate'], data['endDate']);
+                                    setState(() {
+                                      endDate = newDate;
+                                    });
+                                  },
+                                  child: Text(endDate),
+                                ),
+                              ])
                             ]
                           : [],
                   const SizedBox(height: 16.0),
@@ -423,8 +423,10 @@ class _ProgramPageState extends State<ProgramPage> {
           const SizedBox(width: 10),
           Column(
             children: [
-              Text('${weather["t_max"]}ºC'),
-              Text('${weather["t_min"]}ºC'),
+              Text('${weather["t_max"]}ºC',
+                  style: const TextStyle(color: Colors.red)),
+              Text('${weather["t_min"]}ºC',
+                  style: const TextStyle(color: Colors.blue)),
             ],
           ),
         ],
@@ -442,20 +444,40 @@ class _ProgramPageState extends State<ProgramPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Chip(
-              label: Text(document['selectedClass'].toString().toUpperCase()),
-              labelStyle:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              labelPadding: const EdgeInsets.symmetric(
-                horizontal: 7,
-              ),
-              backgroundColor: Colors.white,
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: List<Widget>.generate(document['selectedClass'].length, (index) {
+                      String classValue = document['selectedClass'][index].toString();
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(classValue),
+                        ),
+                      );
+                    }
+                  )
+                ),
+              )
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 15),
             Chip(
-              label: Text( //${convertDateFormat(document['startDate'])}
+              label: Text(
                 document['endDate'].isNotEmpty
                     ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
                     : '${convertDateFormat(document['startDate'])}',
@@ -463,7 +485,7 @@ class _ProgramPageState extends State<ProgramPage> {
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               labelPadding: const EdgeInsets.symmetric(
-                horizontal: 7,
+                horizontal: 5,
               ),
               backgroundColor: Colors.white,
             ),
@@ -471,27 +493,40 @@ class _ProgramPageState extends State<ProgramPage> {
         ),
         const SizedBox(height: 20.0),
         Card(
-          surfaceTintColor: Colors.white,
-          elevation: 5,
-          margin: const EdgeInsets.all(0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
+            surfaceTintColor: Colors.white,
+            elevation: 5,
+            margin: const EdgeInsets.all(0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Text(
-                      document['address'],
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                  ),
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dove',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          document['address'],
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        //const SizedBox(height: 15),
+                        //Text(
+                        //  document['endDate'].isNotEmpty
+                        //      ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
+                        //      : '${convertDateFormat(document['startDate'])}',
+                        //),
+                      ]),
                   weatherTile(weather),
                 ],
               ),
-            ),
-          ),
-        ),
+            )),
         const SizedBox(height: 20.0),
         Card(
           surfaceTintColor: Colors.white,
@@ -509,7 +544,7 @@ class _ProgramPageState extends State<ProgramPage> {
                     color: Colors.grey,
                   ),
                 ),
-                const SizedBox(width: 15),
+                const SizedBox(height: 15),
                 Text(
                   document['description'],
                   style: const TextStyle(fontSize: 17),
@@ -650,11 +685,11 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: widget.document['selectedOption']=='weekend'
-              ? const Text('Sabato')
-              : widget.document['selectedOption']=='trip'
-              ? const Text('Viaggio')
-              : const Text('Extra'),
+        title: widget.document['selectedOption'] == 'weekend'
+            ? const Text('Sabato')
+            : widget.document['selectedOption'] == 'trip'
+                ? const Text('Viaggio')
+                : const Text('Extra'),
         actions: [
           IconButton(
             onPressed: () {

@@ -162,11 +162,11 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: selectedOption=='weekend'
-                    ? const Text('Sabato', textAlign: TextAlign.center)
-                    : selectedOption=='trip'
-                    ? const Text('Viaggio', textAlign: TextAlign.center)
-                    : const Text('Extra', textAlign: TextAlign.center),
+              title: selectedOption == 'weekend'
+                  ? const Text('Sabato', textAlign: TextAlign.center)
+                  : selectedOption == 'trip'
+                      ? const Text('Viaggio', textAlign: TextAlign.center)
+                      : const Text('Extra', textAlign: TextAlign.center),
               content: Form(
                 key: _formKey,
                 child: Column(
@@ -303,31 +303,30 @@ class _HomePageState extends State<HomePage> {
                         : (selectedOption == 'trip' ||
                                 selectedOption == 'tournament')
                             ? [
-                              Row(
-                                children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    startDate = await _startDate(
-                                        context, startDate,
-                                        isCreate: true);
-                                    setState(() {});
-                                  },
-                                  child: Text(startDateUploaded
-                                      ? startDate
-                                      : 'Data iniziale'),
-                                ),
-                                const SizedBox(width: 16.0),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    endDate = await _endDate(
-                                        context, startDate, endDate,
-                                        isCreate: true);
-                                    setState(() {});
-                                  },
-                                  child: Text(endDateUploaded
-                                      ? endDate
-                                      : 'Data finale'),
-                                ),
+                                Row(children: [
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      startDate = await _startDate(
+                                          context, startDate,
+                                          isCreate: true);
+                                      setState(() {});
+                                    },
+                                    child: Text(startDateUploaded
+                                        ? startDate
+                                        : 'Data iniziale'),
+                                  ),
+                                  const SizedBox(width: 16.0),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      endDate = await _endDate(
+                                          context, startDate, endDate,
+                                          isCreate: true);
+                                      setState(() {});
+                                    },
+                                    child: Text(endDateUploaded
+                                        ? endDate
+                                        : 'Data finale'),
+                                  ),
                                 ])
                               ]
                             : [],
@@ -537,14 +536,13 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             child: endDate != ""
-                              ? Text(
-                                  '${convertDateFormat(startDate)} ～ ${convertDateFormat(endDate)}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold))
-                              : Text(
-                                  '${convertDateFormat(startDate)}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                                ? Text(
+                                    '${convertDateFormat(startDate)} ～ ${convertDateFormat(endDate)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold))
+                                : Text('${convertDateFormat(startDate)}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
