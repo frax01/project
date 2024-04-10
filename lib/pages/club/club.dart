@@ -52,13 +52,8 @@ class _ClubPageState extends State<ClubPage> {
     await FirebaseAuth.instance.signOut();
     setState(() {
       Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Login()));
+          context, MaterialPageRoute(builder: (context) => const Login()));
     });
-  }
-
-  Future<void> _refresh() async {
-    setState(() {});
   }
 
   Widget smallScreen() {
@@ -189,14 +184,9 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      //child: PopScope(
-      //canPop: false,
-      child: AdaptiveLayout(
-        smallLayout: smallScreen(),
-        largeLayout: bigScreen(),
-      ),
+    return AdaptiveLayout(
+      smallLayout: smallScreen(),
+      largeLayout: bigScreen(),
     );
   }
 }
