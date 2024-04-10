@@ -402,33 +402,6 @@ class _TabScorerState extends State<TabScorer> {
           List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
           return CustomScrollView(
             slivers: [
-              SliverAppBar(
-                forceElevated: true,
-                expandedHeight: 250.0,
-                automaticallyImplyLeading: false,
-                centerTitle: true,
-                pinned: true,
-                floating: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: const Text("11 ideale",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold)),
-                  centerTitle: true,
-                  expandedTitleScale: 3.0,
-                  stretchModes: const [
-                    StretchMode.zoomBackground,
-                    StretchMode.fadeTitle,
-                  ],
-                  background: Image.asset(
-                    'images/CC.jpeg',
-                    fit: BoxFit.cover,
-                    color: Colors.black.withOpacity(0.5),
-                    colorBlendMode: BlendMode.darken,
-                  ),
-                ),
-              ),
               SliverList(
                 delegate: SliverChildListDelegate(
                   _buildList(scorers),
