@@ -1,10 +1,12 @@
 import 'dart:convert';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
-Future<Map> fetchWeatherData(startDate, endDate, lat, lon) async {
-    Map<String, dynamic> weather = {};
+Future<Map<String, dynamic>> fetchWeatherData(
+    startDate, endDate, lat, lon) async {
+  Map<String, dynamic> weather = {};
     int weatherCode = 0;
     int temperatureMin = 0;
     int temperatureMax = 0;

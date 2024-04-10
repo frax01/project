@@ -18,6 +18,7 @@ import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
 
 void main() async {
+  // timeDilation = 4.0;
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -164,8 +165,7 @@ class _HomePageState extends State<HomePage> {
               builder: (context) => const AcceptancePage(title: 'Tiber Club')));
     } else if (message.data['category'] == 'accepted') {
       Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Login()));
+          context, MaterialPageRoute(builder: (context) => const Login()));
     } else if (message.data['category'] == 'new_event') {
       Navigator.push(
           context,
@@ -176,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                     isAdmin: document['status'] == 'Admin',
                   )));
     } else if (message.data['category'] == 'modified_event') {
-        Navigator.pushReplacement(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
@@ -204,7 +204,7 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Image.asset('images/logo.png'),
+                  Image.asset('images/logo.png', height: 200.0),
                   const SizedBox(height: 20.0),
                   const CircularProgressIndicator(),
                 ],
@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Image.asset('images/logo.png'),
+                            Image.asset('images/logo.png', height: 200.0),
                             const SizedBox(height: 20.0),
                             const CircularProgressIndicator(),
                           ]),

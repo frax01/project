@@ -1,19 +1,19 @@
-import 'package:animations/animations.dart';
+import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:club/functions/dataFunctions.dart';
-import 'package:club/functions/geoFunctions.dart';
-import 'package:club/functions/notificationFunctions.dart';
-import 'package:club/functions/weatherFunctions.dart';
+import 'package:club/pages/club/programCard.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'programPage.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
-import 'package:club/functions/generalFunctions.dart';
+import 'package:ms_undraw/ms_undraw.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
+
+import '../../functions/dataFunctions.dart';
+import '../../functions/geoFunctions.dart';
+import '../../functions/notificationFunctions.dart';
+import '../../functions/weatherFunctions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -28,89 +28,15 @@ class HomePage extends StatefulWidget {
   final bool isAdmin;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  final _listItems = <ProgramCard>[];
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
   bool imageUploaded = false;
   bool startDateUploaded = false;
   bool endDateUploaded = false;
-
-  final _listItems = <Widget>[];
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadItems();
-  }
-
-  void _loadItems() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await messaging.getToken();
-    var items = await fetchData([], widget.selectedClass);
-    var weather = [];
-    for (var item in items) {
-      var startDate = item['startDate'];
-      var endDate = item['endDate'];
-      var lat = item["lat"];
-      var lon = item["lon"];
-      var weatherData = await fetchWeatherData(startDate, endDate, lat, lon);
-      weather.add(weatherData);
-    }
-
-    var future = Future(() {});
-    for (var i = 0; i < items.length; i++) {
-      future = future.then((_) {
-        return Future.delayed(const Duration(milliseconds: 100), () {
-          _listItems.add(buildCard(items[i], weather[i]));
-          _listKey.currentState!.insertItem(i);
-        });
-      });
-    }
-  }
-
-  Future<String> _startDate(BuildContext context, String startDate,
-      {bool isCreate = false}) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null && picked != DateTime.now()) {
-      startDate = DateFormat('dd-MM-yyyy').format(picked);
-    }
-    isCreate ? startDateUploaded = true : null;
-    return startDate;
-  }
-
-  Future<String> _endDate(
-      BuildContext context, String startDate, String endDate,
-      {bool isCreate = false}) async {
-    if (startDate == "") {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inserisci prima la data iniziale')));
-      return '';
-    } else {
-      DateFormat inputFormat = DateFormat('dd-MM-yyyy');
-      DateTime date = inputFormat.parse(startDate);
-      DateFormat outputFormat = DateFormat('yyyy-MM-dd');
-      String formattedStartDate = outputFormat.format(date);
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.parse(formattedStartDate),
-        firstDate: DateTime.parse(formattedStartDate),
-        lastDate:
-            DateTime.parse(formattedStartDate).add(const Duration(days: 365)),
-      );
-      if (picked != null && picked != DateTime.now()) {
-        endDate = DateFormat('dd-MM-yyyy').format(picked);
-      }
-    }
-    isCreate ? endDateUploaded = true : null;
-    return endDate;
-  }
 
   Future<String> uploadImage(String level, {bool isCreate = false}) async {
     final storageRef = FirebaseStorage.instance.ref();
@@ -131,6 +57,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _showAddEvent(String selectedOption) async {
     String title = '';
     String imagePath = '';
+    //String selectedClass = '';
     String startDate = '';
     String endDate = '';
     String description = '';
@@ -145,9 +72,6 @@ class _HomePageState extends State<HomePage> {
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
     final List<String> allOptions = [
-      '1° media',
-      '2° media',
-      '3° media',
       '1° liceo',
       '2° liceo',
       '3° liceo',
@@ -162,11 +86,7 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: selectedOption == 'weekend'
-                  ? const Text('Sabato', textAlign: TextAlign.center)
-                  : selectedOption == 'trip'
-                      ? const Text('Viaggio', textAlign: TextAlign.center)
-                      : const Text('Extra', textAlign: TextAlign.center),
+              title: Text(selectedOption),
               content: Form(
                 key: _formKey,
                 child: Column(
@@ -269,9 +189,38 @@ class _HomePageState extends State<HomePage> {
                       onConfirm: (value) {
                         setState(() {
                           selectedFormClass = value;
+                          print("select: $selectedFormClass");
                         });
                       },
                     ),
+                    //DropdownButtonFormField<String>(
+                    //  value: selectedClass,
+                    //  onChanged: (value) {
+                    //    setState(() {
+                    //      selectedClass = value!;
+                    //    });
+                    //  },
+                    //  validator: (value) {
+                    //    if (value == null || value.isEmpty) {
+                    //      return 'Inserire la classe';
+                    //    }
+                    //    return null;
+                    //  },
+                    //  items: [
+                    //    '',
+                    //    '1° liceo',
+                    //    '2° liceo',
+                    //    '3° liceo',
+                    //    '4° liceo',
+                    //    '5° liceo'
+                    //  ].map((String option) {
+                    //    return DropdownMenuItem<String>(
+                    //      value: option,
+                    //      child: Text(option),
+                    //    );
+                    //  }).toList(),
+                    //  hint: const Text('Seleziona una classe'),
+                    //),
                     const SizedBox(height: 16.0),
                     ElevatedButton(
                       onPressed: () async {
@@ -287,50 +236,48 @@ class _HomePageState extends State<HomePage> {
                           : 'Carica Immagine'), //mostrare una barra di caricamento
                     ),
                     const SizedBox(height: 16.0),
-                    ...(selectedOption == 'weekend' ||
-                            selectedOption == 'extra')
-                        ? [
-                            ElevatedButton(
-                              onPressed: () async {
-                                startDate = await _startDate(context, startDate,
-                                    isCreate: true);
-                                setState(() {});
-                              },
-                              child:
-                                  Text(startDateUploaded ? startDate : 'Data'),
-                            ),
-                          ]
-                        : (selectedOption == 'trip' ||
-                                selectedOption == 'tournament')
-                            ? [
-                                Row(children: [
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      startDate = await _startDate(
-                                          context, startDate,
-                                          isCreate: true);
-                                      setState(() {});
-                                    },
-                                    child: Text(startDateUploaded
-                                        ? startDate
-                                        : 'Data iniziale'),
-                                  ),
-                                  const SizedBox(width: 16.0),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      endDate = await _endDate(
-                                          context, startDate, endDate,
-                                          isCreate: true);
-                                      setState(() {});
-                                    },
-                                    child: Text(endDateUploaded
-                                        ? endDate
-                                        : 'Data finale'),
-                                  ),
-                                ])
-                              ]
-                            : [],
-                    const SizedBox(height: 16.0),
+                    //...(selectedOption == 'weekend' ||
+                    //        selectedOption == 'extra')
+                    //    ? [
+                    //        ElevatedButton(
+                    //          onPressed: () async {
+                    //            startDate = await _startDate(context, startDate,
+                    //                isCreate: true);
+                    //            setState(() {});
+                    //          },
+                    //          child:
+                    //              Text(startDateUploaded ? startDate : 'Data'),
+                    //        ),
+                    //      ]
+                    //    : (selectedOption == 'trip' ||
+                    //            selectedOption == 'tournament')
+                    //        ? [
+                    //            ElevatedButton(
+                    //              onPressed: () async {
+                    //                startDate = await _startDate(
+                    //                    context, startDate,
+                    //                    isCreate: true);
+                    //                setState(() {});
+                    //              },
+                    //              child: Text(startDateUploaded
+                    //                  ? startDate
+                    //                  : 'Data iniziale'),
+                    //            ),
+                    //            const SizedBox(height: 16.0),
+                    //            ElevatedButton(
+                    //              onPressed: () async {
+                    //                endDate = await _endDate(
+                    //                    context, startDate, endDate,
+                    //                    isCreate: true);
+                    //                setState(() {});
+                    //              },
+                    //              child: Text(endDateUploaded
+                    //                  ? endDate
+                    //                  : 'Data finale'),
+                    //            ),
+                    //          ]
+                    //        : [],
+                    //const SizedBox(height: 16.0),
                     TextFormField(
                       onChanged: (value) {
                         description = value;
@@ -347,7 +294,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 16.0),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
                           onPressed: () async {
@@ -358,7 +304,6 @@ class _HomePageState extends State<HomePage> {
                           },
                           child: const Text('Annulla'),
                         ),
-                        const SizedBox(width: 16.0),
                         ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
@@ -404,30 +349,36 @@ class _HomePageState extends State<HomePage> {
       String lat,
       String lon) async {
     try {
-      if ((selectedOption == 'weekend' || selectedOption == 'extra') &&
-          startDate == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a date')));
-        return;
-      }
-      if ((selectedOption == 'trip') && (startDate == "" || endDate == "")) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Please select the start and the end date')));
-        return;
-      }
-      if (imagePath == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an image')));
-        return;
-      }
+      //if ((selectedOption == 'weekend' || selectedOption == 'extra') &&
+      //    startDate == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select a date')));
+      //  return;
+      //}
+      //if ((selectedOption == 'trip') && (startDate == "" || endDate == "")) {
+      //  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //      content: Text('Please select the start and the end date')));
+      //  return;
+      //}
+      //if (imagePath == "") {
+      //  ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Please select an image')));
+      //  return;
+      //}
       if (address == '') {
         address = 'Tiber Club';
         lat = '41.91805195';
         lon = '12.47788708';
       }
 
+      print("0");
+
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+      //da togliere
+      startDate = '22-03-2024';
+      endDate = '';
       Map weather = await fetchWeatherData(startDate, endDate, lat, lon);
+      print("1");
       Map document = {
         'title': title,
         'selectedOption': selectedOption,
@@ -440,6 +391,9 @@ class _HomePageState extends State<HomePage> {
         'lat': lat,
         'lon': lon,
       };
+      print("2");
+
+      print('section: ${widget.section.toLowerCase()}_$selectedOption');
 
       await firestore
           .collection('${widget.section.toLowerCase()}_$selectedOption')
@@ -472,154 +426,99 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget buildCard(document, weather) {
-    var title = document['title'];
-    var level = document['selectedOption'];
-    var startDate = document['startDate'];
-    var endDate = document['endDate'];
-    var imagePath = document['imagePath'];
+  _loadItems(counts) {
+    for (final pair in counts) {
+      var baseQuery = FirebaseFirestore.instance
+          .collection(pair[0])
+          .where('selectedClass', arrayContainsAny: widget.selectedClass)
+          .orderBy('startDate');
+      for (var i = 0; i < pair[1]; i++) {
+        _listItems.add(ProgramCard(
+          query: baseQuery.startAt([i]).limit(1),
+          isAdmin: widget.isAdmin,
+        ));
+        _listKey.currentState?.insertItem(_listItems.length - 1);
+      }
+    }
+  }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-      child: OpenContainer(
-        clipBehavior: Clip.antiAlias,
-        closedElevation: 5.0,
-        closedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        closedBuilder: (context, action) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Image.network(
-                      imagePath,
-                      width: 400,
-                      height: 250,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (BuildContext context, Widget child,
-                          ImageChunkEvent? loadingProgress) {
-                        if (loadingProgress == null) {
-                          return child;
-                        } else {
-                          return const Center(
-                            child: SizedBox(
-                              width: 400,
-                              height: 250,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
-                    bottom: 10,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Container(
-                            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(7.0),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black54,
-                                  blurRadius: 7.0,
-                                ),
-                              ],
-                            ),
-                            child: endDate != ""
-                                ? Text(
-                                    '${convertDateFormat(startDate)} ～ ${convertDateFormat(endDate)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold))
-                                : Text('${convertDateFormat(startDate)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20.0)),
-                        Text(
-                          level == 'weekend'
-                              ? 'Sabato'
-                              : level == 'extra'
-                                  ? 'Extra'
-                                  : level == 'trip'
-                                      ? 'Viaggio'
-                                      : 'Torneo',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  _buildList() {
+    return FutureBuilder(
+      future: countDocuments(),
+      builder: (context, snapshot) {
+        Widget child;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          child = const Center(
+            child: CircularProgressIndicator(),
           );
-        },
-        openBuilder: (context, action) {
-          return ProgramPage(
-              document: document, weather: weather!, isAdmin: widget.isAdmin);
-        },
-      ),
+        } else {
+          _loadItems(snapshot.data!);
+          if (_listItems.isEmpty) {
+            child = Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 200.0,
+                  child: UnDraw(
+                    illustration: UnDrawIllustration.junior_soccer,
+                    placeholder: const SizedBox(
+                      height: 200.0,
+                      width: 200.0,
+                    ),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const Text(
+                  'Nessun evento disponibile',
+                  style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                ),
+              ],
+            );
+          } else {
+            child = AnimatedList(
+              key: _listKey,
+              initialItemCount: _listItems.length,
+              itemBuilder: (context, index, animation) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: _listItems[index],
+                );
+              },
+            );
+          }
+        }
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 100),
+          child: child,
+        );
+      },
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  _smallLayout() {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: AnimatedList(
-          key: _listKey,
-          initialItemCount: _listItems.length,
-          itemBuilder: (context, index, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: _listItems[index],
-            );
-          },
-        ),
+        child: _buildList(),
       ),
       floatingActionButton: widget.isAdmin
           ? SpeedDial(
               icon: Icons.add,
               activeIcon: Icons.close,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
               children: [
                 SpeedDialChild(
-                  child: const Icon(Icons.calendar_month_outlined),
-                  label: 'Sabato',
+                  child: const Icon(Icons.calendar_today),
+                  label: 'Weekend',
                   onTap: () {
                     _showAddEvent("weekend");
                   },
                 ),
                 SpeedDialChild(
-                  child: const Icon(Icons.airplanemode_active),
-                  label: 'Viaggio',
+                  child: const Icon(Icons.holiday_village),
+                  label: 'Trip',
                   onTap: () {
                     _showAddEvent("trip");
                   },
@@ -634,6 +533,27 @@ class _HomePageState extends State<HomePage> {
               ],
             )
           : null,
+    );
+  }
+
+  _largeLayout() {
+    return Container(
+      child: Center(
+        child: Text('Large Layout'),
+      ),
+    );
+  }
+
+  @override
+  initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      smallLayout: _smallLayout(),
+      largeLayout: _largeLayout(),
     );
   }
 }
