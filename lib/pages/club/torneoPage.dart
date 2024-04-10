@@ -387,6 +387,198 @@ class _TabScorerState extends State<TabScorer> {
     }).toList();
   }
 
+  Table _buildTable(List<QueryDocumentSnapshot> scorers) {
+    return Table(
+      columnWidths: const {
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(2),
+        2: FlexColumnWidth(1),
+        3: FlexColumnWidth(1),
+      },
+      children: [
+        TableRow(
+          children: [
+            const TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                child: Text(
+                  '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                child: Text(
+                  'Nome',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                child: Text(
+                  'Punti',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                child: Text(
+                  'Goal',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            widget.document["status"] == 'Admin'
+                ? const Padding(
+                    padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                    child: Text(
+                      '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  )
+                : Container(),
+          ],
+        ),
+        ...scorers.asMap().entries.map((entry) {
+          int index = entry.key;
+          QueryDocumentSnapshot scorer = entry.value;
+          Map<String, dynamic> scorerData =
+              scorer.data() as Map<String, dynamic>;
+          String scorerId = scorer.id;
+          return TableRow(
+            children: [
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: index == 0
+                      ? const Center(
+                          child: FaIcon(
+                            FontAwesomeIcons.medal,
+                            color: Colors.amber,
+                          ),
+                        )
+                      : index == 1
+                          ? const Center(
+                              child: FaIcon(
+                                FontAwesomeIcons.medal,
+                                color: Colors.grey,
+                              ),
+                            )
+                          : index == 2
+                              ? const Center(
+                                  child: FaIcon(
+                                    FontAwesomeIcons.medal,
+                                    color: Colors.brown,
+                                  ),
+                                )
+                              : Text(
+                                  '${index + 1}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                ),
+              ),
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${scorerData['name']} ${scorerData['surname']}',
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${scorerData['class']}',
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Text(
+                    '${scorerData['points']}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                ),
+              ),
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Text(
+                    '${scorerData['goals']}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                ),
+              ),
+              widget.document["status"] == 'Admin'
+                  ? PopupMenuButton(itemBuilder: (context) {
+                      return [
+                        PopupMenuItem(
+                          value: 0,
+                          child: ListTile(
+                            title: const Text('Modifica'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _showDialog(
+                                  scorerData['name'],
+                                  scorerData['surname'],
+                                  scorerData['class'],
+                                  scorerData['points'],
+                                  scorerData['goals'],
+                                  scorerId);
+                            },
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 1,
+                          child: ListTile(
+                            title: const Text('Elimina'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _deleteScorer(scorerId);
+                            },
+                          ),
+                        ),
+                      ];
+                    })
+                  : Container(),
+            ],
+          );
+        }).toList(),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -400,24 +592,19 @@ class _TabScorerState extends State<TabScorer> {
             return Center(child: Text('Errore: ${snapshot.error}'));
           }
           List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
-          return CustomScrollView(
-            slivers: [
-              SliverList(
-                delegate: SliverChildListDelegate(
-                  _buildList(scorers),
-                ),
-              ),
-            ],
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(child: _buildTable(scorers)),
           );
         },
       ),
       floatingActionButton:
           widget.document['status'] == 'Admin' && bottomLevel == 'torneo'
               ? SpeedDial(
-                icon: Icons.add,
-                activeIcon: Icons.close,
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                  icon: Icons.add,
+                  activeIcon: Icons.close,
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
                   children: [
                     SpeedDialChild(
                       child: const Text("1°"),
