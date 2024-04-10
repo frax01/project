@@ -198,6 +198,5 @@ class _ClubPageState extends State<ClubPage> {
         largeLayout: bigScreen(),
       ),
     );
-    //);
   }
 }
