@@ -290,58 +290,58 @@ class _TabScorerState extends State<TabScorer> {
   }
 
   Table _buildTable(List<QueryDocumentSnapshot> scorers) {
+    TableRow spacer = TableRow(
+      children: <Widget>[
+        const SizedBox(height: 8),
+        const SizedBox(height: 8),
+        const SizedBox(height: 8),
+        const SizedBox(height: 8),
+        widget.document["status"] == 'Admin'
+            ? const SizedBox(height: 8)
+            : Container(),
+      ],
+    );
     return Table(
       columnWidths: const {
         0: FlexColumnWidth(1),
-        1: FlexColumnWidth(2),
+        1: FlexColumnWidth(3),
         2: FlexColumnWidth(1),
         3: FlexColumnWidth(1),
       },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: [
         TableRow(
           children: [
-            const TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                child: Text(
-                  '',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+              child: Text(
+                '',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            const TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                child: Text(
-                  'Nome',
-                  textAlign: TextAlign.left,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+              child: Text(
+                'Nome',
+                textAlign: TextAlign.left,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            const TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                child: Text(
-                  'Punti',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+              child: Text(
+                'Punti',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            const TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                child: Text(
-                  'Goal',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+              child: Text(
+                'Goal',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             widget.document["status"] == 'Admin'
@@ -356,6 +356,7 @@ class _TabScorerState extends State<TabScorer> {
                 : Container(),
           ],
         ),
+        spacer,
         ...scorers.asMap().entries.map((entry) {
           int index = entry.key;
           QueryDocumentSnapshot scorer = entry.value;
@@ -363,84 +364,84 @@ class _TabScorerState extends State<TabScorer> {
               scorer.data() as Map<String, dynamic>;
           String scorerId = scorer.id;
           return TableRow(
-            children: [
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                  child: index == 0
-                      ? const Center(
-                          child: FaIcon(
-                            FontAwesomeIcons.medal,
-                            color: Colors.amber,
-                          ),
-                        )
-                      : index == 1
-                          ? const Center(
-                              child: FaIcon(
-                                FontAwesomeIcons.medal,
-                                color: Colors.grey,
-                              ),
-                            )
-                          : index == 2
-                              ? const Center(
-                                  child: FaIcon(
-                                    FontAwesomeIcons.medal,
-                                    color: Colors.brown,
-                                  ),
-                                )
-                              : Text(
-                                  '${index + 1}',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                    child: index == 0
+                        ? const Center(
+                            child: FaIcon(
+                              FontAwesomeIcons.medal,
+                              color: Colors.amber,
+                            ),
+                          )
+                        : index == 1
+                            ? const Center(
+                                child: FaIcon(
+                                  FontAwesomeIcons.medal,
+                                  color: Colors.grey,
                                 ),
-                ),
-              ),
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${scorerData['name']} ${scorerData['surname']}',
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${scorerData['class']}',
-                        textAlign: TextAlign.left,
-                      ),
-                    ],
+                              )
+                            : index == 2
+                                ? const Center(
+                                    child: FaIcon(
+                                      FontAwesomeIcons.medal,
+                                      color: Colors.brown,
+                                    ),
+                                  )
+                                : Text(
+                                    '${index + 1}',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                   ),
-                ),
-              ),
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                  child: Text(
-                    '${scorerData['points']}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${scorerData['name']} ${scorerData['surname']}',
+                          textAlign: TextAlign.left,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${scorerData['class']}',
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              TableCell(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                  child: Text(
-                    '${scorerData['goals']}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                    child: Text(
+                      '${scorerData['points']}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20.0),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                    child: Text(
+                      '${scorerData['goals']}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20.0),
+                    ),
               ),
               widget.document["status"] == 'Admin'
                   ? PopupMenuButton(itemBuilder: (context) {
@@ -476,7 +477,9 @@ class _TabScorerState extends State<TabScorer> {
                   : Container(),
             ],
           );
-        }).toList(),
+            })
+            .expand((element) => [element, spacer])
+            .toList(),
       ],
     );
   }
