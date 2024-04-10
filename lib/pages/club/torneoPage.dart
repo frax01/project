@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:ms_undraw/ms_undraw.dart';
 
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.document});
@@ -268,13 +269,13 @@ class _TabScorerState extends State<TabScorer> {
           content: const Text("Sei sicuro di voler eliminare questo scorer?"),
           actions: <Widget>[
             ElevatedButton(
-              child: const Text("NO"),
+              child: const Text("No"),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             ElevatedButton(
-              child: const Text("YES"),
+              child: const Text("Si"),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -357,13 +358,16 @@ class _TabScorerState extends State<TabScorer> {
           ],
         ),
         spacer,
-        ...scorers.asMap().entries.map((entry) {
-          int index = entry.key;
-          QueryDocumentSnapshot scorer = entry.value;
-          Map<String, dynamic> scorerData =
-              scorer.data() as Map<String, dynamic>;
-          String scorerId = scorer.id;
-          return TableRow(
+        ...scorers
+            .asMap()
+            .entries
+            .map((entry) {
+              int index = entry.key;
+              QueryDocumentSnapshot scorer = entry.value;
+              Map<String, dynamic> scorerData =
+                  scorer.data() as Map<String, dynamic>;
+              String scorerId = scorer.id;
+              return TableRow(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -442,41 +446,41 @@ class _TabScorerState extends State<TabScorer> {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 20.0),
                     ),
-              ),
-              widget.document["status"] == 'Admin'
-                  ? PopupMenuButton(itemBuilder: (context) {
-                      return [
-                        PopupMenuItem(
-                          value: 0,
-                          child: ListTile(
-                            title: const Text('Modifica'),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              _showDialog(
-                                  scorerData['name'],
-                                  scorerData['surname'],
-                                  scorerData['class'],
-                                  scorerData['points'],
-                                  scorerData['goals'],
-                                  scorerId);
-                            },
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 1,
-                          child: ListTile(
-                            title: const Text('Elimina'),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              _deleteScorer(scorerId);
-                            },
-                          ),
-                        ),
-                      ];
-                    })
-                  : Container(),
-            ],
-          );
+                  ),
+                  widget.document["status"] == 'Admin'
+                      ? PopupMenuButton(itemBuilder: (context) {
+                          return [
+                            PopupMenuItem(
+                              value: 0,
+                              child: ListTile(
+                                title: const Text('Modifica'),
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _showDialog(
+                                      scorerData['name'],
+                                      scorerData['surname'],
+                                      scorerData['class'],
+                                      scorerData['points'],
+                                      scorerData['goals'],
+                                      scorerId);
+                                },
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 1,
+                              child: ListTile(
+                                title: const Text('Elimina'),
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _deleteScorer(scorerId);
+                                },
+                              ),
+                            ),
+                          ];
+                        })
+                      : Container(),
+                ],
+              );
             })
             .expand((element) => [element, spacer])
             .toList(),
@@ -497,6 +501,28 @@ class _TabScorerState extends State<TabScorer> {
             return Center(child: Text('Errore: ${snapshot.error}'));
           }
           List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
+          if (scorers.isEmpty) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 200.0,
+                  child: UnDraw(
+                    illustration: UnDrawIllustration.junior_soccer,
+                    placeholder: const SizedBox(
+                      height: 200.0,
+                      width: 200.0,
+                    ),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const Text(
+                  'Non ci sono giocatori registrati',
+                  style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                ),
+              ],
+            );
+          }
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: SingleChildScrollView(child: _buildTable(scorers)),
