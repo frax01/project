@@ -460,7 +460,7 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(
                   height: 200.0,
                   child: UnDraw(
-                    illustration: UnDrawIllustration.junior_soccer,
+                    illustration: UnDrawIllustration.biking,
                     placeholder: const SizedBox(
                       height: 200.0,
                       width: 200.0,
