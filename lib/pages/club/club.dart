@@ -1,7 +1,7 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:animations/animations.dart';
 import 'package:club/pages/club/homePage.dart';
-import 'package:club/pages/club/settingsPage.dart';
+import 'package:club/pages/club/profilePage.dart';
 import 'package:club/pages/club/torneoPage.dart';
 import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
