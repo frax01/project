@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:ms_undraw/ms_undraw.dart';
+
 import 'codeGenerator.dart';
 
 class AcceptancePage extends StatefulWidget {
@@ -84,8 +86,27 @@ class UserList extends StatelessWidget {
           return Text('Error: ${snapshot.error}');
         }
         if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text('Non ci sono nuovi utenti da accettare'),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 200.0,
+                  child: UnDraw(
+                    illustration: UnDrawIllustration.add_friends,
+                    placeholder: const SizedBox(
+                      height: 200.0,
+                      width: 200.0,
+                    ),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const Text(
+                  'Non ci sono nuovi utenti da accettare.',
+                  style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                ),
+              ],
+            ),
           );
         }
         return Column(
