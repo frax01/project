@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -26,73 +26,37 @@ class _SettingsPageState extends State<SettingsPage> {
     _currentUser!.reload();
   }
 
-  Future<void> _logout(String email) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
-
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .where('email', isEqualTo: email)
-        .get();
-    String? token = await FirebaseMessaging.instance.getToken();
-    assert(token != null);
-    DocumentSnapshot userDoc = querySnapshot.docs.first;
-    List<dynamic> tokens = userDoc["token"];
-    tokens.remove(token);
-    await userDoc.reference.update({'token': tokens});
-
-    await FirebaseAuth.instance.signOut();
-    setState(() {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
-    });
-  }
-
-  Future<void> _deleteAccount(String email) async {
-    bool? confirm = await showDialog<bool>(
+  Future<void> _showDetailsDialog() {
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Conferma'),
-          content: const Text(
-              'Sei sicuro di voler eliminare definitivamente il tuo account?'),
+          title: const Text('Cos\'è il club?'),
+          content: const SingleChildScrollView(
+            child: Text(
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
+              ', sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+              ' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+              ' Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
+              ' Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+              ' Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+              ' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+              ' Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
+              ' Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Annulla'),
+              child: const Text('Chiudi'),
               onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Elimina'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
+                Navigator.of(context).pop();
               },
             ),
           ],
         );
       },
     );
-    if (confirm == true) {
-      if (_currentUser != null) {
-        try {
-          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection('user')
-              .where('email', isEqualTo: _currentUser.email)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-            DocumentReference userDoc = documentSnapshot.reference;
-            await userDoc.delete();
-          }
-          await _currentUser.delete();
-          Navigator.of(context).pushReplacementNamed('/login');
-        } catch (e) {
-          print('Errore durante l\'eliminazione dell\'account: $e');
-        }
-      }
-    }
   }
 
   Future<void> _showLocationDialog() {
@@ -155,6 +119,104 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<void> _showDeleteAccountDialog() async {
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma'),
+          content: const Text(
+              'Sei sicuro di voler eliminare definitivamente il tuo account?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Annulla'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Elimina'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    if (confirm == true) {
+      if (_currentUser != null) {
+        try {
+          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+              .collection('user')
+              .where('email', isEqualTo: _currentUser.email)
+              .get();
+
+          if (querySnapshot.docs.isNotEmpty) {
+            DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+            DocumentReference userDoc = documentSnapshot.reference;
+            await userDoc.delete();
+          }
+          await _currentUser.delete();
+          Navigator.of(context).pushReplacementNamed('/login');
+        } catch (e) {
+          print('Errore durante l\'eliminazione dell\'account: $e');
+        }
+      }
+    }
+  }
+
+  Future<void> _logout(String email) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('email', isEqualTo: email)
+        .get();
+    String? token = await FirebaseMessaging.instance.getToken();
+    assert(token != null);
+    DocumentSnapshot userDoc = querySnapshot.docs.first;
+    List<dynamic> tokens = userDoc["token"];
+    tokens.remove(token);
+    await userDoc.reference.update({'token': tokens});
+
+    await FirebaseAuth.instance.signOut();
+    setState(() {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const Login()));
+    });
+  }
+
+  Future<void> _showLogoutDialog() async {
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma'),
+          content: const Text('Sei sicuro di voler effettuare il logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Annulla'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Logout'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    if (confirm == true) {
+      _logout(_currentUser!.email!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,7 +258,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     ListTile(
                       leading: const Icon(Icons.question_mark),
                       title: const Text('Cos\'è il club?'),
-                      onTap: () {},
+                      onTap: () {
+                        _showDetailsDialog();
+                      },
                     ),
                     ListTile(
                       leading: const Icon(Icons.location_on),
@@ -205,25 +269,27 @@ class _SettingsPageState extends State<SettingsPage> {
                         return _showLocationDialog();
                       },
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.person),
-                      title: const Text('Richieste utenti'),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/acceptance');
-                      },
-                    ),
+                    widget.document['status'] == 'Admin'
+                        ? ListTile(
+                            leading: const Icon(Icons.person),
+                            title: const Text('Richieste utenti'),
+                            onTap: () {
+                              Navigator.pushNamed(context, '/acceptance');
+                            },
+                          )
+                        : const SizedBox.shrink(),
                     ListTile(
                       leading: const Icon(Icons.delete_forever),
                       title: const Text('Elimina account'),
                       onTap: () {
-                        _deleteAccount(_currentUser!.email!);
+                        _showDeleteAccountDialog();
                       },
                     ),
                     ListTile(
                       leading: const Icon(Icons.exit_to_app),
                       title: const Text('Logout'),
                       onTap: () {
-                        _logout(_currentUser!.email!);
+                        _showLogoutDialog();
                       },
                     ),
                   ],
