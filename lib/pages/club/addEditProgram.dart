@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -277,6 +278,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     labelText: 'Titolo',
                     icon: Icon(Icons.short_text),
                   ),
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  maxLength: 20,
                   validator: (String? value) {
                     if (value!.isEmpty) {
                       return 'Inserisci il nome del programma';
