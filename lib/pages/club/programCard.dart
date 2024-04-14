@@ -7,11 +7,13 @@ import 'package:shimmer/shimmer.dart';
 class ProgramCard extends StatefulWidget {
   const ProgramCard(
       {super.key,
-      required this.query,
+      required this.documentId,
+      required this.selectedOption,
       required this.isAdmin,
       required this.refreshList});
 
-  final Query query;
+  final String documentId;
+  final String selectedOption;
   final bool isAdmin;
   final Function refreshList;
 
@@ -23,8 +25,10 @@ class _ProgramCardState extends State<ProgramCard> {
   var _data = <String, dynamic>{};
 
   Future<void> _loadData() async {
-    var snapshot = await widget.query.get();
-    var doc = snapshot.docs.first;
+    var doc = await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .get();
     _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
   }
 

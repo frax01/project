@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:ms_undraw/ms_undraw.dart';
 
-import '../../functions/dataFunctions.dart';
-
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -29,31 +27,31 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   refreshList() {
-    this.setState(() {
+    setState(() {
       _listItems.clear();
     });
   }
 
-  _loadItems(counts) {
-    for (final pair in counts) {
-      var baseQuery = FirebaseFirestore.instance
-          .collection(pair[0])
-          .where('selectedClass', arrayContainsAny: widget.selectedClass)
-          .orderBy('startDate');
-      for (var i = 0; i < pair[1]; i++) {
-        _listItems.add(ProgramCard(
-          query: baseQuery.startAt([i]).limit(1),
-          isAdmin: widget.isAdmin,
-          refreshList: refreshList,
-        ));
-        _listKey.currentState?.insertItem(_listItems.length - 1);
-      }
+  _loadItems() async {
+    var db = FirebaseFirestore.instance;
+    for (final collection in ['club_weekend', 'club_trip', 'club_extra']) {
+      await db.collection(collection).get().then((docs) {
+        for (var doc in docs.docs) {
+          _listItems.add(ProgramCard(
+            documentId: doc.id,
+            selectedOption: collection.split('_')[1],
+            isAdmin: widget.isAdmin,
+            refreshList: refreshList,
+          ));
+          _listKey.currentState?.insertItem(_listItems.length - 1);
+        }
+      });
     }
   }
 
   _buildList() {
     return FutureBuilder(
-      future: countDocuments(),
+      future: _loadItems(),
       builder: (context, snapshot) {
         Widget child;
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -61,7 +59,6 @@ class _HomePageState extends State<HomePage> {
             child: CircularProgressIndicator(),
           );
         } else {
-          _loadItems(snapshot.data!);
           if (_listItems.isEmpty) {
             child = Column(
               mainAxisAlignment: MainAxisAlignment.center,
