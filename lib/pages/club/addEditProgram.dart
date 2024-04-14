@@ -13,15 +13,18 @@ import '../../functions/notificationFunctions.dart';
 import '../../functions/weatherFunctions.dart';
 
 class AddEditProgram extends StatefulWidget {
-  const AddEditProgram({super.key, this.selectedOption});
+  const AddEditProgram({super.key, this.selectedOption, this.document});
 
   final String? selectedOption;
+  final Map<dynamic, dynamic>? document;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
 }
 
 class _AddEditProgramState extends State<AddEditProgram> {
+  bool _isEditing = false;
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _programNameController = TextEditingController();
   final TextEditingController _programDescriptionController =
@@ -46,6 +49,24 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '5° liceo'
   ];
   List<String> selectedClasses = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.document != null) {
+      _isEditing = true;
+      _programNameController.text = widget.document!['title'];
+      _programDescriptionController.text = widget.document!['description'];
+      _programLocationController.text = widget.document!['address'];
+      _startDateController.text = widget.document!['startDate'];
+      _endDateController.text = widget.document!['endDate'];
+      _image = widget.document!['imagePath'];
+      _address = widget.document!['address'];
+      _latitude = widget.document!['lat'];
+      _longitude = widget.document!['lon'];
+      selectedClasses = List<String>.from(widget.document!['selectedClass']);
+    }
+  }
 
   _uploadImage(String level, {bool isCreate = false}) async {
     final storageRef = FirebaseStorage.instance.ref();
@@ -152,15 +173,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
-  Future<void> _handleCreate(context) async {
-    if (!_formKey.currentState!.validate()) return;
+  bool _validate() {
+    if (!_formKey.currentState!.validate()) return false;
     if (selectedClasses.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Seleziona almeno una classe'),
         ),
       );
-      return;
+      return false;
     }
     if (_image.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,8 +189,27 @@ class _AddEditProgramState extends State<AddEditProgram> {
           content: Text('Seleziona un\'immagine'),
         ),
       );
-      return;
+      return false;
     }
+    if (widget.selectedOption == 'trip') {
+      DateTime start =
+          DateFormat('dd-MM-yyyy').parse(_startDateController.text);
+      DateTime end = DateFormat('dd-MM-yyyy').parse(_endDateController.text);
+      if (start.isAfter(end)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'La data di inizio non può essere successiva a quella di fine'),
+          ),
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<void> _handleCreate(context) async {
+    if (!_validate()) return;
 
     try {
       if (_address == '') {
@@ -213,10 +253,62 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
+  Future<void> _handleEdit(context) async {
+    if (!_validate()) return;
+
+    Map<Object, Object?> newDocument = {
+      'title': _programNameController.text,
+      'selectedOption': widget.selectedOption,
+      'imagePath': _image,
+      'selectedClass': selectedClasses.sorted(),
+      'description': _programDescriptionController.text,
+      'startDate': _startDateController.text,
+      'endDate': _endDateController.text,
+      'address': _address,
+      'lat': _latitude,
+      'lon': _longitude,
+    };
+    print(newDocument);
+
+    Map weather = await fetchWeatherData(newDocument['startDate'],
+        newDocument['endDate'], newDocument['lat'], newDocument['lon']);
+
+    for (var key in widget.document!.keys) {
+      if (newDocument[key] == widget.document![key]) {
+        newDocument.remove(key);
+      }
+    }
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.document?['id'])
+        .update(newDocument);
+    List<String> token = [];
+    for (String value in selectedClasses) {
+      List<String> items = await fetchToken('club_class', value);
+      for (String elem in items) {
+        if (!token.contains(elem)) {
+          token.add(elem);
+        }
+      }
+    }
+    sendNotification(
+      token,
+      'Programma modificato!',
+      newDocument['title'] ?? widget.document!['title'],
+      'modified_event',
+      newDocument,
+      weather,
+    );
+    Navigator.pop(context);
+  }
+
   Widget _smallLayout(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nuovo programma'),
+        title: _isEditing
+            ? const Text('Modifica programma')
+            : const Text('Crea programma'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -395,12 +487,19 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        _handleCreate(context);
-                      },
-                      child: const Text('Crea programma'),
-                    ),
+                    _isEditing
+                        ? ElevatedButton(
+                            onPressed: () {
+                              _handleEdit(context);
+                            },
+                            child: const Text('Modifica programma'),
+                          )
+                        : ElevatedButton(
+                            onPressed: () {
+                              _handleCreate(context);
+                            },
+                            child: const Text('Crea programma'),
+                          ),
                   ],
                 ),
               ],
@@ -414,7 +513,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
   Widget _largeLayout() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Program'),
+        title: _isEditing
+            ? const Text('Modifica programma')
+            : const Text('Crea programma'),
       ),
       body: const Center(
         child: Text('Large Layout'),

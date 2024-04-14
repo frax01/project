@@ -1,16 +1,9 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/generalFunctions.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../functions/geoFunctions.dart';
-import '../../functions/notificationFunctions.dart';
-import '../../functions/weatherFunctions.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
+
+import 'addEditProgram.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
@@ -29,361 +22,6 @@ class ProgramPage extends StatefulWidget {
 }
 
 class _ProgramPageState extends State<ProgramPage> {
-  String? title = '';
-  String? startDate = '';
-  String? imagePath = '';
-  String? description = '';
-  bool imageUploaded = false;
-  bool startDateUploaded = false;
-  bool endDateUploaded = false;
-
-  Future<String> _startDate(BuildContext context, String startDate,
-      {bool isCreate = false}) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null && picked != DateTime.now()) {
-      startDate = DateFormat('dd-MM-yyyy').format(picked);
-    }
-    isCreate ? startDateUploaded = true : null;
-    return startDate;
-  }
-
-  Future<String> _endDate(
-      BuildContext context, String startDate, String endDate,
-      {bool isCreate = false}) async {
-    if (startDate == "") {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inserisci prima la data iniziale')));
-      return '';
-    } else {
-      DateFormat inputFormat = DateFormat('dd-MM-yyyy');
-      DateTime date = inputFormat.parse(startDate);
-      DateFormat outputFormat = DateFormat('yyyy-MM-dd');
-      String formattedStartDate = outputFormat.format(date);
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.parse(formattedStartDate),
-        firstDate: DateTime.parse(formattedStartDate),
-        lastDate:
-            DateTime.parse(formattedStartDate).add(const Duration(days: 365)),
-      );
-      if (picked != null && picked != DateTime.now()) {
-        endDate = DateFormat('dd-MM-yyyy').format(picked);
-      }
-    }
-    isCreate ? endDateUploaded = true : null;
-    return endDate;
-  }
-
-  Future<String> uploadImage(String level, {bool isCreate = false}) async {
-    final storageRef = FirebaseStorage.instance.ref();
-    final imagesRef =
-        storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
-
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    final UploadTask uploadTask = imagesRef.putData(await image!.readAsBytes());
-    final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-    final String imageUrl = await snapshot.ref.getDownloadURL();
-
-    isCreate ? imageUploaded = true : null;
-    return imageUrl;
-  }
-
-  Future<void> _showEditDialog(BuildContext context, String level,
-      Map<dynamic, dynamic> data, String section, String id) async {
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController descriptionController = TextEditingController();
-
-    titleController.text = data['title'];
-    descriptionController.text = data['description'];
-
-    String newTitle = data['title'];
-    String imagePath = data['imagePath'];
-    List selectedFormClass = data['selectedClass'];
-    String selectedOption = data['selectedOption'];
-    String description = data['description'];
-    String startDate = data['startDate'] ?? '';
-    String endDate = data['endDate'] ?? '';
-    String address = data['address'];
-    String lat = data['lat'];
-    String lon = data['lon'];
-
-    String selectedAddr = "";
-    String? selectedCitta = "";
-    String selectedStato = "";
-    String? selectedNum = "";
-
-    final List<String> allOptions = [
-      '1° media',
-      '2° media',
-      '3° media',
-      '1° liceo',
-      '2° liceo',
-      '3° liceo',
-      '4° liceo',
-      '5° liceo'
-    ];
-
-    return showDialog<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(level, textAlign: TextAlign.center),
-                content: Column(mainAxisSize: MainAxisSize.min, children: [
-                  TextFormField(
-                    controller: titleController,
-                    onChanged: (value) {
-                      newTitle = value;
-                    },
-                    decoration: const InputDecoration(labelText: 'Titolo'),
-                  ),
-                  const SizedBox(height: 16.0),
-                  TypeAheadField(
-                    builder: (context, controller, focusNode) {
-                      String label = address;
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        autofocus: false,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: label,
-                        ),
-                        validator: (value) {
-                          if (selectedOption == 'trip' &&
-                              (value == null || value.isEmpty)) {
-                            return 'Inserire un indirizzo';
-                          }
-                          return null;
-                        },
-                      );
-                    },
-                    suggestionsCallback: (pattern) async {
-                      if (pattern == '') {
-                        return [];
-                      } else {
-                        return await getSuggestions(pattern);
-                      }
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        title: Text(suggestion["display_name"]),
-                      );
-                    },
-                    onSelected: (suggestion) {
-                      setState(() {
-                        selectedAddr = suggestion["address"]["name"];
-                        selectedCitta = suggestion["address"]["city"] ?? '';
-                        selectedStato = suggestion["address"]["country"];
-                        selectedNum =
-                            suggestion["address"]["house_number"] ?? '';
-                        lat = suggestion["lat"];
-                        lon = suggestion["lon"];
-                        if (selectedCitta != '' && selectedNum != '') {
-                          if (selectedStato != 'Italia') {
-                            address =
-                                '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}, $selectedStato';
-                          } else {
-                            address =
-                                '$selectedAddr, ${selectedNum ?? ''}, ${selectedCitta ?? ''}';
-                          }
-                        } else {
-                          if (selectedStato != 'Italia') {
-                            address = '$selectedAddr, $selectedStato';
-                          } else {
-                            address = selectedAddr;
-                          }
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  MultiSelectDialogField(
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    items: allOptions
-                        .map(
-                            (option) => MultiSelectItem<String>(option, option))
-                        .toList(),
-                    buttonText: const Text('Classe'),
-                    confirmText: const Text('Ok'),
-                    cancelText: const Text('Annulla'),
-                    initialValue: selectedFormClass,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Inserire almeno una classe';
-                      }
-                      return null;
-                    },
-                    onConfirm: (value) {
-                      setState(() {
-                        selectedFormClass = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      String imageUrl = await uploadImage(section);
-                      setState(() {
-                        imagePath = imageUrl;
-                      });
-                    },
-                    child: const Text(
-                        'Cambia immagine'), //mostrare una barra di caricamento
-                  ),
-                  const SizedBox(height: 16.0),
-                  ...(section == 'weekend' || section == 'extra')
-                      ? [
-                          ElevatedButton(
-                            onPressed: () async {
-                              startDate =
-                                  await _startDate(context, data['startDate']);
-                              setState(() {});
-                            },
-                            child: Text(startDate),
-                          ),
-                        ]
-                      : (section == 'trip' || section == 'tournament')
-                          ? [
-                              Row(children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    String newDate = await _startDate(
-                                        context, data['startDate']);
-                                    setState(() {
-                                      startDate = newDate;
-                                    });
-                                  },
-                                  child: Text(startDate),
-                                ),
-                                const SizedBox(width: 16.0),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    String newDate = await _endDate(context,
-                                        data['startDate'], data['endDate']);
-                                    setState(() {
-                                      endDate = newDate;
-                                    });
-                                  },
-                                  child: Text(endDate),
-                                ),
-                              ])
-                            ]
-                          : [],
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    controller: descriptionController,
-                    onChanged: (value) {
-                      description = value;
-                    },
-                    decoration: const InputDecoration(labelText: 'Testo'),
-                    maxLines: null,
-                  ),
-                  const SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await updateClubDetails(
-                          id,
-                          newTitle,
-                          imagePath,
-                          selectedFormClass,
-                          startDate,
-                          endDate,
-                          description,
-                          section,
-                          address,
-                          lat,
-                          lon);
-                    },
-                    child: const Text('Modifica'),
-                  ),
-                ]),
-              );
-            },
-          );
-        });
-  }
-
-  Future<void> updateClubDetails(
-      String id,
-      String newTitle,
-      String imagePath,
-      List selectedFormClass,
-      String startDate,
-      String endDate,
-      String description,
-      String section,
-      String indirizzo,
-      String selectedLat,
-      String selectedLon) async {
-    try {
-      if (newTitle == "") {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Inserisci un titolo')));
-        return;
-      }
-      if (selectedFormClass == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Inserisci una classe')));
-        return;
-      }
-
-      Map weather =
-          await fetchWeatherData(startDate, endDate, selectedLat, selectedLon);
-
-      Map document = {
-        'title': newTitle,
-        'imagePath': imagePath,
-        'selectedClass': selectedFormClass,
-        'selectedOption': section,
-        'description': description,
-        'startDate': startDate,
-        'endDate': endDate,
-        'address': indirizzo,
-        'lat': selectedLat,
-        'lon': selectedLon,
-      };
-
-      await FirebaseFirestore.instance
-          .collection('club_$section')
-          .doc(id)
-          .update({
-        'title': newTitle,
-        'imagePath': imagePath,
-        'selectedClass': selectedFormClass,
-        'selectedOption': section,
-        'description': description,
-        'startDate': startDate,
-        'endDate': endDate,
-        'address': indirizzo,
-        'lat': selectedLat,
-        'lon': selectedLon,
-      });
-      Navigator.pop(context);
-      List<String> token = [];
-      for (String value in selectedFormClass) {
-        List<String> items = await fetchToken('club_class', value);
-        for (String elem in items) {
-          if (!token.contains(elem)) {
-            token.add(elem);
-          }
-        }
-      }
-      sendNotification(token, 'Programma modificato!', newTitle,
-          'modified_event', document, weather);
-    } catch (e) {
-      print('Errore aggiornamento utente: $e');
-    }
-  }
-
   Future<void> _showDeleteDialog(BuildContext context, String id) {
     return showDialog<void>(
       context: context,
@@ -446,41 +84,40 @@ class _ProgramPageState extends State<ProgramPage> {
         Row(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: List<Widget>.generate(document['selectedClass'].length, (index) {
-                      String classValue = document['selectedClass'][index].toString();
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 1,
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(classValue),
-                        ),
-                      );
-                    }
-                  )
-                ),
-              )
-            ),
+                child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                  children: List<Widget>.generate(
+                      document['selectedClass'].length, (index) {
+                String classValue = document['selectedClass'][index].toString();
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 1,
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(classValue),
+                  ),
+                );
+              })),
+            )),
             const SizedBox(width: 15),
             Chip(
               label: Text(
                 document['endDate'].isNotEmpty
                     ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
-                    : '${convertDateFormat(document['startDate'])}',
+                    : convertDateFormat(document['startDate']),
               ),
               labelStyle:
                   const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -709,16 +346,16 @@ class _ProgramPageState extends State<ProgramPage> {
                     PopupMenuItem(
                       child: const Text('Modifica'),
                       onTap: () {
-                        _showEditDialog(
-                            context,
-                            'Modifica',
-                            widget.document,
-                            widget.document['selectedOption'],
-                            widget.document['id']);
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => AddEditProgram(
+                                  selectedOption:
+                                      widget.document['selectedOption'],
+                                  document: widget.document,
+                                )));
                       },
                     ),
                     PopupMenuItem(
-                        child: Text('Elimina'),
+                        child: const Text('Elimina'),
                         onTap: () {
                           _showDeleteDialog(context, widget.document['id']);
                         }),
