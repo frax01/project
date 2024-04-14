@@ -4,13 +4,16 @@ import 'package:club/pages/club/programPage.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../functions/weatherFunctions.dart';
-
 class ProgramCard extends StatefulWidget {
-  const ProgramCard({super.key, required this.query, required this.isAdmin});
+  const ProgramCard(
+      {super.key,
+      required this.query,
+      required this.isAdmin,
+      required this.refreshList});
 
   final Query query;
   final bool isAdmin;
+  final Function refreshList;
 
   @override
   _ProgramCardState createState() => _ProgramCardState();
@@ -18,14 +21,11 @@ class ProgramCard extends StatefulWidget {
 
 class _ProgramCardState extends State<ProgramCard> {
   var _data = <String, dynamic>{};
-  var _weatherData = <String, dynamic>{};
 
   Future<void> _loadData() async {
     var snapshot = await widget.query.get();
     var doc = snapshot.docs.first;
     _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    _weatherData = await fetchWeatherData(
-        _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
   }
 
   _buildShimmer() {
@@ -199,7 +199,10 @@ class _ProgramCardState extends State<ProgramCard> {
         },
         openBuilder: (context, action) {
           return ProgramPage(
-              document: _data, weather: _weatherData, isAdmin: widget.isAdmin);
+              documentId: _data['id'],
+              selectedOption: _data['selectedOption'],
+              isAdmin: widget.isAdmin,
+              refreshList: widget.refreshList);
         },
       ),
     );

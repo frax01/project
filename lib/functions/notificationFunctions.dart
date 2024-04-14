@@ -1,10 +1,12 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/config.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-Future<void> sendNotification(List fcmToken, String notTitle, String message,
-    String category, Map? document, Map? weather) async {
+Future<void> sendNotification(
+    List fcmToken, String notTitle, String message, String category,
+    {String? docId, String? selectedOption}) async {
   const String serverKey = Config.serverKey;
   const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
   Uri uri = Uri.parse(fcmUrl);
@@ -13,23 +15,12 @@ Future<void> sendNotification(List fcmToken, String notTitle, String message,
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'docId': docId ?? '',
+      'selectedOption': selectedOption ?? '',
       'status': 'done',
       'category': category,
       'notTitle': notTitle,
       'notBody': message,
-      'title': document?["title"],
-      'imagePath': document?["imagePath"],
-      'selectedClass': document?["selectedClass"],
-      'selectedOption': document?["selectedOption"],
-      'description': document?["description"],
-      'startDate': document?["startDate"],
-      'endDate': document?["endDate"],
-      'address': document?["address"],
-      't_min': weather?["t_min"],
-      't_max': weather?["t_max"],
-      'w_code': weather?["w_code"],
-      'image': weather?["image"],
-      'check': weather?['check'],
     };
 
     final Map<String, dynamic> notification = {

@@ -1,27 +1,48 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/generalFunctions.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../functions/weatherFunctions.dart';
 import 'addEditProgram.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
     Key? key,
-    required this.document,
-    required this.weather,
+    required this.documentId,
+    required this.selectedOption,
     required this.isAdmin,
+    this.refreshList,
   }) : super(key: key);
 
-  final Map document;
-  final Map weather;
+  final String documentId;
+  final String selectedOption;
   final bool isAdmin;
+  final Function? refreshList;
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
 }
 
 class _ProgramPageState extends State<ProgramPage> {
+  Map<String, dynamic> _data = {};
+  Map<String, dynamic> _weather = {};
+
+  Future<void> _loadData() async {
+    var doc = await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .get();
+    _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    _weather = await fetchWeatherData(
+        _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
+  }
+
+  refreshProgram() {
+    setState(() {});
+  }
+
   Future<void> _showDeleteDialog(BuildContext context, String id) {
     return showDialog<void>(
       context: context,
@@ -39,9 +60,9 @@ class _ProgramPageState extends State<ProgramPage> {
             TextButton(
               onPressed: () async {
                 setState(() {
-                  deleteDocument(
-                      'club_${widget.document["selectedOption"]}', id);
+                  deleteDocument('club_${_data["selectedOption"]}', id);
                 });
+                widget.refreshList!();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -195,126 +216,149 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget smallScreen() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  elevation: 5,
-                  child: Image.network(
-                    widget.document['imagePath'],
-                  ),
-                ),
-                Positioned(
-                    bottom: -25,
-                    left: 15,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 7,
-                            offset: const Offset(
-                                0, 3), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        child: Text(
-                          widget.document['title'],
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
+    return FutureBuilder(
+      future: _loadData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Card(
+                        clipBehavior: Clip.antiAlias,
+                        elevation: 5,
+                        child: Image.network(
+                          _data['imagePath'],
                         ),
                       ),
-                    )),
-              ],
+                      Positioned(
+                          bottom: -25,
+                          left: 15,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 7,
+                                  offset: const Offset(
+                                      0, 3), // changes position of shadow
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Text(
+                                _data['title'],
+                                style: const TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          )),
+                    ],
+                  ),
+                  const SizedBox(height: 30.0),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: details(_data, _weather),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 30.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: details(widget.document, widget.weather),
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 
   Widget bigScreen() {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                clipBehavior: Clip.none,
+    return FutureBuilder(
+      future: _loadData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: double.infinity,
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      elevation: 5,
-                      child: Image.network(
-                        widget.document['imagePath'],
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 30,
-                    right: -15,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black54,
-                            spreadRadius: 2,
-                            blurRadius: 15,
-                            offset: Offset(0, 3), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        child: Text(
-                          widget.document['title'],
-                          style: const TextStyle(
-                            fontSize: 45,
-                            fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        SizedBox(
+                          height: double.infinity,
+                          child: Card(
+                            clipBehavior: Clip.antiAlias,
+                            elevation: 5,
+                            child: Image.network(
+                              _data['imagePath'],
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ),
+                        Positioned(
+                          top: 30,
+                          right: -15,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black54,
+                                  spreadRadius: 2,
+                                  blurRadius: 15,
+                                  offset: Offset(
+                                      0, 3), // changes position of shadow
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              child: Text(
+                                _data['title'],
+                                style: const TextStyle(
+                                  fontSize: 45,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    // flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(60, 20, 20, 20),
+                      child: details(_data, _weather),
                     ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              // flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(60, 20, 20, 20),
-                child: details(widget.document, widget.weather),
-              ),
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 
@@ -322,19 +366,19 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: widget.document['selectedOption'] == 'weekend'
+        title: _data['selectedOption'] == 'weekend'
             ? const Text('Sabato')
-            : widget.document['selectedOption'] == 'trip'
+            : _data['selectedOption'] == 'trip'
                 ? const Text('Viaggio')
                 : const Text('Extra'),
         actions: [
           IconButton(
             onPressed: () {
               Share.share('Guarda questo evento nel Tiber!\n\n'
-                  'Titolo: ${widget.document['title']}\n'
-                  'Indirizzo: ${widget.document['address']}\n'
-                  'Data: ${widget.document['startDate']} ~ ${widget.document['endDate']}\n'
-                  'Descrizione: ${widget.document['description']}\n');
+                  'Titolo: ${_data['title']}\n'
+                  'Indirizzo: ${_data['address']}\n'
+                  'Data: ${_data['startDate']} ~ ${_data['endDate']}\n'
+                  'Descrizione: ${_data['description']}\n');
             },
             icon: const Icon(
               Icons.share,
@@ -348,16 +392,17 @@ class _ProgramPageState extends State<ProgramPage> {
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => AddEditProgram(
-                                  selectedOption:
-                                      widget.document['selectedOption'],
-                                  document: widget.document,
+                                  selectedOption: _data['selectedOption'],
+                                  document: _data,
+                                  refreshList: widget.refreshList,
+                                  refreshProgram: refreshProgram,
                                 )));
                       },
                     ),
                     PopupMenuItem(
                         child: const Text('Elimina'),
                         onTap: () {
-                          _showDeleteDialog(context, widget.document['id']);
+                          _showDeleteDialog(context, _data['id']);
                         }),
                   ];
                 })

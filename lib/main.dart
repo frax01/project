@@ -151,13 +151,6 @@ class _HomePageState extends State<HomePage> {
       'endDate': message.data["endDate"],
       'address': message.data["address"],
     };
-    Map weather = {
-      't_min': message.data["t_min"],
-      't_max': message.data["t_max"],
-      'w_code': message.data["w_code"],
-      'image': message.data["image"],
-      'check': message.data["check"],
-    };
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -171,17 +164,17 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
-                    document: document,
-                    weather: weather,
+                    documentId: message.data["docId"],
+                    selectedOption: message.data["selectedOption"],
                     isAdmin: document['status'] == 'Admin',
                   )));
     } else if (message.data['category'] == 'modified_event') {
-      Navigator.pushReplacement(
+      Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
-                    document: document,
-                    weather: weather,
+                    documentId: message.data["docId"],
+                    selectedOption: message.data["selectedOption"],
                     isAdmin: document['status'] == 'Admin',
                   )));
     }
@@ -248,23 +241,6 @@ class _HomePageState extends State<HomePage> {
                   return ClubPage(title: "Tiber Club", document: document);
                 } else {
                   Map<String, dynamic> document = snapshot.data ?? {};
-                  Map notificationDocument = {
-                    'title': initialMessage?.data["title"],
-                    'imagePath': initialMessage?.data["imagePath"],
-                    'selectedClass': initialMessage?.data["selectedClass"],
-                    'selectedOption': initialMessage?.data["selectedOption"],
-                    'description': initialMessage?.data["description"],
-                    'startDate': initialMessage?.data["startDate"],
-                    'endDate': initialMessage?.data["endDate"],
-                    'address': initialMessage?.data["address"],
-                  };
-                  Map weather = {
-                    't_min': initialMessage?.data["t_min"],
-                    't_max': initialMessage?.data["t_max"],
-                    'w_code': initialMessage?.data["w_code"],
-                    'image': initialMessage?.data["image"],
-                    'check': initialMessage?.data["check"],
-                  };
                   if (initialMessage?.data['category'] == 'new_user') {
                     Navigator.push(
                         context,
@@ -279,18 +255,20 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => ProgramPage(
-                                  document: notificationDocument,
-                                  weather: weather,
+                                  documentId: initialMessage?.data["docId"],
+                                  selectedOption:
+                                      initialMessage?.data["selectedOption"],
                                   isAdmin: document['status'] == 'Admin',
                                 )));
                     return ClubPage(title: "Tiber Club", document: document);
                   } else {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ProgramPage(
-                                  document: notificationDocument,
-                                  weather: weather,
+                                  documentId: initialMessage?.data["docId"],
+                                  selectedOption:
+                                      initialMessage?.data["selectedOption"],
                                   isAdmin: document['status'] == 'Admin',
                                 )));
                     return ClubPage(title: "Tiber Club", document: document);

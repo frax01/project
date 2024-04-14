@@ -28,6 +28,12 @@ class _HomePageState extends State<HomePage> {
   final _listItems = <ProgramCard>[];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
+  refreshList() {
+    this.setState(() {
+      _listItems.clear();
+    });
+  }
+
   _loadItems(counts) {
     for (final pair in counts) {
       var baseQuery = FirebaseFirestore.instance
@@ -38,6 +44,7 @@ class _HomePageState extends State<HomePage> {
         _listItems.add(ProgramCard(
           query: baseQuery.startAt([i]).limit(1),
           isAdmin: widget.isAdmin,
+          refreshList: refreshList,
         ));
         _listKey.currentState?.insertItem(_listItems.length - 1);
       }
@@ -71,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const Text(
-                  'Nessun evento disponibile',
+                  'Nessun programma disponibile',
                   style: TextStyle(fontSize: 20.0, color: Colors.black54),
                 ),
               ],
@@ -81,13 +88,17 @@ class _HomePageState extends State<HomePage> {
               key: _listKey,
               initialItemCount: _listItems.length,
               itemBuilder: (context, index, animation) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: _listItems[index],
-                );
+                try {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: _listItems[index],
+                  );
+                } catch (e) {
+                  return const SizedBox();
+                }
               },
             );
           }
@@ -102,9 +113,15 @@ class _HomePageState extends State<HomePage> {
 
   _smallLayout() {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: _buildList(),
+      body: RefreshIndicator(
+        onRefresh: () {
+          refreshList();
+          return Future.value();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildList(),
+        ),
       ),
       floatingActionButton: widget.isAdmin
           ? SpeedDial(
@@ -116,8 +133,9 @@ class _HomePageState extends State<HomePage> {
                   label: 'Sabato',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) =>
-                            const AddEditProgram(selectedOption: 'weekend')));
+                        builder: (context) => AddEditProgram(
+                            refreshList: refreshList,
+                            selectedOption: 'weekend')));
                   },
                 ),
                 SpeedDialChild(
@@ -125,8 +143,8 @@ class _HomePageState extends State<HomePage> {
                   label: 'Viaggio',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) =>
-                            const AddEditProgram(selectedOption: 'trip')));
+                        builder: (context) => AddEditProgram(
+                            refreshList: refreshList, selectedOption: 'trip')));
                   },
                 ),
                 SpeedDialChild(
@@ -134,8 +152,9 @@ class _HomePageState extends State<HomePage> {
                   label: 'Extra',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) =>
-                            const AddEditProgram(selectedOption: 'extra')));
+                        builder: (context) => AddEditProgram(
+                            refreshList: refreshList,
+                            selectedOption: 'extra')));
                   },
                 ),
               ],
@@ -153,7 +172,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
   }
 

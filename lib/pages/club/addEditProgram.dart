@@ -10,11 +10,17 @@ import 'package:intl/intl.dart';
 
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
-import '../../functions/weatherFunctions.dart';
 
 class AddEditProgram extends StatefulWidget {
-  const AddEditProgram({super.key, this.selectedOption, this.document});
+  const AddEditProgram(
+      {super.key,
+      this.refreshList,
+      this.refreshProgram,
+      this.selectedOption,
+      this.document});
 
+  final Function? refreshList;
+  final Function? refreshProgram;
   final String? selectedOption;
   final Map<dynamic, dynamic>? document;
 
@@ -231,10 +237,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
         'lat': _latitude,
         'lon': _longitude,
       };
-      Map weather = await fetchWeatherData(document['startDate'],
-          document['endDate'], document['lat'], document['lon']);
 
-      await firestore.collection('club_${widget.selectedOption}').add(document);
+      var doc = await firestore
+          .collection('club_${widget.selectedOption}')
+          .add(document);
+      document['id'] = doc.id;
 
       List<String> token = [];
       for (String value in selectedClasses) {
@@ -245,8 +252,10 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
-      sendNotification(token, 'Nuovo programma!', document['title'],
-          'new_event', document, weather);
+      sendNotification(
+          token, 'Nuovo programma!', document['title'], 'new_event',
+          docId: doc.id, selectedOption: widget.selectedOption);
+      widget.refreshList!();
       Navigator.pop(context);
     } catch (e) {
       print('Errore durante la creazione dell\'evento: $e');
@@ -257,6 +266,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     if (!_validate()) return;
 
     Map<Object, Object?> newDocument = {
+      'id': widget.document!['id'],
       'title': _programNameController.text,
       'selectedOption': widget.selectedOption,
       'imagePath': _image,
@@ -268,21 +278,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       'lat': _latitude,
       'lon': _longitude,
     };
-    print(newDocument);
 
-    Map weather = await fetchWeatherData(newDocument['startDate'],
-        newDocument['endDate'], newDocument['lat'], newDocument['lon']);
-
-    for (var key in widget.document!.keys) {
-      if (newDocument[key] == widget.document![key]) {
-        newDocument.remove(key);
-      }
-    }
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.document?['id'])
-        .update(newDocument);
     List<String> token = [];
     for (String value in selectedClasses) {
       List<String> items = await fetchToken('club_class', value);
@@ -291,15 +287,28 @@ class _AddEditProgramState extends State<AddEditProgram> {
           token.add(elem);
         }
       }
+      sendNotification(
+        token,
+        'Programma modificato!',
+        newDocument['title'] ?? widget.document!['title'],
+        'modified_event',
+        docId: widget.document!['id'],
+        selectedOption: widget.selectedOption,
+      );
+
+      for (var key in widget.document!.keys) {
+        if (newDocument[key] == widget.document![key]) {
+          newDocument.remove(key);
+        }
+      }
+
+      await FirebaseFirestore.instance
+          .collection('club_${widget.selectedOption}')
+          .doc(widget.document?['id'])
+          .update(newDocument);
     }
-    sendNotification(
-      token,
-      'Programma modificato!',
-      newDocument['title'] ?? widget.document!['title'],
-      'modified_event',
-      newDocument,
-      weather,
-    );
+    widget.refreshProgram!();
+    widget.refreshList!();
     Navigator.pop(context);
   }
 

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/notificationFunctions.dart';
+import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class UserDetailsPage extends StatefulWidget {
@@ -188,8 +188,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'status': selectedStatus,
       });
       List token = querySnapshot.docs.first["token"];
-      sendNotification(
-          token, 'Tiber Club', 'Sei stato accettato!', 'accepted', {}, {});
+      sendNotification(token, 'Tiber Club', 'Sei stato accettato!', 'accepted');
       Navigator.pop(context);
     } catch (e) {
       print('Error updating user details: $e');

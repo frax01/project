@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'verify.dart';
 
 class SignUp extends StatefulWidget {
@@ -87,8 +88,8 @@ class _SignUpState extends State<SignUp> {
         await _saveUser(user);
 
         List<String> token = await fetchToken('status', 'Admin');
-        sendNotification(token, "Tiber Club", "Un nuovo utente si è registrato",
-            'new_user', {}, {});
+        sendNotification(
+            token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user');
 
         setState(() {
           Navigator.pushReplacement(context,
