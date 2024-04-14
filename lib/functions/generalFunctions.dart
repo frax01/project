@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 void deleteOldDocuments() async {
   final firestore = FirebaseFirestore.instance;
-  final today = DateTime.now();
+  final yesterday = DateTime.now().subtract(const Duration(days: 1));
 
   final oneDateCollections = [
     'club_extra',
@@ -14,7 +14,7 @@ void deleteOldDocuments() async {
       final startDateString = document.data()['startDate'] as String;
       final startDate =
           DateTime.parse(startDateString.split('-').reversed.join('-'));
-      if (startDate.isBefore(today)) {
+      if (startDate.isBefore(yesterday)) {
         await document.reference.delete();
       }
     }
@@ -30,7 +30,7 @@ void deleteOldDocuments() async {
       final startDateString = document.data()['endDate'] as String;
       final startDate =
           DateTime.parse(startDateString.split('-').reversed.join('-'));
-      if (startDate.isBefore(today)) {
+      if (startDate.isBefore(yesterday)) {
         await document.reference.delete();
       }
     }

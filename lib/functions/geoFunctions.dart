@@ -9,7 +9,7 @@ Future<List<dynamic>> getSuggestions(String query) async {
 
   final response = await http.get(
     Uri.parse(
-        '$apiUrl/autocomplete?q=$query&key=$locationiqKey&format=json&limit=5'),
+        '$apiUrl/v1/autocomplete?q=$query&key=$locationiqKey&format=json&limit=5'),
   );
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
