@@ -196,7 +196,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   tiles: [
                     ListTile(
                       leading: const Icon(Icons.question_mark),
-                      title: const Text('Cos\'è il club?'),
+                      title: const Text('Cos\'è il Tiber Club?'),
                       onTap: () {
                         _showDetailsDialog();
                       },
