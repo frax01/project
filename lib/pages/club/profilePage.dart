@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, required this.id, required this.document});
@@ -47,66 +46,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Chiudi'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showLocationDialog() {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Dove siamo?'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  'https://maps.locationiq.com/v3/staticmap?key=pk.b63d7f8ea78402e4ce0f6151f5434613&center=41.918306,12.474556&zoom=15&size=400x400&markers=icon:large-blue-cutout%7C41.918306,12.47455',
-                  loadingBuilder: (BuildContext context, Widget child,
-                      ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    } else {
-                      return SizedBox(
-                        height: 400,
-                        width: 400,
-                        child: Center(
-                          child: Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              color: Colors.grey[300],
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Via di Villa Giulia, 27\n00197 Roma',
-                  style: TextStyle(fontSize: 16)),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Apri in Maps'),
-              onPressed: () {
-                MapsLauncher.launchCoordinates(41.918306, 12.474556);
-              },
-            ),
             TextButton(
               child: const Text('Chiudi'),
               onPressed: () {
@@ -266,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       leading: const Icon(Icons.location_on),
                       title: const Text('Dove siamo?'),
                       onTap: () async {
-                        return _showLocationDialog();
+                        MapsLauncher.launchCoordinates(41.918306, 12.474556);
                       },
                     ),
                     widget.document['status'] == 'Admin'
