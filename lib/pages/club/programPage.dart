@@ -75,7 +75,8 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget weatherTile(Map weather) {
-    if (weather["check"] == "true" || weather["check"]) {
+    if ((weather["check"] == "true" || weather["check"]) &&
+        weather["image"] != "") {
       return Row(
         children: [
           Image.network(weather["image"], width: 50, height: 50),
@@ -91,10 +92,7 @@ class _ProgramPageState extends State<ProgramPage> {
         ],
       );
     } else {
-      return const ListTile(
-        title:
-            Text('Nessuna informazione\nmeteo', style: TextStyle(fontSize: 15)),
-      );
+      return Container();
     }
   }
 
@@ -173,13 +171,8 @@ class _ProgramPageState extends State<ProgramPage> {
                         Text(
                           document['address'],
                           style: const TextStyle(fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        //const SizedBox(height: 15),
-                        //Text(
-                        //  document['endDate'].isNotEmpty
-                        //      ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
-                        //      : '${convertDateFormat(document['startDate'])}',
-                        //),
                       ]),
                   weatherTile(weather),
                 ],
@@ -236,8 +229,13 @@ class _ProgramPageState extends State<ProgramPage> {
                       Card(
                         clipBehavior: Clip.antiAlias,
                         elevation: 5,
-                        child: Image.network(
-                          _data['imagePath'],
+                        child: SizedBox(
+                          height: 175,
+                          width: double.infinity,
+                          child: Image.network(
+                            _data['imagePath'],
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       Positioned(
