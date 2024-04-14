@@ -50,8 +50,7 @@ void main() async {
 }
 
 @pragma('vm:entry-point')
-Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-}
+Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -140,17 +139,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void handleMessage(RemoteMessage message) {
-    Map document = {
-      'title': message.data["title"],
-      'imagePath': message.data["imagePath"],
-      'selectedClass': message.data["selectedClass"],
-      'selectedOption': message.data["selectedOption"],
-      'description': message.data["description"],
-      'startDate': message.data["startDate"],
-      'endDate': message.data["endDate"],
-      'address': message.data["address"],
-    };
+  void handleMessage(RemoteMessage message) async {
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -160,22 +149,24 @@ class _HomePageState extends State<HomePage> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Login()));
     } else if (message.data['category'] == 'new_event') {
+      var data = await retrieveData();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
-                    isAdmin: document['status'] == 'Admin',
+                    isAdmin: data['status'] == 'Admin',
                   )));
     } else if (message.data['category'] == 'modified_event') {
+      var data = await retrieveData();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
-                    isAdmin: document['status'] == 'Admin',
+                    isAdmin: data['status'] == 'Admin',
                   )));
     }
   }
