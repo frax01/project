@@ -5,6 +5,54 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ms_undraw/ms_undraw.dart';
 
+class Counter extends StatelessWidget {
+  const Counter({
+    Key? key,
+    required this.title,
+    required this.onUp,
+    required this.onDown,
+    required this.getCount,
+  }) : super(key: key);
+
+  final String title;
+  final Function() onUp;
+  final Function() onDown;
+  final Function() getCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            if (getCount() > 1) {
+              onDown();
+            }
+          },
+          child: const Icon(Icons.remove),
+        ),
+        const SizedBox(width: 10.0),
+        Column(
+          children: [
+            Text('${getCount()}',
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(title),
+          ],
+        ),
+        const SizedBox(width: 10.0),
+        ElevatedButton(
+          onPressed: () {
+            onUp();
+          },
+          child: const Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+}
+
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.document});
 
@@ -52,6 +100,7 @@ class _TabScorerState extends State<TabScorer> {
                       });
                     },
                   ),
+                  const SizedBox(height: 10.0),
                   TextField(
                     decoration: const InputDecoration(labelText: 'Surname'),
                     onChanged: (value) {
@@ -60,63 +109,35 @@ class _TabScorerState extends State<TabScorer> {
                       });
                     },
                   ),
-                  const SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (pointCount > 1) {
-                            setState(() {
-                              pointCount = pointCount - 1;
-                            });
-                          }
-                        },
-                        child: const Icon(Icons.remove),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text('$pointCount'),
-                      const SizedBox(width: 8.0),
-                      const Text('Punti'),
-                      const SizedBox(width: 8.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            pointCount = pointCount + 1;
-                          });
-                        },
-                        child: const Icon(Icons.add),
-                      ),
-                    ],
+                  const SizedBox(height: 10.0),
+                  Counter(
+                    title: 'punti',
+                    onUp: () {
+                      setState(() {
+                        pointCount = pointCount + 1;
+                      });
+                    },
+                    onDown: () {
+                      setState(() {
+                        pointCount = pointCount - 1;
+                      });
+                    },
+                    getCount: () => pointCount,
                   ),
-                  const SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (goalCount > 1) {
-                            setState(() {
-                              goalCount = goalCount - 1;
-                            });
-                          }
-                        },
-                        child: const Icon(Icons.remove),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text('$goalCount'),
-                      const SizedBox(width: 8.0),
-                      const Text('Goal'),
-                      const SizedBox(width: 8.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            goalCount = goalCount + 1;
-                          });
-                        },
-                        child: const Icon(Icons.add),
-                      ),
-                    ],
+                  const SizedBox(height: 10.0),
+                  Counter(
+                    title: 'goal',
+                    onUp: () {
+                      setState(() {
+                        goalCount = goalCount + 1;
+                      });
+                    },
+                    onDown: () {
+                      setState(() {
+                        goalCount = goalCount - 1;
+                      });
+                    },
+                    getCount: () => goalCount,
                   ),
                 ],
               ),
@@ -172,68 +193,42 @@ class _TabScorerState extends State<TabScorer> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: const Text('Modifica Scorer'),
+              title: Text('$name $surname'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Name: $name'),
-                  Text('Surname: $surname'),
-                  Text('Team: $selectedClass'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (localCounter > 1) {
-                            setState(() {
-                              localCounter--;
-                            });
-                          }
-                        },
-                        child: const Icon(Icons.remove),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text('$localCounter'),
-                      const SizedBox(width: 8.0),
-                      const Text('Punti'),
-                      const SizedBox(width: 8.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            localCounter++;
-                          });
-                        },
-                        child: const Icon(Icons.add),
-                      ),
-                    ],
+                  Counter(
+                    title: 'punti',
+                    onUp: () {
+                      setState(() {
+                        localCounter++;
+                      });
+                    },
+                    onDown: () {
+                      if (localCounter > 1) {
+                        setState(() {
+                          localCounter--;
+                        });
+                      }
+                    },
+                    getCount: () => localCounter,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          if (goalCounter > 1) {
-                            setState(() {
-                              goalCounter--;
-                            });
-                          }
-                        },
-                        child: const Icon(Icons.remove),
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text('$goalCounter'),
-                      const SizedBox(width: 8.0),
-                      const Text('Goal'),
-                      const SizedBox(width: 8.0),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            goalCounter++;
-                          });
-                        },
-                        child: const Icon(Icons.add),
-                      ),
-                    ],
+                  const SizedBox(height: 10.0),
+                  Counter(
+                    title: 'goal',
+                    onUp: () {
+                      setState(() {
+                        goalCounter++;
+                      });
+                    },
+                    onDown: () {
+                      if (goalCounter > 1) {
+                        setState(() {
+                          goalCounter--;
+                        });
+                      }
+                    },
+                    getCount: () => goalCounter,
                   ),
                 ],
               ),
@@ -525,7 +520,14 @@ class _TabScorerState extends State<TabScorer> {
           }
           return Padding(
             padding: const EdgeInsets.all(8.0),
-            child: SingleChildScrollView(child: _buildTable(scorers)),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTable(scorers),
+                  const SizedBox(height: 60.0),
+                ],
+              ),
+            ),
           );
         },
       ),
