@@ -183,7 +183,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   Text(widget.document['email'],
                       style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 10),
-                  Text(widget.document['club_class'][0],
+                  Text(
+                      (widget.document['club_class'] as List<dynamic>)
+                          .join(', '),
                       style: const TextStyle(fontSize: 16)),
                 ],
               ),
