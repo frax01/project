@@ -287,72 +287,83 @@ class _TabScorerState extends State<TabScorer> {
   }
 
   Table _buildTable(List<QueryDocumentSnapshot> scorers) {
+    var spacerChildren = <Widget>[
+      const SizedBox(height: 8),
+      const SizedBox(height: 8),
+      const SizedBox(height: 8),
+      const SizedBox(height: 8),
+    ];
+    if (widget.document["status"] == 'Admin') {
+      spacerChildren.add(const SizedBox(height: 8));
+    }
     TableRow spacer = TableRow(
-      children: <Widget>[
-        const SizedBox(height: 8),
-        const SizedBox(height: 8),
-        const SizedBox(height: 8),
-        const SizedBox(height: 8),
-        widget.document["status"] == 'Admin'
-            ? const SizedBox(height: 8)
-            : Container(),
+      children: spacerChildren,
+    );
+
+    var columnWidths = <int, TableColumnWidth>{
+      0: const FlexColumnWidth(1),
+      1: const FlexColumnWidth(3),
+      2: const FlexColumnWidth(1),
+      3: const FlexColumnWidth(1),
+    };
+    if (widget.document["status"] == 'Admin') {
+      columnWidths[4] = const FlexColumnWidth(1);
+    }
+
+    var firstRow = TableRow(
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+          child: Text(
+            '',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+          child: Text(
+            'Nome',
+            textAlign: TextAlign.left,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+          child: Text(
+            'Punti',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+          child: Text(
+            'Goal',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
+    if (widget.document["status"] == 'Admin') {
+      firstRow.children.add(
+        const Padding(
+          padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+          child: Text(
+            '',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
     return Table(
-      columnWidths: const {
-        0: FlexColumnWidth(1),
-        1: FlexColumnWidth(3),
-        2: FlexColumnWidth(1),
-        3: FlexColumnWidth(1),
-      },
+      columnWidths: columnWidths,
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: [
-        TableRow(
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-              child: Text(
-                '',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-              child: Text(
-                'Nome',
-                textAlign: TextAlign.left,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-              child: Text(
-                'Punti',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-              child: Text(
-                'Goal',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            widget.document["status"] == 'Admin'
-                ? const Padding(
-                    padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                    child: Text(
-                      '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  )
-                : Container(),
-          ],
-        ),
+        firstRow,
         spacer,
         ...scorers
             .asMap()
@@ -363,6 +374,110 @@ class _TabScorerState extends State<TabScorer> {
               Map<String, dynamic> scorerData =
                   scorer.data() as Map<String, dynamic>;
               String scorerId = scorer.id;
+
+              var rowChildren = <Widget>[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: index == 0
+                      ? const Center(
+                          child: FaIcon(
+                            FontAwesomeIcons.medal,
+                            color: Colors.amber,
+                          ),
+                        )
+                      : index == 1
+                          ? const Center(
+                              child: FaIcon(
+                                FontAwesomeIcons.medal,
+                                color: Colors.grey,
+                              ),
+                            )
+                          : index == 2
+                              ? const Center(
+                                  child: FaIcon(
+                                    FontAwesomeIcons.medal,
+                                    color: Colors.brown,
+                                  ),
+                                )
+                              : Text(
+                                  '${index + 1}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${scorerData['name']} ${scorerData['surname']}',
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${scorerData['class']}',
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Text(
+                    '${scorerData['points']}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  child: Text(
+                    '${scorerData['goals']}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20.0),
+                  ),
+                ),
+              ];
+              if (widget.document["status"] == 'Admin') {
+                rowChildren.add(
+                  PopupMenuButton(itemBuilder: (context) {
+                    return [
+                      PopupMenuItem(
+                        value: 0,
+                        child: ListTile(
+                          title: const Text('Modifica'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _showDialog(
+                                scorerData['name'],
+                                scorerData['surname'],
+                                scorerData['class'],
+                                scorerData['points'],
+                                scorerData['goals'],
+                                scorerId);
+                          },
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 1,
+                        child: ListTile(
+                          title: const Text('Elimina'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _deleteScorer(scorerId);
+                          },
+                        ),
+                      ),
+                    ];
+                  }),
+                );
+              }
+
               return TableRow(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -376,106 +491,7 @@ class _TabScorerState extends State<TabScorer> {
                   ],
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                    child: index == 0
-                        ? const Center(
-                            child: FaIcon(
-                              FontAwesomeIcons.medal,
-                              color: Colors.amber,
-                            ),
-                          )
-                        : index == 1
-                            ? const Center(
-                                child: FaIcon(
-                                  FontAwesomeIcons.medal,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : index == 2
-                                ? const Center(
-                                    child: FaIcon(
-                                      FontAwesomeIcons.medal,
-                                      color: Colors.brown,
-                                    ),
-                                  )
-                                : Text(
-                                    '${index + 1}',
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${scorerData['name']} ${scorerData['surname']}',
-                          textAlign: TextAlign.left,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '${scorerData['class']}',
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                    child: Text(
-                      '${scorerData['points']}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20.0),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
-                    child: Text(
-                      '${scorerData['goals']}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20.0),
-                    ),
-                  ),
-                  widget.document["status"] == 'Admin'
-                      ? PopupMenuButton(itemBuilder: (context) {
-                          return [
-                            PopupMenuItem(
-                              value: 0,
-                              child: ListTile(
-                                title: const Text('Modifica'),
-                                onTap: () {
-                                  Navigator.of(context).pop();
-                                  _showDialog(
-                                      scorerData['name'],
-                                      scorerData['surname'],
-                                      scorerData['class'],
-                                      scorerData['points'],
-                                      scorerData['goals'],
-                                      scorerId);
-                                },
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 1,
-                              child: ListTile(
-                                title: const Text('Elimina'),
-                                onTap: () {
-                                  Navigator.of(context).pop();
-                                  _deleteScorer(scorerId);
-                                },
-                              ),
-                            ),
-                          ];
-                        })
-                      : Container(),
-                ],
+                children: rowChildren,
               );
             })
             .expand((element) => [element, spacer])
