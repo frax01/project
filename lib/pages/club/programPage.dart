@@ -75,12 +75,25 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget weatherTile(Map weather) {
-    if ((weather["check"] == "true" || weather["check"]) &&
-        weather["image"] != "") {
+    print("weather: $weather");
+    if ((weather["check"] == "true" || weather["check"]) && weather["image"] != "") {
       return Row(
         children: [
           Image.network(weather["image"], width: 50, height: 50),
           const SizedBox(width: 10),
+          Column(
+            children: [
+              Text('${weather["t_max"]}ºC',
+                  style: const TextStyle(color: Colors.red)),
+              Text('${weather["t_min"]}ºC',
+                  style: const TextStyle(color: Colors.blue)),
+            ],
+          ),
+        ],
+      );
+    } else if ((weather["check"] == "true" || weather["check"])) {
+      return Row(
+        children: [
           Column(
             children: [
               Text('${weather["t_max"]}ºC',
