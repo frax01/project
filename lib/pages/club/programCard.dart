@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/club/programPage.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
 
 class ProgramCard extends StatefulWidget {
   const ProgramCard(
@@ -97,8 +98,14 @@ class _ProgramCardState extends State<ProgramCard> {
   _buildCard() {
     var title = _data['title'];
     var level = _data['selectedOption'];
-    var startDate = _data['startDate'];
+    var start = _data['startDate'];
+    DateTime parsedStartDate = DateFormat("dd-MM-yyyy").parse(start);
+    String startDate = DateFormat("dd/MM/yyyy").format(parsedStartDate);
     var endDate = _data['endDate'];
+    if(endDate!='') {
+      DateTime parsedEndDate = DateFormat("dd-MM-yyyy").parse(endDate);
+      endDate = DateFormat("dd/MM/yyyy").format(parsedEndDate);
+    }
     var imagePath = _data['imagePath'];
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),

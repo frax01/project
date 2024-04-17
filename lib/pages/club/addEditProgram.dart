@@ -252,6 +252,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
+      print("tokens0: $token");
       sendNotification(
           token, 'Nuovo programma!', document['title'], 'new_event',
           docId: doc.id, selectedOption: widget.selectedOption);
@@ -287,26 +288,28 @@ class _AddEditProgramState extends State<AddEditProgram> {
           token.add(elem);
         }
       }
-      sendNotification(
-        token,
-        'Programma modificato!',
-        newDocument['title'] ?? widget.document!['title'],
-        'modified_event',
-        docId: widget.document!['id'],
-        selectedOption: widget.selectedOption,
-      );
-
-      for (var key in widget.document!.keys) {
-        if (newDocument[key] == widget.document![key]) {
-          newDocument.remove(key);
-        }
-      }
-
-      await FirebaseFirestore.instance
-          .collection('club_${widget.selectedOption}')
-          .doc(widget.document?['id'])
-          .update(newDocument);
     }
+    print("tokens1: $token");
+    sendNotification(
+      token,
+      'Programma modificato!',
+      newDocument['title'] ?? widget.document!['title'],
+      'modified_event',
+      docId: widget.document!['id'],
+      selectedOption: widget.selectedOption,
+    );
+
+    for (var key in widget.document!.keys) {
+      if (newDocument[key] == widget.document![key]) {
+        newDocument.remove(key);
+      }
+    }
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.document?['id'])
+        .update(newDocument);
+
     widget.refreshProgram!();
     widget.refreshList!();
     Navigator.pop(context);
@@ -440,13 +443,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
                     var completeAddress = '';
                     if (city != '' && number != '') {
-                      if (country != 'Italia') {
+                      if (country != 'Italy') {
                         completeAddress = '$address, $number, $city, $country';
                       } else {
                         completeAddress = '$address, $number, $city';
                       }
                     } else {
-                      if (country != 'Italia') {
+                      if (country != 'Italy') {
                         completeAddress = '$address, $country';
                       } else {
                         completeAddress = address;

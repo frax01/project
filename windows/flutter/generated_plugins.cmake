@@ -8,7 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_auth
   firebase_core
   firebase_storage
-        maps_launcher
+  maps_launcher
   share_plus
   url_launcher_windows
 )
