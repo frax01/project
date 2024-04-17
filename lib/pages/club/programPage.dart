@@ -364,9 +364,9 @@ class _ProgramPageState extends State<ProgramPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _data['selectedOption'] == 'weekend'
+        title: widget.selectedOption == 'weekend'
             ? const Text('Sabato')
-            : _data['selectedOption'] == 'trip'
+            : widget.selectedOption == 'trip'
                 ? const Text('Viaggio')
                 : const Text('Extra'),
         actions: [
