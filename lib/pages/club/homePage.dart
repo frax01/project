@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 SpeedDialChild(
-                  child: const Icon(Icons.holiday_village),
+                  child: const Icon(Icons.airplanemode_on),
                   label: 'Viaggio',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
