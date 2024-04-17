@@ -372,9 +372,9 @@ class _ProgramPageState extends State<ProgramPage> {
         actions: [
           IconButton(
             onPressed: () {
-              Share.share('Guarda questo evento nel Tiber!\n\n'
+              Share.share('Programma al Tiber!\n\n'
                   'Titolo: ${_data['title']}\n'
-                  'Indirizzo: ${_data['address']}\n'
+                  'Dove: ${_data['address']}\n'
                   'Data: ${_data['startDate']} ~ ${_data['endDate']}\n'
                   'Descrizione: ${_data['description']}\n');
             },

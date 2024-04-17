@@ -26,8 +26,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FirebaseCorePluginCApi"));
   FirebaseStoragePluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FirebaseStoragePluginCApi"));
-    MapsLauncherPluginRegisterWithRegistrar(
-            registry->GetRegistrarForPlugin("MapsLauncherPlugin"));
+  MapsLauncherPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("MapsLauncherPlugin"));
   SharePlusWindowsPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("SharePlusWindowsPluginCApi"));
   UrlLauncherWindowsRegisterWithRegistrar(
