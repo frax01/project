@@ -102,7 +102,7 @@ class UserList extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  'Non ci sono nuovi utenti da accettare.',
+                  'Non ci sono nuovi utenti da accettare',
                   style: TextStyle(fontSize: 20.0, color: Colors.black54),
                 ),
               ],

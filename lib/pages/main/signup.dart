@@ -95,11 +95,6 @@ class _SignUpState extends State<SignUp> {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => VerifyEmailPage()));
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrazione avvenuta con successo'),
-          ),
-        );
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           setState(() {
@@ -227,7 +222,7 @@ class _SignUpState extends State<SignUp> {
               child: TextFormField(
                 controller: _birthdateController,
                 decoration: const InputDecoration(
-                  labelText: 'Birthdate',
+                  labelText: 'Data di nascita',
                   icon: Icon(Icons.calendar_today_rounded),
                 ),
                 validator: (value) {

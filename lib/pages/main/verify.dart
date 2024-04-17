@@ -59,7 +59,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   Widget build(BuildContext context) => isEmailVerified
       ? Login()
       : Scaffold(
-          appBar: AppBar(title: const Text('Verify account')),
+          appBar: AppBar(title: const Text('Verifica account')),
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

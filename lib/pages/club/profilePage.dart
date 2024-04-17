@@ -33,15 +33,11 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('Cos\'è il club?'),
           content: const SingleChildScrollView(
             child: Text(
-              'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
-              ', sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-              ' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-              ' Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
-              ' Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-              ' Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-              ' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-              ' Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
-              ' Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+              'Il Tiber Club è un\'associazione familiare e giovanile volta allo scopo di promuovere la crescita umana, culturale' 
+              'e spirituale della persona attraverso attività formative, sportive e culturali. Si rivolge a tutti i ragazzi, dalle'
+              'scuole primarie a quelle superiori e alle loro famiglie, che trovano nel Tiber un modo di dedicare tempo alla formazione'
+              'dei propri ragazzi. Così, il Club, diventa una realtà di supporto alle famiglie nella crescita dei loro figli nella società'
+              'attuale. Il Tiber è nato da una convinzione, che la gioventù non è un tempo morto, ma il tempo dei più grandi ideali!',
               style: TextStyle(fontSize: 16),
             ),
           ),
@@ -86,7 +82,6 @@ class _SettingsPageState extends State<SettingsPage> {
     if (confirm == true) {
       if (_currentUser != null) {
         try {
-          await _currentUser.delete();
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
               .collection('user')
               .where('email', isEqualTo: _currentUser.email)
@@ -96,8 +91,8 @@ class _SettingsPageState extends State<SettingsPage> {
             DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
             DocumentReference userDoc = documentSnapshot.reference;
             await userDoc.delete();
+            await _currentUser.delete();
           }
-          await _currentUser.delete();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.clear();
           Navigator.of(context).pushReplacementNamed('/login');
