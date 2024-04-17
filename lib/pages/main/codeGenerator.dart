@@ -112,6 +112,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         MultiSelectDialogField(
+          title: const Text('Seleziona le classi'),
+          selectedColor: Theme.of(context).primaryColor,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           items: options
               .map((option) => MultiSelectItem<String>(option, option))

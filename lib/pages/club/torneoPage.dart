@@ -87,8 +87,8 @@ class _TabScorerState extends State<TabScorer> {
           builder: (context, setState) {
             return AlertDialog(
               title: const Text("Nuovo giocatore"),
-              content: SingleChildScrollView (
-              child: Column(
+              content: SingleChildScrollView(
+                  child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
@@ -156,7 +156,7 @@ class _TabScorerState extends State<TabScorer> {
                     } else if (name == "") {
                       ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Inserisci il nome')));
-                    } 
+                    }
                   },
                   child: const Text('OK'),
                 ),
@@ -168,8 +168,8 @@ class _TabScorerState extends State<TabScorer> {
     );
   }
 
-  Future<void> _showDialog(String name,
-      int counter, int goal, String scorerId) async {
+  Future<void> _showDialog(
+      String name, int counter, int goal, String scorerId) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -362,7 +362,7 @@ class _TabScorerState extends State<TabScorer> {
 
               var rowChildren = <Widget>[
                 Padding(
-                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
                   child: index == 0
                       ? const Center(
                           child: FaIcon(
@@ -518,7 +518,10 @@ class _TabScorerState extends State<TabScorer> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildTable(scorers),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _buildTable(scorers),
+                  ),
                   const SizedBox(height: 60.0),
                 ],
               ),

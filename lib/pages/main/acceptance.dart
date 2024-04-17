@@ -39,11 +39,12 @@ ListView _buildList(AsyncSnapshot<QuerySnapshot> snapshot) {
       var userData = snapshot.data!.docs[index];
       var userEmail = userData['email'];
       return ListTile(
-        title: Text(userData['name'] + ' ' + userData['surname']),
-        subtitle: Text(
-            'Email: $userEmail\nCreated: ${userData['created_time'].toDate()}'),
+        title: Text(userData['name'] + ' ' + userData['surname'],
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(userEmail),
         onTap: () {
           showModalBottomSheet<void>(
+            useSafeArea: true,
             isScrollControlled: true,
             showDragHandle: true,
             context: context,
@@ -56,7 +57,6 @@ ListView _buildList(AsyncSnapshot<QuerySnapshot> snapshot) {
             },
           );
         },
-        isThreeLine: true,
       );
     },
     separatorBuilder: (BuildContext context, int index) {
