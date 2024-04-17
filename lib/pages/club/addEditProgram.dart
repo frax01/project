@@ -91,17 +91,32 @@ class _AddEditProgramState extends State<AddEditProgram> {
     });
   }
 
-  Future<String> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(DateTime.now().year + 1),
-    );
-    if (picked != null && picked != DateTime.now()) {
-      return DateFormat('dd-MM-yyyy').format(picked);
+  Future<String> _selectDate(BuildContext context, String startDate) async {
+    if(startDate=='') {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(DateTime.now().year + 1),
+      );
+      if (picked != null && picked != DateTime.now()) {
+        return DateFormat('dd-MM-yyyy').format(picked);
+      }
+      return '';
+    } else {
+      DateTime startDateDateTime = DateFormat('dd-MM-yyyy').parse(startDate);
+      startDateDateTime = startDateDateTime.add(const Duration(days: 1));
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: startDateDateTime,
+        firstDate: startDateDateTime,
+        lastDate: DateTime(DateTime.now().year + 1),
+      );
+      if (picked != null && picked != DateTime.now()) {
+        return DateFormat('dd-MM-yyyy').format(picked);
+      }
+      return '';
     }
-    return '';
   }
 
   Widget _showDatePickers() {
@@ -117,9 +132,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 icon: Icon(Icons.date_range),
               ),
               onTap: () async {
-                final String date = await _selectDate(context);
+                final String startDate = await _selectDate(context, '');
                 setState(() {
-                  _startDateController.text = date;
+                  _startDateController.text = startDate;
                 });
               },
               validator: (value) {
@@ -135,12 +150,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
             child: TextFormField(
               controller: _endDateController,
               readOnly: true,
+              enabled: _startDateController.text.isNotEmpty,
               decoration: const InputDecoration(
                 labelText: 'Data fine',
                 icon: Icon(Icons.date_range),
               ),
               onTap: () async {
-                final String date = await _selectDate(context);
+                final String date = await _selectDate(context, _startDateController.text);
                 setState(() {
                   _endDateController.text = date;
                 });
@@ -164,7 +180,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           icon: Icon(Icons.date_range),
         ),
         onTap: () async {
-          final String date = await _selectDate(context);
+          final String date = await _selectDate(context, '');
           setState(() {
             _startDateController.text = date;
           });

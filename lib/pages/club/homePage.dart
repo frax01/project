@@ -123,6 +123,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: widget.isAdmin
           ? SpeedDial(
               icon: Icons.add,
+              backgroundColor: Colors.white,
               activeIcon: Icons.close,
               children: [
                 SpeedDialChild(
