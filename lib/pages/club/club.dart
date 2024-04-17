@@ -6,6 +6,7 @@ import 'package:club/pages/club/torneoPage.dart';
 import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ClubPage extends StatefulWidget {
@@ -30,17 +31,32 @@ class _ClubPageState extends State<ClubPage> {
     super.initState();
 
     _widgetOptions = <Widget>[
-      HomePage(
-        selectedClass: widget.document['club_class'],
-        section: section.toLowerCase(),
-        isAdmin: widget.document['status'] == 'Admin',
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
+        child: HomePage(
+          selectedClass: widget.document['club_class'],
+          section: section.toLowerCase(),
+          isAdmin: widget.document['status'] == 'Admin',
+        ),
       ),
-      TabScorer(
-        document: widget.document,
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
+        child: TabScorer(
+          document: widget.document,
+        ),
       ),
-      SettingsPage(
-        id: widget.document["id"],
-        document: widget.document,
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
+        child: SettingsPage(
+          id: widget.document["id"],
+          document: widget.document,
+        ),
       ),
     ];
   }
