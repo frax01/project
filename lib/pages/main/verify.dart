@@ -59,7 +59,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   Widget build(BuildContext context) => isEmailVerified
       ? Login()
       : Scaffold(
-          appBar: AppBar(title: const Text('Verify email')),
+          appBar: AppBar(title: const Text('Verify account')),
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -77,7 +77,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                   ),
                   icon: Icon(Icons.email, size: 32),
                   label: const Text(
-                    'Resent Email',
+                    'Invia di nuovo',
                     style: TextStyle(fontSize: 24),
                   ),
                   onPressed: canResendEmail ? sendVerificationEmail : null,

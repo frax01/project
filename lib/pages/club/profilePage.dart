@@ -86,6 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (confirm == true) {
       if (_currentUser != null) {
         try {
+          await _currentUser.delete();
           QuerySnapshot querySnapshot = await FirebaseFirestore.instance
               .collection('user')
               .where('email', isEqualTo: _currentUser.email)
@@ -97,6 +98,8 @@ class _SettingsPageState extends State<SettingsPage> {
             await userDoc.delete();
           }
           await _currentUser.delete();
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.clear();
           Navigator.of(context).pushReplacementNamed('/login');
         } catch (e) {
           print('Errore durante l\'eliminazione dell\'account: $e');
