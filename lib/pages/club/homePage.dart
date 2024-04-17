@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> {
           _listItems.add(ProgramCard(
             documentId: doc.id,
             selectedOption: collection.split('_')[1],
+            selectedClass: widget.selectedClass,
             isAdmin: widget.isAdmin,
             refreshList: refreshList,
           ));

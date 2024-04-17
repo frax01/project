@@ -10,11 +10,13 @@ class ProgramCard extends StatefulWidget {
       {super.key,
       required this.documentId,
       required this.selectedOption,
+      required this.selectedClass,
       required this.isAdmin,
       required this.refreshList});
 
   final String documentId;
   final String selectedOption;
+  final List selectedClass;
   final bool isAdmin;
   final Function refreshList;
 
@@ -26,12 +28,29 @@ class _ProgramCardState extends State<ProgramCard> {
   var _data = <String, dynamic>{};
 
   Future<void> _loadData() async {
+    var _newData = <String, dynamic>{};
     var doc = await FirebaseFirestore.instance
         .collection('club_${widget.selectedOption}')
         .doc(widget.documentId)
         .get();
-    _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    _newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    for (String value in _newData["selectedClass"]) {
+      if (widget.selectedClass.contains(value)) {
+        _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+        break;
+      }
+    }
   }
+
+  //Future<void> _loadData() async {
+  //  var doc = await FirebaseFirestore.instance
+  //      .collection('club_${widget.selectedOption}')
+  //      .doc(widget.documentId)
+  //      .get();
+  //  _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+  //  print("data: $_data");
+  //  print("--------");
+  //}
 
   _buildShimmer() {
     return Padding(
@@ -102,7 +121,7 @@ class _ProgramCardState extends State<ProgramCard> {
     DateTime parsedStartDate = DateFormat("dd-MM-yyyy").parse(start);
     String startDate = DateFormat("dd/MM/yyyy").format(parsedStartDate);
     var endDate = _data['endDate'];
-    if(endDate!='') {
+    if (endDate != '') {
       DateTime parsedEndDate = DateFormat("dd-MM-yyyy").parse(endDate);
       endDate = DateFormat("dd/MM/yyyy").format(parsedEndDate);
     }
@@ -226,7 +245,11 @@ class _ProgramCardState extends State<ProgramCard> {
       builder: (context, snapshot) {
         Widget child;
         if (snapshot.connectionState == ConnectionState.done) {
-          child = _buildCard();
+          if (_data.isNotEmpty) {
+            child = _buildCard();
+          } else {
+            return Container();
+          }
         } else {
           child = _buildShimmer();
         }
