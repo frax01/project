@@ -113,7 +113,7 @@ class UserList extends StatelessWidget {
           children: [
             const SizedBox(height: 16.0),
             Text(
-              'There are ${snapshot.data!.docs.length} new users to accept.',
+              'Ci sono ${snapshot.data!.docs.length} nuovi utenti da accettare',
               style:
                   const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),

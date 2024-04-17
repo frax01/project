@@ -84,15 +84,15 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          updateUserDetails();
+                          return Navigator.pop(context);
                         },
-                        child: const Text('Accept'),
+                        child: const Text('Indietro'),
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          return Navigator.pop(context);
+                          updateUserDetails();
                         },
-                        child: const Text('Cancel'),
+                        child: const Text('Accetta'),
                       ),
                     ],
                   ),
@@ -188,7 +188,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'status': selectedStatus,
       });
       List token = querySnapshot.docs.first["token"];
-      sendNotification(token, 'Tiber Club', 'Sei stato accettato!', 'accepted');
+      sendNotification(token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
       Navigator.pop(context);
     } catch (e) {
       print('Error updating user details: $e');

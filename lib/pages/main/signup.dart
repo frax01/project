@@ -87,9 +87,9 @@ class _SignUpState extends State<SignUp> {
 
         await _saveUser(user);
 
-        List<String> token = await fetchToken('status', 'Admin');
+        List<String> token = await retrieveToken('status', 'Admin');
         sendNotification(
-            token, "Tiber Club", "Un nuovo utente si è registrato", 'new_user');
+            token, 'Nuova registrazione!', 'Accetta il nuovo utente', 'new_user');
 
         setState(() {
           Navigator.pushReplacement(context,

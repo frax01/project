@@ -60,11 +60,34 @@ Future<List<String>> fetchToken(String section, String target) async {
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
       for (String value in documentSnapshot['token']) {
-        if(!tokens.contains(value)) {
+        if (!tokens.contains(value)) {
           tokens.add(value);
         }
       }
     }
+    return tokens;
+  } catch (e) {
+    print('Errore durante l\'accesso a Firestore: $e');
+    return [];
+  }
+}
+
+Future<List<String>> retrieveToken(String section, String target) async {
+  List<String> tokens = [];
+  try {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where(section, isEqualTo: target)
+        .get();
+    for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+      for (String value in documentSnapshot['token']) {
+        if (!tokens.contains(value)) {
+          print("value: $value");
+          tokens.add(value);
+        }
+      }
+    }
+    print("tokens: $tokens");
     return tokens;
   } catch (e) {
     print('Errore durante l\'accesso a Firestore: $e');
