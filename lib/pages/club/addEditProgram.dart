@@ -92,7 +92,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
   }
 
   Future<String> _selectDate(BuildContext context, String startDate) async {
-    if(startDate=='') {
+    if (startDate == '') {
       final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
@@ -156,7 +156,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 icon: Icon(Icons.date_range),
               ),
               onTap: () async {
-                final String date = await _selectDate(context, _startDateController.text);
+                final String date =
+                    await _selectDate(context, _startDateController.text);
                 setState(() {
                   _endDateController.text = date;
                 });
@@ -421,6 +422,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 const SizedBox(height: 20),
                 TypeAheadField(
                   controller: _programLocationController,
+                  autoFlipDirection: true,
+                  hideOnEmpty: true,
                   builder: (context, controller, focusNode) {
                     return TextFormField(
                       controller: controller,
@@ -449,6 +452,18 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       title: Text(suggestion["display_name"]),
                     );
                   },
+                  decorationBuilder: (context, child) {
+                    return Padding(
+                      padding:
+                          const EdgeInsets.only(left: 40, top: 5, bottom: 5),
+                      child: Material(
+                        type: MaterialType.card,
+                        elevation: 4,
+                        borderRadius: BorderRadius.circular(8),
+                        child: child,
+                      ),
+                    );
+                  },
                   onSelected: (suggestion) {
                     var address = suggestion["address"]["name"];
                     var number = suggestion["address"]["house_number"] ?? '';
@@ -473,9 +488,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     }
 
                     setState(() {
-                      this._latitude = lat;
-                      this._longitude = lon;
-                      this._address = completeAddress;
+                      _latitude = lat;
+                      _longitude = lon;
+                      _address = completeAddress;
                       _programLocationController.text = completeAddress;
                     });
                   },
