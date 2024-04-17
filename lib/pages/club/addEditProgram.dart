@@ -246,7 +246,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
         'title': _programNameController.text,
         'selectedOption': widget.selectedOption,
         'imagePath': _image,
-        'selectedClass': selectedClasses.sorted(),
+        'selectedClass': selectedClasses.sorted((a, b) {
+          if (a.contains('media') && b.contains('liceo')) {
+            return -1;
+          } else if (a.contains('liceo') && b.contains('media')) {
+            return 1;
+          } else {
+            return a.compareTo(b);
+          }
+        }),
         'description': _programDescriptionController.text,
         'startDate': _startDateController.text,
         'endDate': _endDateController.text,
@@ -288,7 +296,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
       'title': _programNameController.text,
       'selectedOption': widget.selectedOption,
       'imagePath': _image,
-      'selectedClass': selectedClasses.sorted(),
+      'selectedClass': selectedClasses.sorted((a, b) {
+        if (a.contains('media') && b.contains('liceo')) {
+          return -1;
+        } else if (a.contains('liceo') && b.contains('media')) {
+          return 1;
+        } else {
+          return a.compareTo(b);
+        }
+      }),
       'description': _programDescriptionController.text,
       'startDate': _startDateController.text,
       'endDate': _endDateController.text,
