@@ -63,7 +63,6 @@ Future<Map<String, dynamic>> fetchWeatherData(
     };
     return weather;
   } else if (endDate != '') {
-    print("sono quiiii");
     List tMin = [];
     List tMax = [];
 

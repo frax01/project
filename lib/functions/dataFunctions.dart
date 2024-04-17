@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<String> loadData() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? email = prefs.getString('email');
-  print("sharedP: $email");
   return prefs.getString('email') ?? '';
 }
 

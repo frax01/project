@@ -277,7 +277,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
-      print("tokens0: $token");
       sendNotification(
           token, 'Nuovo programma!', document['title'], 'new_event',
           docId: doc.id, selectedOption: widget.selectedOption);
@@ -322,7 +321,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
         }
       }
     }
-    print("tokens1: $token");
     sendNotification(
       token,
       'Programma modificato!',

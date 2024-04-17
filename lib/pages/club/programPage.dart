@@ -75,7 +75,6 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget weatherTile(Map weather) {
-    print("weather: $weather");
     if ((weather["check"] == "true" || weather["check"]) && weather["image"] != "") {
       return Row(
         children: [
@@ -264,7 +263,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                   spreadRadius: 2,
                                   blurRadius: 7,
                                   offset: const Offset(
-                                      0, 3), // changes position of shadow
+                                      0, 3),
                                 ),
                               ],
                             ),
@@ -338,7 +337,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                   spreadRadius: 2,
                                   blurRadius: 15,
                                   offset: Offset(
-                                      0, 3), // changes position of shadow
+                                      0, 3),
                                 ),
                               ],
                             ),
@@ -358,7 +357,6 @@ class _ProgramPageState extends State<ProgramPage> {
                     ),
                   ),
                   Expanded(
-                    // flex: 2,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(60, 20, 20, 20),
                       child: details(_data, _weather),

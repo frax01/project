@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:club/functions/notificationFunctions.dart';
 
 class VerifyEmailPage extends StatefulWidget {
   @override
@@ -59,10 +58,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   @override
   Widget build(BuildContext context) {
     if (isEmailVerified) {
-      //retrieveToken('status', 'Admin').then((List<String> token) {
-      //  sendNotification(
-      //      token, 'Tiber Club', 'Un nuovo utente si è registrato', 'new_user');
-      //});
       return const Login();
     } else {
       return Scaffold(
@@ -106,47 +101,3 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     }
   }
 }
-
-//@override
-//  Widget build(BuildContext context) => isEmailVerified
-//      ? const Login()
-//      : Scaffold(
-//          appBar: AppBar(title: const Text('Verifica account')),
-//          body: Padding(
-//            padding: const EdgeInsets.all(16),
-//            child: Column(
-//              mainAxisAlignment: MainAxisAlignment.center,
-//              children: [
-//                const Text(
-//                  'Una mail di verifica è stata inviata',
-//                  style: TextStyle(fontSize: 20),
-//                  textAlign: TextAlign.center,
-//                ),
-//                const SizedBox(height: 24),
-//                ElevatedButton.icon(
-//                  style: ElevatedButton.styleFrom(
-//                    minimumSize: Size.fromHeight(50),
-//                  ),
-//                  icon: const Icon(Icons.email, size: 32),
-//                  label: const Text(
-//                    'Invia di nuovo',
-//                    style: TextStyle(fontSize: 24),
-//                  ),
-//                  onPressed: canResendEmail ? sendVerificationEmail : null,
-//                ),
-//                const SizedBox(height: 8),
-//                TextButton(
-//                  style: ElevatedButton.styleFrom(
-//                    minimumSize: Size.fromHeight(50),
-//                  ),
-//                  child: const Text(
-//                    'Indietro',
-//                    style: TextStyle(fontSize: 24),
-//                  ),
-//                  onPressed: () => FirebaseAuth.instance.signOut,
-//                )
-//              ],
-//            ),
-//          ));
-//}
-//

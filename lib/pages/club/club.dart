@@ -176,7 +176,6 @@ class _ClubPageState extends State<ClubPage> {
               ),
             ),
             const VerticalDivider(thickness: 1, width: 1),
-            // This is the main content.
             Expanded(
               child: Scaffold(
                 body: PageTransitionSwitcher(
