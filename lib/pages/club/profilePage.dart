@@ -156,6 +156,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<String> medie = [];
+  List<String> liceo = [];
+
+  // Separo le classi delle medie e del liceo
+  (widget.document['club_class'] as List<dynamic>).forEach((club) {
+    if (club.toString().contains("media")) {
+      medie.add(club.toString());
+    } else if (club.toString().contains("liceo")) {
+      liceo.add(club.toString());
+    }
+  });
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -180,12 +191,38 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 10),
                   Text(widget.document['email'],
                       style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Text(
-                      (widget.document['club_class'] as List<dynamic>)
-                          .join(', '),
-                      style: const TextStyle(fontSize: 16)),
-                ],
+                  const SizedBox(height: 20),
+                  Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    if (medie.isNotEmpty) ...medie.map((club) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 1),
+                          child: Chip(
+                            label: Text(
+                              club,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        )),
+                  ],
+                ),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    if (liceo.isNotEmpty) ...liceo.map((club) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 1),
+                          child: Chip(
+                            label: Text(
+                              club,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        )),
+                  ],
+                ),
+                ]
               ),
               const SizedBox(height: 20),
               ListView(

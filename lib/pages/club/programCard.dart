@@ -42,16 +42,6 @@ class _ProgramCardState extends State<ProgramCard> {
     }
   }
 
-  //Future<void> _loadData() async {
-  //  var doc = await FirebaseFirestore.instance
-  //      .collection('club_${widget.selectedOption}')
-  //      .doc(widget.documentId)
-  //      .get();
-  //  _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-  //  print("data: $_data");
-  //  print("--------");
-  //}
-
   _buildShimmer() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),

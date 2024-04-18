@@ -25,7 +25,7 @@ class Counter extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () {
-            if (getCount() > 1) {
+            if (getCount() > 0) {
               onDown();
             }
           },
@@ -66,8 +66,8 @@ class _TabScorerState extends State<TabScorer> {
   late Stream<QuerySnapshot> _scorersStream;
   String name = '';
   String bottomLevel = 'torneo';
-  int pointCount = 1;
-  int goalCount = 1;
+  int pointCount = 0;
+  int goalCount = 0;
 
   @override
   void initState() {
@@ -135,8 +135,8 @@ class _TabScorerState extends State<TabScorer> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    pointCount = 1;
-                    goalCount = 1;
+                    pointCount = 0;
+                    goalCount = 0;
                   },
                   child: const Text('Annulla'),
                 ),
@@ -150,8 +150,8 @@ class _TabScorerState extends State<TabScorer> {
                         'points': pointCount,
                         'goals': goalCount,
                       });
-                      pointCount = 1;
-                      goalCount = 1;
+                      pointCount = 0;
+                      goalCount = 0;
                       Navigator.of(context).pop();
                     } else if (name == "") {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -190,7 +190,7 @@ class _TabScorerState extends State<TabScorer> {
                       });
                     },
                     onDown: () {
-                      if (localCounter > 1) {
+                      if (localCounter > 0) {
                         setState(() {
                           localCounter--;
                         });
@@ -207,7 +207,7 @@ class _TabScorerState extends State<TabScorer> {
                       });
                     },
                     onDown: () {
-                      if (goalCounter > 1) {
+                      if (goalCounter > 0) {
                         setState(() {
                           goalCounter--;
                         });

@@ -45,9 +45,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
   String _latitude = '';
   String _longitude = '';
   final List<String> classOptions = [
-    '1º media',
-    '2º media',
-    '3º media',
+    '1° media',
+    '2° media',
+    '3° media',
     '1° liceo',
     '2° liceo',
     '3° liceo',
