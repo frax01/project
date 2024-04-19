@@ -12,13 +12,15 @@ class ProgramCard extends StatefulWidget {
       required this.selectedOption,
       required this.selectedClass,
       required this.isAdmin,
-      required this.refreshList});
+      required this.refreshList,
+      required this.startDate});
 
   final String documentId;
   final String selectedOption;
   final List selectedClass;
   final bool isAdmin;
   final Function refreshList;
+  final DateTime startDate;
 
   @override
   _ProgramCardState createState() => _ProgramCardState();

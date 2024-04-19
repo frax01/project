@@ -37,17 +37,24 @@ class _HomePageState extends State<HomePage> {
     for (final collection in ['club_weekend', 'club_trip', 'club_extra']) {
       await db.collection(collection).get().then((docs) {
         for (var doc in docs.docs) {
+          List<String> parts = doc["startDate"].split('-');
+          int day = int.parse(parts[0]);
+          int month = int.parse(parts[1]);
+          int year = int.parse(parts[2]);
+          DateTime dateTime = DateTime(year, month, day);
           _listItems.add(ProgramCard(
             documentId: doc.id,
             selectedOption: collection.split('_')[1],
             selectedClass: widget.selectedClass,
             isAdmin: widget.isAdmin,
             refreshList: refreshList,
+            startDate: dateTime,
           ));
           _listKey.currentState?.insertItem(_listItems.length - 1);
         }
       });
     }
+    _listItems.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
   _buildList() {
