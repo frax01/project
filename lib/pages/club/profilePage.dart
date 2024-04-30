@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, required this.id, required this.document});
@@ -246,14 +247,21 @@ class _SettingsPageState extends State<SettingsPage> {
                       },
                     ),
                     widget.document['status'] == 'Admin'
-                        ? ListTile(
-                            leading: const Icon(Icons.person),
-                            title: const Text('Richieste utenti'),
-                            onTap: () {
-                              Navigator.pushNamed(context, '/acceptance');
-                            },
-                          )
-                        : const SizedBox.shrink(),
+                    ? ListTile(
+                        leading: const Icon(Icons.person),
+                        title: const Text('Richieste utenti'),
+                        onTap: () {
+                          Navigator.pushNamed(context, '/acceptance');
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                    ListTile(
+                      leading: const Icon(Icons.policy),
+                      title: const Text('Privacy e policy'),
+                      onTap: () {
+                        launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'));
+                      },
+                    ),
                     ListTile(
                       leading: const Icon(Icons.delete_forever),
                       title: const Text('Elimina account'),

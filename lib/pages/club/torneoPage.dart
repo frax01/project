@@ -295,9 +295,9 @@ class _TabScorerState extends State<TabScorer> {
       columnWidths[4] = const FlexColumnWidth(1);
     }
 
-    var firstRow = TableRow(
+    var firstRow = const TableRow(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             '',
@@ -305,7 +305,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Nome',
@@ -313,7 +313,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Punti',
@@ -321,7 +321,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Goal',
@@ -393,7 +393,7 @@ class _TabScorerState extends State<TabScorer> {
                                 ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -406,7 +406,7 @@ class _TabScorerState extends State<TabScorer> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
                   child: Text(
                     '${scorerData['points']}',
                     textAlign: TextAlign.center,
@@ -415,7 +415,7 @@ class _TabScorerState extends State<TabScorer> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
                   child: Text(
                     '${scorerData['goals']}',
                     textAlign: TextAlign.center,
@@ -536,7 +536,7 @@ class _TabScorerState extends State<TabScorer> {
                     _showAddDialog();
                   },
                   child: Icon(Icons.add),
-                  shape: CircleBorder(),
+                  shape: const CircleBorder(),
                   backgroundColor: Colors.white,
                 )
               : null,
@@ -597,7 +597,7 @@ class _TabScorerState extends State<TabScorer> {
                   onPressed: () {
                     _showAddDialog();
                   },
-                  child: Icon(Icons.add),
+                  child: const Icon(Icons.add),
                 )
               : null,
     );
