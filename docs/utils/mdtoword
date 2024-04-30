@@ -1,0 +1,42 @@
+#!/bin/bash
+
+FILE=$1
+
+if [ -z "$FILE" ]; then
+    echo "Usage: $0 <file>"
+    exit 1
+fi
+
+if [ ! -f "$FILE" ]; then
+    echo "File $FILE does not exist"
+    exit 1
+fi
+
+if [ ! -r "$FILE" ]; then
+    echo "File $FILE is not readable"
+    exit 1
+fi
+
+if [ ! -s "$FILE" ]; then
+    echo "File $FILE is empty"
+    exit 1
+fi
+
+# Creates a variable that contains the file name but with a .docx extension
+DOCX_FILE=$(echo $FILE | sed 's/\.[^.]*$/.docx/')
+
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium   
+
+# Converts the file to a word
+pandoc $FILE \
+    -o $DOCX_FILE \
+    -s \
+    --listing \
+    --reference-doc=custom-reference.docx \
+    -F mermaid-filter \
+    -F pandoc-plantuml \
+    -t docx+native_numbering \
+    -f markdown+backtick_code_blocks
+
+rm mermaid-filter.err
+rm -rf plantuml-images
