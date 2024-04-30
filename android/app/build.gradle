@@ -64,7 +64,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        versionCode 5
+        versionCode 6
         versionName "1.0.0"
 
         multiDexEnabled true
