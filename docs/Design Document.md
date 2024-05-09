@@ -189,44 +189,121 @@ In this section we acknowledge the limitations and boundaries that influence the
 
 # Requirement specification
 
+This section of the document provides a complete specification of the requirements the app for Tiber Club must comply with. The requirements are separated in functional requirements, interface requirements, performance requirements, design constraints and system attributes.
+
 ## Functional requirements
 
+Here we define the functional requirements of the application, obtained from the functions described in the section above.
+
+|             |                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[FR-01]** | Users must be able to create an account.                                                                                                     |
+| **[FR-02]** | Users should have the ability to delete their account.                                                                                       |
+| **[FR-03]** | Newly created accounts must undergo screening and approval, with assigned roles and levels.                                                  |
+| **[FR-04]** | Administrators should receive notifications of new account creations.                                                                        |
+| **[FR-05]** | Users can view existing activities.                                                                                                          |
+| **[FR-06]** | Tutors can add, modify, and delete activities for their levels.                                                                              |
+| **[FR-07]** | Weather information should be displayed for activities, especially if multi-day events.                                                      |
+| **[FR-08]** | Users can share activity details through the system dialog.                                                                                  |
+| **[FR-09]** | Users receive notifications for activity creation, modification, and deletion, restricted to individuals associated with the activity level. |
+| **[FR-10]** | Users can view rankings.                                                                                                                     |
+| **[FR-11]** | Tutors have the authority to add individuals to rankings, regardless of account status.                                                      |
+| **[FR-12]** | Tutors can modify goals and points of individuals within rankings.                                                                           |
+| **[FR-13]** | Tutors can remove individuals from rankings.                                                                                                 |
 
 ## Interface requirements
 
+This section details the interface requirements of the application for Tiber Club, divided by their type.
 
 ### Hardware interfaces
 
+|             |                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| **[HI-01]** | The app should be compatible with various screen sizes and resolutions commonly found in smartphones.         |
+| **[HI-02]** | The app should support touch gestures for navigation and interaction, such as tapping, swiping, and pinching. |
 
 ### Software interfaces
 
+|             |                                                                                                                                                                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[SI-01]** | The app should be compatible with both iOS and Android operating systems, supporting the latest versions as well as some older versions to ensure broader accessibility                                    |
+| **[SI-02]** | The app needs to interface with a database system to store and retrieve user account information, activity data, and ranking details                                                                       |
+| **[SI-03]** | Integration with a weather API is required to fetch real-time weather information for activities, if available                                                                                             |
+| **[SI-04]** | Integration with a notification service (e.g., Firebase Cloud Messaging for Android, Apple Push Notification Service for iOS) to send push notifications to users regarding account activities and updates |
 
 ### Communication interfaces
 
+|             |                                                                                                                                                                      |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[CI-01]** | The app requires an active internet connection for real-time data synchronization, account authentication, and communication with external services                  |
+| **[CI-02]** | The app needs to communicate with the Tiber Club's database via RESTful APIs or other methods to fetch and update data related to activities, accounts, and rankings |
+| **[CI-03]** | Utilize system dialogs for sharing activities to ensure compatibility across different devices and platforms                                                         |
 
 ## Performance requirements
 
+The performance requirements for the Tiber App are critical to ensure a seamless user experience and efficient operation. The app should be responsive and performant across different devices and network conditions. Response times for key interactions such as account creation, activity management, and ranking updates should be minimal to keep users engaged.
+
+Load times for content such as activity details and ranking information should be optimized to provide a smooth browsing experience. The app should handle concurrent user interactions gracefully without slowdowns or crashes, even during peak usage times.
+
+In terms of data transfer, the app should minimize the amount of data exchanged between the client and server to conserve bandwidth and reduce latency. Efficient caching mechanisms should be implemented to store frequently accessed data locally and minimize network requests.
+
+Additionally, the app should be robust and resilient to network fluctuations, gracefully handling scenarios such as intermittent connectivity or server downtime. Error handling mechanisms should provide informative and user-friendly messages to guide users in case of unexpected situations.
 
 ## Design constraints
 
+The design constraints listed in this section serve as guidelines and limitations that influence the visual and interactive aspects of the Tiber App, ensuring that the design is both functional and user-friendly within the specified constraints.
+
+|             |                                                                                                                                                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[DC-01]** | The app's user interface must be designed to accommodate various screen sizes and resolutions, ensuring a consistent and visually appealing layout across different smartphone sizes.                                                               |
+| **[DC-02]** | The design must prioritize essential information and functionality, avoiding clutter and excessive scrolling.                                                                                                                                       |
+| **[DC-03]** | The app's interface should be optimized for touch interactions, with sufficient touch targets and intuitive gestures to facilitate easy navigation and interaction, especially for younger users.                                                   |
+| **[DC-04]** | The design should adhere to accessibility guidelines to ensure that all users, including those with disabilities, can effectively navigate and use the app's features. This includes considerations for text size and color contrast, among others. |
+| **[DC-05]** | The app's design should maintain consistency with the branding and visual identity of the Tiber Club, including logo usage, color schemes, and typography, to reinforce brand recognition and trust.                                                |
+| **[DC-06]** | The design must incorporate measures to safeguard user data and privacy, including secure authentication methods, encryption of sensitive information, and compliance with relevant data protection regulations.                                    |
+| **[DC-07]** | The design should be scalable to accommodate future growth and additional features, allowing for easy integration of new functionalities and enhancements without requiring significant redesign.                                                   |
 
 ## Software system attributes
 
+In crafting the Tiber App, it's imperative to delineate the essential attributes and requirements that govern its software architecture and functionality. This section delineates the core principles and specifications that underpin the app's reliability, availability, security, maintainability, and portability. By articulating these fundamental characteristics, we set the stage for a robust, user-centric, and sustainable mobile application that meets the needs of both the Tiber Club and its diverse community of users.
 
 ### Reliability
 
+|             |                                                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **[RR-01]** | The Tiber App should operate reliably under normal conditions, minimizing the occurrence of failures or errors that disrupt user experience.     |
+| **[RR-02]** | The app should have robust error handling mechanisms to gracefully handle unexpected situations and provide informative error messages to users. |
 
 ### Availability
 
+|             |                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[AR-01]** | The Tiber App should be available for use whenever users require access, minimizing downtime and service interruptions.                                       |
+| **[AR-02]** | The app's backend infrastructure should have redundancy and failover mechanisms in place to ensure high availability, with a target uptime of at least 99.9%. |
 
 ### Security
 
+|             |                                                                                                                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[SR-01]** | The Tiber App must prioritize the security and confidentiality of user data, protecting against unauthorized access, data breaches, and malicious attacks. |
+| **[SR-02]** | The app should implement secure authentication mechanisms, such as password hashing and encryption, to safeguard user accounts and sensitive information.  |
+| **[SR-03]** | Data transmission between the app and server should be encrypted using industry-standard protocols (e.g., HTTPS) to prevent interception and tampering.    |
 
 ### Maintainability
 
+|             |                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[MR-01]** | The Tiber App should be designed and implemented in a way that facilitates easy maintenance, updates, and enhancements over time, reducing the cost and effort required for ongoing support. |
+| **[MR-02]** | The app's codebase should follow coding best practices and be well-documented to enable efficient debugging, troubleshooting, and code review processes.                                     |
+| **[MR-03]** | Modular architecture and separation of concerns should be employed to allow for isolated updates and changes to specific components without affecting the entire system.                     |
 
 ### Portability
 
+|             |                                                                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[PR-01]** | The Tiber App should be portable across different devices, platforms, and environments, enabling users to access the app seamlessly regardless of their device or operating system. |
+| **[PR-02]** | The app should be developed using cross-platform frameworks or technologies that support deployment on both iOS and Android platforms with minimal modifications.                   |
+| **[PR-03]** | The app's user interface should adapt gracefully to different screen sizes and resolutions, maintaining usability and visual consistency across various devices.                    |
 
 # Design specification
 
