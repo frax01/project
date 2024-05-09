@@ -170,10 +170,12 @@ This section identifies the external factors and systems upon which the successf
 
 |             |                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **[DP-01]** | Access to a database or API to retrieve and update activities and leaderboard data                                                         |
+| **[DP-01]** | Access to a database to retrieve and update activities and leaderboard data                                                                |
 | **[DP-02]** | Collaboration with the Tiber Club's administration to ensure accurate and timely communication of club-related information through the app |
 | **[DP-03]** | Compatibility with various mobile operating systems (iOS, Android) to reach a wide audience of users                                       |
 | **[DP-04]** | Availability of resources (time, budget, personnel) for app development, maintenance, and support                                          |
+| **[DP-05]** | Access to a weather API to obtain data to display on activities                                                                            |
+| **[DP-06]** | Access to a map API to                                                                                                                     |
 
 ### Constraints
 
@@ -307,28 +309,118 @@ In crafting the Tiber App, it's imperative to delineate the essential attributes
 
 # Design specification
 
+This section provides a description of the key components of the system’s architecture,
+specifies their interactions, and outlines the chosen replication mechanism adopted to
+distribute the system effectively.
 
 ## Overview
 
+![Overview diagram](overview.png)
+
+The application will be developed with a Client-Server architecture, albeit a very monolithic one, as the server will only include the database and authentication, leaving the business logic and presentation in the client.
+
+The communication between the client and the server is performed through a REST API provided by the storage and database provider Firebase.  
 
 ## Component view
 
+![Component diagram](component.svg)
+
+As described in the section above, the app connects through a common interface to the Firebase services, namely, the Firestore Database, the Authentication service and the Notification API. Specific components of the application connect to external APIs to obtain the necessary data.
+
+The app is roughly divided between a logic component, that performs the interfacing with the database and external services, and a presentation component, that builds and controls the user interface. The presentation component is further divided into the activities, tournament and account components.
 
 ## Deployment view
 
+![Deployment diagram](deployment.svg)
+
+The deployment view offers a comprehensive overview of how the various components constituting the system are distributed and deployed across diverse physical or virtual environments. When examining the deployment view of the Tiber Club application, one can discern the arrangement of its backend elements, chiefly comprised of Firebase services and external APIs, juxtaposed with the application itself establishing connections to these components via HTTPS protocols.
+
+In this configuration, numerous instances of the application, potentially one per user, may operate concurrently, each seamlessly interfacing with the backend services. This distributed setup ensures scalability and robustness, allowing the Tiber Club app to accommodate varying levels of usage while maintaining reliability and responsiveness.
 
 ## Data model
 
+```plantuml
+@startuml
+enum Status {
+	USER
+	ADMIN
+}
 
-## Selected architectural styles and patterns
+enum Role {
+	MEMBER
+	PARENT
+	TUTOR
+}
 
+enum Class {
+	1MEDIA
+	2MEDIA
+	3MEDIA
+	1LICEO
+	2LICEO
+	3LICEO
+	4LICEO
+	5LICEO
+}
+
+enum Type {
+	WEEKEND
+	TRIP
+	EXTRA
+}
+
+class User {
+	+string name
+	+string surname
+	+string email
+	+date birthdate
+	+List<Class> classes
+	+Role role
+	+Status status
+}
+
+class Activity {
+	+string title
+	+string description
+	+Image image
+	+Type type
+	+date startDate
+	+date? endDate
+	+long latitude
+	+long longitude
+	+List<Class> classes
+}
+
+class Ranking {
+	+string name
+	+int goals
+	+int points
+}
+@enduml
+```
+
+This diagram describes the different data types that conform the data model of the application, as well as the enumerate classes that support them.
+
+It is important to mention that, since the data for the app will be stored in a NoSQL database, the data model described here lacks relations, characteristic only to relational data models.
+
+## External services
+
+The application will make use of two external services, not counting the database backend:
+
+- **Weather API**: the application requires a weather data API to display data related to the weather in the time and place of the activities. The API should be able to provide, given a latitude and longitude and a date or series or dates, the weather for that date or dates (sunny, cloudy, rainy, etc...) and the maximum and minimum temperatures. Given the weather data might be not available for dates far into the future, the app should handle gracefully the lack of data.
+- **Location API**: the application requires a location API to let tutors select the location of activities. It needs to provide a search service that can return, given a string that represents a place, a specific address and coordinates of said place.
 
 ## Interface design
 
+The interface design of the Tiber App tries to capture the essence of modernity, simplicity, and usability. Drawing inspiration from the latest design trends, the app will be crafted using Google's Material 3 design system, ensuring a sleek and contemporary visual experience.
+
+With Material 3 as our guiding principle, the interface will feature clean lines, bold colors, and intuitive interactions, providing users with a seamless and delightful experience. Every element, from buttons to navigation menus, will be meticulously designed to prioritize ease of use and accessibility.
+
+The user interface will be thoughtfully organized to streamline navigation and enhance usability, allowing users to effortlessly discover activities, track rankings, and engage with community updates. No matter the size of screen, the Tiber App's interface will adapt gracefully to various screen sizes and resolutions, ensuring a consistent and visually appealing experience across devices.
 
 # Implementation and test plan
 
-## Platforms, languages, libraries and frameworks
+## Technology selected
 
 ### Database
 
@@ -337,6 +429,9 @@ In crafting the Tiber App, it's imperative to delineate the essential attributes
 
 
 ### Authentication
+
+
+### External APIs
 
 
 
