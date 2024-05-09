@@ -295,7 +295,7 @@ class _TabScorerState extends State<TabScorer> {
       columnWidths[4] = const FlexColumnWidth(1);
     }
 
-    var firstRow = const TableRow(
+    var firstRow = TableRow(
       children: [
         Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
