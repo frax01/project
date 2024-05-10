@@ -3,7 +3,7 @@ title: Design Document
 subtitle: Tiber App - Design and Implementation of Mobile Applications 2023/2024
 author:
   - Juan Pedro Gálvez López
-  - Francesco Martignoni
+  - Alessandro Martignoni
 toc: true
 date: 2024-06-10
 ---
@@ -62,13 +62,13 @@ The system has four types of users, that correspond to the different roles withi
 - **Member (Ragazzo)**: a kid participating in activities organized by Tiber Club. They are associated with an specific "level" which corresponds to their class level in school (1º to 3º Media and 1º to 5º Liceo). They should only be able to read the information and activities of their level.
 - **Parent (Genitore)**: a parent of one or more kids participating in activities organized by Tiber Club. They can be associated with more than one level to be able to see activities for all their kids, if they have more than one. They should still only be able to read the information.
 - **Tutor**: an organizer of activities in Tiber Club. The can be associated with more than one level if they manage activities for those levels. They can add, edit and delete content in the app.
-- **Administrator**: the administrator of the application. Can approve or deny new accounts. It is independent from the other three types, meaning any of the other three types may also be administrator.
+- **Administrator**: the administrator of the application. Can approve new accounts. It is independent from the other three types, meaning any of the other three types may also be administrator.
 
 ## Scenarios
 
 ### [SC-01] A member wants to be updated on all activities organized
 
-Francesco is a kid currently attending 1º Liceo and a member of Tiber Club. He can open the app and see all the activities programmed for his level. For each activity, he can see the title of the activity, a picture, the type (a weekend plan, a trip, or an extra activity), the date or dates, the location, the levels that can participate in that activity and a description detailing the activity.
+Alessandro is a kid currently attending 1º Liceo and a member of Tiber Club. He can open the app and see all the activities programmed for his level. For each activity, he can see the title of the activity, a picture, the type (a weekend plan, a trip, or an extra activity), the date or dates, the location, the levels that can participate in that activity and a description detailing the activity.
 
 ### [SC-02] A parent wants to be updated on all activities organized
 
@@ -76,7 +76,7 @@ Alice is a mother of two kids, both members of Tiber Club. None of them have a p
 
 ### [SC-03] An user of the app wants to invite a friend to an activity in Tiber Club
 
-Francesco wants to invite one of his school friends to a soccer match organized in Tiber Club. He can easily share the details of the activity through Whatsapp or other messaging platforms by using the share button in the activity details screen, which will compose a small text with everything important and present the system share sheet so it can be shared.
+Alessandro wants to invite one of his school friends to a soccer match organized in Tiber Club. He can easily share the details of the activity through Whatsapp or other messaging platforms by using the share button in the activity details screen, which will compose a small text with everything important and present the system share sheet so it can be shared.
 
 ### [SC-04] A tutor wants to create a new activity
 
@@ -88,7 +88,7 @@ Mario created an activity at an specific venue, but the venue was not available 
 
 ### [SC-06] A tutor wants to cancel an activity
 
-Michele is a tutor at Tiber Club. He organized a trekking activity, but due to the weather he needs to cancel it. He can to to the app, select that activity and easily cancel it. It will disappear from the members and parents apps.
+Michele is a tutor at Tiber Club. He organized a trekking activity, but due to the weather he needs to cancel it. He can go to the app, select that activity and easily cancel it. It will disappear from the members and parents apps.
 
 ### [SC-07] A member or a parent wants to be notified of new activities
 
@@ -100,11 +100,11 @@ Enrico is a father of three kids, all members of Tiber Club. He has a difficult 
 
 ### [SC-09] An user of the app wants to know the weather for a particular activity
 
-Vittorio wants to go to a trip to Milano organized by Tiber Club. When packing for the trip, he does not know whether he should bring an umbrella. He can open the app and go to the trip activity screen, and see the weather in Milano for the days of the trip, and so he can see that he should definitely bring the umbrella because in Milano it is always rainy.
+Vittorio wants to go to a trip to Torino organized by Tiber Club. When packing for the trip, he does not know whether he should bring an umbrella. He can open the app and go to the trip activity screen, and see the weather in Torino for the days of the trip, and so he can see that he should definitely bring the umbrella because in Torino it is always rainy.
 
 ### [SC-10] A member wants to see their position in the rankings
 
-Francesco has been participating in all soccer matches organized by Tiber Club. The tutors have been counting his goals and points and entering them in the app. He can go into the ranking screen of the app and see his position in relation to all the other members of Tiber Club.
+Alessandro has been participating in all soccer matches organized by Tiber Club. The tutors have been counting his goals and points and entering them in the app. He can go into the ranking screen of the app and see his position in relation to all the other members of Tiber Club.
 
 ### [SC-11] A tutor wants to add a person to the rankings
 
@@ -112,7 +112,7 @@ Michele has organized a soccer match and three new kids have come. He can add th
 
 ### [SC-12] A tutor wants to add goals and points to a person in the rankings
 
-Francesco has scored three goals in the soccer match, and Michele wants to add them to Francesco's count in the app. He can open the app, go to the ranking screen, and add goals to Francesco's score.
+Alessandro has scored three goals in the soccer match, and Michele wants to add them to Alessandro's count in the app. He can open the app, go to the ranking screen, and add goals to Alessandro's score.
 
 ### [SC-13] A new member wants to join the app
 
