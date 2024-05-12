@@ -47,9 +47,9 @@ To this end, the project's core functionalities will include extensive user mana
 
 ## Revision history
 
-| Ver. | Rev. | Date | Comment         |
-| ---- | ---- | ---- | --------------- |
-| 1    | 0    |      | Initial version |
+| Ver. | Rev. | Date       | Comment         |
+| ---- | ---- | ---------- | --------------- |
+| 1    | 0    | 2024-05-12 | Initial version |
 
 # Overall description
 
@@ -420,27 +420,48 @@ The user interface will be thoughtfully organized to streamline navigation and e
 
 # Implementation and test plan
 
-## Technology selected
+This section of the document goes over the implementation of the platform following the requirements and design specification detailed in the previous sections, and its subsequent testing.
 
-### Database
+## Implementation
 
+The initial phase of app implementation involves careful consideration and selection of the most suitable technology, weighing the merits and drawbacks of each option available.
 
-### Languages and frameworks
+### Languages and Frameworks
 
+After thorough evaluation, Flutter emerges as the preferred framework for this project, harnessing the power of the Dart programming language. Renowned for its adaptability, Flutter offers a rich library ecosystem, granting developers access to a plethora of tools and functionalities. Its standout feature lies in simplifying cross-platform application development, facilitating seamless deployment across diverse operating systems and devices. With its robust capabilities, Flutter proves to be an ideal choice for crafting dynamic and responsive mobile applications effortlessly.
 
-### Authentication
+While exploring alternatives, React Native was briefly considered but ultimately dismissed due to the complexities associated with JavaScript and its comparatively slower performance.
 
+### Database Selection
+
+The chosen database for this project must fulfill specific criteria, including NoSQL compatibility, support for file and image storage, adherence to stringent security protocols, and seamless integration with the selected framework.
+
+Among the contenders, Firebase and Supabase emerged as the top contenders, offering comparable functionality and features. Ultimately, Firebase was selected for its close alignment with the Flutter ecosystem and its established reputation within the industry, overshadowing Supabase, a relative newcomer.
+
+### Authentication Provider
+
+Firebase's built-in authentication services, seamlessly integrated with the chosen database, further solidified its selection over Supabase. This intrinsic capability adds another layer of convenience and security to the project's infrastructure.
 
 ### External APIs
 
+#### Weather API
 
+In the selection of the Weather API, Open-Meteo emerged as the prime choice. Renowned for its open-source nature, Open-Meteo provides free access for non-commercial purposes, eliminating the need for an API key and thereby simplifying its integration.
 
-## Implementation plan
+#### Location API
 
+The Location API serves a crucial role in facilitating location-based functionalities, particularly in location search, autocomplete and display for Tiber Club activities. While Google Maps stands out as a prominent option in the realm of location services, its costliness and absence of a free plan, coupled with an overwhelming array of features, rendered it less than ideal for this project's requirements. Consequently, LocationIQ emerged as the preferred alternative. Leveraging the wealth of data from OpenStreetMap, LocationIQ offers a free tier that fulfills the project's needs aptly, striking a balance between functionality and affordability.
 
 ## Test plan
 
+Formal unit testing was not prioritized due to the application's modest scale and simplicity. Instead, informal testing methods were deemed sufficient, yielding comparable results. Similarly, formal integration testing was deemed impractical given the intricate inter-dependencies among components and the inherent challenges associated with formally testing user interfaces. Consequently, all interactions with the application were subjected to informal testing processes.
+
+Beta testing, however, played a pivotal role in ensuring the application's robustness and usability. Approximately 40 individuals, comprising various roles within the Tiber Club, actively participated in the beta testing phase. Over the course of several months, these testers installed and utilized the application, diligently reporting any encountered bugs or issues. Subsequently, numerous fixes were implemented, predominantly aimed at refining and enhancing the overall user experience.
 
 # References
 
-- 
+- [Material Design documentation](https://m3.material.io/)
+- [LocationIQ documentation](https://docs.locationiq.com/)
+- [Firebase documentation](https://firebase.google.com/docs/)
+- [Flutter documentation](https://docs.flutter.dev/)
+- [Open-Meteo API documentation](https://open-meteo.com/en/docs)
