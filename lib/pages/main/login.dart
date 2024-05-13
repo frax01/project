@@ -54,15 +54,20 @@ class _LoginState extends State<Login> {
         var store = FirebaseFirestore.instance.collection('user');
         var user = await store.where('email', isEqualTo: email).get();
 
-        String? token = await FirebaseMessaging.instance.getToken();
-        assert(token != null);
+
         DocumentSnapshot userDoc = user.docs.first;
         List<dynamic> tokens = userDoc["token"];
-        if (user.docs.isNotEmpty) {
-          if (!tokens.contains(token)) {
-            tokens.add(token!);
-            await userDoc.reference.update({'token': tokens});
+        try {
+          String? token = await FirebaseMessaging.instance.getToken();
+          assert(token != null);
+          if (user.docs.isNotEmpty) {
+            if (!tokens.contains(token)) {
+              tokens.add(token!);
+              await userDoc.reference.update({'token': tokens});
+            }
           }
+        } catch (e) {
+          print('Error fetching tokens, notifications will not be available');
         }
 
         _document = {

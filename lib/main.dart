@@ -10,6 +10,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'color_schemes.dart';
 import 'config.dart';
+import 'firebase_options.dart';
 import 'functions/dataFunctions.dart';
 import 'functions/generalFunctions.dart';
 import 'pages/main/acceptance.dart';
@@ -22,14 +23,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: Config.apiKey,
-      authDomain: Config.authDomain,
-      projectId: Config.projectId,
-      storageBucket: Config.storageBucket,
-      messagingSenderId: Config.messagingSenderId,
-      appId: Config.appId,
-    ),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   FirebaseMessaging.instance.requestPermission(
