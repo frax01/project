@@ -54,7 +54,6 @@ class _LoginState extends State<Login> {
         var store = FirebaseFirestore.instance.collection('user');
         var user = await store.where('email', isEqualTo: email).get();
 
-
         DocumentSnapshot userDoc = user.docs.first;
         List<dynamic> tokens = userDoc["token"];
         try {

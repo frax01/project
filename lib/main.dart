@@ -19,7 +19,6 @@ import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
 
 void main() async {
-  // timeDilation = 4.0;
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(

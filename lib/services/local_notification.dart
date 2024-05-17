@@ -8,6 +8,7 @@ class LocalNotificationService {
   static late RemoteMessage notificationMessage;
 
   static void initialize(void Function(RemoteMessage) handleMessage) {
+
     final InitializationSettings initializationSettings =
         InitializationSettings(
             android: AndroidInitializationSettings("@mipmap/ic_launcher"));
