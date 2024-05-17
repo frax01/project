@@ -21,7 +21,7 @@ The Tiber App is designed as a companion app for the Tiber Club, a Rome-based so
 | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **[PG-01]** | Provide an easy to use and informative channel to inform parents and children of the activities organized in Tiber Club |
 | **[PG-02]** | Provide a leaderboard in which children participating in the soccer school can compete based on their performance       |
-| **[PG-03]** | Provide a easy way of sharing the activities organized with people that might be interested in participating            |
+| **[PG-03]** | Provide an easy way of sharing the activities organized with people that might be interested in participating            |
 | **[PG-04]** | Send timely and relevant notifications to inform of the activities organized in Tiber Club                              |
 
 ## Scope
@@ -59,7 +59,7 @@ This section contains a high-level description of the application, based on the 
 
 The system has four types of users, that correspond to the different roles within the Tiber Club:
 
-- **Member (Ragazzo)**: a kid participating in activities organized by Tiber Club. They are associated with an specific "level" which corresponds to their class level in school (1º to 3º Media and 1º to 5º Liceo). They should only be able to read the information and activities of their level.
+- **Member (Ragazzo)**: a kid participating in activities organized by Tiber Club. They are associated with a specific "level" which corresponds to their class level in school (1º to 3º Media and 1º to 5º Liceo). They should only be able to read the information and activities of their level.
 - **Parent (Genitore)**: a parent of one or more kids participating in activities organized by Tiber Club. They can be associated with more than one level to be able to see activities for all their kids, if they have more than one. They should still only be able to read the information.
 - **Tutor**: an organizer of activities in Tiber Club. The can be associated with more than one level if they manage activities for those levels. They can add, edit and delete content in the app.
 - **Administrator**: the administrator of the application. Can approve new accounts. It is independent from the other three types, meaning any of the other three types may also be administrator.
@@ -100,7 +100,7 @@ Enrico is a father of three kids, all members of Tiber Club. He has a difficult 
 
 ### [SC-09] An user of the app wants to know the weather for a particular activity
 
-Vittorio wants to go to a trip to Torino organized by Tiber Club. When packing for the trip, he does not know whether he should bring an umbrella. He can open the app and go to the trip activity screen, and see the weather in Torino for the days of the trip, and so he can see that he should definitely bring the umbrella because in Torino it is always rainy.
+Vittorio wants to go to a trip to Torino organized by Tiber Club. When packing for the trip, he does not know whether he should bring an umbrella. He can open the app and go to the trip activity screen, and see the weather in Torino for the days of the trip, and so he can see that he should definitely bring the umbrella because in Torino it always rains.
 
 ### [SC-10] A member wants to see their position in the rankings
 
@@ -120,7 +120,7 @@ Giovanni is a member of Tiber Club, and has just received his first phone for hi
 
 ### [SC-14] An administrator wants to screen new users
 
-Gabriele is the director of Tiber Club. He wants to let into the app only the members and parents of Tiber Club, and to stop external people from joining the app without being members. He can open the user screening page in the app and see new accounts created. He will also receive a notification when a new account is created. He can check the details of the account, give them the necessary roles, add them to the levels the pertain to, and accept them. He can also reject users, impeding them from accessing the information in the app.
+Gabriele is the director of Tiber Club. He wants to let into the app only the members and parents of Tiber Club, and to stop external people from joining the app without being members. He can open the user screening page in the app and see new accounts created. He will also receive a notification when a new account is created. He can check the details of the account, give them the necessary roles, add them to the levels the appertain to, and accept them. He can also reject users, impeding them from accessing the information in the app.
 
 ### [SC-15] An user of the app wants to eliminate their account
 
@@ -175,7 +175,7 @@ This section identifies the external factors and systems upon which the successf
 | **[DP-03]** | Compatibility with various mobile operating systems (iOS, Android) to reach a wide audience of users                                       |
 | **[DP-04]** | Availability of resources (time, budget, personnel) for app development, maintenance, and support                                          |
 | **[DP-05]** | Access to a weather API to obtain data to display on activities                                                                            |
-| **[DP-06]** | Access to a map API to                                                                                                                     |
+| **[DP-06]** | Access to a map API                                                                                                                     |
 
 ### Constraints
 
@@ -186,7 +186,7 @@ In this section we acknowledge the limitations and boundaries that influence the
 | **[CN-01]** | Limited screen space on mobile devices may constrain the design and layout of the app's user interface                                                                 |
 | **[CN-02]** | Privacy and security concerns regarding the collection and storage of personal information, especially for children using the app                                      |
 | **[CN-03]** | Adherence to regulatory requirements, such as GDPR                                                                                                                     |
-| **[CN-04]** | The need for regular updates and maintenance to ensure the app remains functional and relevant amidst evolving technology and user expectations                        |
+| **[CN-04]** | The need for regular updates and maintenance to ensure the app remains functional and relevant admits evolving technology and user expectations                        |
 | **[CN-05]** | The app's performance may be affected by factors such as network latency or device hardware limitations, particularly in areas with poor connectivity or older devices |
 
 # Requirement specification

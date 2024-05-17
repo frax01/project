@@ -31,10 +31,7 @@ Future<Map<String, dynamic>> fetchWeatherData(
       "image": '',
       "check": false,
     };
-  } else if (endDate != '' &&
-      (startInputDate.isBefore(today) || startInputDate == today) &&
-      (today.isBefore(DateFormat('dd-MM-yyyy').parse(endDate)) ||
-          DateFormat('dd-MM-yyyy').parse(endDate) == today)) {
+  } else if (endDate != '' && (startInputDate.isBefore(today) || startInputDate == today)) {
     final response = await http.get(
       Uri.parse(
           'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
