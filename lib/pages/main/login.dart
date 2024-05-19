@@ -44,6 +44,9 @@ class _LoginState extends State<Login> {
 
   _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
       try {
         var credentials = await _auth.signInWithEmailAndPassword(
           email: _emailController.text,
@@ -87,9 +90,13 @@ class _LoginState extends State<Login> {
         }
 
         _document['role'] == '' ? _goToWaiting() : _goToHome();
+        setState(() {
+          _isLoading = false;
+        });
       } catch (e) {
         _passwordController.clear();
         setState(() {
+          _isLoading = false;
           _loginFailed = true;
         });
       }
@@ -150,6 +157,10 @@ class _LoginState extends State<Login> {
     );
   }
 
+  bool _isObscure = false;
+  bool _isLoading = false;
+
+
   _form() {
     return Form(
       key: _formKey,
@@ -181,10 +192,18 @@ class _LoginState extends State<Login> {
           const SizedBox(height: 10),
           TextFormField(
             controller: _passwordController,
-            obscureText: true,
-            decoration: const InputDecoration(
+            obscureText: !_isObscure,
+            decoration: InputDecoration(
               labelText: 'Password',
-              icon: Icon(Icons.key),
+              icon: const Icon(Icons.key),
+              suffixIcon: IconButton(
+                icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() {
+                    _isObscure = !_isObscure;
+                  });
+                },
+              ),
             ),
             keyboardType: TextInputType.visiblePassword,
             validator: (value) {
@@ -233,8 +252,16 @@ class _LoginState extends State<Login> {
                 const SizedBox(width: 20),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _handleLogin,
-                    child: const Text('Accedi'),
+                    onPressed: _isLoading ? null : _handleLogin,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text('Accedi', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],

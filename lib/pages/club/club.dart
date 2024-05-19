@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'birthdayPage.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key, required this.title, required this.document});
@@ -53,6 +54,12 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
+        child: BirthdayPage(),
+      ),
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
         child: SettingsPage(
           id: widget.document["id"],
           document: widget.document,
@@ -91,6 +98,7 @@ class _ClubPageState extends State<ClubPage> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,        
         currentIndex: _selectedIndex,
         onTap: (int index) {
           setState(() {
@@ -104,9 +112,14 @@ class _ClubPageState extends State<ClubPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer),
+            icon: Icon(Icons.sports_soccer_outlined),
             activeIcon: Icon(Icons.sports_soccer),
             label: '11 ideale',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.cake_outlined),
+            activeIcon: Icon(Icons.cake),
+            label: 'Compleanni',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outlined),
@@ -141,6 +154,11 @@ class _ClubPageState extends State<ClubPage> {
                   icon: Icon(Icons.sports_soccer),
                   selectedIcon: Icon(Icons.sports_soccer),
                   label: Text('11 ideale'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.cake),
+                  selectedIcon: Icon(Icons.cake),
+                  label: Text('Compleanni'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.account_box),
