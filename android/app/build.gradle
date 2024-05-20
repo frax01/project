@@ -75,7 +75,7 @@ android {
             storeFile file("my-release-key.jks")
             storePassword "store_password"
             keyAlias "my-key-alias"
-            keyPassword "key_password"
+            keyPassword "store_password"
         }
     }
 
