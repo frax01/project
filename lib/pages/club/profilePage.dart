@@ -170,11 +170,12 @@ class _SettingsPageState extends State<SettingsPage> {
   });
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              const SizedBox(height: 20),
               Column(
                 children: [
                   Image.asset(
