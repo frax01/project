@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   _loadItems() async {
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip', 'club_extra']) {
-      await db.collection(collection).get().then((docs) {
+      await db.collection(collection).where("club_class", arrayContainsAny: widget.selectedClass).get().then((docs) {
         for (var doc in docs.docs) {
           List<String> parts = doc["startDate"].split('-');
           int day = int.parse(parts[0]);
