@@ -27,7 +27,7 @@ class ProgramCard extends StatefulWidget {
 }
 
 class _ProgramCardState extends State<ProgramCard> {
-  var _data = <String, dynamic>{};
+  var data = <String, dynamic>{};
 
   Future<void> _loadData() async {
     var _newData = <String, dynamic>{};
@@ -38,7 +38,7 @@ class _ProgramCardState extends State<ProgramCard> {
     _newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
     for (String value in _newData["selectedClass"]) {
       if (widget.selectedClass.contains(value)) {
-        _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+        data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
         break;
       }
     }
@@ -107,17 +107,17 @@ class _ProgramCardState extends State<ProgramCard> {
   }
 
   _buildCard() {
-    var title = _data['title'];
-    var level = _data['selectedOption'];
-    var start = _data['startDate'];
+    var title = data['title'];
+    var level = data['selectedOption'];
+    var start = data['startDate'];
     DateTime parsedStartDate = DateFormat("dd-MM-yyyy").parse(start);
     String startDate = DateFormat("dd/MM/yyyy").format(parsedStartDate);
-    var endDate = _data['endDate'];
+    var endDate = data['endDate'];
     if (endDate != '') {
       DateTime parsedEndDate = DateFormat("dd-MM-yyyy").parse(endDate);
       endDate = DateFormat("dd/MM/yyyy").format(parsedEndDate);
     }
-    var imagePath = _data['imagePath'];
+    var imagePath = data['imagePath'];
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: OpenContainer(
@@ -221,8 +221,8 @@ class _ProgramCardState extends State<ProgramCard> {
         },
         openBuilder: (context, action) {
           return ProgramPage(
-              documentId: _data['id'],
-              selectedOption: _data['selectedOption'],
+              documentId: data['id'],
+              selectedOption: data['selectedOption'],
               isAdmin: widget.isAdmin,
               refreshList: widget.refreshList);
         },
@@ -237,7 +237,7 @@ class _ProgramCardState extends State<ProgramCard> {
       builder: (context, snapshot) {
         Widget child;
         if (snapshot.connectionState == ConnectionState.done) {
-          if (_data.isNotEmpty) {
+          if (data.isNotEmpty) {
             child = _buildCard();
           } else {
             return Container();
