@@ -246,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                                 )));
                     return ClubPage(title: "Tiber Club", document: document);
                   } else {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => ProgramPage(
