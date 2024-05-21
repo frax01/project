@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:confetti/confetti.dart';
 
-class BirthdayPage extends StatelessWidget {
+class BirthdayPage extends StatefulWidget {
+  @override
+  _BirthdayPageState createState() => _BirthdayPageState();
+}
+
+class _BirthdayPageState extends State<BirthdayPage> {
+
   Future<List<Map<String, dynamic>>> _fetchBirthdays() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('user')
@@ -65,66 +72,159 @@ class BirthdayPage extends StatelessWidget {
     return months[month - 1];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchBirthdays(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Errore: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Non ci sono compleanni'));
-          } else {
-            List<Map<String, dynamic>> birthdays = snapshot.data!;
-            return ListView.builder(
-              itemCount: birthdays.length,
-              itemBuilder: (context, index) {
-                var birthday = birthdays[index];
-                return Card(
-                  color: birthday['day'] == DateTime.now().day && birthday['month'] == DateTime.now().month ? Color.fromARGB(255, 231, 230, 230) : null,
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${birthday['day']}',
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              _getMonthAbbreviation(birthday['month']),
-                              style: TextStyle(fontSize: 18, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        VerticalDivider(
-                          width: 32,
-                          thickness: 2,
-                          color: Colors.black,
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${birthday['name']} ${birthday['surname']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-        },
-      ),
-    );
+  Future<void> _startConfettiIfTodayBirthday() async {
+    final List<Map<String, dynamic>> birthdays = await _fetchBirthdays();
+    final DateTime now = DateTime.now();
+
+    for (var birthday in birthdays) {
+      if (birthday['day'] == now.day && birthday['month'] == now.month) {
+        _confettiController.play();
+        break; // Se c'è solo un compleanno oggi, possiamo uscire dal loop
+      }
+    }
   }
+
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: Duration(seconds: 5));
+  }
+  
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _startConfettiIfTodayBirthday();
+  }
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Stack(
+      children: [
+        FutureBuilder<List<Map<String, dynamic>>>(
+          future: _fetchBirthdays(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Errore: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('Non ci sono compleanni'));
+            } else {
+              List<Map<String, dynamic>> birthdays = snapshot.data!;
+              return ListView.builder(
+                itemCount: birthdays.length,
+                itemBuilder: (context, index) {
+                  var birthday = birthdays[index];
+                  bool isToday = birthday['day'] == DateTime.now().day && birthday['month'] == DateTime.now().month;
+                  bool isTomorrow = ((birthday['day'] == DateTime.now().add(Duration(days: 1)).day &&
+                    birthday['month'] == DateTime.now().month)) ||
+                    (birthday['day'] == 1 && birthday['month'] == DateTime.now().month + 1 && DateTime(DateTime.now().year, DateTime.now().month + 1, 0)==DateTime.now().day);
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${birthday['day']}',
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                _getMonthAbbreviation(birthday['month']),
+                                style: const TextStyle(fontSize: 18, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const VerticalDivider(
+                            width: 32,
+                            thickness: 2,
+                            color: Colors.black,
+                          ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${birthday['name']} ${birthday['surname']}',
+                                    style: const TextStyle(fontSize: 17),
+                                  ),
+                                ),
+                                if (isToday)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                    child: Column(
+                                      children: [
+                                        Image.asset(
+                                          'images/birthday_cake.png',
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        const Text(
+                                          'oggi',
+                                          style: TextStyle(fontSize: 16, color: Colors.black),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                if (isTomorrow)
+                                  Column(
+                                    children: [
+                                      Image.asset(
+                                        'images/hourglass.png',
+                                        width: 24,
+                                        height: 24,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'domani',
+                                        style: TextStyle(fontSize: 16, color: Colors.black),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+          },
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.center,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              numberOfParticles: 100,
+              gravity: 0.2,
+              colors: const [Colors.yellow, Colors.orange, Colors.red, Colors.green, Colors.blue],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 Future<List<Map<String, dynamic>>> _fetchBirthdays() async {
