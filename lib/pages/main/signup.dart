@@ -59,6 +59,9 @@ class _SignUpState extends State<SignUp> {
 
   _handleSignup() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
       try {
         String name = _nameController.text;
         String surname = _surnameController.text;
@@ -94,15 +97,18 @@ class _SignUpState extends State<SignUp> {
         setState(() {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => VerifyEmailPage()));
+          _isLoading = false;
         });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
           setState(() {
             _passwordErrorMsg = 'La password è troppo debole';
+            _isLoading = false;
           });
         } else if (e.code == 'email-already-in-use') {
           setState(() {
             _emailErrorMsg = 'Questa mail è già in uso';
+            _isLoading = false;
           });
         }
       }
@@ -123,6 +129,10 @@ class _SignUpState extends State<SignUp> {
       });
     }
   }
+
+  bool _isObscure = false;
+  bool _isObscureConfirm = false;
+  bool _isLoading = false;
 
   _form() {
     return Form(
@@ -178,10 +188,18 @@ class _SignUpState extends State<SignUp> {
           const SizedBox(height: 20),
           TextFormField(
             controller: _passwordController,
-            obscureText: true,
+            obscureText: !_isObscure,
             decoration: InputDecoration(
               labelText: 'Password',
               icon: const Icon(Icons.password_rounded),
+              suffixIcon: IconButton(
+                icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() {
+                    _isObscure = !_isObscure;
+                  });
+                },
+              ),
               errorText: _passwordErrorMsg,
             ),
             keyboardType: TextInputType.visiblePassword,
@@ -198,10 +216,18 @@ class _SignUpState extends State<SignUp> {
           const SizedBox(height: 20),
           TextFormField(
             controller: _passwordConfirmController,
-            obscureText: true,
-            decoration: const InputDecoration(
+            obscureText: !_isObscureConfirm,
+            decoration: InputDecoration(
               labelText: 'Conferma password',
-              icon: Icon(Icons.password_rounded),
+              icon: const Icon(Icons.password_rounded),
+              suffixIcon: IconButton(
+                icon: Icon(_isObscureConfirm ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() {
+                    _isObscureConfirm = !_isObscureConfirm;
+                  });
+                },
+              ),
             ),
             keyboardType: TextInputType.visiblePassword,
             validator: (value) {
@@ -236,8 +262,16 @@ class _SignUpState extends State<SignUp> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: _handleSignup,
-            child: const Text('Registrati'),
+            onPressed: _isLoading ? null : _handleSignup,
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Text('Registrati', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -31,13 +31,13 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cos\'è il club?'),
+          title: const Text('Cos\'è il Tiber Club?'),
           content: const SingleChildScrollView(
             child: Text(
-              'Il Tiber Club è un\'associazione familiare e giovanile volta allo scopo di promuovere la crescita umana, culturale' 
+              'Il Tiber Club è un\'associazione familiare e giovanile volta allo scopo di promuovere la crescita umana, culturale ' 
               'e spirituale della persona attraverso attività formative, sportive e culturali. Si rivolge a tutti i ragazzi, dalle '
-              'scuole primarie a quelle superiori e alle loro famiglie, che trovano nel Tiber un modo di dedicare tempo alla formazione'
-              'dei propri ragazzi. Così, il Club, diventa una realtà di supporto alle famiglie nella crescita dei loro figli nella società'
+              'scuole primarie a quelle superiori e alle loro famiglie, che trovano nel Tiber un modo di dedicare tempo alla formazione '
+              'dei propri ragazzi. Così, il Club, diventa una realtà di supporto alle famiglie nella crescita dei loro figli nella società '
               'attuale. Il Tiber è nato da una convinzione, che la gioventù non è un tempo morto, ma il tempo dei più grandi ideali!',
               style: TextStyle(fontSize: 16),
             ),

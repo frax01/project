@@ -233,7 +233,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
   Future<void> _handleCreate(context) async {
     if (!_validate()) return;
-
+    setState(() {
+        _isLoadingCreation = true;
+      });
     try {
       if (_address == '') {
         _address = 'Tiber Club';
@@ -277,19 +279,27 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
+      setState(() {
+          _isLoadingCreation = false;
+        });
       sendNotification(
           token, 'Nuovo programma!', document['title'], 'new_event',
           docId: doc.id, selectedOption: widget.selectedOption);
       widget.refreshList!();
       Navigator.pop(context);
     } catch (e) {
+      setState(() {
+          _isLoadingCreation = false;
+        });
       print('Errore durante la creazione dell\'evento: $e');
     }
   }
 
   Future<void> _handleEdit(context) async {
     if (!_validate()) return;
-
+    setState(() {
+      _isLoadingModify = true;
+    });
     Map<Object, Object?> newDocument = {
       'id': widget.document!['id'],
       'title': _programNameController.text,
@@ -341,10 +351,17 @@ class _AddEditProgramState extends State<AddEditProgram> {
         .doc(widget.document?['id'])
         .update(newDocument);
 
+    setState(() {
+      _isLoadingModify = false;
+    });
+
     widget.refreshProgram!();
     widget.refreshList!();
     Navigator.pop(context);
   }
+
+  bool _isLoadingCreation = false;
+  bool _isLoadingModify = false;
 
   Widget _smallLayout(BuildContext context) {
     return Scaffold(
@@ -547,15 +564,43 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     _isEditing
                         ? ElevatedButton(
                             onPressed: () {
-                              _handleEdit(context);
+                              if (_isLoadingModify)
+                                null;
+                              else {
+                                _handleEdit(context);
+                              }
                             },
-                            child: const Text('Modifica programma'),
+                            child: _isLoadingModify
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Modifica programma',
+                                    style: TextStyle(color: Colors.white)),
                           )
                         : ElevatedButton(
                             onPressed: () {
-                              _handleCreate(context);
+                              if (_isLoadingCreation)
+                                null;
+                              else {
+                                _handleCreate(context);
+                              }
                             },
-                            child: const Text('Crea programma'),
+                            child: _isLoadingCreation
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Crea programma',
+                                    style: TextStyle(color: Colors.white)),
                           ),
                   ],
                 ),
