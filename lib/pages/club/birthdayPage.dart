@@ -209,7 +209,7 @@ Widget build(BuildContext context) {
         ),
         Positioned.fill(
           child: Align(
-            alignment: Alignment.center,
+            alignment: Alignment.topCenter,
             child: ConfettiWidget(
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
