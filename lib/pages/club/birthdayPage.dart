@@ -212,7 +212,7 @@ Widget build(BuildContext context) {
               blastDirectionality: BlastDirectionality.explosive,
               emissionFrequency: 0.9,
               shouldLoop: false,
-              numberOfParticles: 15,
+              numberOfParticles: 10,
               gravity: 0.2,
               colors: const [Colors.yellow, Colors.orange, Colors.red, Colors.green, Colors.blue],
             ),
