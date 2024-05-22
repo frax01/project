@@ -79,7 +79,7 @@ class _BirthdayPageState extends State<BirthdayPage> {
     for (var birthday in birthdays) {
       if (birthday['day'] == now.day && birthday['month'] == now.month) {
         _confettiController.play();
-        break; // Se c'è solo un compleanno oggi, possiamo uscire dal loop
+        break;
       }
     }
   }
@@ -89,7 +89,7 @@ class _BirthdayPageState extends State<BirthdayPage> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: Duration(seconds: 5));
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
   }
   
   @override
@@ -130,6 +130,7 @@ Widget build(BuildContext context) {
                     (birthday['day'] == 1 && birthday['month'] == DateTime.now().month + 1 && DateTime(DateTime.now().year, DateTime.now().month + 1, 0)==DateTime.now().day);
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    elevation: 4,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -147,11 +148,7 @@ Widget build(BuildContext context) {
                               ),
                             ],
                           ),
-                          const VerticalDivider(
-                            width: 32,
-                            thickness: 2,
-                            color: Colors.black,
-                          ),
+                          const SizedBox(width: 20),
                           Expanded(
                             child: Row(
                               children: [
@@ -209,12 +206,13 @@ Widget build(BuildContext context) {
         ),
         Positioned.fill(
           child: Align(
-            alignment: Alignment.topCenter,
+            alignment: const Alignment(0.0, -1.25),
             child: ConfettiWidget(
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
+              emissionFrequency: 0.9,
               shouldLoop: false,
-              numberOfParticles: 100,
+              numberOfParticles: 15,
               gravity: 0.2,
               colors: const [Colors.yellow, Colors.orange, Colors.red, Colors.green, Colors.blue],
             ),
