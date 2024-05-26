@@ -160,7 +160,6 @@ class _SettingsPageState extends State<SettingsPage> {
     List<String> medie = [];
   List<String> liceo = [];
 
-  // Separo le classi delle medie e del liceo
   (widget.document['club_class'] as List<dynamic>).forEach((club) {
     if (club.toString().contains("media")) {
       medie.add(club.toString());

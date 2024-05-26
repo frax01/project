@@ -6,7 +6,6 @@ class ClubUser {
   final String birthdate;
   final String role;
   final String club_class;
-  final String soccer_class;
   final String status;
   final String token;
   final DateTime created_time;
@@ -19,7 +18,6 @@ class ClubUser {
       required this.password,
       required this.role,
       required this.club_class,
-      required this.soccer_class,
       required this.status,
       required this.token,
       required this.created_time});

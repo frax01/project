@@ -93,6 +93,5 @@ class Waiting extends StatelessWidget {
         ),
       ),
     );
-    //);
   }
 }

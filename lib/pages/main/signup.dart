@@ -47,7 +47,6 @@ class _SignUpState extends State<SignUp> {
         'birthdate': user.birthdate,
         'role': user.role,
         'club_class': user.club_class,
-        'soccer_class': user.soccer_class,
         'status': user.status,
         'token': [user.token],
         'created_time': user.created_time
@@ -82,7 +81,6 @@ class _SignUpState extends State<SignUp> {
           birthdate: birthdate,
           role: '',
           club_class: '',
-          soccer_class: '',
           status: '',
           token: tokenKey,
           created_time: DateTime.now(),

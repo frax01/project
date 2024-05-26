@@ -7,9 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
 import 'color_schemes.dart';
-import 'config.dart';
 import 'firebase_options.dart';
 import 'functions/dataFunctions.dart';
 import 'functions/generalFunctions.dart';
@@ -99,7 +97,6 @@ class _HomePageState extends State<HomePage> {
       'email': querySnapshot1.docs.first['email'],
       'role': querySnapshot1.docs.first['role'],
       'club_class': querySnapshot1.docs.first['club_class'],
-      'soccer_class': querySnapshot1.docs.first['soccer_class'],
       'status': querySnapshot1.docs.first['status'],
       'birthdate': querySnapshot1.docs.first['birthdate'],
       'id': querySnapshot1.docs.first.id,
@@ -113,7 +110,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> setupInteractedMessage() async {
     LocalNotificationService.initialize(handleMessage);
 
-    //terminated: funziona
+    //terminated
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       setState(() {
