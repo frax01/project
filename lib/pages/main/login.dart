@@ -78,6 +78,7 @@ class _LoginState extends State<Login> {
           'email': user.docs.first['email'],
           'role': user.docs.first['role'],
           'club_class': user.docs.first['club_class'],
+          'soccer_class': user.docs.first['soccer_class'],
           'status': user.docs.first['status'],
           'birthdate': user.docs.first['birthdate'],
           'token': tokens,
