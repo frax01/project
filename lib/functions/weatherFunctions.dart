@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -23,7 +22,7 @@ Future<Map<String, dynamic>> fetchWeatherData(
   Duration startDifference = startInputDate.difference(today);
   int startDaysDifference = startDifference.inDays;
 
-  if (startDaysDifference >= 16) {
+  if (startDaysDifference >= 15) {
     return {
       "t_min": '',
       "t_max": '',
@@ -31,7 +30,8 @@ Future<Map<String, dynamic>> fetchWeatherData(
       "image": '',
       "check": false,
     };
-  } else if (endDate != '' && (startInputDate.isBefore(today) || startInputDate == today)) {
+  } else if (endDate != '' &&
+      (startInputDate.isBefore(today) || startInputDate == today)) {
     final response = await http.get(
       Uri.parse(
           'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FRome&start_date=$todayOutputFormat&end_date=$todayOutputFormat'),
