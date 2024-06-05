@@ -1,4 +1,3 @@
-import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/club/addEditProgram.dart';
 import 'package:club/pages/club/programCard.dart';
@@ -117,7 +116,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _smallLayout() {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () {
@@ -167,27 +172,6 @@ class _HomePageState extends State<HomePage> {
               ],
             )
           : null,
-    );
-  }
-
-  _largeLayout() {
-    return Container(
-      child: Center(
-        child: Text('Large Layout'),
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      smallLayout: _smallLayout(),
-      largeLayout: _largeLayout(),
     );
   }
 }

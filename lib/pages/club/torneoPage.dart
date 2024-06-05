@@ -1,4 +1,3 @@
-import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -168,7 +167,7 @@ class _TabScorerState extends State<TabScorer> {
     );
   }
 
-  Future<void> _showDialog(
+  Future<void> _showModifyDialog(
       String name, int counter, int goal, String scorerId) async {
     return showDialog<void>(
       context: context,
@@ -434,7 +433,7 @@ class _TabScorerState extends State<TabScorer> {
                           title: const Text('Modifica'),
                           onTap: () {
                             Navigator.of(context).pop();
-                            _showDialog(
+                            _showModifyDialog(
                                 scorerData['name'],
                                 scorerData['points'],
                                 scorerData['goals'],
@@ -479,7 +478,8 @@ class _TabScorerState extends State<TabScorer> {
     );
   }
 
-  Widget _smallLayout(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
         stream: _scorersStream,
@@ -540,74 +540,6 @@ class _TabScorerState extends State<TabScorer> {
                   backgroundColor: Colors.white,
                 )
               : null,
-    );
-  }
-
-  Widget _largeLayout(BuildContext context) {
-    return Scaffold(
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _scorersStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Errore: ${snapshot.error}'));
-          }
-          List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
-          if (scorers.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 200.0,
-                    child: UnDraw(
-                      illustration: UnDrawIllustration.junior_soccer,
-                      placeholder: const SizedBox(
-                        height: 200.0,
-                        width: 200.0,
-                      ),
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  const Text(
-                    'Non ci sono giocatori registrati',
-                    style: TextStyle(fontSize: 20.0, color: Colors.black54),
-                  ),
-                ],
-              ),
-            );
-          }
-          return Center(
-            child: SizedBox(
-              width: 500,
-              height: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SingleChildScrollView(child: _buildTable(scorers)),
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton:
-          widget.document['status'] == 'Admin' && bottomLevel == 'torneo'
-              ? FloatingActionButton(
-                  onPressed: () {
-                    _showAddDialog();
-                  },
-                  child: const Icon(Icons.add),
-                )
-              : null,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      smallLayout: _smallLayout(context),
-      largeLayout: _largeLayout(context),
     );
   }
 }

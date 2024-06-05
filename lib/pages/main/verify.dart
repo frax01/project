@@ -61,43 +61,44 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       return const Login();
     } else {
       return Scaffold(
-          appBar: AppBar(title: const Text('Verifica account')),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Una mail di verifica è stata inviata',
-                  style: TextStyle(fontSize: 20),
-                  textAlign: TextAlign.center,
+        appBar: AppBar(title: const Text('Verifica account')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Una mail di verifica è stata inviata',
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  icon: const Icon(Icons.email, size: 32),
-                  label: const Text(
-                    'Invia di nuovo',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  onPressed: canResendEmail ? sendVerificationEmail : null,
+                icon: const Icon(Icons.email, size: 32),
+                label: const Text(
+                  'Invia di nuovo',
+                  style: TextStyle(fontSize: 24),
                 ),
-                const SizedBox(height: 8),
-                TextButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  child: const Text(
-                    'Indietro',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  onPressed: () => FirebaseAuth.instance.signOut,
-                )
-              ],
-            ),
-          ));
+                onPressed: canResendEmail ? sendVerificationEmail : null,
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                child: const Text(
+                  'Indietro',
+                  style: TextStyle(fontSize: 24),
+                ),
+                onPressed: () => FirebaseAuth.instance.signOut,
+              )
+            ],
+          ),
+        ),
+      );
     }
   }
 }

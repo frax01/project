@@ -9,12 +9,12 @@ import 'addEditProgram.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
-    Key? key,
+    super.key,
     required this.documentId,
     required this.selectedOption,
     required this.isAdmin,
     this.refreshList,
-  }) : super(key: key);
+  });
 
   final String documentId;
   final String selectedOption;
@@ -75,7 +75,8 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget weatherTile(Map weather) {
-    if ((weather["check"] == "true" || weather["check"]) && weather["image"] != "") {
+    if ((weather["check"] == "true" || weather["check"]) &&
+        weather["image"] != "") {
       return Row(
         children: [
           Image.network(weather["image"], width: 50, height: 50),
@@ -106,269 +107,6 @@ class _ProgramPageState extends State<ProgramPage> {
     } else {
       return Container();
     }
-  }
-
-  Widget details(document, weather) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Expanded(
-                child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  children: List<Widget>.generate(
-                      document['selectedClass'].length, (index) {
-                String classValue = document['selectedClass'][index].toString();
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(classValue),
-                  ),
-                );
-              })),
-            )),
-            const SizedBox(width: 15),
-            Chip(
-              label: Text(
-                document['endDate'].isNotEmpty
-                    ? '${convertDateFormat(document['startDate'])} ~ ${convertDateFormat(document['endDate'])}'
-                    : convertDateFormat(document['startDate']),
-              ),
-              labelStyle:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              labelPadding: const EdgeInsets.symmetric(
-                horizontal: 5,
-              ),
-              backgroundColor: Colors.white,
-            ),
-          ],
-        ),
-        const SizedBox(height: 20.0),
-        Card(
-            surfaceTintColor: Colors.white,
-            elevation: 5,
-            margin: const EdgeInsets.all(0),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Dove',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Text(
-                          document['address'],
-                          style: const TextStyle(fontSize: 15),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ]),
-                  weatherTile(weather),
-                ],
-              ),
-            )),
-        const SizedBox(height: 20.0),
-        Card(
-          surfaceTintColor: Colors.white,
-          elevation: 5,
-          margin: const EdgeInsets.all(0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Descrizione',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  document['description'],
-                  style: const TextStyle(fontSize: 17),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget smallScreen() {
-    return FutureBuilder(
-      future: _loadData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Card(
-                        clipBehavior: Clip.antiAlias,
-                        elevation: 5,
-                        child: SizedBox(
-                          height: 175,
-                          width: double.infinity,
-                          child: Image.network(
-                            _data['imagePath'],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                          bottom: -25,
-                          left: 15,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 2,
-                                  blurRadius: 7,
-                                  offset: const Offset(
-                                      0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              child: Text(
-                                _data['title'],
-                                style: const TextStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          )),
-                    ],
-                  ),
-                  const SizedBox(height: 30.0),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: details(_data, _weather),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      },
-    );
-  }
-
-  Widget bigScreen() {
-    return FutureBuilder(
-      future: _loadData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else {
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        SizedBox(
-                          height: double.infinity,
-                          child: Card(
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 5,
-                            child: Image.network(
-                              _data['imagePath'],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 30,
-                          right: -15,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black54,
-                                  spreadRadius: 2,
-                                  blurRadius: 15,
-                                  offset: Offset(
-                                      0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              child: Text(
-                                _data['title'],
-                                style: const TextStyle(
-                                  fontSize: 45,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(60, 20, 20, 20),
-                      child: details(_data, _weather),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      },
-    );
   }
 
   @override
@@ -419,8 +157,192 @@ class _ProgramPageState extends State<ProgramPage> {
         ],
       ),
       body: AdaptiveLayout(
-        smallLayout: smallScreen(),
-        largeLayout: bigScreen(),
+        smallLayout: FutureBuilder(
+          future: _loadData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Card(
+                            clipBehavior: Clip.antiAlias,
+                            elevation: 5,
+                            child: SizedBox(
+                              height: 175,
+                              width: double.infinity,
+                              child: Image.network(
+                                _data['imagePath'],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                              bottom: -25,
+                              left: 15,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 7,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Text(
+                                    _data['title'],
+                                    style: const TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ],
+                      ),
+                      const SizedBox(height: 30.0),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                      children: List<Widget>.generate(
+                                          _data['selectedClass'].length,
+                                          (index) {
+                                    String classValue = _data['selectedClass']
+                                            [index]
+                                        .toString();
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 1,
+                                            blurRadius: 2,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 5, vertical: 5),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(classValue),
+                                      ),
+                                    );
+                                  })),
+                                )),
+                                const SizedBox(width: 15),
+                                Chip(
+                                  label: Text(
+                                    _data['endDate'].isNotEmpty
+                                        ? '${convertDateFormat(_data['startDate'])} ~ ${convertDateFormat(_data['endDate'])}'
+                                        : convertDateFormat(_data['startDate']),
+                                  ),
+                                  labelStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                  labelPadding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20.0),
+                            Card(
+                                surfaceTintColor: Colors.white,
+                                elevation: 5,
+                                margin: const EdgeInsets.all(0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Dove',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 15),
+                                            Text(
+                                              _data['address'],
+                                              style:
+                                                  const TextStyle(fontSize: 15),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ]),
+                                      weatherTile(_weather),
+                                    ],
+                                  ),
+                                )),
+                            const SizedBox(height: 20.0),
+                            Card(
+                              surfaceTintColor: Colors.white,
+                              elevation: 5,
+                              margin: const EdgeInsets.all(0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Descrizione',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 15),
+                                    Text(
+                                      _data['description'],
+                                      style: const TextStyle(fontSize: 17),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }

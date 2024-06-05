@@ -1,4 +1,3 @@
-import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -363,7 +362,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
   bool _isLoadingCreation = false;
   bool _isLoadingModify = false;
 
-  Widget _smallLayout(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: _isEditing
@@ -609,27 +609,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _largeLayout() {
-    return Scaffold(
-      appBar: AppBar(
-        title: _isEditing
-            ? const Text('Modifica programma')
-            : const Text('Crea programma'),
-      ),
-      body: const Center(
-        child: Text('Large Layout'),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      smallLayout: _smallLayout(context),
-      largeLayout: _largeLayout(),
     );
   }
 }
