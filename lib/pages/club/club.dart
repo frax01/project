@@ -1,4 +1,3 @@
-import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:animations/animations.dart';
 import 'package:club/pages/club/homePage.dart';
 import 'package:club/pages/club/profilePage.dart';
@@ -24,8 +23,6 @@ class _ClubPageState extends State<ClubPage> {
   static const String section = 'CLUB';
   int _selectedIndex = 0;
   late List<Widget> _widgetOptions;
-
-  bool _isSidebarExtended = false;
 
   @override
   void initState() {
@@ -68,18 +65,8 @@ class _ClubPageState extends State<ClubPage> {
     ];
   }
 
-  Future<void> _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
-
-    await FirebaseAuth.instance.signOut();
-    setState(() {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
-    });
-  }
-
-  Widget smallScreen() {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tiber Club'),
@@ -128,98 +115,6 @@ class _ClubPageState extends State<ClubPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget bigScreen() {
-    return Scaffold(
-      body: SafeArea(
-        child: Row(
-          children: <Widget>[
-            NavigationRail(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (int index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              destinations: const <NavigationRailDestination>[
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  selectedIcon: Icon(Icons.home),
-                  label: Text('Home'),
-                  padding: EdgeInsets.only(top: 8.0),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.sports_soccer),
-                  selectedIcon: Icon(Icons.sports_soccer),
-                  label: Text('11 ideale'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.cake),
-                  selectedIcon: Icon(Icons.cake),
-                  label: Text('Compleanni'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.account_box),
-                  selectedIcon: Icon(Icons.account_box),
-                  label: Text('Account'),
-                ),
-              ],
-              extended: _isSidebarExtended,
-              leading: IconButton(
-                icon: Icon(_isSidebarExtended ? Icons.arrow_back : Icons.menu),
-                onPressed: () {
-                  setState(() {
-                    _isSidebarExtended = !_isSidebarExtended;
-                  });
-                },
-              ),
-              trailing: Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.logout),
-                          onPressed: _logout,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: Scaffold(
-                body: PageTransitionSwitcher(
-                  transitionBuilder: (Widget child, Animation<double> animation,
-                      Animation<double> secondaryAnimation) {
-                    return FadeThroughTransition(
-                      animation: animation,
-                      secondaryAnimation: secondaryAnimation,
-                      child: child,
-                    );
-                  },
-                  child: _widgetOptions.elementAt(_selectedIndex),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      smallLayout: smallScreen(),
-      largeLayout: bigScreen(),
     );
   }
 }

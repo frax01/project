@@ -1,4 +1,3 @@
-import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/club/club.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -160,126 +159,8 @@ class _LoginState extends State<Login> {
   bool _isObscure = false;
   bool _isLoading = false;
 
-
-  _form() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          if (_loginFailed)
-            const Text(
-              'Credenziali non valide. Riprova.',
-              style: TextStyle(color: Colors.red),
-            ),
-          if (_loginFailed) const SizedBox(height: 20),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: 'Mail',
-              icon: Icon(Icons.mail),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Inserisci la tua mail';
-              }
-              if (!value.contains('@') || !value.contains('.')) {
-                return 'Inserisci una mail valida';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: _passwordController,
-            obscureText: !_isObscure,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              icon: const Icon(Icons.key),
-              suffixIcon: IconButton(
-                icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
-                onPressed: () {
-                  setState(() {
-                    _isObscure = !_isObscure;
-                  });
-                },
-              ),
-            ),
-            keyboardType: TextInputType.visiblePassword,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Inserisci la tua password';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) {
-              _handleLogin();
-            },
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Ricordami', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 20),
-                Switch(
-                  value: _rememberMe,
-                  onChanged: (value) {
-                    setState(() {
-                      _rememberMe = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/signup');
-                    },
-                    child: const Text('Registrati'),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text('Accedi', style: TextStyle(color: Colors.white)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: _showForgotPasswordDialog,
-            child: const Text(
-              'Password dimenticata?',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  _smallScreen() {
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Center(
@@ -294,62 +175,130 @@ class _LoginState extends State<Login> {
                 style: TextStyle(fontSize: 30),
               ),
               const SizedBox(height: 20),
-              _form(),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    if (_loginFailed)
+                      const Text(
+                        'Credenziali non valide. Riprova.',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    if (_loginFailed) const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Mail',
+                        icon: Icon(Icons.mail),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserisci la tua mail';
+                        }
+                        if (!value.contains('@') || !value.contains('.')) {
+                          return 'Inserisci una mail valida';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_isObscure,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        icon: const Icon(Icons.key),
+                        suffixIcon: IconButton(
+                          icon: Icon(_isObscure
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () {
+                            setState(() {
+                              _isObscure = !_isObscure;
+                            });
+                          },
+                        ),
+                      ),
+                      keyboardType: TextInputType.visiblePassword,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserisci la tua password';
+                        }
+                        return null;
+                      },
+                      onFieldSubmitted: (_) {
+                        _handleLogin();
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Ricordami',
+                              style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 20),
+                          Switch(
+                            value: _rememberMe,
+                            onChanged: (value) {
+                              setState(() {
+                                _rememberMe = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/signup');
+                              },
+                              child: const Text('Registrati'),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _handleLogin,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    )
+                                  : const Text('Accedi',
+                                      style: TextStyle(color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      child: const Text(
+                        'Password dimenticata?',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  _bigScreen() {
-    return Stack(
-      children: [
-        Image.asset(
-          "images/CC.jpeg",
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          fit: BoxFit.cover,
-        ),
-        Center(
-          child: SizedBox(
-            width: 700,
-            height: 700,
-            child: Card(
-              elevation: 10,
-              surfaceTintColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset("images/logo.png", width: 150),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Tiber Club',
-                        style: TextStyle(fontSize: 30),
-                      ),
-                      const SizedBox(height: 20),
-                      _form(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: AdaptiveLayout(
-        smallLayout: _smallScreen(),
-        largeLayout: _bigScreen(),
       ),
     );
   }

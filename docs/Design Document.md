@@ -21,20 +21,15 @@ The Tiber App is designed as a companion app for the Tiber Club, a Rome-based so
 | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **[PG-01]** | Provide an easy to use and informative channel to inform parents and children of the activities organized in Tiber Club |
 | **[PG-02]** | Provide a leaderboard in which children participating in the soccer school can compete based on their performance       |
-| **[PG-03]** | Provide an easy way of sharing the activities organized with people that might be interested in participating            |
-| **[PG-04]** | Send timely and relevant notifications to inform of the activities organized in Tiber Club                              |
+| **[PG-03]** | Provide a list of birthdays of all  tutors and children participating in the soccer school so they can be celebrated    |
+| **[PG-04]** | Provide an easy way of sharing the activities organized with people that might be interested in participating           |
+| **[PG-05]** | Send timely and relevant notifications to inform of the activities organized in Tiber Club                              |
 
 ## Scope
 
 The scope of the Tiber App project encompasses the specification, development, implementation and testing of a mobile app tailored for the Tiber Club to accomplish the goals described in the previous section.
 
-To this end, the project's core functionalities will include extensive user management and fine-grained permissions, an event system to manage activities, a leaderboard system and integration with APIs services for location and weather information.
-
-## Definitions, acronyms and abbreviations
-
-- *Activity*:
-- 
-- *API*: Application Programming Interface, a set of functions and procedures that allow the creation of applications that access the features or data of an operating system, application, or other service.
+To this end, the project's core functionalities will include extensive user management and fine-grained permissions, an event system to manage activities, a leaderboard system, a dynamic list of birthdays and integration with APIs services for location and weather information.
 
 ## Document structure
 
@@ -114,15 +109,19 @@ Michele has organized a soccer match and three new kids have come. He can add th
 
 Alessandro has scored three goals in the soccer match, and Michele wants to add them to Alessandro's count in the app. He can open the app, go to the ranking screen, and add goals to Alessandro's score.
 
-### [SC-13] A new member wants to join the app
+### [SC-13] An user wants to see the birthdays coming up
+
+Michele wants to know the birthdays of the kids in his level so he can send them a message of Happy Birthday. He can open the app, go to the birthdays screen, and see all the birthdays of all members and tutors, but not those of parents.
+
+### [SC-14] A new member wants to join the app
 
 Giovanni is a member of Tiber Club, and has just received his first phone for his birthday. He wants to join the app, so he downloads it and creates a new account with his personal details. He is greeted with a waiting screen until his account is approved by an administrator. Once he is approved, he can use the app normally.
 
-### [SC-14] An administrator wants to screen new users
+### [SC-15] An administrator wants to screen new users
 
 Gabriele is the director of Tiber Club. He wants to let into the app only the members and parents of Tiber Club, and to stop external people from joining the app without being members. He can open the user screening page in the app and see new accounts created. He will also receive a notification when a new account is created. He can check the details of the account, give them the necessary roles, add them to the levels the appertain to, and accept them. He can also reject users, impeding them from accessing the information in the app.
 
-### [SC-15] An user of the app wants to eliminate their account
+### [SC-16] An user of the app wants to eliminate their account
 
 Paolo has finished 5º Liceo and will not be a member of Tiber Club next year. He can delete his account from the profile page of the app, and uninstall it. A tutor can also delete Paolo from the ranking.
 
@@ -147,6 +146,7 @@ From the set of scenarios described above, a set of functions the app must perfo
 | **[FN-12]** | Adding people to ranking                                  | Only by tutors, independent of whether the person added has an account or not |
 | **[FN-13]** | Modifying goals and points of people in rankings          | Only by tutors                                                                |
 | **[FN-14]** | Deleting people from rakings                              | Only by tutors                                                                |
+| [FN-15]     | Showing birthdays                                         | Only of members and tutors                                                    |
 
 ## Assumptions, dependencies and constraints
 
@@ -181,13 +181,13 @@ This section identifies the external factors and systems upon which the successf
 
 In this section we acknowledge the limitations and boundaries that influence the design, implementation, and operation of the Tiber App. These constraints encompass technical, regulatory, and practical considerations that must be navigated to deliver a functional and compliant mobile solution aligned with the goals of the Tiber Club and its community.
 
-|             |                                                                                                                                                                        |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[CN-01]** | Limited screen space on mobile devices may constrain the design and layout of the app's user interface                                                                 |
-| **[CN-02]** | Privacy and security concerns regarding the collection and storage of personal information, especially for children using the app                                      |
-| **[CN-03]** | Adherence to regulatory requirements, such as GDPR                                                                                                                     |
-| **[CN-04]** | The need for regular updates and maintenance to ensure the app remains functional and relevant admits evolving technology and user expectations                        |
-| **[CN-05]** | The app's performance may be affected by factors such as network latency or device hardware limitations, particularly in areas with poor connectivity or older devices |
+|             |                                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[CN-01]** | Limited screen space on mobile devices may constrain the design and layout of the app's user interface                                                  |
+| **[CN-02]** | Privacy and security concerns regarding the collection and storage of personal information, especially for children using the app                       |
+| **[CN-03]** | Adherence to regulatory requirements, such as GDPR                                                                                                      |
+| **[CN-04]** | The need for regular updates and maintenance to ensure the app remains functional and relevant admits evolving technology and user expectations         |
+| **[CN-05]** | Performant adaptations to factors such as network latency or device hardware limitations, particularly in areas with poor connectivity or older devices |
 
 # Requirement specification
 
@@ -212,6 +212,7 @@ Here we define the functional requirements of the application, obtained from the
 | **[FR-11]** | Tutors have the authority to add individuals to rankings, regardless of account status.                                                      |
 | **[FR-12]** | Tutors can modify goals and points of individuals within rankings.                                                                           |
 | **[FR-13]** | Tutors can remove individuals from rankings.                                                                                                 |
+| **[FR-14]** | Users can view a list of birthdays of members and tutors                                                                                     |
 
 ## Interface requirements
 
