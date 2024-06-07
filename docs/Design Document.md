@@ -3,7 +3,7 @@ title: Design Document
 subtitle: Tiber App - Design and Implementation of Mobile Applications 2023/2024
 author:
   - Juan Pedro Gálvez López
-  - Alessandro Martignoni
+  - Francesco Martignoni
 toc: true
 date: 2024-06-10
 ---
@@ -461,21 +461,21 @@ Beta testing, however, played a pivotal role in ensuring the application's robus
 
 Below there is an overview of the application traffic provided by firebase in the last month. The picture is showing the number of times that the application has been used in the last period.
 
-/utenti.png
+![Application users](./utenti.png)
 
 Additionally, thanks to the Test Lab provided by Firebase, the application was tested without encountering any errors.
 
-/appTest.png
+![Test Lab results](./appTest.png)
 
 At the same time, the application was uploaded to Google Play, where, thanks to the analysis provided by Play Console, no errors were found, and users can download it safely and quickly.
 
-/release.png
+![Release analysis](./release.png)
 
-/bundle.png
+![Bundle analysis](./bundle.png)
 
-Then, this is the app released on Play Store.
+The app is at the moment of writing in the beta testing phase of the Play Store release cycle, and it can be downloaded using an invite link.
 
-/playStore.png
+![Play Store listing](./playStore.png)
 
 # References
 
