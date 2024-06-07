@@ -473,6 +473,10 @@ At the same time, the application was uploaded to Google Play, where, thanks to 
 
 /bundle.png
 
+Then, this is the app released on Play Store.
+
+/playStore.png
+
 # References
 
 - [Material Design documentation](https://m3.material.io/)
