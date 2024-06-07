@@ -456,7 +456,21 @@ The Location API serves a crucial role in facilitating location-based functional
 
 Formal unit testing was not prioritized due to the application's modest scale and simplicity. Instead, informal testing methods were deemed sufficient, yielding comparable results. Similarly, formal integration testing was deemed impractical given the intricate inter-dependencies among components and the inherent challenges associated with formally testing user interfaces. Consequently, all interactions with the application were subjected to informal testing processes.
 
-Beta testing, however, played a pivotal role in ensuring the application's robustness and usability. Approximately 40 individuals, comprising various roles within the Tiber Club, actively participated in the beta testing phase. Over the course of several months, these testers installed and utilized the application, diligently reporting any encountered bugs or issues. Subsequently, numerous fixes were implemented, predominantly aimed at refining and enhancing the overall user experience.
+Beta testing, however, played a pivotal role in ensuring the application's robustness and usability. Approximately 30 individuals, comprising various roles within the Tiber Club, actively participated in the beta testing phase. Over the course of several months, these testers installed and utilized the application, diligently reporting any encountered bugs or issues. Subsequently, numerous fixes were implemented, predominantly aimed at refining and enhancing the overall user experience.
+
+Below there is an overview of the application traffic provided by firebase in the last month. The picture is showing the number of times that the application has been used in the last period.
+
+/utenti.png
+
+Additionally, thanks to the Test Lab provided by Firebase, the application was tested without encountering any errors.
+
+/appTest.png
+
+At the same time, the application was uploaded to Google Play, where, thanks to the analysis provided by Play Console, no errors were found, and users can download it safely and quickly.
+
+/release.png
+
+/bundle.png
 
 # References
 
