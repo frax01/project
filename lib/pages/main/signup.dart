@@ -135,175 +135,178 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SafeArea(child: BackButton()),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Registrazione',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                  const SizedBox(height: 20),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nome',
-                            icon: Icon(Icons.person),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci il tuo nome';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _surnameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Cognome',
-                            icon: Icon(Icons.person),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci il tuo cognome';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Mail',
-                            icon: const Icon(Icons.mail),
-                            errorText: _emailErrorMsg,
-                          ),
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci la tua mail';
-                            }
-                            if (!value.contains('@') || !value.contains('.')) {
-                              return 'Inserisci una mail valida';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: !_isObscure,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            icon: const Icon(Icons.password_rounded),
-                            suffixIcon: IconButton(
-                              icon: Icon(_isObscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
-                              onPressed: () {
-                                setState(() {
-                                  _isObscure = !_isObscure;
-                                });
-                              },
-                            ),
-                            errorText: _passwordErrorMsg,
-                          ),
-                          keyboardType: TextInputType.visiblePassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Inserisci la tua password';
-                            }
-                            if (value.length < 6) {
-                              return 'La password deve essere lunga almeno 6 caratteri';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordConfirmController,
-                          obscureText: !_isObscureConfirm,
-                          decoration: InputDecoration(
-                            labelText: 'Conferma password',
-                            icon: const Icon(Icons.password_rounded),
-                            suffixIcon: IconButton(
-                              icon: Icon(_isObscureConfirm
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
-                              onPressed: () {
-                                setState(() {
-                                  _isObscureConfirm = !_isObscureConfirm;
-                                });
-                              },
-                            ),
-                          ),
-                          keyboardType: TextInputType.visiblePassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Conferma la tua password';
-                            }
-                            if (value != _passwordController.text) {
-                              _passwordConfirmController.clear();
-                              return 'Le password non corrispondono';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        InkWell(
-                          onTap: () => _selectDate(context),
-                          child: IgnorePointer(
-                            child: TextFormField(
-                              controller: _birthdateController,
-                              decoration: const InputDecoration(
-                                labelText: 'Data di nascita',
-                                icon: Icon(Icons.calendar_today_rounded),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Birthdate is required';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _handleSignup,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : const Text('Registrati',
-                                  style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SafeArea(child: BackButton()),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Registrazione',
+                      style: TextStyle(fontSize: 30),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Nome',
+                              icon: Icon(Icons.person),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Inserisci il tuo nome';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _surnameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Cognome',
+                              icon: Icon(Icons.person),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Inserisci il tuo cognome';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Mail',
+                              icon: const Icon(Icons.mail),
+                              errorText: _emailErrorMsg,
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Inserisci la tua mail';
+                              }
+                              if (!value.contains('@') ||
+                                  !value.contains('.')) {
+                                return 'Inserisci una mail valida';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_isObscure,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              icon: const Icon(Icons.password_rounded),
+                              suffixIcon: IconButton(
+                                icon: Icon(_isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscure = !_isObscure;
+                                  });
+                                },
+                              ),
+                              errorText: _passwordErrorMsg,
+                            ),
+                            keyboardType: TextInputType.visiblePassword,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Inserisci la tua password';
+                              }
+                              if (value.length < 6) {
+                                return 'La password deve essere lunga almeno 6 caratteri';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordConfirmController,
+                            obscureText: !_isObscureConfirm,
+                            decoration: InputDecoration(
+                              labelText: 'Conferma password',
+                              icon: const Icon(Icons.password_rounded),
+                              suffixIcon: IconButton(
+                                icon: Icon(_isObscureConfirm
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscureConfirm = !_isObscureConfirm;
+                                  });
+                                },
+                              ),
+                            ),
+                            keyboardType: TextInputType.visiblePassword,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Conferma la tua password';
+                              }
+                              if (value != _passwordController.text) {
+                                _passwordConfirmController.clear();
+                                return 'Le password non corrispondono';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          InkWell(
+                            onTap: () => _selectDate(context),
+                            child: IgnorePointer(
+                              child: TextFormField(
+                                controller: _birthdateController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Data di nascita',
+                                  icon: Icon(Icons.calendar_today_rounded),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Birthdate is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _handleSignup,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Registrati',
+                                    style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
