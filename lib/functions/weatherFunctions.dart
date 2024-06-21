@@ -65,7 +65,7 @@ Future<Map<String, dynamic>> fetchWeatherData(
 
     DateTime endInputDate = inputFormat.parse(endDate);
     Duration endDifference = endInputDate.difference(today);
-    int endDaysDifference = endDifference.inDays;
+    int endDaysDifference = endDifference.inDays+1;
     String endOutputDate = '';
 
     if (endDaysDifference >= 16) {
