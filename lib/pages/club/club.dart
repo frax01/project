@@ -2,11 +2,8 @@ import 'package:animations/animations.dart';
 import 'package:club/pages/club/homePage.dart';
 import 'package:club/pages/club/profilePage.dart';
 import 'package:club/pages/club/torneoPage.dart';
-import 'package:club/pages/main/login.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'birthdayPage.dart';
 
 class ClubPage extends StatefulWidget {

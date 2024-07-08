@@ -158,15 +158,15 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     List<String> medie = [];
-  List<String> liceo = [];
-
-  (widget.document['club_class'] as List<dynamic>).forEach((club) {
-    if (club.toString().contains("media")) {
-      medie.add(club.toString());
-    } else if (club.toString().contains("liceo")) {
-      liceo.add(club.toString());
-    }
-  });
+    List<String> liceo = [];
+  
+    (widget.document['club_class'] as List<dynamic>).forEach((club) {
+      if (club.toString().contains("media")) {
+        medie.add(club.toString());
+      } else if (club.toString().contains("liceo")) {
+        liceo.add(club.toString());
+      }
+    });
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
