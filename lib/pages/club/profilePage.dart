@@ -23,7 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _currentUser!.reload();
+    //_currentUser!.reload();
   }
 
   Future<void> _showDetailsDialog() {

@@ -103,6 +103,18 @@ class _HomePageState extends State<HomePage> {
       'id': querySnapshot1.docs.first.id,
     };
 
+    ////prova
+    ////DocumentReference documentReference = querySnapshot1.docs.first.reference;
+    ////print("document: $documentReference");
+//
+    ////prova2
+    //DocumentReference reference = querySnapshot1.docs.first.reference;
+    //print("reference: $reference");
+//
+    //DocumentSnapshot data = await reference.get();
+    //String email1 = data['email'];
+    //print("Email from documentReference: $email1");
+
     return document;
   }
 

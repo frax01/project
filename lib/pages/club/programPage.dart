@@ -49,7 +49,7 @@ class _ProgramPageState extends State<ProgramPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Elimina'),
-          content: const Text('Sei sicuro di voler eliminare questo evento?'),
+          content: const Text('Sei sicuro di voler eliminare questo programma?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
