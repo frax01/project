@@ -48,7 +48,7 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: BirthdayPage(),
+        child: const BirthdayPage(),
       ),
       PopScope(
         onPopInvoked: (_) {

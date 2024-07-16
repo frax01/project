@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 
 class BirthdayPage extends StatefulWidget {
+  const BirthdayPage({super.key});
+
   @override
   _BirthdayPageState createState() => _BirthdayPageState();
 }
@@ -140,7 +142,7 @@ class _BirthdayPageState extends State<BirthdayPage> {
                     bool isToday = birthday['day'] == DateTime.now().day &&
                         birthday['month'] == DateTime.now().month;
                     bool isTomorrow = ((birthday['day'] ==
-                                DateTime.now().add(Duration(days: 1)).day &&
+                                DateTime.now().add(const Duration(days: 1)).day &&
                             birthday['month'] == DateTime.now().month)) ||
                         (birthday['day'] == 1 &&
                             birthday['month'] == DateTime.now().month + 1 &&

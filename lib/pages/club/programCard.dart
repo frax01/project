@@ -30,13 +30,13 @@ class _ProgramCardState extends State<ProgramCard> {
   var data = <String, dynamic>{};
 
   Future<void> _loadData() async {
-    var _newData = <String, dynamic>{};
+    var newData = <String, dynamic>{};
     var doc = await FirebaseFirestore.instance
         .collection('club_${widget.selectedOption}')
         .doc(widget.documentId)
         .get();
-    _newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    for (String value in _newData["selectedClass"]) {
+    newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    for (String value in newData["selectedClass"]) {
       if (widget.selectedClass.contains(value)) {
         data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
         break;
@@ -182,7 +182,7 @@ class _ProgramCardState extends State<ProgramCard> {
                             ? Text('$startDate ～ $endDate',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold))
-                            : Text('$startDate',
+                            : Text(startDate,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold)),
                       ),

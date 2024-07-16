@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'waiting.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   _LoginState createState() => _LoginState();

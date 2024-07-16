@@ -86,7 +86,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     final String imageUrl = await snapshot.ref.getDownloadURL();
 
     setState(() {
-      this._image = imageUrl;
+      _image = imageUrl;
     });
   }
 
@@ -564,9 +564,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     _isEditing
                         ? ElevatedButton(
                             onPressed: () {
-                              if (_isLoadingModify)
+                              if (_isLoadingModify) {
                                 null;
-                              else {
+                              } else {
                                 _handleEdit(context);
                               }
                             },
@@ -584,9 +584,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
                           )
                         : ElevatedButton(
                             onPressed: () {
-                              if (_isLoadingCreation)
+                              if (_isLoadingCreation) {
                                 null;
-                              else {
+                              } else {
                                 _handleCreate(context);
                               }
                             },

@@ -5,12 +5,12 @@ import 'package:ms_undraw/ms_undraw.dart';
 
 class Counter extends StatelessWidget {
   const Counter({
-    Key? key,
+    super.key,
     required this.title,
     required this.onUp,
     required this.onDown,
     required this.getCount,
-  }) : super(key: key);
+  });
 
   final String title;
   final Function() onUp;
@@ -177,7 +177,7 @@ class _TabScorerState extends State<TabScorer> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: Text('$name'),
+              title: Text(name),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -294,7 +294,7 @@ class _TabScorerState extends State<TabScorer> {
       columnWidths[4] = const FlexColumnWidth(1);
     }
 
-    var firstRow = TableRow(
+    var firstRow = const TableRow(
       children: [
         Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
@@ -473,7 +473,7 @@ class _TabScorerState extends State<TabScorer> {
               );
             })
             .expand((element) => [element, spacer])
-            .toList(),
+            ,
       ],
     );
   }
@@ -535,9 +535,9 @@ class _TabScorerState extends State<TabScorer> {
                   onPressed: () {
                     _showAddDialog();
                   },
-                  child: Icon(Icons.add),
                   shape: const CircleBorder(),
                   backgroundColor: Colors.white,
+                  child: const Icon(Icons.add),
                 )
               : null,
     );

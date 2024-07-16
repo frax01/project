@@ -4,6 +4,8 @@ import 'login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class VerifyEmailPage extends StatefulWidget {
+  const VerifyEmailPage({super.key});
+
   @override
   _VerifyEmailPageState createState() => _VerifyEmailPageState();
 }

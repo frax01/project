@@ -160,13 +160,13 @@ class _SettingsPageState extends State<SettingsPage> {
     List<String> medie = [];
     List<String> liceo = [];
   
-    (widget.document['club_class'] as List<dynamic>).forEach((club) {
+    for (var club in (widget.document['club_class'] as List<dynamic>)) {
       if (club.toString().contains("media")) {
         medie.add(club.toString());
       } else if (club.toString().contains("liceo")) {
         liceo.add(club.toString());
       }
-    });
+    }
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),

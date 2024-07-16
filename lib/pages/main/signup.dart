@@ -95,7 +95,7 @@ class _SignUpState extends State<SignUp> {
 
         setState(() {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => VerifyEmailPage()));
+              MaterialPageRoute(builder: (context) => const VerifyEmailPage()));
           _isLoading = false;
         });
       } on FirebaseAuthException catch (e) {
