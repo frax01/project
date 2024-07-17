@@ -68,6 +68,8 @@ android {
         versionName "1.0.0"
 
         multiDexEnabled true
+
+        minSdkVersion 23
     }
 
     signingConfigs {

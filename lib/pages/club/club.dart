@@ -7,10 +7,25 @@ import 'package:flutter/services.dart';
 import 'birthdayPage.dart';
 
 class ClubPage extends StatefulWidget {
-  const ClubPage({super.key, required this.title, required this.document});
+  const ClubPage(
+      {super.key,
+        required this.title,
+        required this.classes,
+        required this.status,
+        required this.id,
+        required this.name,
+        required this.surname,
+        required this.email,
+      });
 
-  final Map document;
   final String title;
+  final List classes;
+  final bool status;
+  final String id;
+  final String name;
+  final String surname;
+  final String email;
+
 
   @override
   State<ClubPage> createState() => _ClubPageState();
@@ -31,9 +46,9 @@ class _ClubPageState extends State<ClubPage> {
           SystemNavigator.pop();
         },
         child: HomePage(
-          selectedClass: widget.document['club_class'],
+          selectedClass: widget.classes,
           section: section.toLowerCase(),
-          isAdmin: widget.document['status'] == 'Admin',
+          isAdmin: widget.status,
         ),
       ),
       PopScope(
@@ -41,7 +56,7 @@ class _ClubPageState extends State<ClubPage> {
           SystemNavigator.pop();
         },
         child: TabScorer(
-          document: widget.document,
+          isAdmin: widget.status,
         ),
       ),
       PopScope(
@@ -55,8 +70,12 @@ class _ClubPageState extends State<ClubPage> {
           SystemNavigator.pop();
         },
         child: SettingsPage(
-          id: widget.document["id"],
-          document: widget.document,
+          id: widget.id,
+          classes: widget.classes,
+          name: widget.name,
+          surname: widget.surname,
+          email: widget.email,
+          isAdmin: widget.status,
         ),
       ),
     ];

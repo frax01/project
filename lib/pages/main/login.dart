@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../functions/retrieveData.dart';
 import 'waiting.dart';
 
 class Login extends StatefulWidget {
@@ -21,7 +21,14 @@ class _LoginState extends State<Login> {
   final TextEditingController _passwordController = TextEditingController();
   bool _loginFailed = false;
   bool _rememberMe = true;
-  Map<String, dynamic> _document = {};
+
+  List classes = [];
+  bool status = false;
+  String id = '';
+  String name = '';
+  String surname = '';
+  String email = '';
+  String role = '';
 
   _goToWaiting() {
     Navigator.pushReplacement(
@@ -33,7 +40,15 @@ class _LoginState extends State<Login> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                ClubPage(title: "Tiber Club", document: _document)));
+        ClubPage(
+            title: "Tiber Club",
+            classes: classes,
+            status: status,
+            id: id,
+            name: name,
+            surname: surname,
+            email: email
+        )));
   }
 
   _saveLoginInfo() async {
@@ -52,7 +67,7 @@ class _LoginState extends State<Login> {
           password: _passwordController.text,
         );
 
-        var email = credentials.user?.email ?? '';
+        email = credentials.user?.email ?? '';
         var store = FirebaseFirestore.instance.collection('user');
         var user = await store.where('email', isEqualTo: email).get();
 
@@ -71,24 +86,21 @@ class _LoginState extends State<Login> {
           print('Error fetching tokens, notifications will not be available');
         }
 
-        _document = {
-          'name': user.docs.first['name'],
-          'surname': user.docs.first['surname'],
-          'email': user.docs.first['email'],
-          'role': user.docs.first['role'],
-          'club_class': user.docs.first['club_class'],
-          'soccer_class': user.docs.first['soccer_class'],
-          'status': user.docs.first['status'],
-          'birthdate': user.docs.first['birthdate'],
-          'token': tokens,
-          'id': user.docs.first.id,
-        };
+        QueryDocumentSnapshot value = await data('user', 'email', email);
+
+        name = value['name'];
+        surname = value['surname'];
+        email = value['email'];
+        classes = value['club_class'];
+        status = value['status'] == 'Admin'? true : false;
+        role = value['role'];
+        id = value.id;
 
         if (_rememberMe) {
           _saveLoginInfo();
         }
 
-        _document['role'] == '' ? _goToWaiting() : _goToHome();
+        role == '' ? _goToWaiting() : _goToHome();
         setState(() {
           _isLoading = false;
         });

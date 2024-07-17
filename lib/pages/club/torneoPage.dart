@@ -52,9 +52,10 @@ class Counter extends StatelessWidget {
 }
 
 class TabScorer extends StatefulWidget {
-  const TabScorer({super.key, required this.document});
+  const TabScorer({super.key, required this.isAdmin});
 
-  final Map document;
+  //final Map document;
+  final bool isAdmin;
 
   @override
   _TabScorerState createState() => _TabScorerState();
@@ -277,7 +278,7 @@ class _TabScorerState extends State<TabScorer> {
       const SizedBox(height: 8),
       const SizedBox(height: 8),
     ];
-    if (widget.document["status"] == 'Admin') {
+    if (widget.isAdmin) {
       spacerChildren.add(const SizedBox(height: 8));
     }
     TableRow spacer = TableRow(
@@ -290,13 +291,12 @@ class _TabScorerState extends State<TabScorer> {
       2: const FlexColumnWidth(1),
       3: const FlexColumnWidth(1),
     };
-    if (widget.document["status"] == 'Admin') {
+    if (widget.isAdmin) {
       columnWidths[4] = const FlexColumnWidth(1);
     }
 
-    var firstRow = const TableRow(
-      children: [
-        Padding(
+    List<Widget> children = [
+        const Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             '',
@@ -304,7 +304,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        Padding(
+        const Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Nome',
@@ -312,7 +312,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        Padding(
+        const Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Punti',
@@ -320,7 +320,7 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        Padding(
+        const Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
             'Goal',
@@ -328,10 +328,10 @@ class _TabScorerState extends State<TabScorer> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-      ],
-    );
-    if (widget.document["status"] == 'Admin') {
-      firstRow.children.add(
+      ];
+    //);
+    if (widget.isAdmin) {
+      children.add(
         const Padding(
           padding: EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
           child: Text(
@@ -342,6 +342,8 @@ class _TabScorerState extends State<TabScorer> {
         ),
       );
     }
+
+    var firstRow = TableRow(children: children);
 
     return Table(
       columnWidths: columnWidths,
@@ -423,7 +425,7 @@ class _TabScorerState extends State<TabScorer> {
                   ),
                 ),
               ];
-              if (widget.document["status"] == 'Admin') {
+              if (widget.isAdmin) {
                 rowChildren.add(
                   PopupMenuButton(itemBuilder: (context) {
                     return [
@@ -530,7 +532,7 @@ class _TabScorerState extends State<TabScorer> {
         },
       ),
       floatingActionButton:
-          widget.document['status'] == 'Admin' && bottomLevel == 'torneo'
+          widget.isAdmin && bottomLevel == 'torneo'
               ? FloatingActionButton(
                   onPressed: () {
                     _showAddDialog();

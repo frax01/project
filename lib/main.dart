@@ -15,6 +15,7 @@ import 'pages/main/acceptance.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
+import 'functions/retrieveData.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,39 +84,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String? email;
   bool terminated = false;
 
-  Future<Map<String, dynamic>> retrieveData() async {
-    CollectionReference user = FirebaseFirestore.instance.collection('user');
-    QuerySnapshot querySnapshot1 =
-        await user.where('email', isEqualTo: email).get();
+  String name = '';
+  String surname = '';
+  String email = '';
+  List classes = [];
+  bool status = false;
+  String id = '';
 
-    Map<String, dynamic> document = {
-      'name': querySnapshot1.docs.first['name'],
-      'surname': querySnapshot1.docs.first['surname'],
-      'email': querySnapshot1.docs.first['email'],
-      'role': querySnapshot1.docs.first['role'],
-      'club_class': querySnapshot1.docs.first['club_class'],
-      'soccer_class': querySnapshot1.docs.first['soccer_class'],
-      'status': querySnapshot1.docs.first['status'],
-      'birthdate': querySnapshot1.docs.first['birthdate'],
-      'id': querySnapshot1.docs.first.id,
-    };
+  Future<void> retrieveData() async {
 
-    ////prova
-    ////DocumentReference documentReference = querySnapshot1.docs.first.reference;
-    ////print("document: $documentReference");
-//
-    ////prova2
-    //DocumentReference reference = querySnapshot1.docs.first.reference;
-    //print("reference: $reference");
-//
-    //DocumentSnapshot data = await reference.get();
-    //String email1 = data['email'];
-    //print("Email from documentReference: $email1");
+    QueryDocumentSnapshot value = await data('user', 'email', email);
 
-    return document;
+    name = value['name'];
+    surname = value['surname'];
+    email = value['email'];
+    classes = value['club_class'];
+    status = value['status'] == 'Admin'? true : false;
+    id = value.id;
+
+    //ClubUser user = ClubUser(
+    //  name: name,
+    //  surname: surname,
+    //  email: email,
+    //  password: value['password'],  // Assicurati di avere la password qui
+    //  birthdate: value['birthdate'],
+    //  role: value['role'],
+    //  club_class: value['club_class'],
+    //  soccer_class: value['soccer_class'],
+    //  status: value['status'],
+    //  token: value['token'],
+    //  created_time: (value['created_time'] as Timestamp).toDate(),
+    //);
   }
 
   RemoteMessage? initialMessage;
@@ -152,24 +153,24 @@ class _HomePageState extends State<HomePage> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Login()));
     } else if (message.data['category'] == 'new_event') {
-      var data = await retrieveData();
+      await retrieveData();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
-                    isAdmin: data['status'] == 'Admin',
+                    isAdmin: status,
                   )));
     } else if (message.data['category'] == 'modified_event') {
-      var data = await retrieveData();
+      await retrieveData();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
-                    isAdmin: data['status'] == 'Admin',
+                    isAdmin: status,
                   )));
     }
   }
@@ -199,9 +200,10 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         } else if (snapshot.hasError) {
+          Future.microtask(() => Navigator.pop(context));
           return const Scaffold(
             body: Center(
-              child: Text("Errore durante il recupero dei dati"),
+              child: CircularProgressIndicator(),
             ),
           );
         } else {
@@ -209,7 +211,7 @@ class _HomePageState extends State<HomePage> {
           if (email == '') {
             return const Login();
           } else {
-            return FutureBuilder<Map<String, dynamic>>(
+            return FutureBuilder<void>(
               future: retrieveData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -231,17 +233,33 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 } else if (terminated == false) {
-                  Map<String, dynamic> document = snapshot.data ?? {};
-                  return ClubPage(title: "Tiber Club", document: document);
+                  //Map<String, dynamic> document = snapshot.data ?? {};
+                  return ClubPage(
+                      title: "Tiber Club",
+                      classes: classes,
+                      status: status,
+                      id: id,
+                      name: name,
+                      surname: surname,
+                      email: email
+                  );
                 } else {
-                  Map<String, dynamic> document = snapshot.data ?? {};
+                  //Map<String, dynamic> document = snapshot.data ?? {};
                   if (initialMessage?.data['category'] == 'new_user') {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
                                 const AcceptancePage(title: 'Tiber Club')));
-                    return ClubPage(title: "Tiber Club", document: document);
+                    return ClubPage(
+                        title: "Tiber Club",
+                        classes: classes,
+                        status: status,
+                        id: id,
+                        name: name,
+                        surname: surname,
+                        email: email
+                    );
                   } else if (initialMessage?.data['category'] == 'accepted') {
                     return const Login();
                   } else if (initialMessage?.data['category'] == 'new_event') {
@@ -252,9 +270,17 @@ class _HomePageState extends State<HomePage> {
                                   documentId: initialMessage?.data["docId"],
                                   selectedOption:
                                       initialMessage?.data["selectedOption"],
-                                  isAdmin: document['status'] == 'Admin',
+                                  isAdmin: status,
                                 )));
-                    return ClubPage(title: "Tiber Club", document: document);
+                    return ClubPage(
+                        title: "Tiber Club",
+                        classes: classes,
+                        status: status,
+                        id: id,
+                        name: name,
+                        surname: surname,
+                        email: email
+                    );
                   } else {
                     Navigator.push(
                         context,
@@ -263,9 +289,17 @@ class _HomePageState extends State<HomePage> {
                                   documentId: initialMessage?.data["docId"],
                                   selectedOption:
                                       initialMessage?.data["selectedOption"],
-                                  isAdmin: document['status'] == 'Admin',
+                                  isAdmin: status,
                                 )));
-                    return ClubPage(title: "Tiber Club", document: document);
+                    return ClubPage(
+                        title: "Tiber Club",
+                        classes: classes,
+                        status: status,
+                        id: id,
+                        name: name,
+                        surname: surname,
+                        email: email
+                    );
                   }
                 }
               },

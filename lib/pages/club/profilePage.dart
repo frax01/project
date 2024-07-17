@@ -8,10 +8,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, required this.id, required this.document});
+  const SettingsPage({
+    super.key,
+    required this.id,
+    required this.classes,
+    required this.name,
+    required this.surname,
+    required this.email,
+    required this.isAdmin
+  });
 
   final String id;
-  final Map document;
+  final List classes;
+  final String name;
+  final String surname;
+  final String email;
+  final bool isAdmin;
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -160,7 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
     List<String> medie = [];
     List<String> liceo = [];
   
-    for (var club in (widget.document['club_class'] as List<dynamic>)) {
+    for (var club in widget.classes) {
       if (club.toString().contains("media")) {
         medie.add(club.toString());
       } else if (club.toString().contains("liceo")) {
@@ -183,14 +195,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '${widget.document['name']} ${widget.document['surname']}',
+                    '${widget.name} ${widget.surname}',
                     style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(widget.document['email'],
+                  Text(widget.email,
                       style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 20),
                   Wrap(
@@ -246,7 +258,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         MapsLauncher.launchCoordinates(41.918306, 12.474556);
                       },
                     ),
-                    widget.document['status'] == 'Admin'
+                    widget.isAdmin
                     ? ListTile(
                         leading: const Icon(Icons.person),
                         title: const Text('Richieste utenti'),
