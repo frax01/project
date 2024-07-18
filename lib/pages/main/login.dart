@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../functions/retrieveData.dart';
+import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
 
 class Login extends StatefulWidget {
@@ -20,7 +20,6 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _loginFailed = false;
-  bool _rememberMe = true;
 
   List classes = [];
   bool status = false;
@@ -29,6 +28,17 @@ class _LoginState extends State<Login> {
   String surname = '';
   String email = '';
   String role = '';
+
+  Widget buildClubPage() {
+    return ClubPage(
+      classes: classes,
+      status: status,
+      id: id,
+      name: name,
+      surname: surname,
+      email: email,
+    );
+  }
 
   _goToWaiting() {
     Navigator.pushReplacement(
@@ -39,21 +49,9 @@ class _LoginState extends State<Login> {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-        ClubPage(
-            title: "Tiber Club",
-            classes: classes,
-            status: status,
-            id: id,
-            name: name,
-            surname: surname,
-            email: email
-        )));
-  }
-
-  _saveLoginInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('email', _emailController.text);
+            builder: (context) => buildClubPage()
+        )
+    );
   }
 
   _handleLogin() async {
@@ -96,9 +94,8 @@ class _LoginState extends State<Login> {
         role = value['role'];
         id = value.id;
 
-        if (_rememberMe) {
-          _saveLoginInfo();
-        }
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('email', _emailController.text);
 
         role == '' ? _goToWaiting() : _goToHome();
         setState(() {
@@ -194,7 +191,7 @@ class _LoginState extends State<Login> {
                     children: [
                       if (_loginFailed)
                         const Text(
-                          'Credenziali non valide. Riprova.',
+                          'Credenziali non valide... Riprova!',
                           style: TextStyle(color: Colors.red),
                         ),
                       if (_loginFailed) const SizedBox(height: 20),
@@ -207,7 +204,7 @@ class _LoginState extends State<Login> {
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Inserisci la tua mail';
+                            return 'Inserisci la mail';
                           }
                           if (!value.contains('@') || !value.contains('.')) {
                             return 'Inserisci una mail valida';
@@ -236,7 +233,7 @@ class _LoginState extends State<Login> {
                         keyboardType: TextInputType.visiblePassword,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Inserisci la tua password';
+                            return 'Inserisci la password';
                           }
                           return null;
                         },
@@ -244,27 +241,7 @@ class _LoginState extends State<Login> {
                           _handleLogin();
                         },
                       ),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Ricordami',
-                                style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 20),
-                            Switch(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberMe = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: Row(

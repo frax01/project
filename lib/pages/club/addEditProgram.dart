@@ -16,12 +16,14 @@ class AddEditProgram extends StatefulWidget {
       this.refreshList,
       this.refreshProgram,
       this.selectedOption,
-      this.document});
+      this.document,
+      required this.name});
 
   final Function? refreshList;
   final Function? refreshProgram;
   final String? selectedOption;
   final Map<dynamic, dynamic>? document;
+  final String name;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
@@ -262,6 +264,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
         'address': _address,
         'lat': _latitude,
         'lon': _longitude,
+        'creator': widget.name
       };
 
       var doc = await firestore
@@ -319,6 +322,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       'address': _address,
       'lat': _latitude,
       'lon': _longitude,
+      'creator': widget.name
     };
 
     List<String> token = [];

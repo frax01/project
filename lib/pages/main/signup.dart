@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'verify.dart';
 
 class SignUp extends StatefulWidget {
@@ -90,8 +89,7 @@ class _SignUpState extends State<SignUp> {
         await _saveUser(user);
 
         List<String> token = await retrieveToken('status', 'Admin');
-        sendNotification(token, 'Nuova registrazione!',
-            'Accetta il nuovo utente', 'new_user');
+        sendNotification(token, 'Nuova registrazione!', 'Accetta il nuovo utente', 'new_user');
 
         setState(() {
           Navigator.pushReplacement(context,

@@ -9,7 +9,6 @@ import 'birthdayPage.dart';
 class ClubPage extends StatefulWidget {
   const ClubPage(
       {super.key,
-        required this.title,
         required this.classes,
         required this.status,
         required this.id,
@@ -18,7 +17,6 @@ class ClubPage extends StatefulWidget {
         required this.email,
       });
 
-  final String title;
   final List classes;
   final bool status;
   final String id;
@@ -49,6 +47,7 @@ class _ClubPageState extends State<ClubPage> {
           selectedClass: widget.classes,
           section: section.toLowerCase(),
           isAdmin: widget.status,
+          name: '${widget.name} ${widget.surname}',
         ),
       ),
       PopScope(

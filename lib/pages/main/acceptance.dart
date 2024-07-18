@@ -112,11 +112,22 @@ class UserList extends StatelessWidget {
         return Column(
           children: [
             const SizedBox(height: 16.0),
-            Text(
-              'Ci sono ${snapshot.data!.docs.length} nuovi utenti da accettare',
-              style:
-                  const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-            ),
+            if (snapshot.data!.docs.isEmpty)
+              const Text(
+                'Non ci sono nuovi utenti da accettare',
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
+
+            if (snapshot.data!.docs.length==1)
+              const Text(
+                '1 nuovo utente da accettare',
+                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
+            if (snapshot.data!.docs.length>1)
+              Text(
+                '${snapshot.data!.docs.length} nuovi utenti da accettare',
+                style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              ),
             const SizedBox(height: 16.0),
             Expanded(
               child: _buildList(snapshot),

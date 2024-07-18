@@ -7,13 +7,13 @@ class LocalNotificationService {
 
   static late RemoteMessage notificationMessage;
 
-  static void initialize(void Function(RemoteMessage) handleMessage) {
+  static void initialize(void Function(RemoteMessage) handleMessageFromBackgroundAndForegroundState) {
     const InitializationSettings initializationSettings =
         InitializationSettings(
             android: AndroidInitializationSettings("@mipmap/ic_launcher"));
     _notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (payload) {
-      handleMessage(notificationMessage);
+          handleMessageFromBackgroundAndForegroundState(notificationMessage);
     });
   }
 

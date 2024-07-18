@@ -13,7 +13,8 @@ class ProgramCard extends StatefulWidget {
       required this.selectedClass,
       required this.isAdmin,
       required this.refreshList,
-      required this.startDate});
+      required this.startDate,
+      required this.name});
 
   final String documentId;
   final String selectedOption;
@@ -21,6 +22,7 @@ class ProgramCard extends StatefulWidget {
   final bool isAdmin;
   final Function refreshList;
   final DateTime startDate;
+  final String name;
 
   @override
   _ProgramCardState createState() => _ProgramCardState();
@@ -224,7 +226,8 @@ class _ProgramCardState extends State<ProgramCard> {
               documentId: data['id'],
               selectedOption: data['selectedOption'],
               isAdmin: widget.isAdmin,
-              refreshList: widget.refreshList);
+              refreshList: widget.refreshList,
+              name: widget.name);
         },
       ),
     );

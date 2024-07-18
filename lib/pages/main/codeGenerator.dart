@@ -84,12 +84,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          return Navigator.pop(context);
-                        },
-                        child: const Text('Indietro'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
                           updateUserDetails();
                         },
                         child: const Text('Accetta'),

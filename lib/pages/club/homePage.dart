@@ -11,11 +11,13 @@ class HomePage extends StatefulWidget {
     required this.selectedClass,
     required this.section,
     required this.isAdmin,
+    required this.name,
   });
 
   final List selectedClass;
   final String section;
   final bool isAdmin;
+  final String name;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -49,6 +51,7 @@ class _HomePageState extends State<HomePage> {
             isAdmin: widget.isAdmin,
             refreshList: refreshList,
             startDate: dateTime,
+            name: doc['creator'],
           ));
           _listKey.currentState?.insertItem(_listItems.length - 1);
         }
@@ -130,7 +133,7 @@ class _HomePageState extends State<HomePage> {
           return Future.value();
         },
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
           child: _buildList(),
         ),
       ),
@@ -139,6 +142,7 @@ class _HomePageState extends State<HomePage> {
               icon: Icons.add,
               backgroundColor: Colors.white,
               activeIcon: Icons.close,
+              overlayOpacity: 0.9,
               children: [
                 SpeedDialChild(
                   child: const Icon(Icons.calendar_today),
@@ -147,7 +151,8 @@ class _HomePageState extends State<HomePage> {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
                             refreshList: refreshList,
-                            selectedOption: 'weekend')));
+                            selectedOption: 'weekend',
+                            name: widget.name)));
                   },
                 ),
                 SpeedDialChild(
@@ -156,7 +161,9 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
-                            refreshList: refreshList, selectedOption: 'trip')));
+                            refreshList: refreshList,
+                            selectedOption: 'trip',
+                            name: widget.name)));
                   },
                 ),
                 SpeedDialChild(
@@ -166,7 +173,8 @@ class _HomePageState extends State<HomePage> {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
                             refreshList: refreshList,
-                            selectedOption: 'extra')));
+                            selectedOption: 'extra',
+                            name: widget.name)));
                   },
                 ),
               ],

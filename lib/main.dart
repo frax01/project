@@ -15,7 +15,6 @@ import 'pages/main/acceptance.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
-import 'functions/retrieveData.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,6 +92,19 @@ class _HomePageState extends State<HomePage> {
   bool status = false;
   String id = '';
 
+  RemoteMessage? initialMessage;
+
+  Widget buildClubPage() {
+    return ClubPage(
+      classes: classes,
+      status: status,
+      id: id,
+      name: name,
+      surname: surname,
+      email: email,
+    );
+  }
+
   Future<void> retrieveData() async {
 
     QueryDocumentSnapshot value = await data('user', 'email', email);
@@ -103,26 +115,10 @@ class _HomePageState extends State<HomePage> {
     classes = value['club_class'];
     status = value['status'] == 'Admin'? true : false;
     id = value.id;
-
-    //ClubUser user = ClubUser(
-    //  name: name,
-    //  surname: surname,
-    //  email: email,
-    //  password: value['password'],  // Assicurati di avere la password qui
-    //  birthdate: value['birthdate'],
-    //  role: value['role'],
-    //  club_class: value['club_class'],
-    //  soccer_class: value['soccer_class'],
-    //  status: value['status'],
-    //  token: value['token'],
-    //  created_time: (value['created_time'] as Timestamp).toDate(),
-    //);
   }
 
-  RemoteMessage? initialMessage;
-
   Future<void> setupInteractedMessage() async {
-    LocalNotificationService.initialize(handleMessage);
+    LocalNotificationService.initialize(handleMessageFromBackgroundAndForegroundState);
 
     //terminated
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
@@ -134,7 +130,7 @@ class _HomePageState extends State<HomePage> {
 
     //background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      handleMessage(message);
+      handleMessageFromBackgroundAndForegroundState(message);
     });
 
     //foreground
@@ -143,7 +139,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void handleMessage(RemoteMessage message) async {
+  void handleMessageFromBackgroundAndForegroundState(RemoteMessage message) async {
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -161,6 +157,7 @@ class _HomePageState extends State<HomePage> {
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
                     isAdmin: status,
+                    name: '$name $surname'
                   )));
     } else if (message.data['category'] == 'modified_event') {
       await retrieveData();
@@ -171,8 +168,43 @@ class _HomePageState extends State<HomePage> {
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
                     isAdmin: status,
+                    name: '$name $surname'
                   )));
     }
+  }
+
+  Widget handleMessageFromTerminatedState() {
+    if (initialMessage?.data['category'] == 'new_user') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const AcceptancePage(title: 'Tiber Club')));
+    } else if (initialMessage?.data['category'] == 'accepted') {
+      return const Login();
+    } else if (initialMessage?.data['category'] == 'new_event' ||
+        initialMessage?.data['category'] == 'modified_event') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ProgramPage(
+                documentId: initialMessage?.data["docId"],
+                selectedOption: initialMessage?.data["selectedOption"],
+                isAdmin: status,
+                name: '$name $surname'
+              )));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  ProgramPage(
+                    documentId: initialMessage?.data["docId"],
+                    selectedOption: initialMessage?.data["selectedOption"],
+                    isAdmin: status,
+                    name: '$name $surname'
+                  )));
+    }
+    return buildClubPage();
   }
 
   @override
@@ -229,78 +261,13 @@ class _HomePageState extends State<HomePage> {
                 } else if (snapshot.hasError) {
                   return const Scaffold(
                     body: Center(
-                      child: Text("Errore durante il recupero dei dati."),
+                      child: Text("Errore durante il recupero dei dati"),
                     ),
                   );
                 } else if (terminated == false) {
-                  //Map<String, dynamic> document = snapshot.data ?? {};
-                  return ClubPage(
-                      title: "Tiber Club",
-                      classes: classes,
-                      status: status,
-                      id: id,
-                      name: name,
-                      surname: surname,
-                      email: email
-                  );
+                  return buildClubPage();
                 } else {
-                  //Map<String, dynamic> document = snapshot.data ?? {};
-                  if (initialMessage?.data['category'] == 'new_user') {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const AcceptancePage(title: 'Tiber Club')));
-                    return ClubPage(
-                        title: "Tiber Club",
-                        classes: classes,
-                        status: status,
-                        id: id,
-                        name: name,
-                        surname: surname,
-                        email: email
-                    );
-                  } else if (initialMessage?.data['category'] == 'accepted') {
-                    return const Login();
-                  } else if (initialMessage?.data['category'] == 'new_event') {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProgramPage(
-                                  documentId: initialMessage?.data["docId"],
-                                  selectedOption:
-                                      initialMessage?.data["selectedOption"],
-                                  isAdmin: status,
-                                )));
-                    return ClubPage(
-                        title: "Tiber Club",
-                        classes: classes,
-                        status: status,
-                        id: id,
-                        name: name,
-                        surname: surname,
-                        email: email
-                    );
-                  } else {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProgramPage(
-                                  documentId: initialMessage?.data["docId"],
-                                  selectedOption:
-                                      initialMessage?.data["selectedOption"],
-                                  isAdmin: status,
-                                )));
-                    return ClubPage(
-                        title: "Tiber Club",
-                        classes: classes,
-                        status: status,
-                        id: id,
-                        name: name,
-                        surname: surname,
-                        email: email
-                    );
-                  }
+                  return handleMessageFromTerminatedState();
                 }
               },
             );

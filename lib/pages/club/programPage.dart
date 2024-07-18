@@ -13,6 +13,7 @@ class ProgramPage extends StatefulWidget {
     required this.documentId,
     required this.selectedOption,
     required this.isAdmin,
+    required this.name,
     this.refreshList,
   });
 
@@ -20,6 +21,7 @@ class ProgramPage extends StatefulWidget {
   final String selectedOption;
   final bool isAdmin;
   final Function? refreshList;
+  final String name;
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
@@ -121,11 +123,19 @@ class _ProgramPageState extends State<ProgramPage> {
         actions: [
           IconButton(
             onPressed: () {
-              Share.share('Programma al Tiber!\n\n'
-                  'Titolo: ${_data['title']}\n'
-                  'Dove: ${_data['address']}\n'
-                  'Data: ${_data['startDate']} ~ ${_data['endDate']}\n'
-                  'Descrizione: ${_data['description']}\n');
+              if(widget.selectedOption=='trip') {
+                Share.share(
+                    '${_data['title']}\n\n'
+                    '${_data['address']}\n\n'
+                    'Dal ${_data['startDate']} al ${_data['endDate']}\n\n'
+                    '${_data['description']}\n');
+              } else {
+                Share.share(
+                    '${_data['title']}\n\n'
+                    '${_data['address']}\n\n'
+                    '${_data['startDate']}\n\n'
+                    '${_data['description']}\n');
+              }
             },
             icon: const Icon(
               Icons.share,
@@ -143,6 +153,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                   document: _data,
                                   refreshList: widget.refreshList,
                                   refreshProgram: refreshProgram,
+                                  name: widget.name,
                                 )));
                       },
                     ),
@@ -332,6 +343,22 @@ class _ProgramPageState extends State<ProgramPage> {
                                   ],
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 30.0),
+                            Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Creato da ',
+                                    style: TextStyle(fontSize: 17),
+                                  ),
+                                  Text(
+                                    _data['creator'],
+                                    style: const TextStyle(fontSize: 17),
+                                  ),
+                                ]
+                              )
                             ),
                           ],
                         ),
