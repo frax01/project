@@ -14,7 +14,7 @@ Future<String> loadData() async {
 
 Future<List<Map<String, dynamic>>> fetchData(
     List<Map<String, dynamic>> allDocuments, List selectedClass) async {
-  List<String> clubCollections = ['club_weekend', 'club_trip', 'club_extra'];
+  List<String> clubCollections = ['club_weekend', 'club_trip'];
 
   for (String collectionName in clubCollections) {
     CollectionReference collection =

@@ -5,7 +5,6 @@ void deleteOldDocuments() async {
   final yesterday = DateTime.now().subtract(const Duration(days: 1));
 
   final oneDateCollections = [
-    'club_extra',
     'club_weekend',
   ];
   for (final collection in oneDateCollections) {

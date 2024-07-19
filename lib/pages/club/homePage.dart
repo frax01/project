@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
 
   _loadItems() async {
     var db = FirebaseFirestore.instance;
-    for (final collection in ['club_weekend', 'club_trip', 'club_extra']) {
+    for (final collection in ['club_weekend', 'club_trip']) {
       await db.collection(collection).where('selectedClass', arrayContainsAny: widget.selectedClass)
           .get().then((docs) {
         for (var doc in docs.docs) {
@@ -146,7 +146,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 SpeedDialChild(
                   child: const Icon(Icons.calendar_today),
-                  label: 'Sabato',
+                  label: 'Programma',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
@@ -157,23 +157,12 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SpeedDialChild(
                   child: const Icon(Icons.airplanemode_on),
-                  label: 'Viaggio',
+                  label: 'Convivenza',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
                             refreshList: refreshList,
                             selectedOption: 'trip',
-                            name: widget.name)));
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(Icons.star),
-                  label: 'Extra',
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AddEditProgram(
-                            refreshList: refreshList,
-                            selectedOption: 'extra',
                             name: widget.name)));
                   },
                 ),

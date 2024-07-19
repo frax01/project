@@ -205,12 +205,8 @@ class _ProgramCardState extends State<ProgramCard> {
                                 fontWeight: FontWeight.bold, fontSize: 20.0)),
                         Text(
                           level == 'weekend'
-                              ? 'Sabato'
-                              : level == 'extra'
-                                  ? 'Extra'
-                                  : level == 'trip'
-                                      ? 'Viaggio'
-                                      : 'Torneo',
+                              ? 'Programma'
+                              : 'Convivenza',
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ],
