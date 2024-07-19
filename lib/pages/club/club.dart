@@ -5,6 +5,7 @@ import 'package:club/pages/club/torneoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'birthdayPage.dart';
+import 'info.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage(
@@ -68,6 +69,12 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
+        child: const BirthdayPage(),
+      ),
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
         child: SettingsPage(
           id: widget.id,
           classes: widget.classes,
@@ -85,8 +92,35 @@ class _ClubPageState extends State<ClubPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tiber Club'),
-        centerTitle: true,
         automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => Info()));
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.person_outlined),
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => SettingsPage(
+                        id: widget.id,
+                        classes: widget.classes,
+                        name: widget.name,
+                        surname: widget.surname,
+                        email: widget.email,
+                        isAdmin: widget.status,)));
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.message_outlined),
+              onPressed: () {
+                print('Search icon pressed');
+              },
+            ),
+          ]
       ),
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
@@ -119,14 +153,19 @@ class _ClubPageState extends State<ClubPage> {
             label: '11 ideale',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Calendario',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.cake_outlined),
             activeIcon: Icon(Icons.cake),
             label: 'Compleanni',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outlined),
-            activeIcon: Icon(Icons.person),
-            label: 'Utente',
+            icon: Icon(Icons.stadium_outlined),
+            activeIcon: Icon(Icons.stadium),
+            label: 'Calcio',
           ),
         ],
       ),

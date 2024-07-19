@@ -180,6 +180,17 @@ class _SettingsPageState extends State<SettingsPage> {
       }
     }
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Account'),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
         child: SingleChildScrollView(
