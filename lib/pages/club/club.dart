@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'birthdayPage.dart';
 import 'info.dart';
+import 'calendar.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage(
@@ -63,7 +64,7 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: const BirthdayPage(),
+        child: Calendar(),
       ),
       PopScope(
         onPopInvoked: (_) {

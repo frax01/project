@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'status.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -228,6 +229,26 @@ class _SettingsPageState extends State<SettingsPage> {
                         },
                       )
                     : const SizedBox.shrink(),
+                    widget.isAdmin
+                        ? ListTile(
+                      leading: const Icon(Icons.build),
+                      title: const Text('Modifica'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                      subtitle: const AutoSizeText(
+                        'Permessi utente',
+                        style: TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Status()));
+                      },
+                    ) : const SizedBox.shrink(),
                     ListTile(
                       leading: const Icon(Icons.delete_forever),
                       title: const Text('Elimina account'),

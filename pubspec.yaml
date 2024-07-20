@@ -64,6 +64,7 @@ dependencies:
   maps_launcher: ^2.2.1
   confetti: ^0.7.0
   auto_size_text: ^3.0.0
+  table_calendar: ^3.1.2
 
 dev_dependencies:
   flutter_test:
