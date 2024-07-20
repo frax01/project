@@ -3,9 +3,8 @@ import 'package:club/pages/main/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:maps_launcher/maps_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -36,35 +35,6 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     //_currentUser!.reload();
-  }
-
-  Future<void> _showDetailsDialog() {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Cos\'è il Tiber Club?'),
-          content: const SingleChildScrollView(
-            child: Text(
-              'Il Tiber Club è un\'associazione familiare e giovanile volta allo scopo di promuovere la crescita umana, culturale ' 
-              'e spirituale della persona attraverso attività formative, sportive e culturali. Si rivolge a tutti i ragazzi, dalle '
-              'scuole primarie a quelle superiori e alle loro famiglie, che trovano nel Tiber un modo di dedicare tempo alla formazione '
-              'dei propri ragazzi. Così, il Club, diventa una realtà di supporto alle famiglie nella crescita dei loro figli nella società '
-              'attuale. Il Tiber è nato da una convinzione, che la gioventù non è un tempo morto, ma il tempo dei più grandi ideali!',
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Chiudi'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _showDeleteAccountDialog() async {
@@ -169,6 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+
     List<String> medie = [];
     List<String> liceo = [];
   
@@ -197,58 +168,6 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const SizedBox(height: 20),
-              Column(
-                children: [
-                  Image.asset(
-                    'images/logo.png',
-                    width: 150,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${widget.name} ${widget.surname}',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(widget.email,
-                      style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 20),
-                  Wrap(
-                  alignment: WrapAlignment.center,
-                  children: [
-                    if (medie.isNotEmpty) ...medie.map((club) => Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 1),
-                          child: Chip(
-                            label: Text(
-                              club,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        )),
-                  ],
-                ),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  children: [
-                    if (liceo.isNotEmpty) ...liceo.map((club) => Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 2, vertical: 1),
-                          child: Chip(
-                            label: Text(
-                              club,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        )),
-                  ],
-                ),
-                ]
-              ),
-              const SizedBox(height: 20),
               ListView(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
@@ -256,38 +175,71 @@ class _SettingsPageState extends State<SettingsPage> {
                   context: context,
                   tiles: [
                     ListTile(
-                      leading: const Icon(Icons.question_mark),
-                      title: const Text('Cos\'è il Tiber Club?'),
-                      onTap: () {
-                        _showDetailsDialog();
-                      },
+                      leading: const Icon(Icons.person),
+                      title: const Text('Nome'),
+                      subtitle: AutoSizeText(
+                        '${widget.name} ${widget.surname}',
+                        style: const TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                     ),
                     ListTile(
-                      leading: const Icon(Icons.location_on),
-                      title: const Text('Dove siamo?'),
-                      onTap: () async {
-                        MapsLauncher.launchCoordinates(41.918306, 12.474556);
-                      },
+                      leading: const Icon(Icons.email),
+                      title: const Text('Email'),
+                      subtitle: AutoSizeText(
+                        widget.email,
+                        style: const TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.class_rounded),
+                      title: medie.length==1? const Text('Classe') : const Text('Classi'),
+                      subtitle: AutoSizeText(
+                        '${medie.join(', ')}, ${liceo.join(', ')}',
+                        style: const TextStyle(fontSize: 20.0),
+                        maxLines: 2,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                     ),
                     widget.isAdmin
                     ? ListTile(
-                        leading: const Icon(Icons.person),
-                        title: const Text('Richieste utenti'),
+                        leading: const Icon(Icons.check_circle),
+                        title: const Text('Richieste'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                        subtitle: const AutoSizeText(
+                          'Accetta i nuovi utenti',
+                          style: TextStyle(fontSize: 20.0),
+                          maxLines: 1,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                         onTap: () {
                           Navigator.pushNamed(context, '/acceptance');
                         },
                       )
                     : const SizedBox.shrink(),
                     ListTile(
-                      leading: const Icon(Icons.policy),
-                      title: const Text('Privacy e policy'),
-                      onTap: () {
-                        launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'));
-                      },
-                    ),
-                    ListTile(
                       leading: const Icon(Icons.delete_forever),
                       title: const Text('Elimina account'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                      subtitle: const AutoSizeText(
+                        'Cancella l\'iscrizione',
+                        style: TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                       onTap: () {
                         _showDeleteAccountDialog();
                       },
@@ -295,6 +247,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     ListTile(
                       leading: const Icon(Icons.exit_to_app),
                       title: const Text('Logout'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                      subtitle: const AutoSizeText(
+                        'Esci dall\'app',
+                        style: TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                       onTap: () {
                         _showLogoutDialog();
                       },
