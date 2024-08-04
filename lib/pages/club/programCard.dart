@@ -30,18 +30,24 @@ class ProgramCard extends StatefulWidget {
 
 class _ProgramCardState extends State<ProgramCard> {
   var data = <String, dynamic>{};
+  var newData = <String, dynamic>{};
 
   Future<void> _loadData() async {
-    var newData = <String, dynamic>{};
+    newData = <String, dynamic>{};
     var doc = await FirebaseFirestore.instance
         .collection('club_${widget.selectedOption}')
         .doc(widget.documentId)
         .get();
     newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    for (String value in newData["selectedClass"]) {
-      if (widget.selectedClass.contains(value)) {
-        data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-        break;
+    if(widget.isAdmin) {
+      data = newData;
+    }
+    else {
+      for (String value in newData["selectedClass"]) {
+        if (widget.selectedClass.contains(value)) {
+          data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+          break;
+        }
       }
     }
   }

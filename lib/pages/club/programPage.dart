@@ -1,11 +1,14 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/functions/generalFunctions.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../functions/weatherFunctions.dart';
 import 'addEditProgram.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
@@ -37,6 +40,7 @@ class _ProgramPageState extends State<ProgramPage> {
         .doc(widget.documentId)
         .get();
     _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    print("doc: ${_data['file']}");
     _weather = await fetchWeatherData(
         _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
   }
@@ -108,6 +112,227 @@ class _ProgramPageState extends State<ProgramPage> {
       );
     } else {
       return Container();
+    }
+  }
+
+  //final _titleKey = GlobalKey<FormState>();
+  //final _linkKey = GlobalKey<FormState>();
+  //final _fileKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+
+  Future<void> _showAddLinkFileDialog(BuildContext context) {
+    String title = '';
+    String placeHolder = 'Seleziona File';
+    PlatformFile? file;
+    bool isLink = false;
+    bool isFile = false;
+    final TextEditingController _programNameController = TextEditingController();
+    final TextEditingController _linkController = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Center(
+                child: Text('Aggiungi un link o un file'),
+              ),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _programNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Titolo',
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Inserisci il titolo';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isLink ? Theme.of(context).primaryColor : Colors.white,
+                                  foregroundColor: isLink ? Colors.white : Colors.black,
+                                  textStyle: const TextStyle(fontSize: 20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 5,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isLink = !isLink;
+                                    if (isLink) {
+                                      isFile = false;
+                                    }
+                                  });
+                                },
+                                child: const Text('Link'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isFile ? Theme.of(context).primaryColor : Colors.white,
+                                  foregroundColor: isFile ? Colors.white : Colors.black,
+                                  textStyle: const TextStyle(fontSize: 20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 5,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isFile = !isFile;
+                                    if (isFile) {
+                                      isLink = false;
+                                    }
+                                  });
+                                },
+                                child: const Text('File'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+                          if (isLink)
+                            TextFormField(
+                              controller: _linkController,
+                              decoration: const InputDecoration(
+                                labelText: 'Link',
+                              ),
+                              validator: (String? value) {
+                                if (value!.isEmpty) {
+                                  return 'Inserisci il link al file';
+                                }
+                                return null;
+                              },
+                            ),
+                          if (isFile)
+                            FormField<PlatformFile>(
+                              validator: (value) {
+                                if (file == null) {
+                                  return 'Seleziona un file';
+                                }
+                                return null;
+                              },
+                              builder: (formFieldState) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        textStyle: const TextStyle(fontSize: 20),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        elevation: 5,
+                                      ),
+                                      onPressed: () async {
+                                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                        if (result != null) {
+                                          setState(() {
+                                            file = result.files.first;
+                                            placeHolder = file!.name;
+                                          });
+                                          formFieldState.didChange(file);
+                                        }
+                                      },
+                                      child: Text(
+                                        placeHolder,
+                                        style: const TextStyle(fontSize: 16.0),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (formFieldState.hasError)
+                                      Text(
+                                        formFieldState.errorText!,
+                                        style: TextStyle(color: Theme.of(context).primaryColor),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Annulla'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      title = _programNameController.text;
+                      if (title.isNotEmpty &&
+                          (isLink && _linkController.text.isNotEmpty ||
+                              isFile && file != null)) {
+                        final dataToSave = {
+                          'title': title,
+                          'link': isLink ? _linkController.text : '',
+                          'path': isFile ? await _uploadFileToFirebase(file!) : null,
+                        };
+
+                        await FirebaseFirestore.instance
+                            .collection('club_${widget.selectedOption}')
+                            .doc(widget.documentId)
+                            .update({
+                          'file': FieldValue.arrayUnion([dataToSave])
+                        });
+                        setState(() {});
+                        Navigator.of(context).pop();
+                      }
+                    }
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String?> _uploadFileToFirebase(PlatformFile file) async {
+    print("-1");
+    if (file.path == null) {
+      print("Percorso del file non disponibile");
+      return null;
+    }
+    print("1");
+
+    try {
+      // Leggi i byte del file dal percorso
+      final bytes = File(file.path!).readAsBytesSync();
+
+      // Carica i byte del file su Firebase Storage
+      final storageRef = FirebaseStorage.instance.ref().child('uploads/${file.name}');
+      final uploadTask = storageRef.putData(bytes);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      print("url: ${snapshot.ref.getDownloadURL()}");
+
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      print("Errore durante il caricamento del file: $e");
+      return null;
     }
   }
 
@@ -344,7 +569,43 @@ class _ProgramPageState extends State<ProgramPage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 30.0),
+                            //_data["file"].forEach((value) {
+                            //  if(_data["file"]["link"]!='') {
+                            //    TextButton(
+                            //      onPressed: () {
+                            //        launchUrl(Uri.parse(_data["file"]["path"]));
+                            //      },
+                            //      child: Row(
+                            //        children: [
+                            //          const Icon(Icons.link, color: Colors.black),
+                            //          const SizedBox(width: 10,),
+                            //          Text(_data["file"]["title"],
+                            //            style: const TextStyle(fontSize: 16.0),
+                            //            maxLines: 1,
+                            //            overflow: TextOverflow.ellipsis,),
+                            //        ]
+                            //      )
+                            //    );
+                            //  }
+                            //}),
+                            const SizedBox(height: 20.0),
+                            widget.isAdmin
+                                ? TextButton(
+                              onPressed: () {
+                                _showAddLinkFileDialog(context);
+                              },
+                              style: TextButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 50),
+                                backgroundColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                side: const BorderSide(color: Colors.black),
+                                overlayColor: Colors.grey[500],
+                              ),
+                              child: const Icon(Icons.upload, color: Colors.black),
+                            ) : const SizedBox.shrink(),
+                            const SizedBox(height: 20.0),
                             Center(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
