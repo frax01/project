@@ -26,6 +26,7 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _passwordConfirmController =
       TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
+  final TextEditingController _clubController = TextEditingController();
 
   String? _emailErrorMsg;
   String? _passwordErrorMsg;
@@ -43,6 +44,7 @@ class _SignUpState extends State<SignUp> {
         'surname': user.surname,
         'email': user.email,
         'birthdate': user.birthdate,
+        'club': user.club,
         'role': user.role,
         'club_class': user.club_class,
         'soccer_class': user.soccer_class,
@@ -66,6 +68,7 @@ class _SignUpState extends State<SignUp> {
         String email = _emailController.text;
         String password = _passwordController.text;
         String birthdate = _birthdateController.text;
+        String club = _clubController.text;
 
         await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
@@ -78,6 +81,7 @@ class _SignUpState extends State<SignUp> {
           email: email,
           password: password,
           birthdate: birthdate,
+          club: club,
           role: '',
           club_class: '',
           soccer_class: '',
@@ -125,6 +129,72 @@ class _SignUpState extends State<SignUp> {
         _birthdateController.text = formattedDate;
       });
     }
+  }
+
+  String? _selectedClub;
+
+  void _clubDialog() async {
+    bool? isTiberClubChecked = _selectedClub == 'Tiber Club';
+    bool? isDeltaClubChecked = _selectedClub == 'Delta Club';
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text('Scegli il Club'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CheckboxListTile(
+                    title: const Text('Tiber Club'),
+                    subtitle: const Text('Roma'),
+                    value: isTiberClubChecked,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isTiberClubChecked = value ?? false;
+                        isDeltaClubChecked = false;
+                        _selectedClub = '';
+                        if (isTiberClubChecked!) {
+                          _selectedClub = 'Tiber Club';
+                        }
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Delta Club'),
+                    subtitle: const Text('Milano'),
+                    value: isDeltaClubChecked,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isDeltaClubChecked = value ?? false;
+                        isTiberClubChecked = false;
+                        _selectedClub = '';
+                        if (isDeltaClubChecked!) {
+                          _selectedClub = 'Delta Club';
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    if (_selectedClub != null) {
+                      _clubController.text = _selectedClub!;
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   bool _isObscure = false;
@@ -203,6 +273,44 @@ class _SignUpState extends State<SignUp> {
                             },
                           ),
                           const SizedBox(height: 20),
+                          InkWell(
+                            onTap: () => _selectDate(context),
+                            child: IgnorePointer(
+                              child: TextFormField(
+                                controller: _birthdateController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Data di nascita',
+                                  icon: Icon(Icons.calendar_today_rounded),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Inserisci la data di nascita';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          InkWell(
+                            onTap: () => _clubDialog(),
+                            child: IgnorePointer(
+                              child: TextFormField(
+                                controller: _clubController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Club',
+                                  icon: Icon(Icons.class_),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Scegli il Club';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           TextFormField(
                             controller: _passwordController,
                             obscureText: !_isObscure,
@@ -261,25 +369,6 @@ class _SignUpState extends State<SignUp> {
                               }
                               return null;
                             },
-                          ),
-                          const SizedBox(height: 20),
-                          InkWell(
-                            onTap: () => _selectDate(context),
-                            child: IgnorePointer(
-                              child: TextFormField(
-                                controller: _birthdateController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Data di nascita',
-                                  icon: Icon(Icons.calendar_today_rounded),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Birthdate is required';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton(

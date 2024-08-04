@@ -15,6 +15,7 @@ import 'pages/main/acceptance.dart';
 import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,8 +95,9 @@ class _HomePageState extends State<HomePage> {
 
   RemoteMessage? initialMessage;
 
-  Widget buildClubPage() {
+  Widget buildClubPage(String club) {
     return ClubPage(
+      title: club,
       classes: classes,
       status: status,
       id: id,
@@ -174,6 +176,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget handleMessageFromTerminatedState() {
+    //SharedPreferences prefs = await SharedPreferences.getInstance();
+    //prefs.setString('email', _emailController.text);
+    //prefs.setString('club', club);
     if (initialMessage?.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -204,7 +209,14 @@ class _HomePageState extends State<HomePage> {
                     name: '$name $surname'
                   )));
     }
-    return buildClubPage();
+    return buildClubPage(club);
+  }
+
+  String club = '';
+
+  void preferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    club = prefs.getString('club') ?? '';
   }
 
   @override
@@ -265,7 +277,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 } else if (terminated == false) {
-                  return buildClubPage();
+                  return buildClubPage(club);
                 } else {
                   return handleMessageFromTerminatedState();
                 }

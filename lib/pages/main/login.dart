@@ -28,9 +28,11 @@ class _LoginState extends State<Login> {
   String surname = '';
   String email = '';
   String role = '';
+  String club = '';
 
-  Widget buildClubPage() {
+  Widget buildClubPage(String club) {
     return ClubPage(
+      title: club,
       classes: classes,
       status: status,
       id: id,
@@ -45,11 +47,11 @@ class _LoginState extends State<Login> {
         context, MaterialPageRoute(builder: (context) => const Waiting()));
   }
 
-  _goToHome() {
+  _goToHome(String club) {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => buildClubPage()
+            builder: (context) => buildClubPage(club)
         )
     );
   }
@@ -92,12 +94,14 @@ class _LoginState extends State<Login> {
         classes = value['club_class'];
         status = value['status'] == 'Admin'? true : false;
         role = value['role'];
+        club = value['club'];
         id = value.id;
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('email', _emailController.text);
+        prefs.setString('club', club);
 
-        role == '' ? _goToWaiting() : _goToHome();
+        role == '' ? _goToWaiting() : _goToHome(club);
         setState(() {
           _isLoading = false;
         });

@@ -4,6 +4,7 @@ class ClubUser {
   final String email;
   final String password;
   final String birthdate;
+  final String club;
   final String role;
   final String club_class;
   final String soccer_class;
@@ -17,6 +18,7 @@ class ClubUser {
       required this.birthdate,
       required this.email,
       required this.password,
+      required this.club,
       required this.role,
       required this.club_class,
       required this.soccer_class,

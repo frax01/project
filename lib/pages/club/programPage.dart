@@ -40,16 +40,18 @@ class _ProgramPageState extends State<ProgramPage> {
         .doc(widget.documentId)
         .get();
     _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    print("doc: ${_data['file']}");
     _weather = await fetchWeatherData(
         _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
+    if (!_data.containsKey('file')) {
+      _data['file'] = [];
+    }
   }
 
   refreshProgram() {
     setState(() {});
   }
 
-  Future<void> _showDeleteDialog(BuildContext context, String id) {
+  Future<void> _showDeleteDialog(BuildContext context, String id, String image) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -66,7 +68,7 @@ class _ProgramPageState extends State<ProgramPage> {
             TextButton(
               onPressed: () async {
                 setState(() {
-                  deleteDocument('club_${_data["selectedOption"]}', id);
+                  deleteDocument('club_${_data["selectedOption"]}', id, image);
                 });
                 widget.refreshList!();
                 Navigator.pop(context);
@@ -115,9 +117,6 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  //final _titleKey = GlobalKey<FormState>();
-  //final _linkKey = GlobalKey<FormState>();
-  //final _fileKey = GlobalKey<FormState>();
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _showAddLinkFileDialog(BuildContext context) {
@@ -278,27 +277,15 @@ class _ProgramPageState extends State<ProgramPage> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      title = _programNameController.text;
-                      if (title.isNotEmpty &&
-                          (isLink && _linkController.text.isNotEmpty ||
-                              isFile && file != null)) {
-                        final dataToSave = {
-                          'title': title,
-                          'link': isLink ? _linkController.text : '',
-                          'path': isFile ? await _uploadFileToFirebase(file!) : null,
-                        };
-
-                        await FirebaseFirestore.instance
-                            .collection('club_${widget.selectedOption}')
-                            .doc(widget.documentId)
-                            .update({
-                          'file': FieldValue.arrayUnion([dataToSave])
-                        });
-                        setState(() {});
-                        Navigator.of(context).pop();
-                      }
-                    }
+                    validation(
+                      title,
+                      _programNameController,
+                      isLink,
+                      _linkController,
+                      isFile,
+                      file
+                    );
+                    setState(() {});
                   },
                   child: const Text('OK'),
                 ),
@@ -311,28 +298,183 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Future<String?> _uploadFileToFirebase(PlatformFile file) async {
-    print("-1");
     if (file.path == null) {
       print("Percorso del file non disponibile");
       return null;
     }
-    print("1");
 
     try {
-      // Leggi i byte del file dal percorso
       final bytes = File(file.path!).readAsBytesSync();
-
-      // Carica i byte del file su Firebase Storage
       final storageRef = FirebaseStorage.instance.ref().child('uploads/${file.name}');
       final uploadTask = storageRef.putData(bytes);
       final snapshot = await uploadTask.whenComplete(() {});
-
-      print("url: ${snapshot.ref.getDownloadURL()}");
 
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
       print("Errore durante il caricamento del file: $e");
       return null;
+    }
+  }
+
+  void validation(
+      String title,
+      TextEditingController _programNameController,
+      bool isLink,
+      TextEditingController _linkController,
+      bool isFile,
+      PlatformFile? file,
+      ) async {
+    if (_formKey.currentState!.validate()) {
+      title = _programNameController.text;
+      if (title.isNotEmpty &&
+          (isLink && _linkController.text.isNotEmpty ||
+              isFile && file != null)) {
+        final dataToSave = {
+          'title': title,
+          'link': isLink ? _linkController.text : '',
+          'path': isFile ? await _uploadFileToFirebase(file!) : null,
+        };
+
+        await FirebaseFirestore.instance
+            .collection('club_${widget.selectedOption}')
+            .doc(widget.documentId)
+            .update({
+          'file': FieldValue.arrayUnion([dataToSave])
+        });
+        Navigator.of(context).pop();
+        setState(() {});
+      }
+    }
+  }
+
+  Widget buildFileLinkButton(Map<String, dynamic> fileData) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
+      child: fileData['link'] != null && fileData['link'].isNotEmpty
+          ? TextButton(
+        onPressed: () => _openFileOrLink(fileData['link']),
+        style: TextButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          side: const BorderSide(color: Colors.black),
+          overlayColor: Colors.grey[500],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.link, color: Colors.black),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                fileData['title'],
+                style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.black),
+              highlightColor: Colors.grey[300],
+              onPressed: () => _showDeleteConfirmationDialog(fileData),
+            ),
+          ],
+        ),
+      ) : fileData['path'] != null && fileData['path'].isNotEmpty ? TextButton(
+        onPressed: () => _openFileOrLink(fileData['path']),
+        style: TextButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          side: const BorderSide(color: Colors.black),
+          overlayColor: Colors.grey[500],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.file_copy, color: Colors.black),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                fileData['title'],
+                style: const TextStyle(fontSize: 16.0, color: Colors.black),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.black),
+              highlightColor: Colors.grey[300],
+              onPressed: () => _showDeleteConfirmationDialog(fileData),
+            ),
+          ],
+        ),
+      ) : Container(),
+    );
+  }
+
+
+  Future<void> _openFileOrLink(String? url) async {
+    if (url == null || url.isEmpty) {
+      return;
+    }
+
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Link non valido'),
+        ),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(Map<String, dynamic> fileData) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma'),
+          content: const Text('Sei sicuro di voler eliminare il file/link?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annulla'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteFileOrLink(fileData);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text('Elimina'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteFileOrLink(Map<String, dynamic> fileData) async {
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({
+      'file': FieldValue.arrayRemove([fileData])
+    });
+
+    if (fileData['path'] != null && fileData['path'].isNotEmpty) {
+      try {
+        final storageRef = FirebaseStorage.instance.refFromURL(fileData['path']);
+        await storageRef.delete();
+      } catch (e) {
+        print("Errore durante l'eliminazione del file da Firebase Storage: $e");
+      }
     }
   }
 
@@ -385,7 +527,7 @@ class _ProgramPageState extends State<ProgramPage> {
                     PopupMenuItem(
                         child: const Text('Elimina'),
                         onTap: () {
-                          _showDeleteDialog(context, _data['id']);
+                          _showDeleteDialog(context, _data['id'], _data['imagePath']);
                         }),
                   ];
                 })
@@ -569,26 +711,15 @@ class _ProgramPageState extends State<ProgramPage> {
                                 ),
                               ),
                             ),
-                            //_data["file"].forEach((value) {
-                            //  if(_data["file"]["link"]!='') {
-                            //    TextButton(
-                            //      onPressed: () {
-                            //        launchUrl(Uri.parse(_data["file"]["path"]));
-                            //      },
-                            //      child: Row(
-                            //        children: [
-                            //          const Icon(Icons.link, color: Colors.black),
-                            //          const SizedBox(width: 10,),
-                            //          Text(_data["file"]["title"],
-                            //            style: const TextStyle(fontSize: 16.0),
-                            //            maxLines: 1,
-                            //            overflow: TextOverflow.ellipsis,),
-                            //        ]
-                            //      )
-                            //    );
-                            //  }
-                            //}),
                             const SizedBox(height: 20.0),
+                            if (_data.containsKey('file'))
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (var fileData in _data['file'])
+                                    buildFileLinkButton(fileData),
+                                ],
+                              ),
                             widget.isAdmin
                                 ? TextButton(
                               onPressed: () {

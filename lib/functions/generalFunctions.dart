@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 void deleteOldDocuments() async {
   final firestore = FirebaseFirestore.instance;
@@ -36,9 +37,12 @@ void deleteOldDocuments() async {
   }
 }
 
-Future<void> deleteDocument(String collection, String docId) async {
+Future<void> deleteDocument(String collection, String docId, String image) async {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   await firestore.collection(collection).doc(docId).delete();
+
+  final storageRef = FirebaseStorage.instance.refFromURL(image);
+  await storageRef.delete();
 }
 
 String convertDateFormat(String date) {

@@ -11,6 +11,7 @@ import 'calendar.dart';
 class ClubPage extends StatefulWidget {
   const ClubPage(
       {super.key,
+        required this.title,
         required this.classes,
         required this.status,
         required this.id,
@@ -19,6 +20,7 @@ class ClubPage extends StatefulWidget {
         required this.email,
       });
 
+  final String title;
   final List classes;
   final bool status;
   final String id;
@@ -92,7 +94,7 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tiber Club'),
+        title: Text(widget.title),
         automaticallyImplyLeading: false,
           actions: [
             IconButton(
