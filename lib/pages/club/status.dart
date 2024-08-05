@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Status extends StatefulWidget {
+  const Status({super.key, required this.club});
+
+  final String club;
+
   @override
   _StatusState createState() => _StatusState();
 }
@@ -18,6 +22,7 @@ class _StatusState extends State<Status> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('user')
+            .where('club', isEqualTo: widget.club)
             .where('role', whereIn: ['Tutor', 'Ragazzo'])
             .snapshots(),
         builder: (context, snapshot) {

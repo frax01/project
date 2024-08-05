@@ -50,11 +50,12 @@ Future<void> sendNotification(
   }
 }
 
-Future<List<String>> fetchToken(String section, String target) async {
+Future<List<String>> fetchToken(String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('user')
+        .where('club', isEqualTo: club)
         .where(section, arrayContains: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
@@ -71,11 +72,12 @@ Future<List<String>> fetchToken(String section, String target) async {
   }
 }
 
-Future<List<String>> retrieveToken(String section, String target) async {
+Future<List<String>> retrieveToken(String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('user')
+        .where('club', isEqualTo: club)
         .where(section, isEqualTo: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {

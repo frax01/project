@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 class ProgramCard extends StatefulWidget {
   const ProgramCard(
       {super.key,
+        required this.club,
       required this.documentId,
       required this.selectedOption,
       required this.selectedClass,
@@ -16,6 +17,7 @@ class ProgramCard extends StatefulWidget {
       required this.startDate,
       required this.name});
 
+  final String club;
   final String documentId;
   final String selectedOption;
   final List selectedClass;
@@ -225,6 +227,7 @@ class _ProgramCardState extends State<ProgramCard> {
         },
         openBuilder: (context, action) {
           return ProgramPage(
+              club: widget.club,
               documentId: data['id'],
               selectedOption: data['selectedOption'],
               isAdmin: widget.isAdmin,

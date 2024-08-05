@@ -92,7 +92,7 @@ class _SignUpState extends State<SignUp> {
 
         await _saveUser(user);
 
-        List<String> token = await retrieveToken('status', 'Admin');
+        List<String> token = await retrieveToken('status', 'Admin', _clubController.text);
         sendNotification(token, 'Nuova registrazione!', 'Accetta il nuovo utente', 'new_user');
 
         setState(() {

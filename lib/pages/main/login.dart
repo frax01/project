@@ -32,7 +32,7 @@ class _LoginState extends State<Login> {
 
   Widget buildClubPage(String club) {
     return ClubPage(
-      title: club,
+      club: club,
       classes: classes,
       status: status,
       id: id,

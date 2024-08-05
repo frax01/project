@@ -8,12 +8,14 @@ import 'package:ms_undraw/ms_undraw.dart';
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
+    required this.club,
     required this.selectedClass,
     required this.section,
     required this.isAdmin,
     required this.name,
   });
 
+  final String club;
   final List selectedClass;
   final String section;
   final bool isAdmin;
@@ -37,7 +39,7 @@ class _HomePageState extends State<HomePage> {
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip']) {
       if(widget.isAdmin) {
-        await db.collection(collection).get().then((docs) {
+        await db.collection(collection).where('club', isEqualTo: widget.club).get().then((docs) {
           for (var doc in docs.docs) {
             List<String> parts = doc["startDate"].split('-');
             int day = int.parse(parts[0]);
@@ -45,6 +47,7 @@ class _HomePageState extends State<HomePage> {
             int year = int.parse(parts[2]);
             DateTime dateTime = DateTime(year, month, day);
             _listItems.add(ProgramCard(
+              club: widget.club,
               documentId: doc.id,
               selectedOption: collection.split('_')[1],
               selectedClass: widget.selectedClass,
@@ -58,6 +61,7 @@ class _HomePageState extends State<HomePage> {
         });
       } else {
         await db.collection(collection).where('selectedClass', arrayContainsAny: widget.selectedClass)
+            .where('club', isEqualTo: widget.club)
             .get().then((docs) {
           for (var doc in docs.docs) {
             List<String> parts = doc["startDate"].split('-');
@@ -66,6 +70,7 @@ class _HomePageState extends State<HomePage> {
             int year = int.parse(parts[2]);
             DateTime dateTime = DateTime(year, month, day);
             _listItems.add(ProgramCard(
+              club: widget.club,
               documentId: doc.id,
               selectedOption: collection.split('_')[1],
               selectedClass: widget.selectedClass,
@@ -163,6 +168,7 @@ class _HomePageState extends State<HomePage> {
           ? SpeedDial(
               icon: Icons.add,
               backgroundColor: Colors.white,
+              iconTheme: const IconThemeData(color: Colors.black),
               activeIcon: Icons.close,
               overlayOpacity: 0.9,
               children: [
@@ -172,6 +178,7 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
+                            club: widget.club,
                             refreshList: refreshList,
                             selectedOption: 'weekend',
                             name: widget.name)));
@@ -183,6 +190,7 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
+                            club: widget.club,
                             refreshList: refreshList,
                             selectedOption: 'trip',
                             name: widget.name)));

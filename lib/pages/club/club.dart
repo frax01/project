@@ -11,7 +11,7 @@ import 'calendar.dart';
 class ClubPage extends StatefulWidget {
   const ClubPage(
       {super.key,
-        required this.title,
+        required this.club,
         required this.classes,
         required this.status,
         required this.id,
@@ -20,7 +20,7 @@ class ClubPage extends StatefulWidget {
         required this.email,
       });
 
-  final String title;
+  final String club;
   final List classes;
   final bool status;
   final String id;
@@ -48,20 +48,22 @@ class _ClubPageState extends State<ClubPage> {
           SystemNavigator.pop();
         },
         child: HomePage(
+          club: widget.club,
           selectedClass: widget.classes,
           section: section.toLowerCase(),
           isAdmin: widget.status,
           name: '${widget.name} ${widget.surname}',
         ),
       ),
-      PopScope(
-        onPopInvoked: (_) {
-          SystemNavigator.pop();
-        },
-        child: TabScorer(
-          isAdmin: widget.status,
+      if (widget.club == 'Tiber Club')
+        PopScope(
+          onPopInvoked: (_) {
+            SystemNavigator.pop();
+          },
+          child: TabScorer(
+            isAdmin: widget.status,
+          ),
         ),
-      ),
       PopScope(
         onPopInvoked: (_) {
           SystemNavigator.pop();
@@ -85,6 +87,7 @@ class _ClubPageState extends State<ClubPage> {
           surname: widget.surname,
           email: widget.email,
           isAdmin: widget.status,
+          club: widget.club
         ),
       ),
     ];
@@ -94,14 +97,14 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.club),
         automaticallyImplyLeading: false,
           actions: [
             IconButton(
               icon: const Icon(Icons.info_outline),
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => Info()));
+                    builder: (context) => Info(club: widget.club)));
               },
             ),
             IconButton(
@@ -114,7 +117,9 @@ class _ClubPageState extends State<ClubPage> {
                         name: widget.name,
                         surname: widget.surname,
                         email: widget.email,
-                        isAdmin: widget.status,)));
+                        isAdmin: widget.status,
+                        club: widget.club
+                    )));
               },
             ),
             IconButton(
@@ -144,28 +149,30 @@ class _ClubPageState extends State<ClubPage> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer_outlined),
-            activeIcon: Icon(Icons.sports_soccer),
-            label: '11 ideale',
-          ),
-          BottomNavigationBarItem(
+          if (widget.club == 'Tiber Club') ...[
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.sports_soccer_outlined),
+              activeIcon: Icon(Icons.sports_soccer),
+              label: '11 ideale',
+            ),
+          ],
+          const BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month_outlined),
             activeIcon: Icon(Icons.calendar_month),
             label: 'Calendario',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.cake_outlined),
             activeIcon: Icon(Icons.cake),
             label: 'Compleanni',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.stadium_outlined),
             activeIcon: Icon(Icons.stadium),
             label: 'Calcio',

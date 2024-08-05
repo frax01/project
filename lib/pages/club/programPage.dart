@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
     super.key,
+    required this.club,
     required this.documentId,
     required this.selectedOption,
     required this.isAdmin,
@@ -20,6 +21,7 @@ class ProgramPage extends StatefulWidget {
     this.refreshList,
   });
 
+  final String club;
   final String documentId;
   final String selectedOption;
   final bool isAdmin;
@@ -516,6 +518,7 @@ class _ProgramPageState extends State<ProgramPage> {
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => AddEditProgram(
+                                  club: widget.club,
                                   selectedOption: _data['selectedOption'],
                                   document: _data,
                                   refreshList: widget.refreshList,

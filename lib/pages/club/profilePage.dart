@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'status.dart';
+import 'package:club/main.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -15,7 +16,8 @@ class SettingsPage extends StatefulWidget {
     required this.name,
     required this.surname,
     required this.email,
-    required this.isAdmin
+    required this.isAdmin,
+    required this.club
   });
 
   final String id;
@@ -24,6 +26,7 @@ class SettingsPage extends StatefulWidget {
   final String surname;
   final String email;
   final bool isAdmin;
+  final String club;
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -138,6 +141,63 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  void restartApp(BuildContext context, String club) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club)),
+    );
+  }
+
+  Future<void> _showConfirmDialog() async {
+    final bool confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma'),
+          content: Text(
+            widget.club == 'Tiber Club'
+                ? 'Sei sicuro di voler passare al Delta?'
+                : 'Sei sicuro di voler passare al Tiber?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Annulla'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Conferma'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+    if (confirm) {
+      _updateClub();
+    }
+  }
+
+  Future<void> _updateClub() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String newClub = widget.club == 'Tiber Club'
+        ? 'Delta Club'
+        : 'Tiber Club';
+
+    await prefs.setString('club', newClub);
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userRef = FirebaseFirestore.instance.collection('user').doc(widget.id);
+      await userRef.update({'club': newClub});
+    }
+    restartApp(context, newClub);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -246,7 +306,31 @@ class _SettingsPageState extends State<SettingsPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => Status()));
+                                builder: (context) => Status(club: widget.club)));
+                      },
+                    ) : const SizedBox.shrink(),
+                    widget.email == 'francescomartignoni1@gmail.com'
+                        ? ListTile(
+                      leading: const Icon(Icons.change_circle),
+                      title: const Text('Sezione'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                      subtitle: const AutoSizeText(
+                        'Cambia Club',
+                        style: TextStyle(fontSize: 20.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      onTap: () async {
+                        await _showConfirmDialog();
+                        //SharedPreferences prefs = await SharedPreferences.getInstance();
+                        //if(widget.club=='Tiber Club') {
+                        //  prefs.setString('club', 'Delta Club');
+                        //} else {
+                        //  prefs.setString('club', 'Tiber Club');
+                        //}
+                        //String club = prefs.getString('club') ?? '';
                       },
                     ) : const SizedBox.shrink(),
                     ListTile(

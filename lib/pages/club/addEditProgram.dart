@@ -13,12 +13,14 @@ import '../../functions/notificationFunctions.dart';
 class AddEditProgram extends StatefulWidget {
   const AddEditProgram(
       {super.key,
+      required this.club,
       this.refreshList,
       this.refreshProgram,
       this.selectedOption,
       this.document,
       required this.name});
 
+  final String club;
   final Function? refreshList;
   final Function? refreshProgram;
   final String? selectedOption;
@@ -264,7 +266,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
         'address': _address,
         'lat': _latitude,
         'lon': _longitude,
-        'creator': widget.name
+        'creator': widget.name,
+        'club': widget.club
       };
 
       var doc = await firestore
@@ -274,7 +277,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
       List<String> token = [];
       for (String value in selectedClasses) {
-        List<String> items = await fetchToken('club_class', value);
+        List<String> items = await fetchToken('club_class', value, widget.club);
         for (String elem in items) {
           if (!token.contains(elem)) {
             token.add(elem);
@@ -322,12 +325,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
       'address': _address,
       'lat': _latitude,
       'lon': _longitude,
-      'creator': widget.name
+      'creator': widget.name,
+      'club': widget.club
     };
 
     List<String> token = [];
     for (String value in selectedClasses) {
-      List<String> items = await fetchToken('club_class', value);
+      List<String> items = await fetchToken('club_class', value, widget.club);
       for (String elem in items) {
         if (!token.contains(elem)) {
           token.add(elem);

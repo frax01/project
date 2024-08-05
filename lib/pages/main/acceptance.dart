@@ -5,9 +5,9 @@ import 'package:ms_undraw/ms_undraw.dart';
 import 'codeGenerator.dart';
 
 class AcceptancePage extends StatefulWidget {
-  const AcceptancePage({super.key, required this.title});
+  const AcceptancePage({super.key, required this.club});
 
-  final String title;
+  final String club;
 
   @override
   _AcceptancePageState createState() => _AcceptancePageState();
@@ -22,12 +22,12 @@ class _AcceptancePageState extends State<AcceptancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Accetta utenti'),
         centerTitle: true,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-      child: const UserList(),
+      child: UserList(club: widget.club),
     ));
   }
 }
@@ -69,13 +69,16 @@ ListView _buildList(AsyncSnapshot<QuerySnapshot> snapshot) {
 }
 
 class UserList extends StatelessWidget {
-  const UserList({super.key});
+  const UserList({super.key, required this.club});
+
+  final String club;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('user')
+          .where('club', isEqualTo: club)
           .where('role', isEqualTo: '')
           .snapshots(),
       builder: (context, snapshot) {

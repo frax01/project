@@ -38,17 +38,41 @@ void main() async {
   deleteOldDocuments();
   initializeDateFormatting();
 
-  runApp(const MyApp());
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String club = prefs.getString('club') ?? '';
+
+  runApp(MyApp(club: club));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.club});
+
+  final String club;
 
   @override
   Widget build(BuildContext context) {
+
+    var lightTheme;
+    var darkTheme;
+
+    switch (club) {
+      case 'Tiber Club':
+        lightTheme = lightColorSchemeTiber;
+        darkTheme = darkColorSchemeTiber;
+        break;
+      case 'Delta Club':
+        lightTheme = lightColorSchemeDelta;
+        darkTheme = darkColorSchemeDelta;
+        break;
+      default:
+        lightTheme = lightColorSchemeTiber;
+        darkTheme = darkColorSchemeTiber;
+        break;
+    }
+
     return MaterialApp(
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -59,25 +83,27 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [
         Locale('it', 'IT'),
       ],
-      title: 'Tiber Club',
-      theme: lightColorScheme,
-      darkTheme: darkColorScheme,
+      title: 'Club',
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: ThemeMode.light,
       home: const Login(),
       initialRoute: '/home',
       routes: {
-        '/home': (context) => const HomePage(),
+        '/home': (context) => HomePage(club: club),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
         '/waiting': (context) => const Waiting(),
-        '/acceptance': (context) => const AcceptancePage(title: 'Tiber Club'),
+        '/acceptance': (context) => AcceptancePage(club: club),
       },
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, required this.club});
+
+  final String club;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -92,12 +118,13 @@ class _HomePageState extends State<HomePage> {
   List classes = [];
   bool status = false;
   String id = '';
+  String club = '';
 
   RemoteMessage? initialMessage;
 
   Widget buildClubPage(String club) {
     return ClubPage(
-      title: club,
+      club: club,
       classes: classes,
       status: status,
       id: id,
@@ -117,6 +144,9 @@ class _HomePageState extends State<HomePage> {
     classes = value['club_class'];
     status = value['status'] == 'Admin'? true : false;
     id = value.id;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    club = prefs.getString('club') ?? '';
   }
 
   Future<void> setupInteractedMessage() async {
@@ -146,7 +176,7 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => const AcceptancePage(title: 'Tiber Club')));
+              builder: (context) => AcceptancePage(club: widget.club)));
     } else if (message.data['category'] == 'accepted') {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Login()));
@@ -156,6 +186,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
+                    club: club,
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
                     isAdmin: status,
@@ -167,6 +198,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
+                    club: club,
                     documentId: message.data["docId"],
                     selectedOption: message.data["selectedOption"],
                     isAdmin: status,
@@ -176,14 +208,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget handleMessageFromTerminatedState() {
-    //SharedPreferences prefs = await SharedPreferences.getInstance();
-    //prefs.setString('email', _emailController.text);
-    //prefs.setString('club', club);
     if (initialMessage?.data['category'] == 'new_user') {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => const AcceptancePage(title: 'Tiber Club')));
+              builder: (context) => AcceptancePage(club: widget.club)));
     } else if (initialMessage?.data['category'] == 'accepted') {
       return const Login();
     } else if (initialMessage?.data['category'] == 'new_event' ||
@@ -192,6 +221,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
+                club: club,
                 documentId: initialMessage?.data["docId"],
                 selectedOption: initialMessage?.data["selectedOption"],
                 isAdmin: status,
@@ -203,6 +233,7 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(
               builder: (context) =>
                   ProgramPage(
+                    club: club,
                     documentId: initialMessage?.data["docId"],
                     selectedOption: initialMessage?.data["selectedOption"],
                     isAdmin: status,
@@ -210,13 +241,6 @@ class _HomePageState extends State<HomePage> {
                   )));
     }
     return buildClubPage(club);
-  }
-
-  String club = '';
-
-  void preferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    club = prefs.getString('club') ?? '';
   }
 
   @override
