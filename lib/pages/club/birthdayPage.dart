@@ -10,6 +10,7 @@ class BirthdayPage extends StatefulWidget {
 }
 
 class _BirthdayPageState extends State<BirthdayPage> {
+
   Future<List<Map<String, dynamic>>> _fetchBirthdays() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('user')

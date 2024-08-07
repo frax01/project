@@ -54,7 +54,6 @@ class Counter extends StatelessWidget {
 class TabScorer extends StatefulWidget {
   const TabScorer({super.key, required this.isAdmin});
 
-  //final Map document;
   final bool isAdmin;
 
   @override
