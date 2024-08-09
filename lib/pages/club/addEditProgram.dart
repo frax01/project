@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 
@@ -18,7 +17,8 @@ class AddEditProgram extends StatefulWidget {
       this.refreshProgram,
       this.selectedOption,
       this.document,
-      required this.name});
+      required this.name,
+      this.focusedDay});
 
   final String club;
   final Function? refreshList;
@@ -26,6 +26,7 @@ class AddEditProgram extends StatefulWidget {
   final String? selectedOption;
   final Map<dynamic, dynamic>? document;
   final String name;
+  final focusedDay;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
@@ -42,6 +43,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
       TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
+
+  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _endTimeController = TextEditingController();
 
   String _image = '';
   String _address = '';
@@ -199,9 +203,71 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
+  Future<String> _selectTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (picked != null && picked != TimeOfDay.now()) {
+      final now = DateTime.now();
+      final selectedDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        picked.hour,
+        picked.minute,
+      );
+      return DateFormat('HH:mm').format(selectedDateTime);
+    }
+    return '';
+  }
+
+  Widget _showTimePicker() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: _startTimeController,
+            readOnly: true,
+            decoration: const InputDecoration(
+              labelText: 'Ora inizio',
+              icon: Icon(Icons.schedule),
+            ),
+            onTap: () async {
+              final String orario = await _selectTime();
+              print("ora: $orario");
+              setState(() {
+                _startTimeController.text = orario;
+              });
+            },
+          ),),
+        const SizedBox(width: 20),
+        Expanded(
+          child:
+          TextFormField(
+            controller: _endTimeController,
+            readOnly: true,
+            enabled: _startTimeController.text.isNotEmpty,
+            decoration: const InputDecoration(
+              labelText: 'Ora fine',
+              icon: Icon(Icons.schedule),
+            ),
+            onTap: () async {
+              final String orario = await _selectTime();
+              print("ora: $orario");
+              setState(() {
+                _endTimeController.text = orario;
+              });
+            },
+          ),),
+      ],
+    );
+  }
+
   bool _validate() {
     if (!_formKey.currentState!.validate()) return false;
-    if (selectedClasses.isEmpty) {
+    if (selectedClasses.isEmpty && widget.selectedOption != 'evento') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Seleziona almeno una classe'),
@@ -209,7 +275,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       );
       return false;
     }
-    if (_image.isEmpty) {
+    if (_image.isEmpty && widget.selectedOption != 'evento') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Seleziona un\'immagine'),
@@ -231,6 +297,50 @@ class _AddEditProgramState extends State<AddEditProgram> {
         return false;
       }
     }
+    if (widget.selectedOption == 'evento') {
+      final String startTimeText = _startTimeController.text;
+      final String endTimeText = _endTimeController.text;
+
+      if (startTimeText.isNotEmpty && endTimeText.isNotEmpty) {
+        try {
+          final now = DateTime.now();
+
+          final DateTime startDateTime = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            int.parse(startTimeText.split(':')[0]),
+            int.parse(startTimeText.split(':')[1]),
+          );
+          final DateTime endDateTime = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            int.parse(endTimeText.split(':')[0]),
+            int.parse(endTimeText.split(':')[1]),
+          );
+
+          if (startDateTime.isAfter(endDateTime)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('L\'orario iniziale non può essere dopo l\'orario finale'),
+              ),
+            );
+            return false;
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Formato orario non valido'),
+            ),
+          );
+          return false;
+        }
+      } else {
+        return true;
+      }
+    }
+
     return true;
   }
 
@@ -239,64 +349,94 @@ class _AddEditProgramState extends State<AddEditProgram> {
     setState(() {
         _isLoadingCreation = true;
       });
-    try {
-      if (_address == '') {
-        _address = 'Tiber Club';
-        _latitude = '41.91805195';
-        _longitude = '12.47788708';
+    if(widget.selectedOption == 'evento') {
+      try {
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        Map<String, dynamic> document = {
+          'titolo': _programNameController.text,
+          'descrizione': _programDescriptionController.text,
+          'data': widget.focusedDay,
+          'creatore': widget.name,
+          'club': widget.club,
+          'inizio': _startTimeController.text,
+          'fine': _endTimeController.text,
+        };
+
+        await firestore
+            .collection('calendario')
+            .add(document);
+
+        setState(() {
+          _isLoadingCreation = false;
+        });
+        widget.refreshList!();
+        Navigator.pop(context);
+      } catch (e) {
+        setState(() {
+          _isLoadingCreation = false;
+        });
+        print('Errore durante la creazione dell\'evento: $e');
       }
+    } else {
+      try {
+        if (_address == '') {
+          _address = 'Tiber Club';
+          _latitude = '41.91805195';
+          _longitude = '12.47788708';
+        }
 
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      Map<String, dynamic> document = {
-        'title': _programNameController.text,
-        'selectedOption': widget.selectedOption,
-        'imagePath': _image,
-        'selectedClass': selectedClasses.sorted((a, b) {
-          if (a.contains('media') && b.contains('liceo')) {
-            return -1;
-          } else if (a.contains('liceo') && b.contains('media')) {
-            return 1;
-          } else {
-            return a.compareTo(b);
-          }
-        }),
-        'description': _programDescriptionController.text,
-        'startDate': _startDateController.text,
-        'endDate': _endDateController.text,
-        'address': _address,
-        'lat': _latitude,
-        'lon': _longitude,
-        'creator': widget.name,
-        'club': widget.club
-      };
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        Map<String, dynamic> document = {
+          'title': _programNameController.text,
+          'selectedOption': widget.selectedOption,
+          'imagePath': _image,
+          'selectedClass': selectedClasses.sorted((a, b) {
+            if (a.contains('media') && b.contains('liceo')) {
+              return -1;
+            } else if (a.contains('liceo') && b.contains('media')) {
+              return 1;
+            } else {
+              return a.compareTo(b);
+            }
+          }),
+          'description': _programDescriptionController.text,
+          'startDate': _startDateController.text,
+          'endDate': _endDateController.text,
+          'address': _address,
+          'lat': _latitude,
+          'lon': _longitude,
+          'creator': widget.name,
+          'club': widget.club
+        };
 
-      var doc = await firestore
-          .collection('club_${widget.selectedOption}')
-          .add(document);
-      document['id'] = doc.id;
+        var doc = await firestore
+            .collection('club_${widget.selectedOption}')
+            .add(document);
+        document['id'] = doc.id;
 
-      List<String> token = [];
-      for (String value in selectedClasses) {
-        List<String> items = await fetchToken('club_class', value, widget.club);
-        for (String elem in items) {
-          if (!token.contains(elem)) {
-            token.add(elem);
+        List<String> token = [];
+        for (String value in selectedClasses) {
+          List<String> items = await fetchToken('club_class', value, widget.club);
+          for (String elem in items) {
+            if (!token.contains(elem)) {
+              token.add(elem);
+            }
           }
         }
+        setState(() {
+          _isLoadingCreation = false;
+        });
+        sendNotification(
+            token, 'Nuovo programma!', document['title'], 'new_event',
+            docId: doc.id, selectedOption: widget.selectedOption);
+        widget.refreshList!();
+        Navigator.pop(context);
+      } catch (e) {
+        setState(() {
+          _isLoadingCreation = false;
+        });
+        print('Errore durante la creazione dell\'evento: $e');
       }
-      setState(() {
-          _isLoadingCreation = false;
-        });
-      sendNotification(
-          token, 'Nuovo programma!', document['title'], 'new_event',
-          docId: doc.id, selectedOption: widget.selectedOption);
-      widget.refreshList!();
-      Navigator.pop(context);
-    } catch (e) {
-      setState(() {
-          _isLoadingCreation = false;
-        });
-      print('Errore durante la creazione dell\'evento: $e');
     }
   }
 
@@ -374,8 +514,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isEditing
-            ? const Text('Modifica programma')
+        title:
+            widget.selectedOption == 'evento' ? const Text('Crea evento')
+            : _isEditing ? const Text('Modifica programma')
             : const Text('Crea programma'),
       ),
       body: SingleChildScrollView(
@@ -386,7 +527,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
+                if (widget.selectedOption != 'evento') ...[
+                  SizedBox(
                   height: 200,
                   child: InkWell(
                     onTap: () async {
@@ -432,6 +574,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                ],
                 TextFormField(
                   controller: _programNameController,
                   decoration: const InputDecoration(
@@ -439,7 +582,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     icon: Icon(Icons.short_text),
                   ),
                   maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                  maxLength: 20,
+                  maxLength: widget.selectedOption != 'evento' ? 20 : null,
                   validator: (String? value) {
                     if (value!.isEmpty) {
                       return 'Inserisci il nome del programma';
@@ -447,6 +590,91 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     return null;
                     },
                 ),
+                if (widget.selectedOption == 'evento') ...[
+                  const SizedBox(height: 20),
+                  _showTimePicker(),
+                ],
+                if (widget.selectedOption != 'evento') ...[
+                  const SizedBox(height: 20),
+                  _showDatePickers(),
+                  const SizedBox(height: 20),
+                  TypeAheadField(
+                    controller: _programLocationController,
+                    autoFlipDirection: true,
+                    hideOnEmpty: true,
+                    builder: (context, controller, focusNode) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          labelText: (widget.selectedOption == 'trip')
+                              ? 'Luogo'
+                              : 'Luogo (facoltativo)',
+                          icon: const Icon(Icons.location_on),
+                        ),
+                        validator: (value) {
+                          if (widget.selectedOption == 'trip' &&
+                              (value == null || value.isEmpty)) {
+                            return 'Inserire un indirizzo';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      return pattern == '' ? [] : await getSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion["display_name"]),
+                      );
+                    },
+                    decorationBuilder: (context, child) {
+                      return Padding(
+                        padding:
+                        const EdgeInsets.only(left: 40, top: 5, bottom: 5),
+                        child: Material(
+                          type: MaterialType.card,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          child: child,
+                        ),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      var address = suggestion["address"]["name"];
+                      var number = suggestion["address"]["house_number"] ?? '';
+                      var city = suggestion["address"]["city"] ?? '';
+                      var country = suggestion["address"]["country"];
+                      var lat = suggestion["lat"];
+                      var lon = suggestion["lon"];
+
+                      var completeAddress = '';
+                      if (city != '' && number != '') {
+                        if (country != 'Italy') {
+                          completeAddress =
+                          '$address, $number, $city, $country';
+                        } else {
+                          completeAddress = '$address, $number, $city';
+                        }
+                      } else {
+                        if (country != 'Italy') {
+                          completeAddress = '$address, $country';
+                        } else {
+                          completeAddress = address;
+                        }
+                      }
+
+                      setState(() {
+                        _latitude = lat;
+                        _longitude = lon;
+                        _address = completeAddress;
+                        _programLocationController.text = completeAddress;
+                      });
+                    },
+                  ),
+                ],
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _programDescriptionController,
@@ -458,84 +686,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     icon: Icon(Icons.description),
                   ),
                 ),
-                const SizedBox(height: 20),
-                TypeAheadField(
-                  controller: _programLocationController,
-                  autoFlipDirection: true,
-                  hideOnEmpty: true,
-                  builder: (context, controller, focusNode) {
-                    return TextFormField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      autofocus: false,
-                      decoration: InputDecoration(
-                        labelText: (widget.selectedOption == 'trip')
-                            ? 'Luogo'
-                            : 'Luogo (facoltativo)',
-                        icon: const Icon(Icons.location_on),
-                      ),
-                      validator: (value) {
-                        if (widget.selectedOption == 'trip' &&
-                            (value == null || value.isEmpty)) {
-                          return 'Inserire un indirizzo';
-                        }
-                        return null;
-                      },
-                    );
-                  },
-                  suggestionsCallback: (pattern) async {
-                    return pattern == '' ? [] : await getSuggestions(pattern);
-                  },
-                  itemBuilder: (context, suggestion) {
-                    return ListTile(
-                      title: Text(suggestion["display_name"]),
-                    );
-                  },
-                  decorationBuilder: (context, child) {
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(left: 40, top: 5, bottom: 5),
-                      child: Material(
-                        type: MaterialType.card,
-                        elevation: 4,
-                        borderRadius: BorderRadius.circular(8),
-                        child: child,
-                      ),
-                    );
-                  },
-                  onSelected: (suggestion) {
-                    var address = suggestion["address"]["name"];
-                    var number = suggestion["address"]["house_number"] ?? '';
-                    var city = suggestion["address"]["city"] ?? '';
-                    var country = suggestion["address"]["country"];
-                    var lat = suggestion["lat"];
-                    var lon = suggestion["lon"];
-
-                    var completeAddress = '';
-                    if (city != '' && number != '') {
-                      if (country != 'Italy') {
-                        completeAddress = '$address, $number, $city, $country';
-                      } else {
-                        completeAddress = '$address, $number, $city';
-                      }
-                    } else {
-                      if (country != 'Italy') {
-                        completeAddress = '$address, $country';
-                      } else {
-                        completeAddress = address;
-                      }
-                    }
-
-                    setState(() {
-                      _latitude = lat;
-                      _longitude = lon;
-                      _address = completeAddress;
-                      _programLocationController.text = completeAddress;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                _showDatePickers(),
+                if (widget.selectedOption != 'evento') ...[
                 const SizedBox(height: 20),
                 const Row(
                   children: [
@@ -565,11 +716,32 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     );
                   }).toList(),
                 ),
+                ],
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _isEditing
+                    widget.selectedOption == 'evento'
+                        ? ElevatedButton(
+                      onPressed: () {
+                        if (_isLoadingModify) {
+                          null;
+                        } else {
+                          _handleCreate(context);
+                        }
+                      },
+                      child: _isLoadingModify
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white),
+                        ),
+                      )
+                          : const Text('Crea evento',
+                          style: TextStyle(color: Colors.white)),
+                    ) : _isEditing
                         ? ElevatedButton(
                             onPressed: () {
                               if (_isLoadingModify) {

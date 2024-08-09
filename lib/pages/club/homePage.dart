@@ -173,7 +173,7 @@ class _HomePageState extends State<HomePage> {
               overlayOpacity: 0.9,
               children: [
                 SpeedDialChild(
-                  child: const Icon(Icons.calendar_today),
+                  child: const Icon(Icons.event),
                   label: 'Programma',
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(

@@ -9,9 +9,11 @@ import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
-class ProgramPage extends StatefulWidget {
-  const ProgramPage({
+
+class EventPage extends StatefulWidget {
+  const EventPage({
     super.key,
     required this.club,
     required this.documentId,
@@ -29,33 +31,20 @@ class ProgramPage extends StatefulWidget {
   final String name;
 
   @override
-  State<ProgramPage> createState() => _ProgramPageState();
+  State<EventPage> createState() => _EventPageState();
 }
 
-class _ProgramPageState extends State<ProgramPage> {
-  Map<String, dynamic> _data = {};
-  Map<String, dynamic> _weather = {};
+class _EventPageState extends State<EventPage> {
   Map<String, dynamic> _event = {};
 
-  Future<void> _loadData() async {
-    var doc = await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .get();
-    _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    _weather = await fetchWeatherData(
-        _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
-    if (!_data.containsKey('file')) {
-      _data['file'] = [];
-    }
-  }
-
   Future<void> _loadEvent() async {
+    print("doc_id: ${widget.documentId}");
     var doc = await FirebaseFirestore.instance
         .collection('calendario')
         .doc(widget.documentId)
         .get();
     _event = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    print("_event: $_event");
     if (!_event.containsKey('file')) {
       _event['file'] = [];
     }
@@ -65,13 +54,13 @@ class _ProgramPageState extends State<ProgramPage> {
     setState(() {});
   }
 
-  Future<void> _showDeleteDialog(BuildContext context, String id, String image) {
+  Future<void> _showDeleteDialog(BuildContext context, String id) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Elimina'),
-          content: const Text('Sei sicuro di voler eliminare questo programma?'),
+          content: const Text('Sei sicuro di voler eliminare questo evento?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -81,9 +70,8 @@ class _ProgramPageState extends State<ProgramPage> {
             ),
             TextButton(
               onPressed: () async {
-                setState(() {
-                  deleteDocument('club_${_data["selectedOption"]}', id, image);
-                });
+                final FirebaseFirestore firestore = FirebaseFirestore.instance;
+                await firestore.collection('calendario').doc(id).delete();
                 widget.refreshList!();
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -94,41 +82,6 @@ class _ProgramPageState extends State<ProgramPage> {
         );
       },
     );
-  }
-
-  Widget weatherTile(Map weather) {
-    if ((weather["check"] == "true" || weather["check"]) &&
-        weather["image"] != "") {
-      return Row(
-        children: [
-          Image.network(weather["image"], width: 50, height: 50),
-          const SizedBox(width: 10),
-          Column(
-            children: [
-              Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red)),
-              Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue)),
-            ],
-          ),
-        ],
-      );
-    } else if ((weather["check"] == "true" || weather["check"])) {
-      return Row(
-        children: [
-          Column(
-            children: [
-              Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red)),
-              Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue)),
-            ],
-          ),
-        ],
-      );
-    } else {
-      return Container();
-    }
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -176,8 +129,12 @@ class _ProgramPageState extends State<ProgramPage> {
                             children: [
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isLink ? Theme.of(context).primaryColor : Colors.white,
-                                  foregroundColor: isLink ? Colors.white : Colors.black,
+                                  backgroundColor: isLink ? Theme
+                                      .of(context)
+                                      .primaryColor : Colors.white,
+                                  foregroundColor: isLink
+                                      ? Colors.white
+                                      : Colors.black,
                                   textStyle: const TextStyle(fontSize: 20),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -196,8 +153,12 @@ class _ProgramPageState extends State<ProgramPage> {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isFile ? Theme.of(context).primaryColor : Colors.white,
-                                  foregroundColor: isFile ? Colors.white : Colors.black,
+                                  backgroundColor: isFile ? Theme
+                                      .of(context)
+                                      .primaryColor : Colors.white,
+                                  foregroundColor: isFile
+                                      ? Colors.white
+                                      : Colors.black,
                                   textStyle: const TextStyle(fontSize: 20),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -244,14 +205,17 @@ class _ProgramPageState extends State<ProgramPage> {
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        textStyle: const TextStyle(fontSize: 20),
+                                        textStyle: const TextStyle(
+                                            fontSize: 20),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                              10),
                                         ),
                                         elevation: 5,
                                       ),
                                       onPressed: () async {
-                                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                        FilePickerResult? result = await FilePicker
+                                            .platform.pickFiles();
                                         if (result != null) {
                                           setState(() {
                                             file = result.files.first;
@@ -270,7 +234,9 @@ class _ProgramPageState extends State<ProgramPage> {
                                     if (formFieldState.hasError)
                                       Text(
                                         formFieldState.errorText!,
-                                        style: TextStyle(color: Theme.of(context).primaryColor),
+                                        style: TextStyle(color: Theme
+                                            .of(context)
+                                            .primaryColor),
                                       ),
                                   ],
                                 );
@@ -292,12 +258,12 @@ class _ProgramPageState extends State<ProgramPage> {
                 TextButton(
                   onPressed: () async {
                     validation(
-                      title,
-                      _programNameController,
-                      isLink,
-                      _linkController,
-                      isFile,
-                      file
+                        title,
+                        _programNameController,
+                        isLink,
+                        _linkController,
+                        isFile,
+                        file
                     );
                     setState(() {});
                   },
@@ -319,7 +285,8 @@ class _ProgramPageState extends State<ProgramPage> {
 
     try {
       final bytes = File(file.path!).readAsBytesSync();
-      final storageRef = FirebaseStorage.instance.ref().child('uploads/${file.name}');
+      final storageRef = FirebaseStorage.instance.ref().child(
+          'uploads/${file.name}');
       final uploadTask = storageRef.putData(bytes);
       final snapshot = await uploadTask.whenComplete(() {});
 
@@ -330,14 +297,12 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  void validation(
-      String title,
+  void validation(String title,
       TextEditingController _programNameController,
       bool isLink,
       TextEditingController _linkController,
       bool isFile,
-      PlatformFile? file,
-      ) async {
+      PlatformFile? file,) async {
     if (_formKey.currentState!.validate()) {
       title = _programNameController.text;
       if (title.isNotEmpty &&
@@ -429,7 +394,6 @@ class _ProgramPageState extends State<ProgramPage> {
     );
   }
 
-
   Future<void> _openFileOrLink(String? url) async {
     if (url == null || url.isEmpty) {
       return;
@@ -484,7 +448,8 @@ class _ProgramPageState extends State<ProgramPage> {
 
     if (fileData['path'] != null && fileData['path'].isNotEmpty) {
       try {
-        final storageRef = FirebaseStorage.instance.refFromURL(fileData['path']);
+        final storageRef = FirebaseStorage.instance.refFromURL(
+            fileData['path']);
         await storageRef.delete();
       } catch (e) {
         print("Errore durante l'eliminazione del file da Firebase Storage: $e");
@@ -492,31 +457,49 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+  String _formatTimestampToDate(dynamic timestamp) {
+    if (timestamp == null) {
+      return 'Data non disponibile'; // Gestione dei casi nulli
+    }
+
+    try {
+      // Converti il timestamp in un DateTime
+      DateTime dateTime = DateTime.parse(timestamp.toString()); // Data di esempio
+
+      // Convertila in una stringa con il formato desiderato
+      return DateFormat('dd/MM/yyyy').format(dateTime);
+      //DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp.toString()));
+//
+      //// Formatta la data
+      //return DateFormat('dd/MM/yyyy').format(dateTime);
+    } catch (e) {
+      // Gestione degli errori di parsing
+      return 'Data non valida';
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: widget.selectedOption == 'weekend'
-            ? const Text('Sabato')
-            : widget.selectedOption == 'trip'
-                ? const Text('Viaggio')
-                : const Text('Extra'),
+        title: const Text('Evento'),
         actions: [
           IconButton(
             onPressed: () {
-              if(widget.selectedOption=='trip') {
-                Share.share(
-                    '${_data['title']}\n\n'
-                    '${_data['address']}\n\n'
-                    'Dal ${_data['startDate']} al ${_data['endDate']}\n\n'
-                    '${_data['description']}\n');
-              } else {
-                Share.share(
-                    '${_data['title']}\n\n'
-                    '${_data['address']}\n\n'
-                    '${_data['startDate']}\n\n'
-                    '${_data['description']}\n');
-              }
+              //if(widget.selectedOption=='trip') {
+              //  Share.share(
+              //      '${_data['title']}\n\n'
+              //          '${_data['address']}\n\n'
+              //          'Dal ${_data['startDate']} al ${_data['endDate']}\n\n'
+              //          '${_data['description']}\n');
+              //} else {
+              //  Share.share(
+              //      '${_data['title']}\n\n'
+              //          '${_data['address']}\n\n'
+              //          '${_data['startDate']}\n\n'
+              //          '${_data['description']}\n');
+              //}
             },
             icon: const Icon(
               Icons.share,
@@ -524,38 +507,43 @@ class _ProgramPageState extends State<ProgramPage> {
           ),
           widget.isAdmin
               ? PopupMenuButton(itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                      child: const Text('Modifica'),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => AddEditProgram(
-                                  club: widget.club,
-                                  selectedOption: _data['selectedOption'],
-                                  document: _data,
-                                  refreshList: widget.refreshList,
-                                  refreshProgram: refreshProgram,
-                                  name: widget.name,
-                                )));
-                      },
-                    ),
-                    PopupMenuItem(
-                        child: const Text('Elimina'),
-                        onTap: () {
-                          _showDeleteDialog(context, _data['id'], _data['imagePath']);
-                        }),
-                  ];
-                })
+            return [
+              PopupMenuItem(
+                child: const Text('Modifica'),
+                onTap: () {
+                  //Navigator.of(context).push(MaterialPageRoute(
+                  //    builder: (context) => AddEditProgram(
+                  //      club: widget.club,
+                  //      selectedOption: _data['selectedOption'],
+                  //      document: _data,
+                  //      refreshList: widget.refreshList,
+                  //      refreshProgram: refreshProgram,
+                  //      name: widget.name,
+                  //    )));
+                },
+              ),
+              PopupMenuItem(
+                  child: const Text('Elimina'),
+                  onTap: () {
+                    _showDeleteDialog(context, _event['id']);
+                  }),
+            ];
+          })
               : const SizedBox.shrink(),
         ],
       ),
       body: AdaptiveLayout(
         smallLayout: FutureBuilder(
-          future: widget.selectedOption != 'evento' ? _loadData() : _loadEvent(),
+          future: _loadEvent(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                    'Errore nel caricamento dell\'evento: ${snapshot.error}'),
               );
             } else {
               return SingleChildScrollView(
@@ -564,174 +552,53 @@ class _ProgramPageState extends State<ProgramPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Card(
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 5,
-                            child: SizedBox(
-                              height: 175,
-                              width: double.infinity,
-                              child: Image.network(
-                                _data['imagePath'],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                              bottom: -25,
-                              left: 15,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 7,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                  child: Text(
-                                    _data['title'],
-                                    style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              )),
-                        ],
-                      ),
-                      const SizedBox(height: 30.0),
+                      Center(
+                  child: Text(
+                        _event['titolo'],
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),),
+                      const SizedBox(height: 20.0),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                      children: List<Widget>.generate(
-                                          _data['selectedClass'].length,
-                                          (index) {
-                                    String classValue = _data['selectedClass']
-                                            [index]
-                                        .toString();
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 1,
-                                            blurRadius: 2,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 5),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(classValue),
-                                      ),
-                                    );
-                                  })),
-                                )),
-                                const SizedBox(width: 15),
-                                Chip(
-                                  label: Text(
-                                    _data['endDate'].isNotEmpty
-                                        ? '${convertDateFormat(_data['startDate'])} ~ ${convertDateFormat(_data['endDate'])}'
-                                        : convertDateFormat(_data['startDate']),
-                                  ),
-                                  labelStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold),
-                                  labelPadding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                  ),
-                                  backgroundColor: Colors.white,
+                            Center(
+                              child: Text(
+                                _formatTimestampToDate(_event['data']),
+                                style: const TextStyle(
+                                  fontSize: 17,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 20.0),
-                            Card(
-                                surfaceTintColor: Colors.white,
-                                elevation: 5,
-                                margin: const EdgeInsets.all(0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Dove',
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 15),
-                                            Text(
-                                              _data['address'],
-                                              style:
-                                                  const TextStyle(fontSize: 15),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ]),
-                                      weatherTile(_weather),
-                                    ],
-                                  ),
-                                )),
-                            const SizedBox(height: 20.0),
-                            Card(
-                              surfaceTintColor: Colors.white,
-                              elevation: 5,
-                              margin: const EdgeInsets.all(0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Descrizione',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 15),
-                                    Text(
-                                      _data['description'],
-                                      style: const TextStyle(fontSize: 17),
-                                    ),
-                                  ],
-                                ),
+                              ),),
+                            Center(
+                        child: Text(
+                              _event['fine'] != null &&
+                                  _event['fine'].isNotEmpty
+                                  ? 'Dalle ${_event['inizio']} alle ${_event['fine']}'
+                                  : _event['inizio'] != null &&
+                                  _event['inizio'].isNotEmpty
+                                  ? 'Dalle ${_event['inizio']}'
+                                  : 'Orario non specificato',
+                              style: const TextStyle(
+                                fontSize: 17,
                               ),
+                            ),),
+                            const SizedBox(height: 20.0),
+                            Center(
+                              child:
+                                Text(_event['descrizione'] ?? 'Chiedi più dettagli al tuo tutor',
+                                  style: const TextStyle(fontSize: 17),
+                                )
                             ),
                             const SizedBox(height: 20.0),
-                            if (_data.containsKey('file'))
+                            if (_event.containsKey('file'))
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  for (var fileData in _data['file'])
+                                  for (var fileData in _event['file'])
                                     buildFileLinkButton(fileData),
                                 ],
                               ),
@@ -749,24 +616,9 @@ class _ProgramPageState extends State<ProgramPage> {
                                 side: const BorderSide(color: Colors.black),
                                 overlayColor: Colors.grey[500],
                               ),
-                              child: const Icon(Icons.upload, color: Colors.black),
+                              child: const Icon(
+                                  Icons.upload, color: Colors.black),
                             ) : const SizedBox.shrink(),
-                            const SizedBox(height: 20.0),
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'Creato da ',
-                                    style: TextStyle(fontSize: 17),
-                                  ),
-                                  Text(
-                                    _data['creator'],
-                                    style: const TextStyle(fontSize: 17),
-                                  ),
-                                ]
-                              )
-                            ),
                           ],
                         ),
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class Tiber extends StatelessWidget {
   const Tiber({super.key, required this.club});
@@ -282,10 +283,45 @@ class Tiber extends StatelessWidget {
   }
 }
 
-class Delta extends StatelessWidget {
+class Delta extends StatefulWidget {
   const Delta({super.key, required this.club});
 
   final String club;
+
+  @override
+  State<Delta> createState() => _DeltaState();
+}
+
+class _DeltaState extends State<Delta> {
+
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  Future<void> _openFileOrLink(String? url) async {
+    if (url == null || url.isEmpty) {
+      return;
+    }
+
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('File non valido'),
+        ),
+      );
+    }
+  }
+
+  Future<void> getFileUrl(String filePath) async {
+    try {
+      final ref = _storage.ref().child(filePath);
+      final url = await ref.getDownloadURL();
+      print('File URL: $url');
+      // Utilizza il link URL come necessario
+    } catch (e) {
+      print('Errore: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +351,7 @@ class Delta extends StatelessWidget {
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
-                text: 'Il $club è un\'associazione familiare che si rivolge a ragazzi di medie e liceo, '
+                text: 'Il ${widget.club} è un\'associazione familiare che si rivolge a ragazzi liceali, '
                     'con lo scopo di promuovere la loro crescita attraverso '
                     'attività formative, sportive e culturali\n\n',
                 style: textStyle.copyWith(fontWeight: FontWeight.normal),
@@ -336,22 +372,22 @@ class Delta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Martedì e giovedì',
+                      'Lunedì, mercoledì e venerdì',
                       textAlign: TextAlign.left,
                       style: textStyle.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.sports_soccer),
+                        const Icon(Icons.book),
                         const SizedBox(width: 10),
                         Text(
-                          '15:30',
+                          '15:00',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Scuola Calcio',
+                            ' - Studio',
                             style: textStyle,
                           ),
                         ),
@@ -363,7 +399,7 @@ class Delta extends StatelessWidget {
                         const Icon(Icons.fastfood),
                         const SizedBox(width: 10),
                         Text(
-                          '17:30',
+                          '17:00',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
@@ -377,15 +413,15 @@ class Delta extends StatelessWidget {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.book),
+                        const Icon(Icons.local_activity),
                         const SizedBox(width: 10),
                         Text(
-                          '17:45',
+                          '17:30',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Studio',
+                            ' - Attività varie',
                             style: textStyle,
                           ),
                         ),
@@ -421,14 +457,14 @@ class Delta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sabato',
+                      'Sabato (2 al mese)',
                       textAlign: TextAlign.left,
                       style: textStyle.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.sports_soccer),
+                        const Icon(Icons.local_activity),
                         const SizedBox(width: 10),
                         Text(
                           '15:00',
@@ -436,58 +472,7 @@ class Delta extends StatelessWidget {
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Calcio',
-                            style: textStyle,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(Icons.fastfood),
-                        const SizedBox(width: 10),
-                        Text(
-                          '17:00',
-                          style: textStyle.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            ' - Merenda',
-                            style: textStyle,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(Icons.favorite),
-                        const SizedBox(width: 10),
-                        Text(
-                          '17:30',
-                          style: textStyle.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            ' - Meditazione',
-                            style: textStyle,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(Icons.event_note),
-                        const SizedBox(width: 10),
-                        Text(
-                          '18:00',
-                          style: textStyle.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            ' - Programma',
+                            ' - Sport, gite, giochi...',
                             style: textStyle,
                           ),
                         ),
@@ -523,6 +508,22 @@ class Delta extends StatelessWidget {
                 children: ListTile.divideTiles(
                     context: context,
                     tiles: [
+                      ListTile(
+                        leading: const Icon(Icons.schedule_outlined),
+                        title: const AutoSizeText(
+                          'Programma dettagliato',
+                          style: TextStyle(fontSize: 18.0),
+                          maxLines: 1,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                        onTap: () async {
+                          final ref = _storage.ref().child('Orari/OrarioDelta.pdf');
+                          final url = await ref.getDownloadURL();
+                          _openFileOrLink(url);
+                        }
+                      ),
                       ListTile(
                         leading: const Icon(Icons.location_on),
                         title: const AutoSizeText(

@@ -68,7 +68,7 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: Calendar(isAdmin: widget.status, club: widget.club),
+        child: Calendar(isAdmin: widget.status, club: widget.club, name: widget.name),
       ),
       PopScope(
         onPopInvoked: (_) {

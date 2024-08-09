@@ -3,12 +3,21 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:club/pages/club/programCard.dart';
+import 'package:club/pages/club/addEditProgram.dart';
+import 'package:club/pages/club/eventPage.dart';
 
 class Calendar extends StatefulWidget {
-  const Calendar({super.key, required this.isAdmin, required this.club});
+  const Calendar({
+    super.key,
+    required this.isAdmin,
+    required this.club,
+    required this.name});
 
   final bool isAdmin;
   final String club;
+  final String name;
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -23,7 +32,6 @@ class _CalendarState extends State<Calendar> {
   Map<DateTime, List<Map<String, dynamic>>> _events = {};
   String evento = '';
   List<dynamic> _selectedDayEvents = [];
-  List<String> _selectedDayEventIds = [];
 
   @override
   void initState() {
@@ -43,7 +51,7 @@ class _CalendarState extends State<Calendar> {
     for (var doc in querySnapshotEvent.docs) {
       final data = doc.data();
       final date = (data['data'] as Timestamp).toDate();
-      final event = data['evento'] as String;
+      final event = data['titolo'] as String;
 
       final dateOnly = DateTime(date.year, date.month, date.day);
 
@@ -51,7 +59,7 @@ class _CalendarState extends State<Calendar> {
         events[dateOnly] = [];
         eventIds[dateOnly] = [];
       }
-      events[dateOnly]!.add({'id': doc.id, 'evento': event});
+      events[dateOnly]!.add({'id': doc.id, 'titolo': event, 'tipo': 'evento'});
       eventIds[dateOnly]!.add(doc.id);
     }
 
@@ -80,59 +88,22 @@ class _CalendarState extends State<Calendar> {
         events[dateOnly] = [];
         eventIds[dateOnly] = [];
       }
-      events[dateOnly]!.add({'id': doc.id, 'evento': name});
+      events[dateOnly]!.add({'id': doc.id, 'titolo': name, 'tipo': 'compleanno'});
       eventIds[dateOnly]!.add(doc.id);
     }
-
-    print("events: $events");
 
     setState(() {
       final selectedDayOnly = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
       _events = events;
       _selectedDayEvents = _events[selectedDayOnly] ?? [];
-      _selectedDayEventIds = eventIds[selectedDayOnly] ?? [];
     });
   }
 
-  void _addEvent(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Calendario'),
-          content: TextField(
-            onChanged: (value) {
-              setState(() {
-                evento = value;
-              });
-            },
-            decoration: const InputDecoration(labelText: 'Evento'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Annulla'),
-            ),
-            TextButton(
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('calendario')
-                    .add({
-                  'evento': evento,
-                  'club': widget.club,
-                  'data': _focusedDay,
-                });
-                await _loadEvents();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
+  final _listItems = <ProgramCard>[];
+  refreshList() {
+    setState(() {
+      _listItems.clear();
+    });
   }
 
   Future<void> _deleteEvent(String eventId) async {
@@ -173,10 +144,10 @@ class _CalendarState extends State<Calendar> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
-      child: Scaffold(
-        body: Column(
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
+        child: Column(
           children: [
             TableCalendar(
               locale: 'it_IT',
@@ -200,7 +171,7 @@ class _CalendarState extends State<Calendar> {
               calendarBuilders: CalendarBuilders(
                 todayBuilder: (context, date, _) {
                   return Container(
-                    margin: const EdgeInsets.all(6.0),
+                    margin: const EdgeInsets.all(10.0),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -220,7 +191,7 @@ class _CalendarState extends State<Calendar> {
                 },
                 selectedBuilder: (context, date, _) {
                   return Container(
-                    margin: const EdgeInsets.all(6.0),
+                    margin: const EdgeInsets.all(10.0),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
@@ -236,36 +207,48 @@ class _CalendarState extends State<Calendar> {
                 },
                 markerBuilder: (context, date, events) {
                   final dateOnly = DateTime(date.year, date.month, date.day);
-                  final eventCount = _events[dateOnly]?.length ?? 0;
-                  if (eventCount > 0) {
-                    return Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '$eventCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.0,
+                  final eventCount = _events[dateOnly]?.where((e) => e['tipo'] == 'evento').length ?? 0;
+                  final birthdayCount = _events[dateOnly]?.where((e) => e['tipo'] == 'compleanno').length ?? 0;
+
+                  return Stack(
+                    children: [
+                      if (eventCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
+                            decoration: const BoxDecoration(
+                              color: Colors.grey, // Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '$eventCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.0,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
+                      if (birthdayCount > 0)
+                        const Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Icon(
+                            Icons.cake,
+                            color: Colors.black,
+                            size: 15.0,
+                          ),
+                        ),
+                    ],
+                  );
                 },
               ),
             ),
             const SizedBox(height: 15),
-            const Center(
-                child: Text("In programma", style: TextStyle(fontSize: 22),),
-            ),
+            const Center(child: Text("In programma", style: TextStyle(fontSize: 22))),
             const SizedBox(height: 10),
             Expanded(
               child: _selectedDayEvents.isNotEmpty ? ListView.separated(
@@ -273,36 +256,96 @@ class _CalendarState extends State<Calendar> {
                 separatorBuilder: (context, index) => const Divider(height: 1.0),
                 itemBuilder: (context, index) {
                   Map event = _selectedDayEvents[index];
-                  final eventId = _selectedDayEventIds[index];
                   return ListTile(
                     leading: const Icon(Icons.event),
                     title: AutoSizeText(
-                      event['evento'],
+                      event['titolo'],
                       style: const TextStyle(fontSize: 18.0),
                       maxLines: 3,
                       minFontSize: 15,
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text("evento", style: TextStyle(fontSize: 12, color: Colors.grey[700]),),
-                    trailing: widget.isAdmin ? IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deleteEvent(eventId),
-                    ) : null,
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                    //trailing: widget.isAdmin ? IconButton(
+                    //  icon: const Icon(Icons.delete),
+                    //  onPressed: () => _deleteEvent(event['id']),
+                    //) : null,
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EventPage(
+                              club: widget.club,
+                              documentId: event['id'],
+                              selectedOption: 'evento',
+                              isAdmin: widget.isAdmin,
+                              refreshList: refreshList,
+                              name: widget.name)));
+                    },
                   );
                   },
               ) : const Center(child: Text('Nessun evento'))
             ),
           ],
-        ),
-        floatingActionButton:
-        widget.isAdmin
-            ? FloatingActionButton(
-          onPressed: () => _addEvent(context),
-          shape: const CircleBorder(),
+        ),),
+        floatingActionButton: widget.isAdmin
+            ? SpeedDial(
+          icon: Icons.add,
           backgroundColor: Colors.white,
-          child: const Icon(Icons.add),
+          iconTheme: const IconThemeData(color: Colors.black),
+          activeIcon: Icons.close,
+          overlayOpacity: 1,
+          children: [
+            SpeedDialChild(
+              child: const Icon(Icons.event),
+              label: 'Programma',
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddEditProgram(
+                        club: widget.club,
+                        refreshList: refreshList,
+                        selectedOption: 'weekend',
+                        name: widget.name)));
+              },
+            ),
+            SpeedDialChild(
+              child: const Icon(Icons.airplanemode_on),
+              label: 'Convivenza',
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddEditProgram(
+                        club: widget.club,
+                        refreshList: refreshList,
+                        selectedOption: 'trip',
+                        name: widget.name)));
+              },
+            ),
+            SpeedDialChild(
+              child: const Icon(Icons.cake),
+              label: 'Compleanno',
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddEditProgram(
+                        club: widget.club,
+                        refreshList: refreshList,
+                        selectedOption: 'trip',
+                        name: widget.name)));
+              },
+            ),
+            SpeedDialChild(
+              child: const Icon(Icons.check_circle_outline),
+              label: 'Evento',
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AddEditProgram(
+                        club: widget.club,
+                        refreshList: refreshList,
+                        selectedOption: 'evento',
+                        name: widget.name,
+                        focusedDay: _focusedDay,)));
+              },
+            ),
+          ],
         ) : null,
-      ),
     );
   }
 }
