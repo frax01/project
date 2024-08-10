@@ -1,16 +1,14 @@
 import 'package:adaptive_layout/adaptive_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:club/functions/generalFunctions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../functions/weatherFunctions.dart';
 import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
-
+import 'package:auto_size_text/auto_size_text.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({
@@ -21,6 +19,7 @@ class EventPage extends StatefulWidget {
     required this.isAdmin,
     required this.name,
     this.refreshList,
+    required this.focusedDay,
   });
 
   final String club;
@@ -29,6 +28,7 @@ class EventPage extends StatefulWidget {
   final bool isAdmin;
   final Function? refreshList;
   final String name;
+  final DateTime focusedDay;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -44,7 +44,6 @@ class _EventPageState extends State<EventPage> {
         .doc(widget.documentId)
         .get();
     _event = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    print("_event: $_event");
     if (!_event.containsKey('file')) {
       _event['file'] = [];
     }
@@ -459,25 +458,21 @@ class _EventPageState extends State<EventPage> {
 
   String _formatTimestampToDate(dynamic timestamp) {
     if (timestamp == null) {
-      return 'Data non disponibile'; // Gestione dei casi nulli
+      return 'Data non disponibile';
     }
-
     try {
-      // Converti il timestamp in un DateTime
-      DateTime dateTime = DateTime.parse(timestamp.toString()); // Data di esempio
-
-      // Convertila in una stringa con il formato desiderato
+      int seconds;
+      if (timestamp is Timestamp) {
+        seconds = timestamp.seconds;
+      } else {
+        seconds = int.parse(timestamp.toString());
+      }
+      DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
       return DateFormat('dd/MM/yyyy').format(dateTime);
-      //DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp.toString()));
-//
-      //// Formatta la data
-      //return DateFormat('dd/MM/yyyy').format(dateTime);
     } catch (e) {
-      // Gestione degli errori di parsing
       return 'Data non valida';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -487,19 +482,26 @@ class _EventPageState extends State<EventPage> {
         actions: [
           IconButton(
             onPressed: () {
-              //if(widget.selectedOption=='trip') {
-              //  Share.share(
-              //      '${_data['title']}\n\n'
-              //          '${_data['address']}\n\n'
-              //          'Dal ${_data['startDate']} al ${_data['endDate']}\n\n'
-              //          '${_data['description']}\n');
-              //} else {
-              //  Share.share(
-              //      '${_data['title']}\n\n'
-              //          '${_data['address']}\n\n'
-              //          '${_data['startDate']}\n\n'
-              //          '${_data['description']}\n');
-              //}
+              if(_event['fine']!='') {
+                Share.share(
+                    '${_event['titolo']}\n\n'
+                        '${_event['data']}\n\n'
+                        'Dalle ${_event['inizio']} alle ${_event['fine']}\n\n'
+                        '${_event['description']}\n');
+              } else {
+                if(_event['inizio']!='') {
+                  Share.share(
+                      '${_event['titolo']}\n\n'
+                          '${_event['data']}\n\n'
+                          'Dalle ${_event['inizio']}\n\n'
+                          '${_event['description']}\n');
+                } else {
+                  Share.share(
+                      '${_event['titolo']}\n\n'
+                          '${_event['data']}\n\n'
+                          '${_event['description']}\n');
+                }
+              }
             },
             icon: const Icon(
               Icons.share,
@@ -511,15 +513,16 @@ class _EventPageState extends State<EventPage> {
               PopupMenuItem(
                 child: const Text('Modifica'),
                 onTap: () {
-                  //Navigator.of(context).push(MaterialPageRoute(
-                  //    builder: (context) => AddEditProgram(
-                  //      club: widget.club,
-                  //      selectedOption: _data['selectedOption'],
-                  //      document: _data,
-                  //      refreshList: widget.refreshList,
-                  //      refreshProgram: refreshProgram,
-                  //      name: widget.name,
-                  //    )));
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => AddEditProgram(
+                        club: widget.club,
+                        selectedOption: 'evento',
+                        document: _event,
+                        refreshList: widget.refreshList,
+                        refreshProgram: refreshProgram,
+                        name: widget.name,
+                        focusedDay: widget.focusedDay,
+                      )));
                 },
               ),
               PopupMenuItem(
@@ -552,46 +555,69 @@ class _EventPageState extends State<EventPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                  child: Text(
-                        _event['titolo'],
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          _event['titolo'],
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),),
+                      ),
                       const SizedBox(height: 20.0),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Center(
-                              child: Text(
-                                _formatTimestampToDate(_event['data']),
-                                style: const TextStyle(
-                                  fontSize: 17,
+                            Row(
+                              children: [
+                                const Icon(Icons.event, size: 35,),
+                                const SizedBox(width: 10),
+                                Text(
+                                  _formatTimestampToDate(_event['data']),
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                  ),
                                 ),
-                              ),),
-                            Center(
-                        child: Text(
-                              _event['fine'] != null &&
-                                  _event['fine'].isNotEmpty
-                                  ? 'Dalle ${_event['inizio']} alle ${_event['fine']}'
-                                  : _event['inizio'] != null &&
-                                  _event['inizio'].isNotEmpty
-                                  ? 'Dalle ${_event['inizio']}'
-                                  : 'Orario non specificato',
-                              style: const TextStyle(
-                                fontSize: 17,
-                              ),
-                            ),),
+                              ]
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                const Icon(Icons.schedule, size: 35),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: AutoSizeText(
+                                    _event['fine'].isNotEmpty
+                                        ? 'Dalle ${_event['inizio']} alle ${_event['fine']}'
+                                        : _event['inizio'].isNotEmpty
+                                        ? 'Dalle ${_event['inizio']}'
+                                        : 'Orario non specificato',
+                                    style: const TextStyle(fontSize: 24.0),
+                                    maxLines: 4,
+                                    minFontSize: 15,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 20.0),
-                            Center(
-                              child:
-                                Text(_event['descrizione'] ?? 'Chiedi più dettagli al tuo tutor',
-                                  style: const TextStyle(fontSize: 17),
-                                )
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Descrizione:',
+                                  style: const TextStyle(fontSize: 17, color: Colors.grey),
+                                ),
+                                Text(
+                                  _event['descrizione']?.isNotEmpty
+                                      ? _event['descrizione']!
+                                      : 'Non ci sono informazioni per questo evento',
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 20.0),
                             if (_event.containsKey('file'))

@@ -7,13 +7,14 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:club/pages/club/programCard.dart';
 import 'package:club/pages/club/addEditProgram.dart';
 import 'package:club/pages/club/eventPage.dart';
+import 'package:club/pages/club/programPage.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({
     super.key,
     required this.isAdmin,
     required this.club,
-    required this.name});
+    required this.name,});
 
   final bool isAdmin;
   final String club;
@@ -40,6 +41,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> _loadEvents() async {
+    //calendario
     final querySnapshotEvent = await FirebaseFirestore.instance
         .collection('calendario')
         .where('club', isEqualTo: widget.club)
@@ -63,6 +65,7 @@ class _CalendarState extends State<Calendar> {
       eventIds[dateOnly]!.add(doc.id);
     }
 
+    //compleanno
     final querySnapshotBirthday = await FirebaseFirestore.instance
         .collection('user')
         .where('club', isEqualTo: widget.club)
@@ -92,6 +95,33 @@ class _CalendarState extends State<Calendar> {
       eventIds[dateOnly]!.add(doc.id);
     }
 
+    //programma
+    final querySnapshotProgram = await FirebaseFirestore.instance
+        .collection('club_weekend')
+        .where('club', isEqualTo: widget.club)
+        .get();
+
+    for (var doc in querySnapshotProgram.docs) {
+      final data = doc.data();
+
+      final dateString = data['startDate'];
+      final date = DateFormat('dd-MM-yyyy').parse(dateString);
+      Timestamp timestamp = Timestamp.fromDate(date);
+      final resultDate = timestamp.toDate();
+
+      final dateOnly = DateTime(resultDate.year, resultDate.month, resultDate.day);
+
+      if (events[dateOnly] == null) {
+        events[dateOnly] = [];
+        eventIds[dateOnly] = [];
+      }
+      events[dateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'programma'});
+      eventIds[dateOnly]!.add(doc.id);
+    }
+
+    //convivenza
+    //
+
     setState(() {
       final selectedDayOnly = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
       _events = events;
@@ -105,42 +135,6 @@ class _CalendarState extends State<Calendar> {
       _listItems.clear();
     });
   }
-
-  Future<void> _deleteEvent(String eventId) async {
-      final confirmDelete = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Conferma'),
-            content: const Text('Sei sicuro di voler eliminare questo evento?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Si'),
-              ),
-            ],
-          );
-        },
-      );
-
-      if (confirmDelete == true) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('calendario')
-              .doc(eventId)
-              .delete();
-
-          await _loadEvents();
-        } catch (e) {
-          print('Errore durante l\'eliminazione: $e');
-        }
-      }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -209,10 +203,13 @@ class _CalendarState extends State<Calendar> {
                   final dateOnly = DateTime(date.year, date.month, date.day);
                   final eventCount = _events[dateOnly]?.where((e) => e['tipo'] == 'evento').length ?? 0;
                   final birthdayCount = _events[dateOnly]?.where((e) => e['tipo'] == 'compleanno').length ?? 0;
+                  final programCount = _events[dateOnly]?.where((e) => e['tipo'] == 'programma').length ?? 0;
+
+                  final total = eventCount + programCount;
 
                   return Stack(
                     children: [
-                      if (eventCount > 0)
+                      if (total > 0)
                         Positioned(
                           right: 0,
                           top: 0,
@@ -223,7 +220,7 @@ class _CalendarState extends State<Calendar> {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              '$eventCount',
+                              '$total',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -257,7 +254,11 @@ class _CalendarState extends State<Calendar> {
                 itemBuilder: (context, index) {
                   Map event = _selectedDayEvents[index];
                   return ListTile(
-                    leading: const Icon(Icons.event),
+                    leading: event['tipo']=='compleanno'
+                        ? const Icon(Icons.cake)
+                        : event['tipo']=='evento'
+                        ? const Icon(Icons.check_circle_outline)
+                        : const Icon(Icons.event),
                     title: AutoSizeText(
                       event['titolo'],
                       style: const TextStyle(fontSize: 18.0),
@@ -265,22 +266,35 @@ class _CalendarState extends State<Calendar> {
                       minFontSize: 15,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text("evento", style: TextStyle(fontSize: 12, color: Colors.grey[700]),),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                    //trailing: widget.isAdmin ? IconButton(
-                    //  icon: const Icon(Icons.delete),
-                    //  onPressed: () => _deleteEvent(event['id']),
-                    //) : null,
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
+                    subtitle: Text(event['tipo'], style: TextStyle(fontSize: 12, color: Colors.grey[700]),),
+                    trailing: event['tipo']!='compleanno'
+                        ? const Icon(Icons.arrow_forward_ios, size: 20)
+                        : null,
+                    onTap: event['tipo']=='evento' ? () async {
+                      await Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => EventPage(
                               club: widget.club,
                               documentId: event['id'],
                               selectedOption: 'evento',
                               isAdmin: widget.isAdmin,
                               refreshList: refreshList,
-                              name: widget.name)));
-                    },
+                              name: widget.name,
+                              focusedDay: _focusedDay,)));
+                      await _loadEvents();
+                    } : event['tipo']=='programma' ? () async {
+                      await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              ProgramPage(
+                                club: widget.club,
+                                documentId: event['id'],
+                                selectedOption: 'weekend',
+                                isAdmin: widget.isAdmin,
+                                refreshList: refreshList,
+                                name: widget.name
+                              )
+                      ));
+                      await _loadEvents();
+                    } : null,
                   );
                   },
               ) : const Center(child: Text('Nessun evento'))
@@ -334,14 +348,15 @@ class _CalendarState extends State<Calendar> {
             SpeedDialChild(
               child: const Icon(Icons.check_circle_outline),
               label: 'Evento',
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+              onTap: () async {
+                await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddEditProgram(
                         club: widget.club,
                         refreshList: refreshList,
                         selectedOption: 'evento',
                         name: widget.name,
                         focusedDay: _focusedDay,)));
+                await _loadEvents();
               },
             ),
           ],

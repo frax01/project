@@ -68,16 +68,23 @@ class _AddEditProgramState extends State<AddEditProgram> {
     super.initState();
     if (widget.document != null) {
       _isEditing = true;
-      _programNameController.text = widget.document!['title'];
-      _programDescriptionController.text = widget.document!['description'];
-      _programLocationController.text = widget.document!['address'];
-      _startDateController.text = widget.document!['startDate'];
-      _endDateController.text = widget.document!['endDate'];
-      _image = widget.document!['imagePath'];
-      _address = widget.document!['address'];
-      _latitude = widget.document!['lat'];
-      _longitude = widget.document!['lon'];
-      selectedClasses = List<String>.from(widget.document!['selectedClass']);
+      if(widget.selectedOption == 'evento') {
+        _programNameController.text = widget.document!['titolo'];
+        _programDescriptionController.text = widget.document!['descrizione'];
+        _startTimeController.text = widget.document!['inizio'];
+        _endTimeController.text = widget.document!['fine'];
+      } else {
+        _programNameController.text = widget.document!['title'];
+        _programDescriptionController.text = widget.document!['description'];
+        _programLocationController.text = widget.document!['address'];
+        _startDateController.text = widget.document!['startDate'];
+        _endDateController.text = widget.document!['endDate'];
+        _image = widget.document!['imagePath'];
+        _address = widget.document!['address'];
+        _latitude = widget.document!['lat'];
+        _longitude = widget.document!['lon'];
+        selectedClasses = List<String>.from(widget.document!['selectedClass']);
+      }
     }
   }
 
@@ -209,7 +216,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       initialTime: TimeOfDay.now(),
     );
 
-    if (picked != null && picked != TimeOfDay.now()) {
+    if (picked != null) {
       final now = DateTime.now();
       final selectedDateTime = DateTime(
         now.year,
@@ -236,7 +243,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
             ),
             onTap: () async {
               final String orario = await _selectTime();
-              print("ora: $orario");
               setState(() {
                 _startTimeController.text = orario;
               });
@@ -255,7 +261,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
             ),
             onTap: () async {
               final String orario = await _selectTime();
-              print("ora: $orario");
               setState(() {
                 _endTimeController.text = orario;
               });
@@ -336,6 +341,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
           );
           return false;
         }
+      } else if(startTimeText.isEmpty && endTimeText.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inserisci l\'ora d\'inizio'),
+          ),
+        );
+        return false;
       } else {
         return true;
       }
@@ -445,65 +457,87 @@ class _AddEditProgramState extends State<AddEditProgram> {
     setState(() {
       _isLoadingModify = true;
     });
-    Map<Object, Object?> newDocument = {
-      'id': widget.document!['id'],
-      'title': _programNameController.text,
-      'selectedOption': widget.selectedOption,
-      'imagePath': _image,
-      'selectedClass': selectedClasses.sorted((a, b) {
-        if (a.contains('media') && b.contains('liceo')) {
-          return -1;
-        } else if (a.contains('liceo') && b.contains('media')) {
-          return 1;
-        } else {
-          return a.compareTo(b);
-        }
-      }),
-      'description': _programDescriptionController.text,
-      'startDate': _startDateController.text,
-      'endDate': _endDateController.text,
-      'address': _address,
-      'lat': _latitude,
-      'lon': _longitude,
-      'creator': widget.name,
-      'club': widget.club
-    };
+    if(widget.selectedOption == 'evento') {
+      Map<String, dynamic> newDocument = {
+        'titolo': _programNameController.text,
+        'descrizione': _programDescriptionController.text,
+        'data': widget.focusedDay,
+        'creatore': widget.name,
+        'club': widget.club,
+        'inizio': _startTimeController.text,
+        'fine': _endTimeController.text,
+      };
 
-    List<String> token = [];
-    for (String value in selectedClasses) {
-      List<String> items = await fetchToken('club_class', value, widget.club);
-      for (String elem in items) {
-        if (!token.contains(elem)) {
-          token.add(elem);
+      await FirebaseFirestore.instance
+          .collection('calendario')
+          .doc(widget.document?['id'])
+          .update(newDocument);
+
+      setState(() {
+        _isLoadingModify = false;
+      });
+      widget.refreshProgram!();
+    } else {
+      Map<Object, Object?> newDocument = {
+        'id': widget.document!['id'],
+        'title': _programNameController.text,
+        'selectedOption': widget.selectedOption,
+        'imagePath': _image,
+        'selectedClass': selectedClasses.sorted((a, b) {
+          if (a.contains('media') && b.contains('liceo')) {
+            return -1;
+          } else if (a.contains('liceo') && b.contains('media')) {
+            return 1;
+          } else {
+            return a.compareTo(b);
+          }
+        }),
+        'description': _programDescriptionController.text,
+        'startDate': _startDateController.text,
+        'endDate': _endDateController.text,
+        'address': _address,
+        'lat': _latitude,
+        'lon': _longitude,
+        'creator': widget.name,
+        'club': widget.club
+      };
+
+      List<String> token = [];
+      for (String value in selectedClasses) {
+        List<String> items = await fetchToken('club_class', value, widget.club);
+        for (String elem in items) {
+          if (!token.contains(elem)) {
+            token.add(elem);
+          }
         }
       }
-    }
-    sendNotification(
-      token,
-      'Programma modificato!',
-      newDocument['title'] ?? widget.document!['title'],
-      'modified_event',
-      docId: widget.document!['id'],
-      selectedOption: widget.selectedOption,
-    );
+      sendNotification(
+        token,
+        'Programma modificato!',
+        newDocument['title'] ?? widget.document!['title'],
+        'modified_event',
+        docId: widget.document!['id'],
+        selectedOption: widget.selectedOption,
+      );
 
-    for (var key in widget.document!.keys) {
-      if (newDocument[key] == widget.document![key]) {
-        newDocument.remove(key);
+      for (var key in widget.document!.keys) {
+        if (newDocument[key] == widget.document![key]) {
+          newDocument.remove(key);
+        }
       }
+
+      await FirebaseFirestore.instance
+          .collection('club_${widget.selectedOption}')
+          .doc(widget.document?['id'])
+          .update(newDocument);
+
+      setState(() {
+        _isLoadingModify = false;
+      });
+
+      widget.refreshProgram!();
+      widget.refreshList!();
     }
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.document?['id'])
-        .update(newDocument);
-
-    setState(() {
-      _isLoadingModify = false;
-    });
-
-    widget.refreshProgram!();
-    widget.refreshList!();
     Navigator.pop(context);
   }
 
@@ -515,7 +549,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     return Scaffold(
       appBar: AppBar(
         title:
-            widget.selectedOption == 'evento' ? const Text('Crea evento')
+              widget.selectedOption == 'evento' && _isEditing ? const Text('Modifica evento')
+            : widget.selectedOption == 'evento' ? const Text('Crea evento')
             : _isEditing ? const Text('Modifica programma')
             : const Text('Crea programma'),
       ),
@@ -721,8 +756,24 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    widget.selectedOption == 'evento'
-                        ? ElevatedButton(
+                    widget.selectedOption == 'evento' && _isEditing ? ElevatedButton(
+                      onPressed: () {
+                        if (_isLoadingModify) {
+                          null;
+                        } else {
+                          _handleEdit(context);
+                        }
+                      },
+                      child: _isLoadingModify ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white),
+                        ),
+                      ) : const Text('Modifica evento', style: TextStyle(color: Colors.white))
+                    )
+                    : widget.selectedOption == 'evento' && !_isEditing ? ElevatedButton(
                       onPressed: () {
                         if (_isLoadingModify) {
                           null;
@@ -730,19 +781,16 @@ class _AddEditProgramState extends State<AddEditProgram> {
                           _handleCreate(context);
                         }
                       },
-                      child: _isLoadingModify
-                          ? const SizedBox(
+                      child: _isLoadingModify ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white),
+                            Colors.white
+                          ),
                         ),
-                      )
-                          : const Text('Crea evento',
-                          style: TextStyle(color: Colors.white)),
-                    ) : _isEditing
-                        ? ElevatedButton(
+                      ) : const Text('Crea evento', style: TextStyle(color: Colors.white))
+                    ) : _isEditing ? ElevatedButton(
                             onPressed: () {
                               if (_isLoadingModify) {
                                 null;
@@ -761,8 +809,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                                   )
                                 : const Text('Modifica programma',
                                     style: TextStyle(color: Colors.white)),
-                          )
-                        : ElevatedButton(
+                          ) : ElevatedButton(
                             onPressed: () {
                               if (_isLoadingCreation) {
                                 null;
