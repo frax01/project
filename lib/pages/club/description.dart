@@ -29,7 +29,7 @@ class Tiber extends StatelessWidget {
             Align(
               alignment: Alignment.topCenter,
               child: Image.asset(
-                'images/logo.png',
+                'images/tiberlogo.png',
                 width: 150,
               ),
             ),
@@ -316,8 +316,6 @@ class _DeltaState extends State<Delta> {
     try {
       final ref = _storage.ref().child(filePath);
       final url = await ref.getDownloadURL();
-      print('File URL: $url');
-      // Utilizza il link URL come necessario
     } catch (e) {
       print('Errore: $e');
     }
@@ -343,7 +341,7 @@ class _DeltaState extends State<Delta> {
             Align(
               alignment: Alignment.topCenter,
               child: Image.asset(
-                'images/logo.png',
+                'images/deltalogo.jpg',
                 width: 150,
               ),
             ),

@@ -204,19 +204,22 @@ class _CalendarState extends State<Calendar> {
               focusedDay: _focusedDay,
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2025, 12, 31),
-              calendarFormat: CalendarFormat.month,
               startingDayOfWeek: StartingDayOfWeek.monday,
               selectedDayPredicate: (day) {
                 return isSameDay(_selectedDay, day);
               },
-              onDaySelected: (selectedDay, focusedDay) {
+              onDaySelected: (selectedDay, focusedDay) async {
                 setState(() {
                   _selectedDay = selectedDay;
                   today = isSameDay(selectedDay, DateTime.now());
                   _focusedDay = focusedDay;
-                  final selectedDayOnly = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
+                  final selectedDayOnly = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
                   _selectedDayEvents = _events[selectedDayOnly] ?? [];
                 });
+              },
+              onFormatChanged: (format) {},
+              availableCalendarFormats: const {
+                CalendarFormat.month: 'Mese',
               },
               calendarBuilders: CalendarBuilders(
                 todayBuilder: (context, date, _) {
@@ -287,14 +290,20 @@ class _CalendarState extends State<Calendar> {
                           ),
                         ),
                       if (birthdayCount > 0)
-                        const Positioned(
+                        Positioned(
                           right: 0,
                           bottom: 0,
-                          child: Icon(
-                            Icons.cake,
-                            color: Colors.black,
-                            size: 15.0,
+                          top: 1,
+                          child: Image.asset(
+                            'images/birthday_cake.png',
+                            width: 10,
+                            height: 10,
                           ),
+                          //Icon(
+                          //  Icons.cake,
+                          //  color: Colors.black,
+                          //  size: 15.0,
+                          //),
                         ),
                       for (var tripEvent in tripEvents)
                         Container(
@@ -330,7 +339,18 @@ class _CalendarState extends State<Calendar> {
                         : event['tipo']=='evento'
                         ? const Icon(Icons.check_circle_outline)
                         : event['tipo']=='convivenza'
-                        ? const Icon(Icons.airplanemode_active)
+                        ? Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              const Icon(Icons.airplanemode_active),
+                              const SizedBox(height: 4),
+                              Container(
+                                width: MediaQuery.of(context).size.width / 20,
+                                height: 5.0,
+                                color: _getConvivenzaColor(event['id']),
+                              ),
+                            ],
+                          )
                         : const Icon(Icons.event),
                     title: AutoSizeText(
                       event['titolo'],

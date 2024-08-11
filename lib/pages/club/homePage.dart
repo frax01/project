@@ -164,41 +164,41 @@ class _HomePageState extends State<HomePage> {
           child: _buildList(),
         ),
       ),
-      floatingActionButton: widget.isAdmin
-          ? SpeedDial(
-              icon: Icons.add,
-              backgroundColor: Colors.white,
-              iconTheme: const IconThemeData(color: Colors.black),
-              activeIcon: Icons.close,
-              overlayOpacity: 0.9,
-              children: [
-                SpeedDialChild(
-                  child: const Icon(Icons.event),
-                  label: 'Programma',
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AddEditProgram(
-                            club: widget.club,
-                            refreshList: refreshList,
-                            selectedOption: 'weekend',
-                            name: widget.name)));
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(Icons.airplanemode_on),
-                  label: 'Convivenza',
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AddEditProgram(
-                            club: widget.club,
-                            refreshList: refreshList,
-                            selectedOption: 'trip',
-                            name: widget.name)));
-                  },
-                ),
-              ],
-            )
-          : null,
+      //floatingActionButton: widget.isAdmin
+          //? SpeedDial(
+          //    icon: Icons.add,
+          //    backgroundColor: Colors.white,
+          //    iconTheme: const IconThemeData(color: Colors.black),
+          //    activeIcon: Icons.close,
+          //    overlayOpacity: 0.9,
+          //    children: [
+          //      SpeedDialChild(
+          //        child: const Icon(Icons.event),
+          //        label: 'Programma',
+          //        onTap: () {
+          //          Navigator.of(context).push(MaterialPageRoute(
+          //              builder: (context) => AddEditProgram(
+          //                  club: widget.club,
+          //                  refreshList: refreshList,
+          //                  selectedOption: 'weekend',
+          //                  name: widget.name)));
+          //        },
+          //      ),
+          //      SpeedDialChild(
+          //        child: const Icon(Icons.airplanemode_on),
+          //        label: 'Convivenza',
+          //        onTap: () {
+          //          Navigator.of(context).push(MaterialPageRoute(
+          //              builder: (context) => AddEditProgram(
+          //                  club: widget.club,
+          //                  refreshList: refreshList,
+          //                  selectedOption: 'trip',
+          //                  name: widget.name)));
+          //        },
+          //      ),
+          //    ],
+          //  )
+          //: null,
     );
   }
 }

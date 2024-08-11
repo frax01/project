@@ -182,7 +182,7 @@ class _LoginState extends State<Login> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("images/logo.png", width: 150),
+                Image.asset("images/tiberlogo.png", width: 150),
                 const SizedBox(height: 20),
                 const Text(
                   'Tiber Club',

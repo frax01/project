@@ -70,12 +70,12 @@ class _ClubPageState extends State<ClubPage> {
         },
         child: Calendar(isAdmin: widget.status, club: widget.club, name: widget.name,),
       ),
-      PopScope(
-        onPopInvoked: (_) {
-          SystemNavigator.pop();
-        },
-        child: const BirthdayPage(),
-      ),
+      //PopScope(
+      //  onPopInvoked: (_) {
+      //    SystemNavigator.pop();
+      //  },
+      //  child: const BirthdayPage(),
+      //),
       PopScope(
         onPopInvoked: (_) {
           SystemNavigator.pop();
@@ -167,11 +167,11 @@ class _ClubPageState extends State<ClubPage> {
             activeIcon: Icon(Icons.calendar_month),
             label: 'Calendario',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.cake_outlined),
-            activeIcon: Icon(Icons.cake),
-            label: 'Compleanni',
-          ),
+          //const BottomNavigationBarItem(
+          //  icon: Icon(Icons.cake_outlined),
+          //  activeIcon: Icon(Icons.cake),
+          //  label: 'Compleanni',
+          //),
           const BottomNavigationBarItem(
             icon: Icon(Icons.stadium_outlined),
             activeIcon: Icon(Icons.stadium),

@@ -261,7 +261,7 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Image.asset('images/logo.png', height: 200.0),
+                  Image.asset('images/tiberlogo.png', height: 200.0),
                   const SizedBox(height: 20.0),
                   const CircularProgressIndicator(),
                 ],
@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Image.asset('images/logo.png', height: 200.0),
+                            Image.asset('images/tiberlogo.png', height: 200.0),
                             const SizedBox(height: 20.0),
                             const CircularProgressIndicator(),
                           ]),
