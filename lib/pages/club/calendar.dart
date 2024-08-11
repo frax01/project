@@ -40,6 +40,27 @@ class _CalendarState extends State<Calendar> {
     _loadEvents();
   }
 
+  final Map<String, Color> _convivenzaColors = {};
+  final List<Color> _colors = [Colors.red, const Color(0xFF00296B), Colors.green];
+
+  Color _getConvivenzaColor(String id) {
+    if (!_convivenzaColors.containsKey(id)) {
+      _convivenzaColors[id] = _colors[_convivenzaColors.length % _colors.length];
+    }
+    return _convivenzaColors[id]!;
+  }
+
+  final Map<String, int> _convivenzaRows = {};
+
+  int _getConvivenzaRow(String id) {
+    if (!_convivenzaRows.containsKey(id)) {
+      _convivenzaRows[id] = _convivenzaRows.length;
+    }
+    return _convivenzaRows[id]!;
+  }
+
+
+
   Future<void> _loadEvents() async {
     //calendario
     final querySnapshotEvent = await FirebaseFirestore.instance
@@ -120,7 +141,43 @@ class _CalendarState extends State<Calendar> {
     }
 
     //convivenza
-    //
+    final querySnapshotTrip = await FirebaseFirestore.instance
+        .collection('club_trip')
+        .where('club', isEqualTo: widget.club)
+        .get();
+
+    for (var doc in querySnapshotTrip.docs) {
+      final data = doc.data();
+
+      final startDateString = data['startDate'];
+      final startDate = DateFormat('dd-MM-yyyy').parse(startDateString);
+      Timestamp startTimestamp = Timestamp.fromDate(startDate);
+      final startResultDate = startTimestamp.toDate();
+      final startDateOnly = DateTime(startResultDate.year, startResultDate.month, startResultDate.day);
+
+      final endDateString = data['endDate'];
+      final endDate = DateFormat('dd-MM-yyyy').parse(endDateString);
+      Timestamp endTimestamp = Timestamp.fromDate(endDate);
+      final endResultDate = endTimestamp.toDate();
+      final endDateOnly = DateTime(endResultDate.year, endResultDate.month, endResultDate.day);
+
+      List<DateTime> dateList = [];
+
+      DateTime currentDate = startDateOnly;
+      while (currentDate.isBefore(endDateOnly) || currentDate.isAtSameMomentAs(endDateOnly)) {
+        dateList.add(currentDate);
+        currentDate = currentDate.add(const Duration(days: 1));
+      }
+
+      for (DateTime startDateOnly in dateList) {
+        if (events[startDateOnly] == null) {
+          events[startDateOnly] = [];
+          eventIds[startDateOnly] = [];
+        }
+        events[startDateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'convivenza'});
+        eventIds[startDateOnly]!.add(doc.id);
+      }
+    }
 
     setState(() {
       final selectedDayOnly = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
@@ -204,6 +261,7 @@ class _CalendarState extends State<Calendar> {
                   final eventCount = _events[dateOnly]?.where((e) => e['tipo'] == 'evento').length ?? 0;
                   final birthdayCount = _events[dateOnly]?.where((e) => e['tipo'] == 'compleanno').length ?? 0;
                   final programCount = _events[dateOnly]?.where((e) => e['tipo'] == 'programma').length ?? 0;
+                  final tripEvents = _events[dateOnly]?.where((e) => e['tipo'] == 'convivenza').toList() ?? [];
 
                   final total = eventCount + programCount;
 
@@ -239,6 +297,20 @@ class _CalendarState extends State<Calendar> {
                             size: 15.0,
                           ),
                         ),
+                      for (var tripEvent in tripEvents)
+                        Container(
+                          padding: EdgeInsets.only(
+                            bottom: 8.0 * _getConvivenzaRow(tripEvent['id']),
+                          ),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              width: MediaQuery.of(context).size.width / 9,
+                              height: 5,
+                              color: _getConvivenzaColor(tripEvent['id']),
+                            ),
+                          ),
+                        ),
                     ],
                   );
                 },
@@ -258,6 +330,8 @@ class _CalendarState extends State<Calendar> {
                         ? const Icon(Icons.cake)
                         : event['tipo']=='evento'
                         ? const Icon(Icons.check_circle_outline)
+                        : event['tipo']=='convivenza'
+                        ? const Icon(Icons.airplanemode_active)
                         : const Icon(Icons.event),
                     title: AutoSizeText(
                       event['titolo'],
