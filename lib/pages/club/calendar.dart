@@ -41,7 +41,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   final Map<String, Color> _convivenzaColors = {};
-  final List<Color> _colors = [Colors.red, const Color(0xFF00296B), Colors.green];
+  final List<Color> _colors = [const Color(0xFFBB1614), const Color(0xFF00296B), Colors.green];
 
   Color _getConvivenzaColor(String id) {
     if (!_convivenzaColors.containsKey(id)) {
@@ -59,9 +59,8 @@ class _CalendarState extends State<Calendar> {
     return _convivenzaRows[id]!;
   }
 
-
-
   Future<void> _loadEvents() async {
+
     //calendario
     final querySnapshotEvent = await FirebaseFirestore.instance
         .collection('calendario')
@@ -273,8 +272,8 @@ class _CalendarState extends State<Calendar> {
                           top: 0,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
-                            decoration: const BoxDecoration(
-                              color: Colors.grey, // Theme.of(context).primaryColor,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -365,6 +364,19 @@ class _CalendarState extends State<Calendar> {
                                 isAdmin: widget.isAdmin,
                                 refreshList: refreshList,
                                 name: widget.name
+                              )
+                      ));
+                      await _loadEvents();
+                    } : event['tipo']=='convivenza' ? () async {
+                      await Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              ProgramPage(
+                                  club: widget.club,
+                                  documentId: event['id'],
+                                  selectedOption: 'trip',
+                                  isAdmin: widget.isAdmin,
+                                  refreshList: refreshList,
+                                  name: widget.name
                               )
                       ));
                       await _loadEvents();
