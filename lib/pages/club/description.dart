@@ -523,6 +523,20 @@ class _DeltaState extends State<Delta> {
                         }
                       ),
                       ListTile(
+                        leading: const Icon(Icons.web),
+                        title: const AutoSizeText(
+                          'Sito web',
+                          style: TextStyle(fontSize: 18.0),
+                          maxLines: 1,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                        onTap: () {
+                          launchUrl(Uri.parse('https://bit.ly/m/centrodelta'));
+                        },
+                      ),
+                      ListTile(
                         leading: const Icon(Icons.location_on),
                         title: const AutoSizeText(
                           'Via Alberto da Giussano, 6, MI',

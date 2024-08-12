@@ -296,8 +296,8 @@ class _CalendarState extends State<Calendar> {
                           top: 1,
                           child: Image.asset(
                             'images/birthday_cake.png',
-                            width: 10,
-                            height: 10,
+                            width: 17,
+                            height: 17,
                           ),
                           //Icon(
                           //  Icons.cake,
