@@ -148,6 +148,10 @@ class _HomePageState extends State<HomePage> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     club = prefs.getString('club') ?? '';
+
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token = await messaging.getToken();
+    print("token: $token");
   }
 
   Future<void> setupInteractedMessage() async {

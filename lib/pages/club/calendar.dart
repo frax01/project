@@ -59,7 +59,21 @@ class _CalendarState extends State<Calendar> {
     return _convivenzaRows[id]!;
   }
 
+  Map<String, bool> _selectedTutors = {};
+
   Future<void> _loadEvents() async {
+
+    //tutor
+    final querySnapshotTutor = await FirebaseFirestore.instance
+        .collection('user')
+        .where('club', isEqualTo: widget.club)
+        .where('role', isEqualTo: 'Tutor')
+        .get();
+
+    for (var doc in querySnapshotTutor.docs) {
+      var data = doc.data();
+      _selectedTutors[data['email']] = true;
+    }
 
     //calendario
     final querySnapshotEvent = await FirebaseFirestore.instance
@@ -424,7 +438,7 @@ class _CalendarState extends State<Calendar> {
                         club: widget.club,
                         refreshList: refreshList,
                         selectedOption: 'weekend',
-                        name: widget.name)));
+                        name: widget.name,)));
               },
             ),
             SpeedDialChild(
@@ -436,19 +450,7 @@ class _CalendarState extends State<Calendar> {
                         club: widget.club,
                         refreshList: refreshList,
                         selectedOption: 'trip',
-                        name: widget.name)));
-              },
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.cake),
-              label: 'Compleanno',
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => AddEditProgram(
-                        club: widget.club,
-                        refreshList: refreshList,
-                        selectedOption: 'trip',
-                        name: widget.name)));
+                        name: widget.name,)));
               },
             ),
             SpeedDialChild(

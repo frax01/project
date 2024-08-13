@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'birthdayPage.dart';
 import 'info.dart';
 import 'calendar.dart';
+import 'lunch.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage(
@@ -80,15 +81,7 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: SettingsPage(
-          id: widget.id,
-          classes: widget.classes,
-          name: widget.name,
-          surname: widget.surname,
-          email: widget.email,
-          isAdmin: widget.status,
-          club: widget.club
-        ),
+        child: const Lunch(),
       ),
     ];
   }
@@ -173,9 +166,9 @@ class _ClubPageState extends State<ClubPage> {
           //  label: 'Compleanni',
           //),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.stadium_outlined),
+            icon: Icon(Icons.fastfood_outlined),
             activeIcon: Icon(Icons.stadium),
-            label: 'Calcio',
+            label: 'Pranzi',
           ),
         ],
       ),

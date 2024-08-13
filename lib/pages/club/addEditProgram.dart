@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
+import 'visibility.dart';
 
 class AddEditProgram extends StatefulWidget {
   const AddEditProgram(
@@ -18,7 +19,7 @@ class AddEditProgram extends StatefulWidget {
       this.selectedOption,
       this.document,
       required this.name,
-      this.focusedDay});
+      this.focusedDay,});
 
   final String club;
   final Function? refreshList;
@@ -87,6 +88,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
       }
     }
   }
+
+  Map<String, bool> _visibility = {};
+  List<String> _selectedVisibility = [];
+  bool tutor = true;
+
 
   _uploadImage(String level, {bool isCreate = false}) async {
     final storageRef = FirebaseStorage.instance.ref();
@@ -545,25 +551,25 @@ class _AddEditProgramState extends State<AddEditProgram> {
   bool _isLoadingModify = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title:
-              widget.selectedOption == 'evento' && _isEditing ? const Text('Modifica evento')
-            : widget.selectedOption == 'evento' ? const Text('Crea evento')
-            : _isEditing ? const Text('Modifica programma')
-            : const Text('Crea programma'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (widget.selectedOption != 'evento') ...[
-                  SizedBox(
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title:
+      widget.selectedOption == 'evento' && _isEditing ? const Text('Modifica evento')
+          : widget.selectedOption == 'evento' ? const Text('Crea evento')
+          : _isEditing ? const Text('Modifica programma')
+          : const Text('Crea programma'),
+    ),
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.selectedOption != 'evento') ...[
+                SizedBox(
                   height: 200,
                   child: InkWell(
                     onTap: () async {
@@ -571,157 +577,183 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     },
                     child: _image.isNotEmpty
                         ? Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey[200]!,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                image: NetworkImage(_image),
-                                fit: BoxFit.cover,
-                                colorFilter: ColorFilter.mode(
-                                  Colors.white.withOpacity(0.5),
-                                  BlendMode.lighten,
-                                ),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.edit,
-                                size: 50,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.add_a_photo,
-                                size: 50,
-                              ),
-                            ),
+                      height: 200,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey[200]!,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        image: DecorationImage(
+                          image: NetworkImage(_image),
+                          fit: BoxFit.cover,
+                          colorFilter: ColorFilter.mode(
+                            Colors.white.withOpacity(0.5),
+                            BlendMode.lighten,
                           ),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.edit,
+                          size: 50,
+                        ),
+                      ),
+                    )
+                        : Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.add_a_photo,
+                          size: 50,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                ],
-                TextFormField(
-                  controller: _programNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Titolo',
-                    icon: Icon(Icons.short_text),
-                  ),
-                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                  maxLength: widget.selectedOption != 'evento' ? 20 : null,
-                  validator: (String? value) {
-                    if (value!.isEmpty) {
-                      return 'Inserisci il nome del programma';
-                    }
-                    return null;
-                    },
+              ],
+              TextFormField(
+                controller: _programNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Titolo',
+                  icon: Icon(Icons.short_text),
                 ),
-                if (widget.selectedOption == 'evento') ...[
-                  const SizedBox(height: 20),
-                  _showTimePicker(),
-                ],
-                if (widget.selectedOption != 'evento') ...[
-                  const SizedBox(height: 20),
-                  _showDatePickers(),
-                  const SizedBox(height: 20),
-                  TypeAheadField(
-                    controller: _programLocationController,
-                    autoFlipDirection: true,
-                    hideOnEmpty: true,
-                    builder: (context, controller, focusNode) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        autofocus: false,
-                        decoration: InputDecoration(
-                          labelText: (widget.selectedOption == 'trip')
-                              ? 'Luogo'
-                              : 'Luogo (facoltativo)',
-                          icon: const Icon(Icons.location_on),
-                        ),
-                        validator: (value) {
-                          if (widget.selectedOption == 'trip' &&
-                              (value == null || value.isEmpty)) {
-                            return 'Inserire un indirizzo';
-                          }
-                          return null;
-                        },
-                      );
-                    },
-                    suggestionsCallback: (pattern) async {
-                      return pattern == '' ? [] : await getSuggestions(pattern);
-                    },
-                    itemBuilder: (context, suggestion) {
-                      return ListTile(
-                        title: Text(suggestion["display_name"]),
-                      );
-                    },
-                    decorationBuilder: (context, child) {
-                      return Padding(
-                        padding:
-                        const EdgeInsets.only(left: 40, top: 5, bottom: 5),
-                        child: Material(
-                          type: MaterialType.card,
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(8),
-                          child: child,
-                        ),
-                      );
-                    },
-                    onSelected: (suggestion) {
-                      var address = suggestion["address"]["name"];
-                      var number = suggestion["address"]["house_number"] ?? '';
-                      var city = suggestion["address"]["city"] ?? '';
-                      var country = suggestion["address"]["country"];
-                      var lat = suggestion["lat"];
-                      var lon = suggestion["lon"];
-
-                      var completeAddress = '';
-                      if (city != '' && number != '') {
-                        if (country != 'Italy') {
-                          completeAddress =
-                          '$address, $number, $city, $country';
-                        } else {
-                          completeAddress = '$address, $number, $city';
+                maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                maxLength: widget.selectedOption != 'evento' ? 20 : null,
+                validator: (String? value) {
+                  if (value!.isEmpty) {
+                    return 'Inserisci il nome del programma';
+                  }
+                  return null;
+                },
+              ),
+              if (widget.selectedOption == 'evento') ...[
+                const SizedBox(height: 20),
+                _showTimePicker(),
+              ],
+              if (widget.selectedOption != 'evento') ...[
+                const SizedBox(height: 20),
+                _showDatePickers(),
+                const SizedBox(height: 20),
+                TypeAheadField(
+                  controller: _programLocationController,
+                  autoFlipDirection: true,
+                  hideOnEmpty: true,
+                  builder: (context, controller, focusNode) {
+                    return TextFormField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        labelText: (widget.selectedOption == 'trip')
+                            ? 'Luogo'
+                            : 'Luogo (facoltativo)',
+                        icon: const Icon(Icons.location_on),
+                      ),
+                      validator: (value) {
+                        if (widget.selectedOption == 'trip' &&
+                            (value == null || value.isEmpty)) {
+                          return 'Inserire un indirizzo';
                         }
+                        return null;
+                      },
+                    );
+                  },
+                  suggestionsCallback: (pattern) async {
+                    return pattern == '' ? [] : await getSuggestions(pattern);
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      title: Text(suggestion["display_name"]),
+                    );
+                  },
+                  decorationBuilder: (context, child) {
+                    return Padding(
+                      padding:
+                      const EdgeInsets.only(left: 40, top: 5, bottom: 5),
+                      child: Material(
+                        type: MaterialType.card,
+                        elevation: 4,
+                        borderRadius: BorderRadius.circular(8),
+                        child: child,
+                      ),
+                    );
+                  },
+                  onSelected: (suggestion) {
+                    var address = suggestion["address"]["name"];
+                    var number = suggestion["address"]["house_number"] ?? '';
+                    var city = suggestion["address"]["city"] ?? '';
+                    var country = suggestion["address"]["country"];
+                    var lat = suggestion["lat"];
+                    var lon = suggestion["lon"];
+
+                    var completeAddress = '';
+                    if (city != '' && number != '') {
+                      if (country != 'Italy') {
+                        completeAddress =
+                        '$address, $number, $city, $country';
                       } else {
-                        if (country != 'Italy') {
-                          completeAddress = '$address, $country';
-                        } else {
-                          completeAddress = address;
-                        }
+                        completeAddress = '$address, $number, $city';
                       }
+                    } else {
+                      if (country != 'Italy') {
+                        completeAddress = '$address, $country';
+                      } else {
+                        completeAddress = address;
+                      }
+                    }
 
-                      setState(() {
-                        _latitude = lat;
-                        _longitude = lon;
-                        _address = completeAddress;
-                        _programLocationController.text = completeAddress;
-                      });
-                    },
-                  ),
-                ],
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _programDescriptionController,
-                  keyboardType: TextInputType.multiline,
-                  minLines: 4,
-                  maxLines: null,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrizione',
-                    icon: Icon(Icons.description),
-                  ),
+                    setState(() {
+                      _latitude = lat;
+                      _longitude = lon;
+                      _address = completeAddress;
+                      _programLocationController.text = completeAddress;
+                    });
+                  },
                 ),
-                if (widget.selectedOption != 'evento') ...[
+              ],
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _programDescriptionController,
+                keyboardType: TextInputType.multiline,
+                minLines: 4,
+                maxLines: null,
+                decoration: const InputDecoration(
+                  labelText: 'Descrizione',
+                  icon: Icon(Icons.description),
+                ),
+              ),
+              if (widget.selectedOption == 'evento') ...[
+                const SizedBox(height: 20),
+                ListTile(
+                  title: const Text('Visibilità'),
+                  subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
+                  trailing: const Icon(Icons.arrow_forward),
+                  onTap: () async {
+                    final selected = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VisibilitySelectionPage(),
+                      ),
+                    );
+                    if (selected != null) {
+                      setState(() {
+                        if(selected==_selectedVisibility) {
+                          tutor = true;
+                        } else {
+                          _selectedVisibility = selected;
+                          tutor = false;
+                        }
+                      });
+                    }
+                  },
+                ),
+              ],
+              if (widget.selectedOption != 'evento') ...[
                 const SizedBox(height: 20),
                 const Row(
                   children: [
@@ -751,12 +783,12 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     );
                   }).toList(),
                 ),
-                ],
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    widget.selectedOption == 'evento' && _isEditing ? ElevatedButton(
+              ],
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  widget.selectedOption == 'evento' && _isEditing ? ElevatedButton(
                       onPressed: () {
                         if (_isLoadingModify) {
                           null;
@@ -772,8 +804,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                               Colors.white),
                         ),
                       ) : const Text('Modifica evento', style: TextStyle(color: Colors.white))
-                    )
-                    : widget.selectedOption == 'evento' && !_isEditing ? ElevatedButton(
+                  )
+                      : widget.selectedOption == 'evento' && !_isEditing ? ElevatedButton(
                       onPressed: () {
                         if (_isLoadingModify) {
                           null;
@@ -786,56 +818,56 @@ class _AddEditProgramState extends State<AddEditProgram> {
                         height: 20,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white
+                              Colors.white
                           ),
                         ),
                       ) : const Text('Crea evento', style: TextStyle(color: Colors.white))
-                    ) : _isEditing ? ElevatedButton(
-                            onPressed: () {
-                              if (_isLoadingModify) {
-                                null;
-                              } else {
-                                _handleEdit(context);
-                              }
-                            },
-                            child: _isLoadingModify
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : const Text('Modifica programma',
-                                    style: TextStyle(color: Colors.white)),
-                          ) : ElevatedButton(
-                            onPressed: () {
-                              if (_isLoadingCreation) {
-                                null;
-                              } else {
-                                _handleCreate(context);
-                              }
-                            },
-                            child: _isLoadingCreation
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : const Text('Crea programma',
-                                    style: TextStyle(color: Colors.white)),
-                          ),
-                  ],
-                ),
-              ],
-            ),
+                  ) : _isEditing ? ElevatedButton(
+                    onPressed: () {
+                      if (_isLoadingModify) {
+                        null;
+                      } else {
+                        _handleEdit(context);
+                      }
+                    },
+                    child: _isLoadingModify
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white),
+                      ),
+                    )
+                        : const Text('Modifica programma',
+                        style: TextStyle(color: Colors.white)),
+                  ) : ElevatedButton(
+                    onPressed: () {
+                      if (_isLoadingCreation) {
+                        null;
+                      } else {
+                        _handleCreate(context);
+                      }
+                    },
+                    child: _isLoadingCreation
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white),
+                      ),
+                    )
+                        : const Text('Crea programma',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
