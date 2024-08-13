@@ -19,7 +19,8 @@ class AddEditProgram extends StatefulWidget {
       this.selectedOption,
       this.document,
       required this.name,
-      this.focusedDay,});
+      this.focusedDay,
+      this.visibility});
 
   final String club;
   final Function? refreshList;
@@ -28,6 +29,7 @@ class AddEditProgram extends StatefulWidget {
   final Map<dynamic, dynamic>? document;
   final String name;
   final focusedDay;
+  final Map<String, bool>? visibility;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
@@ -67,6 +69,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
   @override
   void initState() {
     super.initState();
+    //print("widg: ${widget.visibility}");
+    _fetchTutors();
+    //_visibility=widget.visibility ?? {};
     if (widget.document != null) {
       _isEditing = true;
       if(widget.selectedOption == 'evento') {
@@ -89,8 +94,20 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
+  _fetchTutors() async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('role', isEqualTo: 'Tutor')
+        .where('club', isEqualTo: 'Tiber Club')
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      final email = doc['email'] as String;
+      _visibility[email]=true;
+    }
+  }
+
   Map<String, bool> _visibility = {};
-  List<String> _selectedVisibility = [];
   bool tutor = true;
 
 
@@ -727,32 +744,32 @@ Widget build(BuildContext context) {
                   icon: Icon(Icons.description),
                 ),
               ),
-              if (widget.selectedOption == 'evento') ...[
-                const SizedBox(height: 20),
-                ListTile(
-                  title: const Text('Visibilità'),
-                  subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
-                  trailing: const Icon(Icons.arrow_forward),
-                  onTap: () async {
-                    final selected = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VisibilitySelectionPage(),
-                      ),
-                    );
-                    if (selected != null) {
-                      setState(() {
-                        if(selected==_selectedVisibility) {
-                          tutor = true;
-                        } else {
-                          _selectedVisibility = selected;
-                          tutor = false;
-                        }
-                      });
-                    }
-                  },
-                ),
-              ],
+              //if (widget.selectedOption == 'evento') ...[
+              //  const SizedBox(height: 20),
+              //  ListTile(
+              //    title: const Text('Visibilità'),
+              //    subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
+              //    trailing: const Icon(Icons.arrow_forward),
+              //    onTap: () async {
+              //      final selected = await Navigator.push(
+              //        context,
+              //        MaterialPageRoute(
+              //          builder: (context) => VisibilitySelectionPage(visibility: _visibility),
+              //        ),
+              //      );
+              //      if (selected != null) {
+              //        setState(() {
+              //          if(selected==_visibility) {
+              //            tutor = true;
+              //          } else {
+              //            _visibility = selected;
+              //            tutor = false;
+              //          }
+              //        });
+              //      }
+              //    },
+              //  ),
+              //],
               if (widget.selectedOption != 'evento') ...[
                 const SizedBox(height: 20),
                 const Row(

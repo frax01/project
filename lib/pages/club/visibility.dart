@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class VisibilitySelectionPage extends StatefulWidget {
+  const VisibilitySelectionPage({super.key, required this.visibility});
+
+  final Map visibility;
+
   @override
   _VisibilitySelectionPageState createState() => _VisibilitySelectionPageState();
 }
@@ -38,10 +42,21 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
 
     // Inizializza _selectedUsers con i tutor
     if (!_isSelectedUsersInitialized) {
-      final tutorEmails = usersByRole['Tutor']!.map((tutor) => tutor['email']!).toList();
+      final emails = usersByRole['Tutor']!.map((tutor) => tutor['email']!).toList();
+      List<String> tutorEmails = _selectedUsers.entries
+          .where((entry) => entry.value)
+          .map((entry) => entry.key)
+          .toList();
+      //for (Map<String, bool> elem in _selectedUsers) {
+      //
+      //}
+      //final emails = _selectedUsers!.map((tutor) => tutor['email']!).toList();
+      print("emails: ${widget.visibility}");
+      print("emails: $emails");
+      print("tutor: $tutorEmails");
       setState(() {
         for (var email in tutorEmails) {
-          _selectedUsers[email] = true;
+          widget.visibility[email] = true;
         }
         _isSelectedUsersInitialized = true;
       });
@@ -74,6 +89,7 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
             onChanged: (bool? value) {
               setState(() {
                 _selectedUsers[user['email']!] = value!;
+                print("sele: $_selectedUsers");
                 if (!value) {
                   _selectAll = false;
                 }
@@ -129,10 +145,11 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton(
                     onPressed: () {
-                      final selectedEmails = _selectedUsers.entries
-                          .where((entry) => entry.value)
-                          .map((entry) => entry.key)
-                          .toList();
+                      final selectedEmails = _selectedUsers;
+                          //.entries
+                          //.where((entry) => entry.value)
+                          //.map((entry) => entry.key)
+                          //.toList();
                       Navigator.pop(context, selectedEmails);
                     },
                     child: const Text('Conferma'),

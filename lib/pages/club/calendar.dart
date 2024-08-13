@@ -463,7 +463,8 @@ class _CalendarState extends State<Calendar> {
                         refreshList: refreshList,
                         selectedOption: 'evento',
                         name: widget.name,
-                        focusedDay: _focusedDay,)));
+                        focusedDay: _focusedDay,
+                        visibility: _selectedTutors,)));
                 await _loadEvents();
               },
             ),
