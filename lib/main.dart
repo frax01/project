@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
 
   RemoteMessage? initialMessage;
 
-  Widget buildClubPage(String club) {
+  Widget buildClubPage(String club, int selectedIndex) {
     return ClubPage(
       club: club,
       classes: classes,
@@ -132,6 +132,7 @@ class _HomePageState extends State<HomePage> {
       name: name,
       surname: surname,
       email: email,
+      selectedIndex: selectedIndex,
     );
   }
 
@@ -209,6 +210,11 @@ class _HomePageState extends State<HomePage> {
                     isAdmin: status,
                     name: '$name $surname'
                   )));
+    } else if (message.data['category'] == 'birthday') {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => buildClubPage(club, 2)));
     }
   }
 
@@ -232,7 +238,7 @@ class _HomePageState extends State<HomePage> {
                 isAdmin: status,
                 name: '$name $surname'
               )));
-    } else {
+    } else if (initialMessage?.data['category'] == 'modified_event') {
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -244,8 +250,10 @@ class _HomePageState extends State<HomePage> {
                     isAdmin: status,
                     name: '$name $surname'
                   )));
+    } else if (initialMessage?.data['category'] == 'birthday') {
+      return buildClubPage(club, 2);
     }
-    return buildClubPage(club);
+    return buildClubPage(club, 0);
   }
 
   @override
@@ -306,7 +314,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 } else if (terminated == false) {
-                  return buildClubPage(club);
+                  return buildClubPage(club, 0);
                 } else {
                   return handleMessageFromTerminatedState();
                 }

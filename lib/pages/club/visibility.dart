@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class VisibilitySelectionPage extends StatefulWidget {
-  const VisibilitySelectionPage({super.key, required this.visibility});
+  const VisibilitySelectionPage({super.key, this.visibility});
 
-  final Map visibility;
+  final Map<String, bool>? visibility;
 
   @override
   _VisibilitySelectionPageState createState() => _VisibilitySelectionPageState();
@@ -14,9 +14,16 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
   Map<String, bool> _selectedUsers = {};
   bool _selectAll = false;
   Map<String, List<Map<String, String>>> _usersByRole = {};
-  bool _isSelectedUsersInitialized = false;
+  bool _isLoading = true;
+  int number = 0;
 
-  Future<Map<String, List<Map<String, String>>>> _loadUsers() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  Future<Map<String, bool>> _selectAllTutor() async {
     final roles = ['Tutor', 'Ragazzo', 'Genitore'];
     final querySnapshot = await FirebaseFirestore.instance
         .collection('user')
@@ -24,57 +31,73 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
         .where('club', isEqualTo: 'Tiber Club')
         .get();
 
-    final usersByRole = <String, List<Map<String, String>>>{};
-    for (var role in roles) {
-      usersByRole[role] = [];
-    }
-    for (var doc in querySnapshot.docs) {
-      final user = {
-        'email': doc['email'] as String,
-        'name': doc['name'] as String,
-        'surname': doc['surname'] as String,
-      };
-      final role = doc['role'] as String;
-      if (usersByRole.containsKey(role)) {
-        usersByRole[role]!.add(user);
-      }
-    }
+    Map<String, bool> select = {};
 
-    // Inizializza _selectedUsers con i tutor
-    if (!_isSelectedUsersInitialized) {
-      final emails = usersByRole['Tutor']!.map((tutor) => tutor['email']!).toList();
-      List<String> tutorEmails = _selectedUsers.entries
-          .where((entry) => entry.value)
-          .map((entry) => entry.key)
-          .toList();
-      //for (Map<String, bool> elem in _selectedUsers) {
-      //
-      //}
-      //final emails = _selectedUsers!.map((tutor) => tutor['email']!).toList();
-      print("emails: ${widget.visibility}");
-      print("emails: $emails");
-      print("tutor: $tutorEmails");
-      setState(() {
-        for (var email in tutorEmails) {
-          widget.visibility[email] = true;
+    for (var doc in querySnapshot.docs) {
+      final email = doc['email'] as String;
+      select[email]=true;
+    }
+    return select;
+  }
+
+  Future<void> _loadUsers() async {
+    try {
+      final roles = ['Tutor', 'Ragazzo', 'Genitore'];
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('role', whereIn: roles)
+          .where('club', isEqualTo: 'Tiber Club')
+          .get();
+
+      final usersByRole = <String, List<Map<String, String>>>{};
+      for (var role in roles) {
+        usersByRole[role] = [];
+      }
+      for (var doc in querySnapshot.docs) {
+        final user = {
+          'email': doc['email'] as String,
+          'name': doc['name'] as String,
+          'surname': doc['surname'] as String,
+        };
+        final role = doc['role'] as String;
+        if (usersByRole.containsKey(role)) {
+          usersByRole[role]!.add(user);
         }
-        _isSelectedUsersInitialized = true;
+        number++;
+      }
+
+      setState(() {
+        _usersByRole = usersByRole;
+        _initializeSelectedUsers();
+        _isLoading = false;
+        _selectAll = _selectedUsers.length == number ? true : false;
+      });
+    } catch (e) {
+      print('Errore durante il caricamento degli utenti: $e');
+      setState(() {
+        _isLoading = false;
       });
     }
-
-    return usersByRole;
   }
 
-  void _updateSelectedUsers(Map<String, List<Map<String, String>>> usersByRole) {
-    final allUsers = usersByRole.values.expand((list) => list).toList();
-    setState(() {
+  void _initializeSelectedUsers() {
+    if(widget.visibility==null || widget.visibility!.isEmpty) {
       _selectedUsers = {
-        for (var user in allUsers) user['email']!: _selectAll,
+        for (var role in _usersByRole.keys)
+          if (role == 'Tutor')
+            for (var user in _usersByRole[role]!) user['email']!: true
       };
-    });
+    } else {
+      _selectedUsers = widget.visibility ?? {};
+    }
   }
 
-  Widget _buildRoleSection(String role, List<Map<String, String>> users) {
+  Widget _buildRoleSection(String role) {
+    if (!_usersByRole.containsKey(role)) {
+      return const SizedBox.shrink();
+    }
+    final users = _usersByRole[role]!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,9 +111,12 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
             value: _selectedUsers[user['email']] ?? false,
             onChanged: (bool? value) {
               setState(() {
-                _selectedUsers[user['email']!] = value!;
-                print("sele: $_selectedUsers");
-                if (!value) {
+                if (value == false) {
+                  _selectedUsers.remove(user['email']);
+                } else {
+                  _selectedUsers[user['email']!] = true;
+                }
+                if (value == false) {
                   _selectAll = false;
                 }
               });
@@ -101,64 +127,59 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
     );
   }
 
+  void _handleSelectAll(bool? value) async {
+    if (value == true) {
+      final allTutors = await _selectAllTutor();
+      setState(() {
+        _selectAll = true;
+        _selectedUsers = allTutors;
+      });
+    } else {
+      setState(() {
+        _selectAll = false;
+        _selectedUsers.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Visibilità'),
       ),
-      body: FutureBuilder<Map<String, List<Map<String, String>>>>(
-        future: _loadUsers(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Errore: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Nessun utente trovato.'));
-          } else {
-            final usersByRole = snapshot.data!;
-            return Column(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+        children: [
+          CheckboxListTile(
+            title: const Text('Seleziona tutti'),
+            value: _selectAll,
+            onChanged: _handleSelectAll,
+          ),
+          Expanded(
+            child: ListView(
               children: [
-                ListTile(
-                  title: const Text('Seleziona tutti'),
-                  trailing: Checkbox(
-                    value: _selectAll,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _selectAll = value!;
-                        _updateSelectedUsers(usersByRole);
-                      });
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildRoleSection('Tutor', usersByRole['Tutor'] ?? []),
-                      _buildRoleSection('Ragazzo', usersByRole['Ragazzo'] ?? []),
-                      _buildRoleSection('Genitore', usersByRole['Genitore'] ?? []),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final selectedEmails = _selectedUsers;
-                          //.entries
-                          //.where((entry) => entry.value)
-                          //.map((entry) => entry.key)
-                          //.toList();
-                      Navigator.pop(context, selectedEmails);
-                    },
-                    child: const Text('Conferma'),
-                  ),
-                ),
+                _buildRoleSection('Tutor'),
+                _buildRoleSection('Ragazzo'),
+                _buildRoleSection('Genitore'),
               ],
-            );
-          }
-        },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                final selectedEmails = _selectedUsers.entries
+                    .where((entry) => entry.value)
+                    .map((entry) => entry.key)
+                    .toList();
+                Navigator.pop(context, selectedEmails);
+              },
+              child: const Text('Conferma'),
+            ),
+          ),
+        ],
       ),
     );
   }

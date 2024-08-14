@@ -38,7 +38,6 @@ class _EventPageState extends State<EventPage> {
   Map<String, dynamic> _event = {};
 
   Future<void> _loadEvent() async {
-    print("doc_id: ${widget.documentId}");
     var doc = await FirebaseFirestore.instance
         .collection('calendario')
         .doc(widget.documentId)

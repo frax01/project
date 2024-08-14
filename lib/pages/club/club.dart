@@ -19,6 +19,8 @@ class ClubPage extends StatefulWidget {
         required this.name,
         required this.surname,
         required this.email,
+        this.selectedIndex = 0,
+        //this.onItemTapped,
       });
 
   final String club;
@@ -28,6 +30,8 @@ class ClubPage extends StatefulWidget {
   final String name;
   final String surname;
   final String email;
+  final int selectedIndex;
+  //final Function? onItemTapped;
 
 
   @override
@@ -42,6 +46,8 @@ class _ClubPageState extends State<ClubPage> {
   @override
   void initState() {
     super.initState();
+
+    _selectedIndex = widget.selectedIndex;
 
     _widgetOptions = <Widget>[
       PopScope(

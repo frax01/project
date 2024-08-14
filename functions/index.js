@@ -18,16 +18,23 @@ const axios = require('axios');
 
 admin.initializeApp();
 
-exports.scheduleNotification = functions.pubsub.schedule('every day 22:04').timeZone('Europe/Rome').onRun(async (context) => {
-    const usersBirthday = ['clZZVrDxSbaEz1lBJ3wClJ:APA91bEvMOBDI0P9_xjthTfCHy-O_XmvtyYhhKUhVzCWtS8TCcYwdTI6LLWpQdIV4sqJ6jOlxp7vBTuHBu5QJlBNM0SR-qTSl2QV2RYfAcW94hbm4V42r2j3EJC6TKAsbFktJgoFOW8b'];
+exports.scheduleNotification = functions.pubsub.schedule('every day 16:35').timeZone('Europe/Rome').onRun(async (context) => {
+    //const usersBirthday = ['clZZVrDxSbaEz1lBJ3wClJ:APA91bEvMOBDI0P9_xjthTfCHy-O_XmvtyYhhKUhVzCWtS8TCcYwdTI6LLWpQdIV4sqJ6jOlxp7vBTuHBu5QJlBNM0SR-qTSl2QV2RYfAcW94hbm4V42r2j3EJC6TKAsbFktJgoFOW8b'];
     //await fetchUsersBirthday(); //per i compleanni
     //await fetchTokensEvent(); //per gli eventi
 
-    if (usersBirthday.length > 0) {
-        for (const name in usersBirthday) {
+    const usersBirthday = [['Fra M'], ['a']];
+    //await fetchUsersBirthday(); //per i compleanni
+    //await fetchTokensEvent(); //per gli event
+    if (usersBirthday[0].length > 0) {
+        for (const name of usersBirthday[0]) {
             const tokensBirthday = await fetchTokensBirthday();
             for (const token of tokensBirthday) {
-                await sendNotification(token, 'compleanno', name);
+                if(usersBirthday[1].includes(token)) {
+                  await sendNotification(token, 'birthday', name, 'personale');
+                } else {
+                  await sendNotification(token, 'birthday', name, 'broadcast');
+                }
             }
         }
     }
@@ -43,6 +50,7 @@ exports.scheduleNotification = functions.pubsub.schedule('every day 22:04').time
 
 async function fetchUsersBirthday() {
     const birthdays = [];
+    const tokens = [];
 
     const today = new Date();
     const dayToday = String(today.getDate()).padStart(2, '0');
@@ -58,12 +66,13 @@ async function fetchUsersBirthday() {
             const [day, month, year] = user.data().birthdate.split('-');
             if(day==dayToday && month==monthToday) {
                 birthdays.push(`${user.data().name} ${user.data().surname}`);
+                tokens.push(...user.data().token);
             }
         });
     } catch (error) {
         console.error('Errore nel recupero dei token: ', error);
     }
-    return birthdays;
+    return [birthdays, tokens];
 }
 
 async function fetchTokensBirthday() {
@@ -83,23 +92,29 @@ async function fetchTokensBirthday() {
     } catch (error) {
         console.error('Errore nel recupero dei token: ', error);
     }
-    return ['c-tLWUaEQXeHHdo13a5zGM:APA91bH5lvCJvMPMMxLvSjKBYuvWuSuetUvgXB2E7Lptmm8RqpyGiaBb-dAXKdS45jfHLMDclSv5tvkctYAaXGRUwJEV_HDwdN_o5Dyzc6jAN-Z_FRTyShZTMIgMRqVu7SHhQjMrlnu7']; //tokens;
+    return ['clZZVrDxSbaEz1lBJ3wClJ:APA91bEvMOBDI0P9_xjthTfCHy-O_XmvtyYhhKUhVzCWtS8TCcYwdTI6LLWpQdIV4sqJ6jOlxp7vBTuHBu5QJlBNM0SR-qTSl2QV2RYfAcW94hbm4V42r2j3EJC6TKAsbFktJgoFOW8b']; //tokens;
 }
 
-async function sendNotification(token, section, name) {
+async function sendNotification(token, section, name, filter) {
 
-    const docId = '';
-    const selectedOption = '';
-    const category = '';
-    const notTitle = '';
-    const message = '';
+    let docId = '';
+    let selectedOption = '';
+    let category = '';
+    let notTitle = '';
+    let message = '';
 
-    if(section=='compleanno') {
+    if(section=='birthday' && filter=='broadcast') {
         docId = '';
         selectedOption = '';
         category = section;
         notTitle = `Oggi è il compleanno di ${name}`;
         message = 'Fagli gli auguri!';
+    } else if(section=='birthday' && filter=='personale') {
+        docId = '';
+        selectedOption = '';
+        category = section;
+        notTitle = `Buon compleanno!`;
+        message = 'Festeggia al Tiber!';
     } else {
         docId = '';
         selectedOption = '';
