@@ -9,16 +9,26 @@ import 'package:club/pages/club/addEditProgram.dart';
 import 'package:club/pages/club/eventPage.dart';
 import 'package:club/pages/club/programPage.dart';
 
+// finire le notifiche programmate per i compleanni
+// notifiche programmate per gli eventi
+// gestire i token
+// togliere pranzi
+// migliorare il condividi evento
+
 class Calendar extends StatefulWidget {
   const Calendar({
     super.key,
     required this.isAdmin,
     required this.club,
-    required this.name,});
+    required this.name,
+    required this.email,
+    required this.selectedClass});
 
   final bool isAdmin;
   final String club;
   final String name;
+  final String email;
+  final List selectedClass;
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -95,7 +105,7 @@ class _CalendarState extends State<Calendar> {
         events[dateOnly] = [];
         eventIds[dateOnly] = [];
       }
-      events[dateOnly]!.add({'id': doc.id, 'titolo': event, 'tipo': 'evento'});
+      events[dateOnly]!.add({'id': doc.id, 'titolo': event, 'tipo': 'evento', 'utenti': data['utenti']});
       eventIds[dateOnly]!.add(doc.id);
     }
 
@@ -149,7 +159,7 @@ class _CalendarState extends State<Calendar> {
         events[dateOnly] = [];
         eventIds[dateOnly] = [];
       }
-      events[dateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'programma'});
+      events[dateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'programma', 'classi': data['selectedClass']});
       eventIds[dateOnly]!.add(doc.id);
     }
 
@@ -187,7 +197,7 @@ class _CalendarState extends State<Calendar> {
           events[startDateOnly] = [];
           eventIds[startDateOnly] = [];
         }
-        events[startDateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'convivenza'});
+        events[startDateOnly]!.add({'id': doc.id, 'titolo': data['title'], 'tipo': 'convivenza', 'classi': data['selectedClass']});
         eventIds[startDateOnly]!.add(doc.id);
       }
     }
@@ -208,6 +218,15 @@ class _CalendarState extends State<Calendar> {
 
   @override
   Widget build(BuildContext context) {
+    List validEvents = _selectedDayEvents.where((event) {
+      if ((event['tipo'] == 'evento' && !event['utenti'].contains(widget.email) && !widget.isAdmin) ||
+          (event['tipo'] == 'programma' && !widget.selectedClass.any((selectedClass) => event['classi'].contains(selectedClass)) && !widget.isAdmin) ||
+          (event['tipo'] == 'convivenza' && !widget.selectedClass.any((selectedClass) => event['classi'].contains(selectedClass)) && !widget.isAdmin)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
@@ -274,10 +293,47 @@ class _CalendarState extends State<Calendar> {
                 },
                 markerBuilder: (context, date, events) {
                   final dateOnly = DateTime(date.year, date.month, date.day);
-                  final eventCount = _events[dateOnly]?.where((e) => e['tipo'] == 'evento').length ?? 0;
+
+                  int eventCount = 0;
+                  for(var elem in _events[dateOnly] ?? []) {
+                    if(elem['tipo']=='evento' && widget.isAdmin) {
+                      eventCount++;
+                    }
+                    else if(elem['tipo']=='evento' && elem['utenti'].contains(widget.email)) {
+                      eventCount++;
+                    }
+                  }
+
                   final birthdayCount = _events[dateOnly]?.where((e) => e['tipo'] == 'compleanno').length ?? 0;
-                  final programCount = _events[dateOnly]?.where((e) => e['tipo'] == 'programma').length ?? 0;
-                  final tripEvents = _events[dateOnly]?.where((e) => e['tipo'] == 'convivenza').toList() ?? [];
+
+                  int programCount = 0;
+                  for(var elem in _events[dateOnly] ?? []) {
+                    if(elem['tipo']=='programma' && widget.isAdmin) {
+                      programCount++;
+                    }
+                    else if(elem['tipo']=='programma') {
+                      for(String value in elem['classi']) {
+                        if(widget.selectedClass.contains(value)) {
+                          programCount++;
+                          break;
+                        }
+                      }
+                    }
+                  }
+
+                  final tripEvents = [];
+                  for(var elem in _events[dateOnly] ?? []) {
+                    if(elem['tipo']=='convivenza' && widget.isAdmin) {
+                      tripEvents.add(elem);
+                    } else if(elem['tipo']=='convivenza') {
+                      for(String value in elem['classi']) {
+                        if(widget.selectedClass.contains(value) && !tripEvents.contains(elem)) {
+                          tripEvents.add(elem);
+                          break;
+                        }
+                      }
+                    }
+                  }
 
                   final total = eventCount + programCount;
 
@@ -342,12 +398,13 @@ class _CalendarState extends State<Calendar> {
             const Center(child: Text("In programma", style: TextStyle(fontSize: 22))),
             const SizedBox(height: 10),
             Expanded(
-              child: _selectedDayEvents.isNotEmpty ? ListView.separated(
-                itemCount: _selectedDayEvents.length,
+              child: validEvents.isNotEmpty ? ListView.separated(
+                itemCount: validEvents.length,//_selectedDayEvents.length,
                 separatorBuilder: (context, index) => const Divider(height: 1.0),
                 itemBuilder: (context, index) {
-                  Map event = _selectedDayEvents[index];
-                  return ListTile(
+                  Map event = validEvents[index]; //_selectedDayEvents[index];
+                  return //validEvents.isNotEmpty ?
+                  ListTile(
                     leading: event['tipo']=='compleanno'
                         ? const Icon(Icons.cake)
                         : event['tipo']=='evento'
@@ -415,7 +472,7 @@ class _CalendarState extends State<Calendar> {
                       ));
                       await _loadEvents();
                     } : null,
-                  );
+                  );// : const Center(child: Text('Nessun evento'));
                   },
               ) : const Center(child: Text('Nessun evento'))
             ),
