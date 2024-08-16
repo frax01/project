@@ -30,11 +30,12 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.mycompany.dima"
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
-    compileSdkVersion 34
 
-    ndkVersion "25.1.8937393"
+    //compileSdkVersion flutter.compileSdkVersion
+    //ndkVersion flutter.ndkVersion
+
+    compileSdkVersion 34
+    ndkVersion "26.1.10909125"
 
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -64,7 +65,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        versionCode 8
+        versionCode 9
         versionName "1.0.0"
 
         multiDexEnabled true
