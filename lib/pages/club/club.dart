@@ -4,7 +4,6 @@ import 'package:club/pages/club/profilePage.dart';
 import 'package:club/pages/club/torneoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'birthdayPage.dart';
 import 'info.dart';
 import 'calendar.dart';
 import 'lunch.dart';
@@ -20,7 +19,6 @@ class ClubPage extends StatefulWidget {
         required this.surname,
         required this.email,
         this.selectedIndex = 0,
-        //this.onItemTapped,
       });
 
   final String club;
@@ -31,7 +29,6 @@ class ClubPage extends StatefulWidget {
   final String surname;
   final String email;
   final int selectedIndex;
-  //final Function? onItemTapped;
 
 
   @override
@@ -81,14 +78,8 @@ class _ClubPageState extends State<ClubPage> {
       //  onPopInvoked: (_) {
       //    SystemNavigator.pop();
       //  },
-      //  child: const BirthdayPage(),
+      //  child: const Lunch(),
       //),
-      PopScope(
-        onPopInvoked: (_) {
-          SystemNavigator.pop();
-        },
-        child: const Lunch(),
-      ),
     ];
   }
 
@@ -121,12 +112,12 @@ class _ClubPageState extends State<ClubPage> {
                     )));
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.message_outlined),
-              onPressed: () {
-                print('Search icon pressed');
-              },
-            ),
+            //IconButton(
+            //  icon: const Icon(Icons.message_outlined),
+            //  onPressed: () {
+            //    print('Search icon pressed');
+            //  },
+            //),
           ]
       ),
       body: PageTransitionSwitcher(
@@ -167,15 +158,10 @@ class _ClubPageState extends State<ClubPage> {
             label: 'Calendario',
           ),
           //const BottomNavigationBarItem(
-          //  icon: Icon(Icons.cake_outlined),
-          //  activeIcon: Icon(Icons.cake),
-          //  label: 'Compleanni',
+          //  icon: Icon(Icons.fastfood_outlined),
+          //  activeIcon: Icon(Icons.stadium),
+          //  label: 'Pranzi',
           //),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.fastfood_outlined),
-            activeIcon: Icon(Icons.stadium),
-            label: 'Pranzi',
-          ),
         ],
       ),
     );

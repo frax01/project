@@ -16,6 +16,8 @@ import 'pages/main/login.dart';
 import 'pages/main/waiting.dart';
 import 'services/local_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/pages/club/eventPage.dart';
+import 'package:club/pages/club/programCard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -120,6 +122,14 @@ class _HomePageState extends State<HomePage> {
   bool status = false;
   String id = '';
   String club = '';
+  List token = [];
+
+  final _listItems = <ProgramCard>[];
+  refreshList() {
+    setState(() {
+      _listItems.clear();
+    });
+  }
 
   RemoteMessage? initialMessage;
 
@@ -145,14 +155,30 @@ class _HomePageState extends State<HomePage> {
     email = value['email'];
     classes = value['club_class'];
     status = value['status'] == 'Admin'? true : false;
+    token = value['token'];
     id = value.id;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     club = prefs.getString('club') ?? '';
 
     FirebaseMessaging messaging = FirebaseMessaging.instance;
-    String? token = await messaging.getToken();
-    print("token: $token");
+    String? getToken = await messaging.getToken();
+    print("token: $getToken");
+
+    List tokenList = [getToken];
+
+    if(token.isEmpty) {
+      await FirebaseFirestore.instance
+          .collection('user')
+          .doc(id)
+          .update({'token': tokenList});
+    } else if(token.isNotEmpty && !token.contains(getToken)) {
+      token.add(getToken);
+      await FirebaseFirestore.instance
+          .collection('user')
+          .doc(id)
+          .update({'token': token});
+    }
   }
 
   Future<void> setupInteractedMessage() async {
@@ -215,6 +241,19 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => buildClubPage(club, 2)));
+    } else if (message.data['category'] == 'evento') {
+      DateTime focusedDay;
+      focusedDay = DateTime.parse(message.data['focusedDay']);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventPage(
+                  club: club,
+                  documentId: message.data['docId'],
+                  isAdmin: status,
+                  name: name,
+                  focusedDay: focusedDay
+              )));
     }
   }
 
@@ -251,6 +290,20 @@ class _HomePageState extends State<HomePage> {
                     name: '$name $surname'
                   )));
     } else if (initialMessage?.data['category'] == 'birthday') {
+      return buildClubPage(club, 2);
+    } else if (initialMessage?.data['category'] == 'evento') {
+      DateTime focusedDay;
+      focusedDay = DateTime.parse(initialMessage?.data['focusedDay']);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventPage(
+                  club: club,
+                  documentId: initialMessage?.data['docId'],
+                  isAdmin: status,
+                  name: name,
+                  focusedDay: focusedDay
+              )));
       return buildClubPage(club, 2);
     }
     return buildClubPage(club, 0);

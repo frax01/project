@@ -15,18 +15,14 @@ class EventPage extends StatefulWidget {
     super.key,
     required this.club,
     required this.documentId,
-    required this.selectedOption,
     required this.isAdmin,
     required this.name,
-    this.refreshList,
     required this.focusedDay,
   });
 
   final String club;
   final String documentId;
-  final String selectedOption;
   final bool isAdmin;
-  final Function? refreshList;
   final String name;
   final DateTime focusedDay;
 
@@ -70,7 +66,6 @@ class _EventPageState extends State<EventPage> {
               onPressed: () async {
                 final FirebaseFirestore firestore = FirebaseFirestore.instance;
                 await firestore.collection('calendario').doc(id).delete();
-                widget.refreshList!();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -313,7 +308,7 @@ class _EventPageState extends State<EventPage> {
         };
 
         await FirebaseFirestore.instance
-            .collection('club_${widget.selectedOption}')
+            .collection('calendario')
             .doc(widget.documentId)
             .update({
           'file': FieldValue.arrayUnion([dataToSave])
@@ -438,7 +433,7 @@ class _EventPageState extends State<EventPage> {
 
   void _deleteFileOrLink(Map<String, dynamic> fileData) async {
     await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
+        .collection('calendario')
         .doc(widget.documentId)
         .update({
       'file': FieldValue.arrayRemove([fileData])
@@ -517,7 +512,6 @@ class _EventPageState extends State<EventPage> {
                         club: widget.club,
                         selectedOption: 'evento',
                         document: _event,
-                        refreshList: widget.refreshList,
                         refreshProgram: refreshProgram,
                         name: widget.name,
                         focusedDay: widget.focusedDay,

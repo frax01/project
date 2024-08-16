@@ -9,12 +9,6 @@ import 'package:club/pages/club/addEditProgram.dart';
 import 'package:club/pages/club/eventPage.dart';
 import 'package:club/pages/club/programPage.dart';
 
-// finire le notifiche programmate per i compleanni
-// notifiche programmate per gli eventi
-// gestire i token
-// togliere pranzi
-// migliorare il condividi evento
-
 class Calendar extends StatefulWidget {
   const Calendar({
     super.key,
@@ -439,9 +433,7 @@ class _CalendarState extends State<Calendar> {
                           builder: (context) => EventPage(
                               club: widget.club,
                               documentId: event['id'],
-                              selectedOption: 'evento',
                               isAdmin: widget.isAdmin,
-                              refreshList: refreshList,
                               name: widget.name,
                               focusedDay: _focusedDay,)));
                       await _loadEvents();
