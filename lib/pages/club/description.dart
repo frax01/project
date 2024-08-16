@@ -68,12 +68,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.sports_soccer),
                         const SizedBox(width: 10),
                         Text(
-                          '15:30',
+                          '15:30 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Scuola Calcio',
+                            'Scuola Calcio',
                             style: textStyle,
                           ),
                         ),
@@ -85,12 +85,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.fastfood),
                         const SizedBox(width: 10),
                         Text(
-                          '17:30',
+                          '17:30 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Merenda',
+                            'Merenda',
                             style: textStyle,
                           ),
                         ),
@@ -102,12 +102,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.book),
                         const SizedBox(width: 10),
                         Text(
-                          '17:45',
+                          '17:45 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Studio',
+                            'Studio',
                             style: textStyle,
                           ),
                         ),
@@ -119,12 +119,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.flag),
                         const SizedBox(width: 10),
                         Text(
-                          '19:00',
+                          '19:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Fine',
+                            'Fine',
                             style: textStyle,
                           ),
                         ),
@@ -153,12 +153,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.sports_soccer),
                         const SizedBox(width: 10),
                         Text(
-                          '15:00',
+                          '15:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Calcio',
+                            'Calcio',
                             style: textStyle,
                           ),
                         ),
@@ -170,12 +170,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.fastfood),
                         const SizedBox(width: 10),
                         Text(
-                          '17:00',
+                          '17:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Merenda',
+                            'Merenda',
                             style: textStyle,
                           ),
                         ),
@@ -187,12 +187,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.favorite),
                         const SizedBox(width: 10),
                         Text(
-                          '17:30',
+                          '17:30 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Meditazione',
+                            'Meditazione',
                             style: textStyle,
                           ),
                         ),
@@ -204,12 +204,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.event_note),
                         const SizedBox(width: 10),
                         Text(
-                          '18:00',
+                          '18:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Programma',
+                            'Programma',
                             style: textStyle,
                           ),
                         ),
@@ -221,12 +221,12 @@ class Tiber extends StatelessWidget {
                         const Icon(Icons.flag),
                         const SizedBox(width: 10),
                         Text(
-                          '19:00',
+                          '19:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Fine',
+                            'Fine',
                             style: textStyle,
                           ),
                         ),
@@ -380,12 +380,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.book),
                         const SizedBox(width: 10),
                         Text(
-                          '15:00',
+                          '15:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Studio',
+                            'Studio',
                             style: textStyle,
                           ),
                         ),
@@ -397,12 +397,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.fastfood),
                         const SizedBox(width: 10),
                         Text(
-                          '17:00',
+                          '17:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Merenda',
+                            'Merenda',
                             style: textStyle,
                           ),
                         ),
@@ -414,12 +414,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.local_activity),
                         const SizedBox(width: 10),
                         Text(
-                          '17:30',
+                          '17:30 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Attività varie',
+                            'Attività varie',
                             style: textStyle,
                           ),
                         ),
@@ -431,12 +431,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.flag),
                         const SizedBox(width: 10),
                         Text(
-                          '19:00',
+                          '19:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Fine',
+                            'Fine',
                             style: textStyle,
                           ),
                         ),
@@ -465,12 +465,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.local_activity),
                         const SizedBox(width: 10),
                         Text(
-                          '15:00',
+                          '15:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Sport, gite, giochi...',
+                            'Sport, gite, giochi...',
                             style: textStyle,
                           ),
                         ),
@@ -482,12 +482,12 @@ class _DeltaState extends State<Delta> {
                         const Icon(Icons.flag),
                         const SizedBox(width: 10),
                         Text(
-                          '19:00',
+                          '19:00 - ',
                           style: textStyle.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Expanded(
                           child: Text(
-                            ' - Fine',
+                            'Fine',
                             style: textStyle,
                           ),
                         ),

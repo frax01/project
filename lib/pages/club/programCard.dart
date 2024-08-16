@@ -132,7 +132,7 @@ class _ProgramCardState extends State<ProgramCard> {
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: OpenContainer(
         clipBehavior: Clip.antiAlias,
-        closedElevation: 5.0,
+        closedElevation: 12.0,
         closedShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
@@ -140,10 +140,39 @@ class _ProgramCardState extends State<ProgramCard> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20.0),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          level == 'weekend'
+                              ? 'Programma'
+                              : 'Convivenza',
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               Stack(
                 children: [
                   SizedBox(
-                    height: 175,
+                    height: 180,
                     width: double.infinity,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
@@ -156,7 +185,7 @@ class _ProgramCardState extends State<ProgramCard> {
                             return child;
                           } else {
                             return SizedBox(
-                              height: 175,
+                              height: 180,
                               width: double.infinity,
                               child: Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
@@ -171,56 +200,34 @@ class _ProgramCardState extends State<ProgramCard> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 10,
-                    bottom: 10,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(7.0),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black54,
-                              blurRadius: 7.0,
-                            ),
-                          ],
-                        ),
-                        child: endDate != ""
-                            ? Text('$startDate ～ $endDate',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold))
-                            : Text(startDate,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ),
+                  //Positioned(
+                  //  left: 10,
+                  //  bottom: 10,
+                  //  child: Padding(
+                  //    padding: const EdgeInsets.all(5.0),
+                  //    child: Container(
+                  //      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                  //      decoration: BoxDecoration(
+                  //        color: Colors.white,
+                  //        borderRadius: BorderRadius.circular(7.0),
+                  //        boxShadow: const [
+                  //          BoxShadow(
+                  //            color: Colors.black54,
+                  //            blurRadius: 7.0,
+                  //          ),
+                  //        ],
+                  //      ),
+                  //      child: endDate != ""
+                  //          ? Text('$startDate ～ $endDate',
+                  //              style: const TextStyle(
+                  //                  fontWeight: FontWeight.bold))
+                  //          : Text(startDate,
+                  //              style: const TextStyle(
+                  //                  fontWeight: FontWeight.bold)),
+                  //    ),
+                  //  ),
+                  //),
                 ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20.0)),
-                        Text(
-                          level == 'weekend'
-                              ? 'Programma'
-                              : 'Convivenza',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ),
             ],
           );

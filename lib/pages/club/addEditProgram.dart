@@ -79,7 +79,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
   }
 
   Future<void> _initialize() async {
-    await _fetchTutors();
     if (widget.document != null) {
       _isEditing = true;
       if (widget.selectedOption == 'evento') {
@@ -88,13 +87,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _startTimeController.text = widget.document!['inizio'];
         _endTimeController.text = widget.document!['fine'];
         modifiedUsers = widget.document!['utenti'];
-        print("mod: $modifiedUsers");
-        print("use: $users");
         if (Set.from(modifiedUsers).containsAll(users) && Set.from(users).containsAll(modifiedUsers)) {
-          print("1");
           tutor = true;
         } else {
-          print("2");
           for (var user in modifiedUsers) {
             _visibility[user] = true;
           }
@@ -115,6 +110,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
         selectedClasses = List<String>.from(widget.document!['selectedClass']);
       }
     }
+    await _fetchTutors();
   }
 
   _fetchTutors() async {

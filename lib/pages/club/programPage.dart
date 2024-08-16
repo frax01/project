@@ -9,6 +9,7 @@ import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
@@ -498,9 +499,7 @@ class _ProgramPageState extends State<ProgramPage> {
       appBar: AppBar(
         title: widget.selectedOption == 'weekend'
             ? const Text('Sabato')
-            : widget.selectedOption == 'trip'
-                ? const Text('Viaggio')
-                : const Text('Extra'),
+            : const Text('Convivenza'),
         actions: [
           IconButton(
             onPressed: () {
@@ -569,7 +568,7 @@ class _ProgramPageState extends State<ProgramPage> {
                         children: [
                           Card(
                             clipBehavior: Clip.antiAlias,
-                            elevation: 5,
+                            elevation: 10,
                             child: SizedBox(
                               height: 175,
                               width: double.infinity,
@@ -580,33 +579,45 @@ class _ProgramPageState extends State<ProgramPage> {
                             ),
                           ),
                           Positioned(
-                              bottom: -25,
-                              left: 15,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 7,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                  child: Text(
-                                    _data['title'],
-                                    style: const TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
+                            bottom: -25,
+                            left: 15,
+                            right: 15,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width - 30,  // Ensure padding is considered
+                              ),
+                              child: Center(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 7,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: AutoSizeText(
+                                      _data['title'],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 30,
+                                      ),
+                                      maxFontSize: 30,
+                                      minFontSize: 20,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ),
-                              )),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 30.0),
@@ -677,7 +688,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Column(
+                                      Expanded(
+                                      child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
@@ -695,7 +707,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                                   const TextStyle(fontSize: 15),
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                          ]),
+                                          ])),
+                                      const SizedBox(width: 10),
                                       weatherTile(_weather),
                                     ],
                                   ),
