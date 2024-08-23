@@ -65,7 +65,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        versionCode 9
+        versionCode 12
         versionName "1.0.0"
 
         multiDexEnabled true
@@ -76,10 +76,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("my-release-key.jks")
-            storePassword "store_password"
-            keyAlias "my-key-alias"
-            keyPassword "store_password"
+            storeFile file("upload-keystore.jks")
+            storePassword "upload-key"
+            keyAlias "alias"
+            keyPassword "alias-key"
         }
     }
 

@@ -478,9 +478,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
         setState(() {
           _isLoadingCreation = false;
         });
-        sendNotification(
-            token, 'Nuovo programma!', document['title'], 'new_event',
-            docId: doc.id, selectedOption: widget.selectedOption);
+        //sendNotification(
+        //    token, 'Nuovo programma!', document['title'], 'new_event',
+        //    docId: doc.id, selectedOption: widget.selectedOption);
         widget.refreshList!();
         Navigator.pop(context);
       } catch (e) {
@@ -552,14 +552,14 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
-      sendNotification(
-        token,
-        'Programma modificato!',
-        newDocument['title'] ?? widget.document!['title'],
-        'modified_event',
-        docId: widget.document!['id'],
-        selectedOption: widget.selectedOption,
-      );
+      //sendNotification(
+      //  token,
+      //  'Programma modificato!',
+      //  newDocument['title'] ?? widget.document!['title'],
+      //  'modified_event',
+      //  docId: widget.document!['id'],
+      //  selectedOption: widget.selectedOption,
+      //);
 
       for (var key in widget.document!.keys) {
         if (newDocument[key] == widget.document![key]) {
