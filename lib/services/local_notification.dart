@@ -10,7 +10,8 @@ class LocalNotificationService {
   static void initialize(void Function(RemoteMessage) handleMessageFromBackgroundAndForegroundState) {
     const InitializationSettings initializationSettings =
         InitializationSettings(
-            android: AndroidInitializationSettings("@mipmap/ic_launcher"));
+            android: AndroidInitializationSettings("@mipmap/ic_launcher"), iOS: DarwinInitializationSettings());
+
     _notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (payload) {
           handleMessageFromBackgroundAndForegroundState(notificationMessage);
