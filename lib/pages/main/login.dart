@@ -91,7 +91,7 @@ class _LoginState extends State<Login> {
         name = value['name'];
         surname = value['surname'];
         email = value['email'];
-        classes = value['club_class'];
+        classes = value['club_class'].isEmpty? [] : value['club_class'];
         status = value['status'] == 'Admin'? true : false;
         role = value['role'];
         club = value['club'];
@@ -182,11 +182,11 @@ class _LoginState extends State<Login> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("images/tiberlogo.png", width: 150),
+                Image.asset("images/clubLogo.png", width: 175),
                 const SizedBox(height: 20),
                 const Text(
-                  'Tiber Club',
-                  style: TextStyle(fontSize: 30),
+                  'Club',
+                  style: TextStyle(fontSize: 50),
                 ),
                 const SizedBox(height: 20),
                 Form(
@@ -253,10 +253,13 @@ class _LoginState extends State<Login> {
                           children: [
                             Expanded(
                               child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green[800],
+                                ),
                                 onPressed: () {
                                   Navigator.pushNamed(context, '/signup');
                                 },
-                                child: const Text('Registrati'),
+                                child: const Text('Registrati', style: TextStyle(color: Colors.white, fontSize: 17)),
                               ),
                             ),
                             const SizedBox(width: 20),
@@ -274,7 +277,7 @@ class _LoginState extends State<Login> {
                                         ),
                                       )
                                     : const Text('Accedi',
-                                        style: TextStyle(color: Colors.white)),
+                                        style: TextStyle(color: Colors.white, fontSize: 17)),
                               ),
                             ),
                           ],
@@ -285,6 +288,7 @@ class _LoginState extends State<Login> {
                         onPressed: _showForgotPasswordDialog,
                         child: const Text(
                           'Password dimenticata?',
+                          style: TextStyle(color: Color(0xFF0D47A1), fontSize: 15),
                         ),
                       ),
                     ],

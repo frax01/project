@@ -21,16 +21,18 @@ admin.initializeApp();
 exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').timeZone('Europe/Rome').onRun(async (context) => {
     
     //'clZZVrDxSbaEz1lBJ3wClJ:APA91bEvMOBDI0P9_xjthTfCHy-O_XmvtyYhhKUhVzCWtS8TCcYwdTI6LLWpQdIV4sqJ6jOlxp7vBTuHBu5QJlBNM0SR-qTSl2QV2RYfAcW94hbm4V42r2j3EJC6TKAsbFktJgoFOW8b'
-    
-    const usersBirthday = await fetchUsersBirthday();
-    if (usersBirthday[0].length > 0) {
-        for (const name of usersBirthday[0]) {
-            const tokensBirthday = await fetchTokensBirthday();
-            for (const token of tokensBirthday) {
-                if(usersBirthday[1].includes(token)) {
-                  await sendNotification(token, 'birthday', name, 'personale', '', '');
-                } else {
-                  await sendNotification(token, 'birthday', name, 'broadcast', '', '');
+
+    for (var elem in ['Tiber Club', 'Delta Club']) {
+        const usersBirthday = await fetchUsersBirthday(elem);
+        if (usersBirthday[0].length > 0) {
+            for (const name of usersBirthday[0]) {
+                const tokensBirthday = await fetchTokensBirthday(elem);
+                for (const token of tokensBirthday) {
+                    if(usersBirthday[1].includes(token)) {
+                      await sendNotification(token, 'birthday', name, 'personale', '', '');
+                    } else {
+                      await sendNotification(token, 'birthday', name, 'broadcast', '', '');
+                    }
                 }
             }
         }
@@ -41,30 +43,33 @@ exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').time
     const dayToday = String(today.getDate()).padStart(2, '0');
     const monthToday = String(today.getMonth() + 1).padStart(2, '0');
     try {
-        const calendar = await admin.firestore()
-            .collection('calendario')
-            .where('club', '==', 'Tiber Club')
-            .get();
+        for (var elem in ['Tiber Club', 'Delta Club']) {
+            const calendar = await admin.firestore()
+                .collection('calendario')
+                .where('club', '==', elem)
+                .get();
 
-        calendar.forEach(async (event) => {
-            users = [];
-            const eventData = event.data().data;
-            const eventDate = eventData.toDate();
-            const day = String(eventDate.getDate()).padStart(2, '0');
-            const monthNum = String(eventDate.getMonth() + 1).padStart(2, '0');
-            if (day == dayToday && monthNum == monthToday) {
-                users.push(...event.data().utenti);
-            }
-            const tokensEvent = await fetchTokensEvent(users);
-            if (tokensEvent.length > 0) {
-                for (const token of tokensEvent) {
-                    await sendNotification(token, 'evento', event.data().titolo, '', event.id, eventDate);
+            calendar.forEach(async (event) => {
+                users = [];
+                const eventData = event.data().data;
+                const eventDate = eventData.toDate();
+                const day = String(eventDate.getDate()).padStart(2, '0');
+                const monthNum = String(eventDate.getMonth() + 1).padStart(2, '0');
+                if (day == dayToday && monthNum == monthToday) {
+                    users.push(...event.data().utenti);
                 }
-            }
-        });
+                const tokensEvent = await fetchTokensEvent(users);
+                if (tokensEvent.length > 0) {
+                    for (const token of tokensEvent) {
+                        await sendNotification(token, 'evento', event.data().titolo, '', event.id, eventDate);
+                    }
+                }
+            });
+        };
     } catch (error) {
         console.error('Error fetching user events:', error);
     }
+
     return null;
 });
 
@@ -92,7 +97,7 @@ async function fetchTokensEvent(users) {
     return tokens;
 }
 
-async function fetchUsersBirthday() {
+async function fetchUsersBirthday(elem) {
     const birthdays = [];
     const tokens = [];
 
@@ -102,7 +107,7 @@ async function fetchUsersBirthday() {
     try {
         const users = await admin.firestore()
         .collection('user')
-        .where('club', '==', 'Tiber Club')
+        .where('club', '==', elem)
         .where('role', 'in', ['Tutor', 'Ragazzo'])
         .get();
 
@@ -119,12 +124,12 @@ async function fetchUsersBirthday() {
     return [birthdays, tokens];
 }
 
-async function fetchTokensBirthday() {
+async function fetchTokensBirthday(elem) {
     const tokens = [];
     try {
         const users = await admin.firestore()
         .collection('user')
-        .where('club', '==', 'Tiber Club')
+        .where('club', '==', elem)
         .where('role', 'in', ['Tutor', 'Ragazzo'])
         .get();
 

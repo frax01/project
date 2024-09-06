@@ -103,7 +103,7 @@ class _CalendarState extends State<Calendar> {
       eventIds[dateOnly]!.add(doc.id);
     }
 
-    //compleanno
+    // compleanno
     final querySnapshotBirthday = await FirebaseFirestore.instance
         .collection('user')
         .where('club', isEqualTo: widget.club)
@@ -120,18 +120,21 @@ class _CalendarState extends State<Calendar> {
 
       final name = data['name'] + ' ' + data['surname'] as String;
 
-      DateTime now = DateTime.now();
-      DateTime dateOnlyThisYear = DateTime(now.year, resultDate.month, resultDate.day);
-      DateTime dateOnlyNextYear = DateTime(now.year + 1, resultDate.month, resultDate.day);
-      DateTime dateOnly = dateOnlyThisYear.isBefore(now) ? dateOnlyNextYear : dateOnlyThisYear;
+      final DateTime firstDay = DateTime.utc(2020, 1, 1);
+      final DateTime lastDay = DateTime.utc(2030, 12, 31);
 
-      if (events[dateOnly] == null) {
-        events[dateOnly] = [];
-        eventIds[dateOnly] = [];
+      for (int year = firstDay.year; year <= lastDay.year; year++) {
+        DateTime dateOnlyThisYear = DateTime(year, resultDate.month, resultDate.day);
+
+        if (events[dateOnlyThisYear] == null) {
+          events[dateOnlyThisYear] = [];
+          eventIds[dateOnlyThisYear] = [];
+        }
+        events[dateOnlyThisYear]!.add({'id': doc.id, 'titolo': name, 'tipo': 'compleanno'});
+        eventIds[dateOnlyThisYear]!.add(doc.id);
       }
-      events[dateOnly]!.add({'id': doc.id, 'titolo': name, 'tipo': 'compleanno'});
-      eventIds[dateOnly]!.add(doc.id);
     }
+
 
     //programma
     final querySnapshotProgram = await FirebaseFirestore.instance
@@ -230,7 +233,7 @@ class _CalendarState extends State<Calendar> {
               locale: 'it_IT',
               focusedDay: _focusedDay,
               firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2025, 12, 31),
+              lastDay: DateTime.utc(2030, 12, 31),
               startingDayOfWeek: StartingDayOfWeek.monday,
               selectedDayPredicate: (day) {
                 return isSameDay(_selectedDay, day);

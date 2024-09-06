@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'info.dart';
 import 'calendar.dart';
-import 'lunch.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage(
@@ -87,7 +86,7 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.club),
+        title: widget.club=='Delta Club' ? const Text('Centro Delta') : Text(widget.club),
         automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -112,12 +111,6 @@ class _ClubPageState extends State<ClubPage> {
                     )));
               },
             ),
-            //IconButton(
-            //  icon: const Icon(Icons.message_outlined),
-            //  onPressed: () {
-            //    print('Search icon pressed');
-            //  },
-            //),
           ]
       ),
       body: PageTransitionSwitcher(

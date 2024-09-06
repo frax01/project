@@ -35,7 +35,7 @@ class Waiting extends StatelessWidget {
                   style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
                 ),
                 const Text(
-                  "La tua richiesta è stata inviata, attendi l'approvazione dell'admin",
+                  "La tua richiesta è stata inviata",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14.0),
                 ),

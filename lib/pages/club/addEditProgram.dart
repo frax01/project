@@ -552,14 +552,14 @@ class _AddEditProgramState extends State<AddEditProgram> {
           }
         }
       }
-      //sendNotification(
-      //  token,
-      //  'Programma modificato!',
-      //  newDocument['title'] ?? widget.document!['title'],
-      //  'modified_event',
-      //  docId: widget.document!['id'],
-      //  selectedOption: widget.selectedOption,
-      //);
+      sendNotification(
+        token,
+        'Programma modificato!',
+        newDocument['title'] ?? widget.document!['title'],
+        'modified_event',
+        docId: widget.document!['id'],
+        selectedOption: widget.selectedOption,
+      );
 
       for (var key in widget.document!.keys) {
         if (newDocument[key] == widget.document![key]) {
@@ -772,7 +772,7 @@ Widget build(BuildContext context) {
                     selected = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => VisibilitySelectionPage(visibility: _visibility),
+                        builder: (context) => VisibilitySelectionPage(visibility: _visibility, club: widget.club),
                       ),
                     );
                     setState(() {

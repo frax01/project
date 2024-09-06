@@ -21,7 +21,6 @@ void deleteOldDocuments() async {
   }
 
   final twoDateCollections = [
-    'club_summer',
     'club_trip',
   ];
   for (final collection in twoDateCollections) {

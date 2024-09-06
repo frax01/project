@@ -264,7 +264,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       leading: const Icon(Icons.class_rounded),
                       title: medie.length==1? const Text('Classe') : const Text('Classi'),
                       subtitle: AutoSizeText(
-                        '${medie.join(', ')}, ${liceo.join(', ')}',
+                        '${medie.join(', ')}${medie.isNotEmpty && liceo.isNotEmpty ? ', ' : ''}${liceo.join(', ')}',
                         style: const TextStyle(fontSize: 20.0),
                         maxLines: 2,
                         minFontSize: 10,

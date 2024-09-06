@@ -349,7 +349,7 @@ class _DeltaState extends State<Delta> {
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
-                text: 'Il ${widget.club} è un\'associazione familiare che si rivolge a ragazzi liceali, '
+                text: 'Il Centro Delta è un\'associazione familiare che si rivolge a ragazzi liceali, '
                     'con lo scopo di promuovere la loro crescita attraverso '
                     'attività formative, sportive e culturali\n\n',
                 style: textStyle.copyWith(fontWeight: FontWeight.normal),

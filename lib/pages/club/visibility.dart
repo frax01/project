@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class VisibilitySelectionPage extends StatefulWidget {
-  const VisibilitySelectionPage({super.key, this.visibility});
+  const VisibilitySelectionPage({super.key, this.visibility, required this.club});
 
   final Map<String, bool>? visibility;
+  final String club;
 
   @override
   _VisibilitySelectionPageState createState() => _VisibilitySelectionPageState();
@@ -28,7 +29,7 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('user')
         .where('role', whereIn: roles)
-        .where('club', isEqualTo: 'Tiber Club')
+        .where('club', isEqualTo: widget.club)
         .get();
 
     Map<String, bool> select = {};
@@ -46,7 +47,7 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('user')
           .where('role', whereIn: roles)
-          .where('club', isEqualTo: 'Tiber Club')
+          .where('club', isEqualTo: widget.club)
           .get();
 
       final usersByRole = <String, List<Map<String, String>>>{};

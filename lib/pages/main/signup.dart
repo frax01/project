@@ -163,7 +163,7 @@ class _SignUpState extends State<SignUp> {
                     },
                   ),
                   CheckboxListTile(
-                    title: const Text('Delta Club'),
+                    title: const Text('Centro Delta'),
                     subtitle: const Text('Milano'),
                     value: isDeltaClubChecked,
                     onChanged: (bool? value) {
