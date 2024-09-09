@@ -478,9 +478,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
         setState(() {
           _isLoadingCreation = false;
         });
-        //sendNotification(
-        //    token, 'Nuovo programma!', document['title'], 'new_event',
-        //    docId: doc.id, selectedOption: widget.selectedOption);
+        sendNotification(
+            token, 'Nuovo programma!', document['title'], 'new_event',
+            docId: doc.id, selectedOption: widget.selectedOption);
         widget.refreshList!();
         Navigator.pop(context);
       } catch (e) {
@@ -592,8 +592,10 @@ Widget build(BuildContext context) {
       title:
       widget.selectedOption == 'evento' && _isEditing ? const Text('Modifica evento')
           : widget.selectedOption == 'evento' ? const Text('Crea evento')
-          : _isEditing ? const Text('Modifica programma')
-          : const Text('Crea programma'),
+          : widget.selectedOption == 'weekend' && _isEditing ? const Text('Modifica programma')
+          : widget.selectedOption == 'weekend' ? const Text('Crea programma')
+          : _isEditing ? const Text('Modifica convivenza')
+          : const Text('Crea convivenza'),
     ),
     body: SingleChildScrollView(
       child: Padding(
@@ -758,7 +760,7 @@ Widget build(BuildContext context) {
                 minLines: 4,
                 maxLines: null,
                 decoration: const InputDecoration(
-                  labelText: 'Descrizione',
+                  labelText: 'Descrizione (facoltativo)',
                   icon: Icon(Icons.description),
                 ),
               ),

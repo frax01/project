@@ -7,7 +7,7 @@ Future<void> sendNotification(
     List fcmToken, String notTitle, String message, String category,
     {String? docId, String? selectedOption}) async {
   const String serverKey = Config.serverKey;
-  const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
+  const String fcmUrl = 'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
@@ -28,17 +28,22 @@ Future<void> sendNotification(
     };
 
     final Map<String, dynamic> body = {
-      'to': token,
-      'notification': notification,
-      'data': data,
+      'message': {
+        'token': token,
+        'notification': notification,
+        'data': data,
+      }
     };
+
+    final String accessToken = await _generateAccessToken();
+    print("token: $accessToken");
 
     final http.Response response = await http.post(
       uri,
       body: jsonEncode(body),
       headers: <String, String>{
         'Content-Type': 'application/json',
-        'Authorization': 'key=$serverKey',
+        'Authorization': 'Bearer $accessToken'
       },
     );
 
@@ -47,6 +52,22 @@ Future<void> sendNotification(
     } else {
       print('Errore nell\'invio della notifica: ${response.reasonPhrase}');
     }
+  }
+}
+
+Future<String> _generateAccessToken() async {
+  final response = await http.post(
+    Uri.parse('https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken'),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return responseBody['accessToken'];
+  } else {
+    throw Exception('Failed to generate access token');
   }
 }
 

@@ -15,14 +15,30 @@ const logger = require("firebase-functions/logger");
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
+const { google } = require('googleapis');
 
 admin.initializeApp();
 
-exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').timeZone('Europe/Rome').onRun(async (context) => {
-    
-    //'clZZVrDxSbaEz1lBJ3wClJ:APA91bEvMOBDI0P9_xjthTfCHy-O_XmvtyYhhKUhVzCWtS8TCcYwdTI6LLWpQdIV4sqJ6jOlxp7vBTuHBu5QJlBNM0SR-qTSl2QV2RYfAcW94hbm4V42r2j3EJC6TKAsbFktJgoFOW8b'
+const { GoogleAuth } = require('google-auth-library');
 
-    for (var elem in ['Tiber Club', 'Delta Club']) {
+exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
+  try {
+    const auth = new GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+    });
+    const client = await auth.getClient();
+    const accessTokenResponse = await client.getAccessToken();
+    res.json({ accessToken: accessTokenResponse.token });
+  } catch (error) {
+    console.error('Failed to generate access token', error);
+    res.status(500).send('Failed to generate access token');
+  }
+});
+
+
+exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').timeZone('Europe/Rome').onRun(async (context) => {
+
+    for (const elem of ['Tiber Club', 'Delta Club']) {
         const usersBirthday = await fetchUsersBirthday(elem);
         if (usersBirthday[0].length > 0) {
             for (const name of usersBirthday[0]) {
@@ -42,30 +58,33 @@ exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').time
     const today = new Date();
     const dayToday = String(today.getDate()).padStart(2, '0');
     const monthToday = String(today.getMonth() + 1).padStart(2, '0');
+
     try {
-        for (var elem in ['Tiber Club', 'Delta Club']) {
+        for (const elem of ['Tiber Club', 'Delta Club']) {
+            console.log(`elem: ${elem}`);
             const calendar = await admin.firestore()
                 .collection('calendario')
                 .where('club', '==', elem)
                 .get();
 
-            calendar.forEach(async (event) => {
+            for (const event of calendar.docs) {
                 users = [];
                 const eventData = event.data().data;
                 const eventDate = eventData.toDate();
                 const day = String(eventDate.getDate()).padStart(2, '0');
                 const monthNum = String(eventDate.getMonth() + 1).padStart(2, '0');
-                if (day == dayToday && monthNum == monthToday) {
+                if (day === dayToday && monthNum === monthToday) {
                     users.push(...event.data().utenti);
                 }
                 const tokensEvent = await fetchTokensEvent(users);
                 if (tokensEvent.length > 0) {
                     for (const token of tokensEvent) {
+                        console.log(`token: ${token}`);
                         await sendNotification(token, 'evento', event.data().titolo, '', event.id, eventDate);
                     }
                 }
-            });
-        };
+            }
+        }
     } catch (error) {
         console.error('Error fetching user events:', error);
     }
@@ -132,7 +151,6 @@ async function fetchTokensBirthday(elem) {
         .where('club', '==', elem)
         .where('role', 'in', ['Tutor', 'Ragazzo'])
         .get();
-
         users.forEach(user => {
             if (user.data().token) {
                 tokens.push(...user.data().token);
@@ -145,6 +163,16 @@ async function fetchTokensBirthday(elem) {
 }
 
 async function sendNotification(token, section, name, filter, id, focused) {
+
+    let accessToken;
+    try {
+        const response = await axios.get('https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken');
+        accessToken = response.data.accessToken;
+        console.log(`access: ${accessToken}`);
+    } catch (error) {
+        console.error('Errore nel recupero del token di accesso:', error);
+        return;
+    }
 
     let data = '';
 
@@ -178,24 +206,24 @@ async function sendNotification(token, section, name, filter, id, focused) {
         data = {
             click_action: 'FLUTTER_NOTIFICATION_CLICK',
             id: Date.now().toString(),
-            docId: docId,
-            selectedOption: selectedOption,
+            docId: docId.toString(),
+            selectedOption: selectedOption.toString(),
             status: 'done',
-            category: category,
-            notTitle: notTitle,
-            notBody: message
+            category: category.toString(),
+            notTitle: notTitle.toString(),
+            notBody: message.toString()
         };
     } else if(section=='evento') {
         data = {
             click_action: 'FLUTTER_NOTIFICATION_CLICK',
             id: Date.now().toString(),
-            focusedDay: focused,
-            docId: docId,
-            selectedOption: selectedOption,
+            focusedDay: focused,//.toString(),
+            docId: docId.toString(),
+            selectedOption: selectedOption.toString(),
             status: 'done',
-            category: category,
-            notTitle: notTitle,
-            notBody: message
+            category: category.toString(),
+            notTitle: notTitle.toString(),
+            notBody: message.toString()
         };
     }
 
@@ -204,17 +232,26 @@ async function sendNotification(token, section, name, filter, id, focused) {
         body: message
     };      
 
+    const messagePayload = {
+        'message': {
+            'token': token,
+            'notification': notification,
+            'data': data,
+        }
+    };
+
+    const url = 'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
+
     try {
-        await axios.post('https://fcm.googleapis.com/fcm/send', {
-            to: token,
-            notification: notification,
-            data: data,
-        }, {
+        const response = await fetch(url, {
+            method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `key=${config.serverKey}`,
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
             },
+            body: JSON.stringify(messagePayload)
         });
+        console.log('Notifica inviata con successo:', response);
     } catch (error) {
         console.error('Errore nell\'invio della notifica: ', error);
     }

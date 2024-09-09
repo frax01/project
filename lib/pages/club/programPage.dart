@@ -498,7 +498,7 @@ class _ProgramPageState extends State<ProgramPage> {
     return Scaffold(
       appBar: AppBar(
         title: widget.selectedOption == 'weekend'
-            ? const Text('Sabato')
+            ? const Text('Programma')
             : const Text('Convivenza'),
         actions: [
           IconButton(
@@ -714,31 +714,33 @@ class _ProgramPageState extends State<ProgramPage> {
                                   ),
                                 )),
                             const SizedBox(height: 20.0),
-                            Card(
-                              surfaceTintColor: Colors.white,
-                              elevation: 5,
-                              margin: const EdgeInsets.all(0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Descrizione',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
+                            _data['description']!='' ?
+                              Card(
+                                surfaceTintColor: Colors.white,
+                                elevation: 5,
+                                margin: const EdgeInsets.all(0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Descrizione',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 15),
-                                    Text(
-                                      _data['description'],
-                                      style: const TextStyle(fontSize: 17),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 15),
+                                      Text(
+                                        _data['description'],
+                                        style: const TextStyle(fontSize: 17),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
+                              )
+                            : Container(),
                             const SizedBox(height: 20.0),
                             if (_data.containsKey('file'))
                               Column(
