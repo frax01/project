@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/pages/club/programCard.dart';
 import 'package:flutter/material.dart';
-import 'package:ms_undraw/ms_undraw.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -96,25 +95,13 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           if (_listItems.isEmpty) {
-            child = Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 200.0,
-                  child: UnDraw(
-                    illustration: UnDrawIllustration.biking,
-                    placeholder: const SizedBox(
-                      height: 200.0,
-                      width: 200.0,
-                    ),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const Text(
-                  'Nessun programma disponibile',
-                  style: TextStyle(fontSize: 20.0, color: Colors.black54),
-                ),
-              ],
+            child = const Center(
+              child:
+              Text(
+                'Nessun programma disponibile',
+                style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
             );
           } else {
             child = AnimatedList(

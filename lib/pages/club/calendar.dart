@@ -32,6 +32,7 @@ class _CalendarState extends State<Calendar> {
 
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
+  bool _isLoading = true;
 
   bool today = true;
   Map<DateTime, List<Map<String, dynamic>>> _events = {};
@@ -66,6 +67,10 @@ class _CalendarState extends State<Calendar> {
   Map<String, bool> _selectedTutors = {};
 
   Future<void> _loadEvents() async {
+
+    setState(() {
+      _isLoading = true; // Imposta su true all'inizio del caricamento
+    });
 
     //tutor
     final querySnapshotTutor = await FirebaseFirestore.instance
@@ -203,6 +208,7 @@ class _CalendarState extends State<Calendar> {
       final selectedDayOnly = DateTime(_focusedDay.year, _focusedDay.month, _focusedDay.day);
       _events = events;
       _selectedDayEvents = _events[selectedDayOnly] ?? [];
+      _isLoading = false;
     });
   }
 
@@ -290,6 +296,7 @@ class _CalendarState extends State<Calendar> {
                 },
                 markerBuilder: (context, date, events) {
                   final dateOnly = DateTime(date.year, date.month, date.day);
+                  final bool isPastDate = dateOnly.isBefore(DateTime.now().subtract(const Duration(days: 1)));
 
                   int eventCount = 0;
                   for(var elem in _events[dateOnly] ?? []) {
@@ -334,6 +341,8 @@ class _CalendarState extends State<Calendar> {
 
                   final total = eventCount + programCount;
 
+                  final Color markerColor = isPastDate ? Colors.grey : Theme.of(context).primaryColor;
+
                   return Stack(
                     children: [
                       if (total > 0)
@@ -343,7 +352,7 @@ class _CalendarState extends State<Calendar> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
+                              color: markerColor,
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -366,11 +375,6 @@ class _CalendarState extends State<Calendar> {
                             width: 17,
                             height: 17,
                           ),
-                          //Icon(
-                          //  Icons.cake,
-                          //  color: Colors.black,
-                          //  size: 15.0,
-                          //),
                         ),
                       for (var tripEvent in tripEvents)
                         Container(
@@ -392,18 +396,26 @@ class _CalendarState extends State<Calendar> {
               ),
             ),
             const SizedBox(height: 15),
-            const Center(child: Text("In programma", style: TextStyle(fontSize: 22))),
+            validEvents.isNotEmpty ? const Center(child: Text("In programma", style: TextStyle(fontSize: 22))) : Container(),
             const SizedBox(height: 10),
             Expanded(
-              child: validEvents.isNotEmpty ? ListView.separated(
-                itemCount: validEvents.length,//_selectedDayEvents.length,
+              child: Stack(
+                  children: [
+                  if (!_isLoading)
+              //child:
+            validEvents.isNotEmpty ? ListView.separated(
+                itemCount: validEvents.length,
                 separatorBuilder: (context, index) => const Divider(height: 1.0),
                 itemBuilder: (context, index) {
-                  Map event = validEvents[index]; //_selectedDayEvents[index];
-                  return //validEvents.isNotEmpty ?
+                  Map event = validEvents[index];
+                  return
                   ListTile(
                     leading: event['tipo']=='compleanno'
-                        ? const Icon(Icons.cake)
+                        ? Image.asset(
+                      'images/birthday_cake.png',
+                      width: 24,
+                      height: 24,
+                    )
                         : event['tipo']=='evento'
                         ? const Icon(Icons.check_circle_outline)
                         : event['tipo']=='convivenza'
@@ -467,12 +479,19 @@ class _CalendarState extends State<Calendar> {
                       ));
                       await _loadEvents();
                     } : null,
-                  );// : const Center(child: Text('Nessun evento'));
+                  );
                   },
-              ) : const Center(child: Text('Nessun evento'))
-            ),
-          ],
-        ),),
+              ) : const Center(child: Text('Nessun evento in programma', textAlign: TextAlign.center, style: TextStyle(fontSize: 17))),
+                  if (_isLoading)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ]
+                )
+              ),
+            ],
+          )
+        ),
         floatingActionButton: widget.isAdmin
             ? SpeedDial(
           icon: Icons.add,

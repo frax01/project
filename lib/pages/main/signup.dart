@@ -37,11 +37,20 @@ class _SignUpState extends State<SignUp> {
     return token != null && token.isNotEmpty ? token : '';
   }
 
+  String _capitalize(String s) {
+    s = s.trim();
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  }
+
   _saveUser(ClubUser user) async {
     try {
+      String formattedName = _capitalize(user.name);
+      String formattedSurname = _capitalize(user.surname);
+
       await _firestore.collection('user').add({
-        'name': user.name,
-        'surname': user.surname,
+        'name': formattedName,
+        'surname': formattedSurname,
         'email': user.email,
         'birthdate': user.birthdate,
         'club': user.club,

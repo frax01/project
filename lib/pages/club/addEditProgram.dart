@@ -60,10 +60,17 @@ class _AddEditProgramState extends State<AddEditProgram> {
   String _address = '';
   String _latitude = '';
   String _longitude = '';
-  final List<String> classOptions = [
+  final List<String> tiberClassOptions = [
     '1° media',
     '2° media',
     '3° media',
+    '1° liceo',
+    '2° liceo',
+    '3° liceo',
+    '4° liceo',
+    '5° liceo'
+  ];
+  final List<String> deltaClassOptions = [
     '1° liceo',
     '2° liceo',
     '3° liceo',
@@ -432,9 +439,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
     } else {
       try {
         if (_address == '') {
-          _address = 'Tiber Club';
-          _latitude = '41.91805195';
-          _longitude = '12.47788708';
+          if (widget.club=='Tiber Club') {
+            _address = 'Tiber Club';
+            _latitude = '41.91805195';
+            _longitude = '12.47788708';
+          } else if (widget.club=='Delta Club') {
+            _address = 'Centro Delta';
+            _latitude = '45.468245';
+            _longitude = '9.164332';
+          }
         }
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -804,7 +817,9 @@ Widget build(BuildContext context) {
                 Wrap(
                   alignment: WrapAlignment.start,
                   spacing: 10,
-                  children: classOptions.map((e) {
+                  children:
+                  widget.club=='Tiber Club' ?
+                  tiberClassOptions.map((e) {
                     return ChoiceChip(
                       label: Text(e),
                       selected: selectedClasses.contains(e),
@@ -818,14 +833,30 @@ Widget build(BuildContext context) {
                         });
                       },
                     );
-                  }).toList(),
+                  }).toList()
+                  : deltaClassOptions.map((e) {
+                    return ChoiceChip(
+                      label: Text(e),
+                      selected: selectedClasses.contains(e),
+                      onSelected: (bool selected) {
+                        setState(() {
+                          if (selected) {
+                            selectedClasses.add(e);
+                          } else {
+                            selectedClasses.remove(e);
+                          }
+                        });
+                      },
+                    );
+                  }).toList()
                 ),
               ],
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  widget.selectedOption == 'evento' && _isEditing ? ElevatedButton(
+                  _isEditing
+                      ? ElevatedButton(
                       onPressed: () {
                         if (_isLoadingModify) {
                           null;
@@ -840,9 +871,8 @@ Widget build(BuildContext context) {
                           valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.white),
                         ),
-                      ) : const Text('Modifica evento', style: TextStyle(color: Colors.white))
-                  )
-                      : widget.selectedOption == 'evento' && !_isEditing ? ElevatedButton(
+                      ) : const Text('Modifica', style: TextStyle(color: Colors.white))
+                    ) : ElevatedButton(
                       onPressed: () {
                         if (_isLoadingModify) {
                           null;
@@ -850,61 +880,24 @@ Widget build(BuildContext context) {
                           _handleCreate(context);
                         }
                       },
-                      child: _isLoadingModify ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white
-                          ),
-                        ),
-                      ) : const Text('Crea evento', style: TextStyle(color: Colors.white))
-                  ) : _isEditing ? ElevatedButton(
-                    onPressed: () {
-                      if (_isLoadingModify) {
-                        null;
-                      } else {
-                        _handleEdit(context);
-                      }
-                    },
-                    child: _isLoadingModify
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white),
-                      ),
-                    )
-                        : const Text('Modifica programma',
-                        style: TextStyle(color: Colors.white)),
-                  ) : ElevatedButton(
-                    onPressed: () {
-                      if (_isLoadingCreation) {
-                        null;
-                      } else {
-                        _handleCreate(context);
-                      }
-                    },
-                    child: _isLoadingCreation
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white),
-                      ),
-                    )
-                        : const Text('Crea programma',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            ],
+                      child: _isLoadingModify
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white
+                              ),
+                            ),
+                          ) : const Text('Crea', style: TextStyle(color: Colors.white))
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

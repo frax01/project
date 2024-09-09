@@ -493,25 +493,12 @@ class _TabScorerState extends State<TabScorer> {
           }
           List<QueryDocumentSnapshot> scorers = snapshot.data!.docs;
           if (scorers.isEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 200.0,
-                  child: UnDraw(
-                    illustration: UnDrawIllustration.junior_soccer,
-                    placeholder: const SizedBox(
-                      height: 200.0,
-                      width: 200.0,
-                    ),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const Text(
+            return const Center(
+                child: Text(
                   'Non ci sono giocatori registrati',
                   style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                  textAlign: TextAlign.center,
                 ),
-              ],
             );
           }
           return Padding(

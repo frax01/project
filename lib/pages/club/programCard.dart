@@ -149,13 +149,27 @@ class _ProgramCardState extends State<ProgramCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20.0),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                Text(
+                                  endDate != "" ? '$startDate - $endDate' : startDate,
+                                  style: const TextStyle(
+                                    fontSize: 17.0,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black54,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ]
+                          )
                         ),
                         const SizedBox(width: 10),
                         Text(
@@ -200,33 +214,6 @@ class _ProgramCardState extends State<ProgramCard> {
                       ),
                     ),
                   ),
-                  //Positioned(
-                  //  left: 10,
-                  //  bottom: 10,
-                  //  child: Padding(
-                  //    padding: const EdgeInsets.all(5.0),
-                  //    child: Container(
-                  //      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                  //      decoration: BoxDecoration(
-                  //        color: Colors.white,
-                  //        borderRadius: BorderRadius.circular(7.0),
-                  //        boxShadow: const [
-                  //          BoxShadow(
-                  //            color: Colors.black54,
-                  //            blurRadius: 7.0,
-                  //          ),
-                  //        ],
-                  //      ),
-                  //      child: endDate != ""
-                  //          ? Text('$startDate ～ $endDate',
-                  //              style: const TextStyle(
-                  //                  fontWeight: FontWeight.bold))
-                  //          : Text(startDate,
-                  //              style: const TextStyle(
-                  //                  fontWeight: FontWeight.bold)),
-                  //    ),
-                  //  ),
-                  //),
                 ],
               ),
             ],

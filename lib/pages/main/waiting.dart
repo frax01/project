@@ -27,7 +27,7 @@ class Waiting extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("images/tiberlogo.png", width: 150),
+                Image.asset("images/clubLogo.png", width: 150),
                 const SizedBox(height: 20),
                 const Text(
                   "In attesa di approvazione",

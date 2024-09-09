@@ -8,11 +8,13 @@ class UserDetailsPage extends StatefulWidget {
       {super.key,
       required this.title,
       required this.userEmail,
-      required this.userName});
+      required this.userName,
+      required this.club});
 
   final String userEmail;
   final String title;
   final String userName;
+  final String club;
 
   @override
   _UserDetailsPageState createState() => _UserDetailsPageState();
@@ -25,10 +27,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   List<String> classList = [];
 
   final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor"];
-  final List<String> clubClassOptions = [
+  final List<String> tiberClubClassOptions = [
     '1° media',
     '2° media',
     '3° media',
+    "1° liceo",
+    "2° liceo",
+    "3° liceo",
+    "4° liceo",
+    "5° liceo",
+  ];
+  final List<String> deltaClubClassOptions = [
     "1° liceo",
     "2° liceo",
     "3° liceo",
@@ -68,7 +77,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       selectedRole = value.toString();
                     });
                   }),
-                  buildDropdownClasse("Classe", clubClassOptions, (value) {
+                  buildDropdownClasse("Classe", widget.club=='Tiber Club'? tiberClubClassOptions : deltaClubClassOptions, (value) {
                     setState(() {
                       selectedClubClass = value.toString();
                     });

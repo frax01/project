@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
+import 'package:flutter/gestures.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -20,6 +21,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _loginFailed = false;
+  bool _emailNotVerified = false;
 
   List classes = [];
   bool status = false;
@@ -56,16 +58,84 @@ class _LoginState extends State<Login> {
     );
   }
 
+  Future<void> _sendVerificationEmail(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      User? user = userCredential.user;
+
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email di verifica inviata. Controlla la posta'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Errore nell\'invio della mail di verifica'),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email o password utente errati'),
+        ),
+      );
+    }
+  }
+
+
   _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
+        _loginFailed = false;
+        _emailNotVerified = false;
       });
+
       try {
         var credentials = await _auth.signInWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
+
+        if (!credentials.user!.emailVerified) {
+          await _auth.signOut();
+          setState(() {
+            _isLoading = false;
+            _loginFailed = true;
+            _emailNotVerified = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'Per favore verifica la tua email prima di effettuare l\'accesso\n\n',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextSpan(
+                      text: 'Clicca qui per inviare una nuova email di verifica',
+                      style: const TextStyle(color: Colors.red, decoration: TextDecoration.underline,),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () async {
+                          await _sendVerificationEmail(_emailController.text, _passwordController.text);
+                        },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+          return;
+        }
 
         email = credentials.user?.email ?? '';
         var store = FirebaseFirestore.instance.collection('user');
@@ -193,7 +263,7 @@ class _LoginState extends State<Login> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      if (_loginFailed)
+                      if (_loginFailed && !_emailNotVerified)
                         const Text(
                           'Credenziali non valide... Riprova!',
                           style: TextStyle(color: Colors.red),

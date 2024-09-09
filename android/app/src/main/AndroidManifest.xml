@@ -4,10 +4,11 @@
     <application
         android:label="Club"
         android:name="${applicationName}"
-        android:icon="@mipmap/clublogo"> <!--questo è quando l'app viene lanciata-->
+        android:icon="@mipmap/clublogo"
+        android:enableOnBackInvokedCallback="true">
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_stat_t" /> <!--questo è per le notifiche piccole-->
+            android:resource="@mipmap/ic_launcher" /> <!--questo è per le notifiche piccole-->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="My Channel Name" />
