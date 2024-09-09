@@ -36,7 +36,6 @@ Future<void> sendNotification(
     };
 
     final String accessToken = await _generateAccessToken();
-    print("token: $accessToken");
 
     final http.Response response = await http.post(
       uri,
@@ -88,7 +87,7 @@ Future<List<String>> fetchToken(String section, String target, String club) asyn
     }
     return tokens;
   } catch (e) {
-    print('Errore durante l\'accesso a Firestore: $e');
+    print('Errore durante l\'accesso a Firestore per il recupero dei token: $e');
     return [];
   }
 }
@@ -110,7 +109,7 @@ Future<List<String>> retrieveToken(String section, String target, String club) a
     }
     return tokens;
   } catch (e) {
-    print('Errore durante l\'accesso a Firestore: $e');
+    print('Errore durante l\'accesso a Firestore per il recupero dei token: $e');
     return [];
   }
 }

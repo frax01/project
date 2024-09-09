@@ -23,13 +23,30 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _surnameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmController =
-      TextEditingController();
+  final TextEditingController _passwordConfirmController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _clubController = TextEditingController();
 
   String? _emailErrorMsg;
   String? _passwordErrorMsg;
+
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _surnameFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _pwFocusNode = FocusNode();
+  final FocusNode _confirmPwFocusNode = FocusNode();
+
+
+  @override
+  void dispose() {
+    _nameFocusNode.dispose();
+    _surnameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _pwFocusNode.dispose();
+    _confirmPwFocusNode.dispose();
+    super.dispose();
+  }
+
 
   _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
@@ -62,7 +79,11 @@ class _SignUpState extends State<SignUp> {
         'created_time': user.created_time
       });
     } catch (e) {
-      print('Error saving user to database: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante la creazione dell\'utente'),
+        ),
+      );
     }
   }
 
@@ -125,7 +146,13 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
+
   _selectDate(BuildContext context) async {
+    _nameFocusNode.unfocus();
+    _surnameFocusNode.unfocus();
+    _emailFocusNode.unfocus();
+    _pwFocusNode.unfocus();
+    _confirmPwFocusNode.unfocus();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -143,6 +170,12 @@ class _SignUpState extends State<SignUp> {
   String? _selectedClub;
 
   void _clubDialog() async {
+    _nameFocusNode.unfocus();
+    _surnameFocusNode.unfocus();
+    _emailFocusNode.unfocus();
+    _pwFocusNode.unfocus();
+    _confirmPwFocusNode.unfocus();
+
     bool? isTiberClubChecked = _selectedClub == 'Tiber Club';
     bool? isDeltaClubChecked = _selectedClub == 'Delta Club';
 
@@ -236,6 +269,7 @@ class _SignUpState extends State<SignUp> {
                         children: [
                           TextFormField(
                             controller: _nameController,
+                            focusNode: _nameFocusNode,
                             decoration: const InputDecoration(
                               labelText: 'Nome',
                               icon: Icon(Icons.person),
@@ -250,6 +284,7 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: _surnameController,
+                            focusNode: _surnameFocusNode,
                             decoration: const InputDecoration(
                               labelText: 'Cognome',
                               icon: Icon(Icons.person),
@@ -264,6 +299,7 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: _emailController,
+                            focusNode: _emailFocusNode,
                             decoration: InputDecoration(
                               labelText: 'Mail',
                               icon: const Icon(Icons.mail),
@@ -322,6 +358,7 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: _passwordController,
+                            focusNode: _pwFocusNode,
                             obscureText: !_isObscure,
                             decoration: InputDecoration(
                               labelText: 'Password',
@@ -352,6 +389,7 @@ class _SignUpState extends State<SignUp> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: _passwordConfirmController,
+                            focusNode: _confirmPwFocusNode,
                             obscureText: !_isObscureConfirm,
                             decoration: InputDecoration(
                               labelText: 'Conferma password',

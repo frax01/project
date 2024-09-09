@@ -476,24 +476,26 @@ class _EventPageState extends State<EventPage> {
         actions: [
           IconButton(
             onPressed: () {
+              String data = _formatTimestampToDate(_event['data']);
+              String description = _event['description'] ?? '';
               if(_event['fine']!='') {
                 Share.share(
-                    '${_event['titolo']}\n\n'
-                        '${_event['data']}\n\n'
-                        'Dalle ${_event['inizio']} alle ${_event['fine']}\n\n'
-                        '${_event['description']}\n');
+                    'Promemoria: ${_event['titolo']}\n\n'
+                        'Data: $data\n\n'
+                        'Dalle ${_event['inizio']} alle ${_event['fine']}'
+                        '\n\n${description.isNotEmpty ? description : ''}\n');
               } else {
                 if(_event['inizio']!='') {
                   Share.share(
-                      '${_event['titolo']}\n\n'
-                          '${_event['data']}\n\n'
-                          'Dalle ${_event['inizio']}\n\n'
-                          '${_event['description']}\n');
+                      'Promemoria: ${_event['titolo']}\n\n'
+                          'Data: $data\n\n'
+                          'Dalle ${_event['inizio']}'
+                          '\n\n${description.isNotEmpty ? description : ''}\n');
                 } else {
                   Share.share(
-                      '${_event['titolo']}\n\n'
-                          '${_event['data']}\n\n'
-                          '${_event['description']}\n');
+                      'Promemoria: ${_event['titolo']}\n\n'
+                          'Data: $data'
+                          '\n\n${description.isNotEmpty ? description : ''}\n');
                 }
               }
             },

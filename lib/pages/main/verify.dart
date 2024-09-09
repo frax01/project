@@ -53,7 +53,11 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       await Future.delayed(const Duration(seconds: 5));
       setState(() => canResendEmail = true);
     } catch (e) {
-      print('errore');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante l\'invio della mail'),
+        ),
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import 'visibility.dart';
+import 'programPage.dart';
 
 class AddEditProgram extends StatefulWidget {
   const AddEditProgram(
@@ -116,6 +117,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _longitude = widget.document!['lon'];
         selectedClasses = List<String>.from(widget.document!['selectedClass']);
       }
+    } else {
+      final String formattedDate = DateFormat('dd-MM-yyyy').format(widget.focusedDay);
+      setState(() {
+        _startDateController.text = formattedDate;
+      });
     }
     await _fetchTutors();
   }
@@ -133,69 +139,76 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
+  bool _isUploading = false;
 
   _uploadImage(String level, {bool isCreate = false}) async {
-    final storageRef = FirebaseStorage.instance.ref();
-    final imagesRef =
-        storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
-
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    final UploadTask uploadTask = imagesRef.putData(await image!.readAsBytes());
-    final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-    final String imageUrl = await snapshot.ref.getDownloadURL();
+    if (image != null) {
+      setState(() {
+        _isUploading = true;
+      });
 
-    setState(() {
-      _image = imageUrl;
-    });
-  }
+      final storageRef = FirebaseStorage.instance.ref();
+      final imagesRef =
+      storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
 
-  Future<String> _selectDate(BuildContext context, String startDate) async {
-    if (startDate == '') {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
-        lastDate: DateTime(DateTime.now().year + 1),
-      );
-      if (picked != null && picked != DateTime.now()) {
-        return DateFormat('dd-MM-yyyy').format(picked);
-      }
-      return '';
-    } else {
-      DateTime startDateDateTime = DateFormat('dd-MM-yyyy').parse(startDate);
-      startDateDateTime = startDateDateTime.add(const Duration(days: 1));
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: startDateDateTime,
-        firstDate: startDateDateTime,
-        lastDate: DateTime(DateTime.now().year + 1),
-      );
-      if (picked != null && picked != DateTime.now()) {
-        return DateFormat('dd-MM-yyyy').format(picked);
-      }
-      return '';
+      final UploadTask uploadTask = imagesRef.putData(await image!.readAsBytes());
+      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+      final String imageUrl = await snapshot.ref.getDownloadURL();
+
+      setState(() {
+        _image = imageUrl;
+        _isUploading = false;
+      });
     }
   }
 
+  Future<String?> _selectDate(BuildContext context, String startDate) async {
+    _unfocusAll();
+    DateTime initialDate;
+    if (startDate.isEmpty) {
+      initialDate = DateTime.now();
+    } else {
+      DateTime startDateDateTime = DateFormat('dd-MM-yyyy').parse(startDate);
+      initialDate = startDateDateTime.add(const Duration(days: 1));
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: initialDate,
+      lastDate: DateTime(DateTime.now().year + 1),
+    );
+
+    if (picked != null && picked != initialDate) {
+      return DateFormat('dd-MM-yyyy').format(picked);
+    }
+    return null; // Return null if the dialog was cancelled
+  }
+
   Widget _showDatePickers() {
+    _unfocusAll();
     if (widget.selectedOption == 'trip') {
       return Row(
         children: [
           Expanded(
             child: TextFormField(
               controller: _startDateController,
+              focusNode: _startDateFocusNode,
               readOnly: true,
               decoration: const InputDecoration(
                 labelText: 'Data inizio',
                 icon: Icon(Icons.date_range),
               ),
               onTap: () async {
-                final String startDate = await _selectDate(context, '');
-                setState(() {
-                  _startDateController.text = startDate;
-                });
+                final String? startDate = await _selectDate(context, '');
+                if (startDate != null) {
+                  setState(() {
+                    _startDateController.text = startDate;
+                  });
+                }
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -209,6 +222,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           Expanded(
             child: TextFormField(
               controller: _endDateController,
+              focusNode: _endDateFocusNode,
               readOnly: true,
               enabled: _startDateController.text.isNotEmpty,
               decoration: const InputDecoration(
@@ -216,11 +230,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 icon: Icon(Icons.date_range),
               ),
               onTap: () async {
-                final String date =
+                final String? date =
                     await _selectDate(context, _startDateController.text);
-                setState(() {
-                  _endDateController.text = date;
-                });
+                if (date != null) {
+                  setState(() {
+                    _endDateController.text = date;
+                  });
+                }
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -235,16 +251,19 @@ class _AddEditProgramState extends State<AddEditProgram> {
     } else {
       return TextFormField(
         controller: _startDateController,
+        focusNode: _startDateFocusNode,
         readOnly: true,
         decoration: const InputDecoration(
           labelText: 'Data',
           icon: Icon(Icons.date_range),
         ),
         onTap: () async {
-          final String date = await _selectDate(context, '');
-          setState(() {
-            _startDateController.text = date;
-          });
+          final String? date = await _selectDate(context, '');
+          if (date != null) {
+            setState(() {
+              _startDateController.text = date;
+            });
+          }
         },
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -256,7 +275,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     }
   }
 
-  Future<String> _selectTime() async {
+  Future<String?> _selectTime() async {
+    _unfocusAll();
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -273,25 +293,29 @@ class _AddEditProgramState extends State<AddEditProgram> {
       );
       return DateFormat('HH:mm').format(selectedDateTime);
     }
-    return '';
+    return null;
   }
 
   Widget _showTimePicker() {
+    _unfocusAll();
     return Row(
       children: [
         Expanded(
           child: TextFormField(
             controller: _startTimeController,
+            focusNode: _startTimeFocusNode,
             readOnly: true,
             decoration: const InputDecoration(
               labelText: 'Ora inizio',
               icon: Icon(Icons.schedule),
             ),
             onTap: () async {
-              final String orario = await _selectTime();
-              setState(() {
-                _startTimeController.text = orario;
-              });
+              final String? orario = await _selectTime();
+              if (orario != null) {
+                setState(() {
+                  _startTimeController.text = orario;
+                });
+              }
             },
           ),),
         const SizedBox(width: 20),
@@ -299,6 +323,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           child:
           TextFormField(
             controller: _endTimeController,
+            focusNode: _endTimeFocusNode,
             readOnly: true,
             enabled: _startTimeController.text.isNotEmpty,
             decoration: const InputDecoration(
@@ -306,10 +331,12 @@ class _AddEditProgramState extends State<AddEditProgram> {
               icon: Icon(Icons.schedule),
             ),
             onTap: () async {
-              final String orario = await _selectTime();
-              setState(() {
-                _endTimeController.text = orario;
-              });
+              final String? orario = await _selectTime();
+              if (orario != null) {
+                setState(() {
+                  _endTimeController.text = orario;
+                });
+              }
             },
           ),),
       ],
@@ -434,7 +461,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
         setState(() {
           _isLoadingCreation = false;
         });
-        print('Errore durante la creazione dell\'evento: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Errore durante la creazione dell\'evento'),
+          ),
+        );
       }
     } else {
       try {
@@ -495,12 +526,26 @@ class _AddEditProgramState extends State<AddEditProgram> {
             token, 'Nuovo programma!', document['title'], 'new_event',
             docId: doc.id, selectedOption: widget.selectedOption);
         widget.refreshList!();
-        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) =>
+                ProgramPage(
+                    club: widget.club,
+                    documentId: doc.id,
+                    selectedOption: widget.selectedOption ?? '',
+                    isAdmin: true,
+                    refreshList: widget.refreshList,
+                    name: widget.name
+                )
+        ));
       } catch (e) {
         setState(() {
           _isLoadingCreation = false;
         });
-        print('Errore durante la creazione dell\'evento: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Errore durante la creazione dell\'evento'),
+          ),
+        );
       }
     }
   }
@@ -598,6 +643,38 @@ class _AddEditProgramState extends State<AddEditProgram> {
   bool _isLoadingCreation = false;
   bool _isLoadingModify = false;
 
+  final FocusNode _programNameFocusNode = FocusNode();
+  final FocusNode _programLocationFocusNode = FocusNode();
+  final FocusNode _programDescriptionFocusNode = FocusNode();
+  final FocusNode _startTimeFocusNode = FocusNode();
+  final FocusNode _endTimeFocusNode = FocusNode();
+  final FocusNode _startDateFocusNode = FocusNode();
+  final FocusNode _endDateFocusNode = FocusNode();
+
+
+  void _unfocusAll() {
+    _programNameFocusNode.unfocus();
+    _programLocationFocusNode.unfocus();
+    _programDescriptionFocusNode.unfocus();
+    _startTimeFocusNode.unfocus();
+    _endTimeFocusNode.unfocus();
+    _startDateFocusNode.unfocus();
+    _endDateFocusNode.unfocus();
+  }
+
+  @override
+  void dispose() {
+    _programNameFocusNode.dispose();
+    _programLocationFocusNode.dispose();
+    _programDescriptionFocusNode.dispose();
+    _startTimeFocusNode.dispose();
+    _endTimeFocusNode.dispose();
+    _startDateFocusNode.dispose();
+    _endDateFocusNode.dispose();
+    super.dispose();
+  }
+
+
   @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -623,10 +700,13 @@ Widget build(BuildContext context) {
                   height: 200,
                   child: InkWell(
                     onTap: () async {
+                      _unfocusAll();
                       await _uploadImage('programs', isCreate: true);
                     },
-                    child: _image.isNotEmpty
-                        ? Container(
+                    child: _isUploading ?
+                      const Center(
+                        child: CircularProgressIndicator()
+                      ) : _image.isNotEmpty ? Container(
                       height: 200,
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -668,6 +748,7 @@ Widget build(BuildContext context) {
               ],
               TextFormField(
                 controller: _programNameController,
+                focusNode: _programNameFocusNode,
                 decoration: const InputDecoration(
                   labelText: 'Titolo',
                   icon: Icon(Icons.short_text),
@@ -691,6 +772,7 @@ Widget build(BuildContext context) {
                 const SizedBox(height: 20),
                 TypeAheadField(
                   controller: _programLocationController,
+                  focusNode: _programLocationFocusNode,
                   autoFlipDirection: true,
                   hideOnEmpty: true,
                   builder: (context, controller, focusNode) {
@@ -769,6 +851,7 @@ Widget build(BuildContext context) {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _programDescriptionController,
+                focusNode: _programDescriptionFocusNode,
                 keyboardType: TextInputType.multiline,
                 minLines: 4,
                 maxLines: null,
@@ -784,6 +867,7 @@ Widget build(BuildContext context) {
                   subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
                   trailing: const Icon(Icons.arrow_forward),
                   onTap: () async {
+                    _unfocusAll();
                     selected = await Navigator.push(
                       context,
                       MaterialPageRoute(

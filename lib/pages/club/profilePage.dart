@@ -84,7 +84,11 @@ class _SettingsPageState extends State<SettingsPage> {
           prefs.clear();
           Navigator.of(context).pushReplacementNamed('/login');
         } catch (e) {
-          print('Errore durante l\'eliminazione dell\'account: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Errore durante l\'eliminazione dell\'account'),
+            ),
+          );
         }
       }
     }

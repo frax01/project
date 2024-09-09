@@ -503,25 +503,29 @@ class _CalendarState extends State<Calendar> {
             SpeedDialChild(
               child: const Icon(Icons.event),
               label: 'Programma',
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+              onTap: () async {
+                await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddEditProgram(
                         club: widget.club,
                         refreshList: refreshList,
                         selectedOption: 'weekend',
-                        name: widget.name,)));
+                        name: widget.name,
+                        focusedDay: _focusedDay)));
+                await _loadEvents();
               },
             ),
             SpeedDialChild(
               child: const Icon(Icons.airplanemode_on),
               label: 'Convivenza',
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+              onTap: () async {
+                await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => AddEditProgram(
                         club: widget.club,
                         refreshList: refreshList,
                         selectedOption: 'trip',
-                        name: widget.name,)));
+                        name: widget.name,
+                        focusedDay: _focusedDay)));
+                await _loadEvents();
               },
             ),
             SpeedDialChild(
@@ -535,7 +539,7 @@ class _CalendarState extends State<Calendar> {
                         selectedOption: 'evento',
                         name: widget.name,
                         focusedDay: _focusedDay,
-                        visibility: _selectedTutors,)));
+                        visibility: _selectedTutors)));
                 await _loadEvents();
               },
             ),

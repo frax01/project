@@ -153,7 +153,7 @@ class _LoginState extends State<Login> {
             }
           }
         } catch (e) {
-          print('Error fetching tokens, notifications will not be available');
+          print('Errore nel recupero del token');
         }
 
         QueryDocumentSnapshot value = await data('user', 'email', email);
@@ -185,7 +185,19 @@ class _LoginState extends State<Login> {
     }
   }
 
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
   _showForgotPasswordDialog() {
+    _emailFocusNode.unfocus();
+    _passwordFocusNode.unfocus();
     showDialog(
       context: context,
       builder: (context) {
@@ -271,6 +283,7 @@ class _LoginState extends State<Login> {
                       if (_loginFailed) const SizedBox(height: 20),
                       TextFormField(
                         controller: _emailController,
+                        focusNode: _emailFocusNode,
                         decoration: const InputDecoration(
                           labelText: 'Mail',
                           icon: Icon(Icons.mail),
@@ -289,6 +302,7 @@ class _LoginState extends State<Login> {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _passwordController,
+                        focusNode: _passwordFocusNode,
                         obscureText: !_isObscure,
                         decoration: InputDecoration(
                           labelText: 'Password',
@@ -327,6 +341,8 @@ class _LoginState extends State<Login> {
                                     backgroundColor: Colors.green[800],
                                 ),
                                 onPressed: () {
+                                  _emailFocusNode.unfocus();
+                                  _passwordFocusNode.unfocus();
                                   Navigator.pushNamed(context, '/signup');
                                 },
                                 child: const Text('Registrati', style: TextStyle(color: Colors.white, fontSize: 17)),

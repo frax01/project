@@ -168,12 +168,12 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     try {
       if (selectedRole == "") {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a role')));
+            const SnackBar(content: Text('Seleziona un ruolo')));
         return;
       }
       if (selectedStatus == "") {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a status')));
+            const SnackBar(content: Text('Seleziona uno status')));
         return;
       }
 
@@ -196,7 +196,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       sendNotification(token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
       Navigator.pop(context);
     } catch (e) {
-      print('Error updating user details: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante l\'accettazione dell\'utente'),
+        ),
+      );
     }
   }
 }

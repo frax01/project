@@ -314,7 +314,11 @@ class _ProgramPageState extends State<ProgramPage> {
 
   Future<String?> _uploadFileToFirebase(PlatformFile file) async {
     if (file.path == null) {
-      print("Percorso del file non disponibile");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Percorso del file non disponibile'),
+        ),
+      );
       return null;
     }
 
@@ -326,7 +330,11 @@ class _ProgramPageState extends State<ProgramPage> {
 
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      print("Errore durante il caricamento del file: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante il caricamento del file'),
+        ),
+      );
       return null;
     }
   }
