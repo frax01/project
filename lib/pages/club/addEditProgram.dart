@@ -116,6 +116,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _latitude = widget.document!['lat'];
         _longitude = widget.document!['lon'];
         selectedClasses = List<String>.from(widget.document!['selectedClass']);
+        reservations = widget.document!.containsKey('prenotazioni') ? true : false;
       }
     } else {
       final String formattedDate = DateFormat('dd-MM-yyyy').format(widget.focusedDay);
@@ -482,28 +483,55 @@ class _AddEditProgramState extends State<AddEditProgram> {
         }
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
-        Map<String, dynamic> document = {
-          'title': _programNameController.text,
-          'selectedOption': widget.selectedOption,
-          'imagePath': _image,
-          'selectedClass': selectedClasses.sorted((a, b) {
-            if (a.contains('media') && b.contains('liceo')) {
-              return -1;
-            } else if (a.contains('liceo') && b.contains('media')) {
-              return 1;
-            } else {
-              return a.compareTo(b);
-            }
-          }),
-          'description': _programDescriptionController.text,
-          'startDate': _startDateController.text,
-          'endDate': _endDateController.text,
-          'address': _address,
-          'lat': _latitude,
-          'lon': _longitude,
-          'creator': widget.name,
-          'club': widget.club
-        };
+        Map<String, dynamic> document = {};
+        if(reservations)  {
+          document = {
+            'title': _programNameController.text,
+            'selectedOption': widget.selectedOption,
+            'imagePath': _image,
+            'selectedClass': selectedClasses.sorted((a, b) {
+              if (a.contains('media') && b.contains('liceo')) {
+                return -1;
+              } else if (a.contains('liceo') && b.contains('media')) {
+                return 1;
+              } else {
+                return a.compareTo(b);
+              }
+            }),
+            'description': _programDescriptionController.text,
+            'startDate': _startDateController.text,
+            'endDate': _endDateController.text,
+            'address': _address,
+            'lat': _latitude,
+            'lon': _longitude,
+            'creator': widget.name,
+            'club': widget.club,
+            'prenotazioni': []
+          };
+        } else {
+          document = {
+            'title': _programNameController.text,
+            'selectedOption': widget.selectedOption,
+            'imagePath': _image,
+            'selectedClass': selectedClasses.sorted((a, b) {
+              if (a.contains('media') && b.contains('liceo')) {
+                return -1;
+              } else if (a.contains('liceo') && b.contains('media')) {
+                return 1;
+              } else {
+                return a.compareTo(b);
+              }
+            }),
+            'description': _programDescriptionController.text,
+            'startDate': _startDateController.text,
+            'endDate': _endDateController.text,
+            'address': _address,
+            'lat': _latitude,
+            'lon': _longitude,
+            'creator': widget.name,
+            'club': widget.club
+          };
+        }
 
         var doc = await firestore
             .collection('club_${widget.selectedOption}')
@@ -577,29 +605,84 @@ class _AddEditProgramState extends State<AddEditProgram> {
       });
       widget.refreshProgram!();
     } else {
-      Map<Object, Object?> newDocument = {
-        'id': widget.document!['id'],
-        'title': _programNameController.text,
-        'selectedOption': widget.selectedOption,
-        'imagePath': _image,
-        'selectedClass': selectedClasses.sorted((a, b) {
-          if (a.contains('media') && b.contains('liceo')) {
-            return -1;
-          } else if (a.contains('liceo') && b.contains('media')) {
-            return 1;
-          } else {
-            return a.compareTo(b);
-          }
-        }),
-        'description': _programDescriptionController.text,
-        'startDate': _startDateController.text,
-        'endDate': _endDateController.text,
-        'address': _address,
-        'lat': _latitude,
-        'lon': _longitude,
-        'creator': widget.name,
-        'club': widget.club
-      };
+      Map<Object, Object?> newDocument = {};
+      if(reservations) {
+        newDocument = {
+          'id': widget.document!['id'],
+          'title': _programNameController.text,
+          'selectedOption': widget.selectedOption,
+          'imagePath': _image,
+          'selectedClass': selectedClasses.sorted((a, b) {
+            if (a.contains('media') && b.contains('liceo')) {
+              return -1;
+            } else if (a.contains('liceo') && b.contains('media')) {
+              return 1;
+            } else {
+              return a.compareTo(b);
+            }
+          }),
+          'description': _programDescriptionController.text,
+          'startDate': _startDateController.text,
+          'endDate': _endDateController.text,
+          'address': _address,
+          'lat': _latitude,
+          'lon': _longitude,
+          'creator': widget.name,
+          'club': widget.club,
+          'prenotazioni': widget.document!.containsKey('prenotazioni') ? widget.document!['prenotazioni'] : [],
+        };
+      } else {
+        if(widget.document!.containsKey('prenotazioni')) {
+          newDocument = {
+            'id': widget.document!['id'],
+            'title': _programNameController.text,
+            'selectedOption': widget.selectedOption,
+            'imagePath': _image,
+            'selectedClass': selectedClasses.sorted((a, b) {
+              if (a.contains('media') && b.contains('liceo')) {
+                return -1;
+              } else if (a.contains('liceo') && b.contains('media')) {
+                return 1;
+              } else {
+                return a.compareTo(b);
+              }
+            }),
+            'description': _programDescriptionController.text,
+            'startDate': _startDateController.text,
+            'endDate': _endDateController.text,
+            'address': _address,
+            'lat': _latitude,
+            'lon': _longitude,
+            'creator': widget.name,
+            'club': widget.club,
+            'prenotazioni': FieldValue.delete(),
+          };
+        } else {
+          newDocument = {
+            'id': widget.document!['id'],
+            'title': _programNameController.text,
+            'selectedOption': widget.selectedOption,
+            'imagePath': _image,
+            'selectedClass': selectedClasses.sorted((a, b) {
+              if (a.contains('media') && b.contains('liceo')) {
+                return -1;
+              } else if (a.contains('liceo') && b.contains('media')) {
+                return 1;
+              } else {
+                return a.compareTo(b);
+              }
+            }),
+            'description': _programDescriptionController.text,
+            'startDate': _startDateController.text,
+            'endDate': _endDateController.text,
+            'address': _address,
+            'lat': _latitude,
+            'lon': _longitude,
+            'creator': widget.name,
+            'club': widget.club,
+          };
+        }
+      }
 
       List<String> token = [];
       for (String value in selectedClasses) {
@@ -673,6 +756,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     _endDateFocusNode.dispose();
     super.dispose();
   }
+
+  bool reservations = false;
 
 
   @override
@@ -859,6 +944,31 @@ Widget build(BuildContext context) {
                   labelText: 'Descrizione (facoltativo)',
                   icon: Icon(Icons.description),
                 ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Icons.check_circle),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: ListTile(
+                      title: const Text('Prenotazione', style: TextStyle(fontSize: 20)),
+                      trailing: Switch(
+                        value: reservations,
+                          onChanged: (bool value) {
+                          setState(() {
+                            reservations = value;
+                          });
+                        },
+                      ),
+                      onTap: () {
+                        setState(() {
+                          reservations = !reservations;
+                        });
+                      },
+                    ),
+                  ),
+                ]
               ),
               if (widget.selectedOption == 'evento') ...[
                 const SizedBox(height: 20),

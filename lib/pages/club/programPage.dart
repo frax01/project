@@ -501,6 +501,32 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+  Future<void> _toggleReservation() async {
+    if (_data.containsKey('prenotazioni')) {
+      List<dynamic> prenotazioni = _data['prenotazioni'];
+      if (prenotazioni.contains(widget.name)) {
+        prenotazioni.remove(widget.name);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Presenza cancellata')));
+      } else {
+        prenotazioni.add(widget.name);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Presenza confermata')));
+      }
+
+      await FirebaseFirestore.instance
+          .collection('club_${widget.selectedOption}')
+          .doc(widget.documentId)
+          .update({'prenotazioni': prenotazioni});
+
+      setState(() {
+        _data['prenotazioni'] = prenotazioni;
+      });
+    }
+  }
+
+  bool _isExpanded = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -586,14 +612,52 @@ class _ProgramPageState extends State<ProgramPage> {
                               ),
                             ),
                           ),
+                          if (_data.containsKey('prenotazioni'))
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: InkWell(
+                                onTap: _toggleReservation,
+                                borderRadius: BorderRadius.circular(50),
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 7,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    _data['prenotazioni'].contains(widget.name)
+                                        ? Icons.check_circle
+                                        : Icons.check_circle_outline,
+                                    color: _data['prenotazioni'].contains(widget.name)
+                                        ? Colors.green
+                                        : Colors.black,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
+                            ),
                           Positioned(
                             bottom: -25,
                             left: 15,
                             right: 15,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width - 30,  // Ensure padding is considered
+                                maxWidth: MediaQuery.of(context).size.width - 30,
                               ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
                               child: Center(
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -623,6 +687,9 @@ class _ProgramPageState extends State<ProgramPage> {
                                     ),
                                   ),
                                 ),
+                              )
+                              ),
+                                ],
                               ),
                             ),
                           ),
@@ -721,34 +788,47 @@ class _ProgramPageState extends State<ProgramPage> {
                                     ],
                                   ),
                                 )),
-                            const SizedBox(height: 20.0),
                             _data['description']!='' ?
-                              Card(
-                                surfaceTintColor: Colors.white,
-                                elevation: 5,
-                                margin: const EdgeInsets.all(0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Descrizione',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey,
+                                Column(
+                                  children: [
+                                    const SizedBox(height: 20.0),
+                                    Card(
+                                      surfaceTintColor: Colors.white,
+                                      elevation: 5,
+                                      margin: const EdgeInsets.all(0),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Descrizione',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 15),
+                                            Text(
+                                              _data['description'],
+                                              style: const TextStyle(fontSize: 17),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 15),
-                                      Text(
-                                        _data['description'],
-                                        style: const TextStyle(fontSize: 17),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : Container(),
+                                    )
+                                  ],
+                                ) : Container(),
+                            const SizedBox(height: 20.0),
+                            if (_data.containsKey('prenotazioni'))
+                              ExpansionTile(
+                                title: const Text('Prenotazioni'),
+                                leading: const Icon(Icons.check_circle_outline),
+                                children: _data['prenotazioni']
+                                    .map<Widget>((name) => ListTile(
+                                  title: Text(name),
+                                )).toList(),
+                              ),
                             const SizedBox(height: 20.0),
                             if (_data.containsKey('file'))
                               Column(
