@@ -34,7 +34,7 @@ dependencies:
   firebase_auth: ^5.1.2
   cloud_firestore: ^5.1.0
   shared_preferences: ^2.0.12
-  intl: ^0.19.0
+  intl: ^0.18.1
   image_picker: ^1.1.2
   firebase_storage: ^12.1.1
   dots_indicator: ^3.0.0
@@ -68,6 +68,7 @@ dependencies:
   file_picker: ^8.0.5
   flutter_pdfview: ^1.3.2
   permission_handler: ^11.3.1
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+
+flutter_icons:
+  ios: true
+  image_path: images/clubLogo.png
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -92,8 +98,8 @@ flutter:
   uses-material-design: true
   assets:
     - images/
-    #- android/app/src/main/res/mipmap/tiberlogo.png
     - android/app/src/main/res/drawable/tiberlogo.png
+    - images/clubLogo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

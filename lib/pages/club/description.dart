@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+
 class Tiber extends StatelessWidget {
   const Tiber({super.key, required this.club});
 
@@ -269,8 +270,8 @@ class Tiber extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                      onTap: () {
-                        launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'));
+                      onTap: () async {
+                        launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'), mode: LaunchMode.externalApplication);
                       },
                     ),
                   ]
@@ -349,7 +350,7 @@ class _DeltaState extends State<Delta> {
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
-                text: 'Il Centro Delta è un\'associazione familiare che si rivolge a ragazzi liceali, '
+                text: 'Il Centro Delta è un luogo d\'incontro per ragazzi delle superiori, '
                     'con lo scopo di promuovere la loro crescita attraverso '
                     'attività formative, sportive e culturali\n\n',
                 style: textStyle.copyWith(fontWeight: FontWeight.normal),
