@@ -502,6 +502,7 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Future<void> _toggleReservation() async {
+    print("name: ${widget.name}");
     if (_data.containsKey('prenotazioni')) {
       List<dynamic> prenotazioni = _data['prenotazioni'];
       if (prenotazioni.contains(widget.name)) {
@@ -796,7 +797,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                       surfaceTintColor: Colors.white,
                                       elevation: 5,
                                       margin: const EdgeInsets.all(0),
-                                      child: Padding(
+                                      child: Container(
+                                          width: double.infinity,
                                         padding: const EdgeInsets.all(16.0),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,19 +817,28 @@ class _ProgramPageState extends State<ProgramPage> {
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    )
-                                  ],
-                                ) : Container(),
-                            const SizedBox(height: 20.0),
+                                      ),),]
+                                    ) : Container(),
                             if (_data.containsKey('prenotazioni'))
-                              ExpansionTile(
-                                title: const Text('Prenotazioni'),
-                                leading: const Icon(Icons.check_circle_outline),
-                                children: _data['prenotazioni']
-                                    .map<Widget>((name) => ListTile(
-                                  title: Text(name),
-                                )).toList(),
+                              Column(
+                                children: [
+                                  const SizedBox(height: 20.0),
+                                  ExpansionTile(
+                                    title: const Text('Prenotazioni'),
+                                    leading: const Icon(Icons.check_circle_outline),
+                                    children: _data['prenotazioni'].isNotEmpty
+                                        ? _data['prenotazioni']
+                                        .map<Widget>((name) => ListTile(
+                                      title: Text(name),
+                                    ))
+                                        .toList()
+                                        : [
+                                      const ListTile(
+                                        title: Text('Nessuna prenotazione'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             const SizedBox(height: 20.0),
                             if (_data.containsKey('file'))

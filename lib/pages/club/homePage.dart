@@ -52,6 +52,7 @@ class _HomePageState extends State<HomePage> {
               refreshList: refreshList,
               startDate: dateTime,
               name: doc['creator'],
+              user: widget.name,
             ));
             _listKey.currentState?.insertItem(_listItems.length - 1);
           }
@@ -75,6 +76,7 @@ class _HomePageState extends State<HomePage> {
               refreshList: refreshList,
               startDate: dateTime,
               name: doc['creator'],
+              user: widget.name,
             ));
             _listKey.currentState?.insertItem(_listItems.length - 1);
           }
