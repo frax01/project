@@ -4,7 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-
 class Tiber extends StatelessWidget {
   const Tiber({super.key, required this.club});
 
@@ -271,7 +270,7 @@ class Tiber extends StatelessWidget {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                       onTap: () async {
-                        launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'), mode: LaunchMode.externalApplication);
+                        await launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'), mode: LaunchMode.externalApplication);
                       },
                     ),
                   ]
