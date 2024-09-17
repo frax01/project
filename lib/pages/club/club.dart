@@ -6,19 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'info.dart';
 import 'calendar.dart';
+import 'lunch.dart';
 
 class ClubPage extends StatefulWidget {
-  const ClubPage(
-      {super.key,
-        required this.club,
-        required this.classes,
-        required this.status,
-        required this.id,
-        required this.name,
-        required this.surname,
-        required this.email,
-        this.selectedIndex = 0,
-      });
+  const ClubPage({
+    super.key,
+    required this.club,
+    required this.classes,
+    required this.status,
+    required this.id,
+    required this.name,
+    required this.surname,
+    required this.email,
+    this.selectedIndex = 0,
+  });
 
   final String club;
   final List classes;
@@ -28,7 +29,6 @@ class ClubPage extends StatefulWidget {
   final String surname;
   final String email;
   final int selectedIndex;
-
 
   @override
   State<ClubPage> createState() => _ClubPageState();
@@ -71,14 +71,21 @@ class _ClubPageState extends State<ClubPage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: Calendar(isAdmin: widget.status, club: widget.club, name: '${widget.name} ${widget.surname}', email: widget.email, selectedClass: widget.classes,),
+        child: Calendar(
+          isAdmin: widget.status,
+          club: widget.club,
+          name: '${widget.name} ${widget.surname}',
+          email: widget.email,
+          selectedClass: widget.classes,
+        ),
       ),
-      //PopScope(
-      //  onPopInvoked: (_) {
-      //    SystemNavigator.pop();
-      //  },
-      //  child: const Lunch(),
-      //),
+      if (widget.club == 'Delta Club')
+        PopScope(
+          onPopInvoked: (_) {
+            SystemNavigator.pop();
+          },
+          child: Lunch(isAdmin: widget.status),
+        ),
     ];
   }
 
@@ -86,8 +93,10 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: widget.club=='Delta Club' ? const Text('Centro Delta') : Text(widget.club),
-        automaticallyImplyLeading: false,
+          title: widget.club == 'Delta Club'
+              ? const Text('Centro Delta')
+              : Text(widget.club),
+          automaticallyImplyLeading: false,
           actions: [
             IconButton(
               icon: const Icon(Icons.info_outline),
@@ -107,12 +116,10 @@ class _ClubPageState extends State<ClubPage> {
                         surname: widget.surname,
                         email: widget.email,
                         isAdmin: widget.status,
-                        club: widget.club
-                    )));
+                        club: widget.club)));
               },
             ),
-          ]
-      ),
+          ]),
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
             Animation<double> secondaryAnimation) {
@@ -125,7 +132,7 @@ class _ClubPageState extends State<ClubPage> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,        
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (int index) {
           setState(() {
@@ -150,11 +157,13 @@ class _ClubPageState extends State<ClubPage> {
             activeIcon: Icon(Icons.calendar_month),
             label: 'Calendario',
           ),
-          //const BottomNavigationBarItem(
-          //  icon: Icon(Icons.fastfood_outlined),
-          //  activeIcon: Icon(Icons.stadium),
-          //  label: 'Pranzi',
-          //),
+          if (widget.club == 'Delta Club') ...[
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.fastfood_outlined),
+              activeIcon: Icon(Icons.fastfood),
+              label: 'Pranzi',
+            ),
+          ],
         ],
       ),
     );
