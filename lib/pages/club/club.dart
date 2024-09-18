@@ -84,7 +84,7 @@ class _ClubPageState extends State<ClubPage> {
           onPopInvoked: (_) {
             SystemNavigator.pop();
           },
-          child: Lunch(isAdmin: widget.status),
+          child: Lunch(isAdmin: widget.status, name: '${widget.name} ${widget.surname}'),
         ),
     ];
   }

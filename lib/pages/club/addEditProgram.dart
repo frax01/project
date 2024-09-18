@@ -186,7 +186,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     if (picked != null && picked != initialDate) {
       return DateFormat('dd-MM-yyyy').format(picked);
     }
-    return null; // Return null if the dialog was cancelled
+    return null;
   }
 
   Widget _showDatePickers() {
