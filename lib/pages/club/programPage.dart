@@ -557,12 +557,9 @@ class _ProgramPageState extends State<ProgramPage> {
             ),
           ),
           widget.isAdmin
-              ? PopupMenuButton(itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                      child: const Text('Modifica'),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
+              ? IconButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => AddEditProgram(
                                   club: widget.club,
                                   selectedOption: _data['selectedOption'],
@@ -571,16 +568,21 @@ class _ProgramPageState extends State<ProgramPage> {
                                   refreshProgram: refreshProgram,
                                   name: widget.name,
                                 )));
-                      },
-                    ),
-                    PopupMenuItem(
-                        child: const Text('Elimina'),
-                        onTap: () {
-                          _showDeleteDialog(context, _data['id'], _data['imagePath']);
-                        }),
-                  ];
-                })
-              : const SizedBox.shrink(),
+            },
+            icon: const Icon(
+              Icons.edit,
+            ),
+          ) : const SizedBox.shrink(),
+
+          widget.isAdmin
+              ? IconButton(
+            onPressed: () {
+              _showDeleteDialog(context, _data['id'], _data['imagePath']);
+            },
+            icon: const Icon(
+              Icons.delete,
+            ),
+          ) : const SizedBox.shrink(),
         ],
       ),
       body: AdaptiveLayout(

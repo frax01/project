@@ -35,8 +35,12 @@ class _HomePageState extends State<HomePage> {
   _loadItems() async {
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip']) {
-      if(widget.isAdmin) {
-        await db.collection(collection).where('club', isEqualTo: widget.club).get().then((docs) {
+      if (widget.isAdmin && selectedOptions[0] == 'Tutti i programmi') {
+        await db
+            .collection(collection)
+            .where('club', isEqualTo: widget.club)
+            .get()
+            .then((docs) {
           for (var doc in docs.docs) {
             List<String> parts = doc["startDate"].split('-');
             int day = int.parse(parts[0]);
@@ -58,9 +62,12 @@ class _HomePageState extends State<HomePage> {
           }
         });
       } else {
-        await db.collection(collection).where('selectedClass', arrayContainsAny: widget.selectedClass)
+        await db
+            .collection(collection)
+            .where('selectedClass', arrayContainsAny: widget.selectedClass)
             .where('club', isEqualTo: widget.club)
-            .get().then((docs) {
+            .get()
+            .then((docs) {
           for (var doc in docs.docs) {
             List<String> parts = doc["startDate"].split('-');
             int day = int.parse(parts[0]);
@@ -86,7 +93,7 @@ class _HomePageState extends State<HomePage> {
     _listItems.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
-  _buildList() {
+  _buildList(String section) {
     return FutureBuilder(
       future: _loadItems(),
       builder: (context, snapshot) {
@@ -98,8 +105,7 @@ class _HomePageState extends State<HomePage> {
         } else {
           if (_listItems.isEmpty) {
             child = const Center(
-              child:
-              Text(
+              child: Text(
                 'Nessun programma disponibile',
                 style: TextStyle(fontSize: 20.0, color: Colors.black54),
                 textAlign: TextAlign.center,
@@ -138,6 +144,12 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
+  final List<String> options = [
+    'Le tue classi',
+    'Tutti i programmi',
+  ];
+  List<String> selectedOptions = ['Le tue classi'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,8 +159,34 @@ class _HomePageState extends State<HomePage> {
           return Future.value();
         },
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-          child: _buildList(),
+          padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
+          child: widget.isAdmin
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                        spacing: 10,
+                        children: options.map((e) {
+                          return ChoiceChip(
+                            label: Text(e),
+                            selected: selectedOptions.contains(e),
+                            onSelected: (bool selected) {
+                              setState(() {
+                                if (selected) {
+                                  selectedOptions.clear();
+                                  selectedOptions.add(e);
+                                  refreshList();
+                                }
+                              });
+                            },
+                          );
+                        }).toList()),
+                    Expanded(
+                      child: _buildList(selectedOptions[0]),
+                    ),
+                  ],
+                )
+              : _buildList('Le tue classi'),
         ),
       ),
     );

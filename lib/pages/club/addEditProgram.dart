@@ -945,31 +945,33 @@ Widget build(BuildContext context) {
                   icon: Icon(Icons.description),
                 ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Icon(Icons.check_circle),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: ListTile(
-                      title: const Text('Prenotazione', style: TextStyle(fontSize: 20)),
-                      trailing: Switch(
-                        value: reservations,
-                          onChanged: (bool value) {
+              if (widget.selectedOption != 'evento') ...[
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text('Prenotazione', style: TextStyle(fontSize: 20)),
+                        trailing: Switch(
+                          value: reservations,
+                            onChanged: (bool value) {
+                            setState(() {
+                              reservations = value;
+                            });
+                          },
+                        ),
+                        onTap: () {
                           setState(() {
-                            reservations = value;
+                            reservations = !reservations;
                           });
                         },
                       ),
-                      onTap: () {
-                        setState(() {
-                          reservations = !reservations;
-                        });
-                      },
                     ),
-                  ),
-                ]
-              ),
+                  ]
+                ),
+              ],
               if (widget.selectedOption == 'evento') ...[
                 const SizedBox(height: 20),
                 ListTile(

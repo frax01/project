@@ -14,7 +14,6 @@ class Lunch extends StatefulWidget {
 }
 
 class _LunchState extends State<Lunch> {
-
   Future<List<Map<String, dynamic>>> _fetchMeals() async {
     try {
       final querySnapshot =
@@ -30,20 +29,77 @@ class _LunchState extends State<Lunch> {
             'giorno': doc['giorno'],
             'prenotazioni': doc['prenotazioni'],
             'appuntamento': doc['appuntamento'],
-            'id': doc.id
+            'id': doc.id,
+            'default': doc['default'],
+            'status': doc['status'],
+            'modificato': doc['modificato'],
           };
         }).toList();
-  
+
+        for (var meal in meals) {
+          await _checkAndUpdateMealStatus(meal);
+        }
+
         meals.sort((a, b) {
           DateTime dateA = DateFormat('dd-MM-yyyy').parse(a['appuntamento']);
           DateTime dateB = DateFormat('dd-MM-yyyy').parse(b['appuntamento']);
-          return dateA.compareTo(dateB);
+
+          if (dateA.isBefore(dateB)) {
+            return -1;
+          } else if (dateA.isAfter(dateB)) {
+            return 1;
+          } else {
+            int timeA = _timeToMinutes(a['orario']);
+            int timeB = _timeToMinutes(b['orario']);
+            return timeA.compareTo(timeB);
+          }
         });
-  
         return meals;
       }
     } catch (e) {
       return [];
+    }
+  }
+
+  int _timeToMinutes(String timeString) {
+    final parts = timeString.split(':');
+    final hour = int.parse(parts[0]);
+    final minute = int.parse(parts[1]);
+    return hour * 60 + minute;
+  }
+
+  Future<void> _checkAndUpdateMealStatus(Map<String, dynamic> meal) async {
+    if (meal['default'] == false &&
+        meal['status'] == 'aperto' &&
+        meal['modificato'] == false) {
+      DateTime now = DateTime.now();
+      DateTime mealDate = DateFormat('dd-MM-yyyy').parse(meal['appuntamento']);
+      TimeOfDay mealTime = TimeOfDay(
+        hour: int.parse(meal['orario'].split(":")[0]),
+        minute: int.parse(meal['orario'].split(":")[1]),
+      );
+
+      DateTime mealDateTime = DateTime(
+        mealDate.year,
+        mealDate.month,
+        mealDate.day,
+        mealTime.hour,
+        mealTime.minute,
+      );
+
+      bool isToday = mealDate.year == now.year &&
+          mealDate.month == now.month &&
+          mealDate.day == now.day;
+
+      if (isToday &&
+          (mealDateTime.isBefore(now) ||
+              mealDateTime.difference(now).inMinutes <= 30)) {
+        await FirebaseFirestore.instance
+            .collection('pasti')
+            .doc(meal['id'])
+            .update({'status': 'chiuso'});
+        meal['status'] = 'chiuso';
+      }
     }
   }
 
@@ -68,8 +124,7 @@ class _LunchState extends State<Lunch> {
     }
   }
 
-  Future<String?> _selectDate(BuildContext context) async {
-
+  Future<DateTime?> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -79,7 +134,7 @@ class _LunchState extends State<Lunch> {
 
     if (picked != null && picked != DateTime.now()) {
       _unfocusAll();
-      return DateFormat('dd MMM yyyy', 'it_IT').format(picked).toUpperCase();
+      return picked;
     }
     _unfocusAll();
     return null;
@@ -113,60 +168,65 @@ class _LunchState extends State<Lunch> {
         final timeController = TextEditingController();
 
         return AlertDialog(
-          title: const Text('Aggiungi un nuovo pasto'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Data'),
-                  readOnly: true,
-                  controller: dateController,
-                  focusNode: _dateFocusNode,
-                  onTap: () async {
-                    final String? pickedDate = await _selectDate(context);
-                    if (pickedDate != null) {
-                      setState(() {
-                        dateController.text = pickedDate;
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Seleziona una data';
-                    }
-                    return null;
-                  },
+          title: const Text('Aggiungi un pasto'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Data'),
+                      readOnly: true,
+                      controller: dateController,
+                      focusNode: _dateFocusNode,
+                      onTap: () async {
+                        selectedDate = await _selectDate(context);
+                        if (selectedDate != null) {
+                          setState(() {
+                            dateController.text =
+                                DateFormat('dd/MM/yyyy').format(selectedDate!);
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Seleziona una data';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Ora'),
+                      readOnly: true,
+                      controller: timeController,
+                      focusNode: _timeFocusNode,
+                      onTap: () async {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        _unfocusAll();
+                        if (pickedTime != null) {
+                          setState(() {
+                            selectedTime = pickedTime;
+                            timeController.text = selectedTime!.format(context);
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (selectedTime == null) {
+                          return 'Seleziona un orario';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Orario'),
-                  readOnly: true,
-                  controller: timeController,
-                  focusNode: _timeFocusNode,
-                  onTap: () async {
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    _unfocusAll();
-                    if (pickedTime != null) {
-                      setState(() {
-                        selectedTime = pickedTime;
-                        timeController.text = selectedTime!.format(context);
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (selectedTime == null) {
-                      return 'Seleziona un orario';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
+              );
+            },
           ),
           actions: <Widget>[
             TextButton(
@@ -180,7 +240,7 @@ class _LunchState extends State<Lunch> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   await FirebaseFirestore.instance.collection('pasti').add({
-                    'data': DateFormat('dd MMM yyyy', 'it_IT')
+                    'data': DateFormat('dd', 'it_IT')
                         .format(selectedDate!)
                         .toUpperCase(),
                     'giorno': DateFormat('EEEE', 'it_IT')
@@ -190,6 +250,9 @@ class _LunchState extends State<Lunch> {
                     'prenotazioni': [],
                     'appuntamento':
                         DateFormat('dd-MM-yyyy').format(selectedDate!),
+                    'default': false,
+                    'status': 'aperto',
+                    'modificato': false,
                   });
                   Navigator.of(context).pop();
                   setState(() {});
@@ -203,7 +266,6 @@ class _LunchState extends State<Lunch> {
   }
 
   Future<void> _toggleReservation(var meal) async {
-    print("name: ${widget.name}");
     List<dynamic> prenotazioni = meal['prenotazioni'];
     if (prenotazioni.contains(widget.name)) {
       prenotazioni.remove(widget.name);
@@ -225,11 +287,50 @@ class _LunchState extends State<Lunch> {
     });
   }
 
+  void _confirmDelete(BuildContext context, String mealId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Conferma eliminazione"),
+          content: const Text("Sei sicuro?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Annulla"),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteMeal(mealId);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text("Elimina"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteMeal(String mealId) async {
+    try {
+      await FirebaseFirestore.instance.collection('pasti').doc(mealId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pasto eliminato')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nell\'eliminazione del pasto')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -251,15 +352,15 @@ class _LunchState extends State<Lunch> {
                     ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
+                  return const Expanded(
+                    child: Center(
                       child: Text(
                         'Non ci sono pranzi in programma',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20.0,
+                          color: Colors.black54,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   );
@@ -270,8 +371,7 @@ class _LunchState extends State<Lunch> {
                       itemBuilder: (context, index) {
                         final meal = snapshot.data![index];
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 16.0),
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                           decoration: const BoxDecoration(
                             border: Border(
                               bottom:
@@ -285,32 +385,45 @@ class _LunchState extends State<Lunch> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  AutoSizeText(
-                                    '${meal['giorno']} ${meal['data'].split(' ')[0]} ${meal['data'].split(' ')[1]} - ${meal['orario']}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                    maxLines: 1,
-                                    minFontSize: 20,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  InkWell(
-                                    onTap: () => _toggleReservation(meal),
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 2,
-                                            blurRadius: 7,
-                                            offset: const Offset(0, 3),
+                                  Expanded(
+                                    child: ListTile(
+                                      leading:
+                                          const Icon(Icons.fastfood, size: 40),
+                                      title: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${meal['status'][0].toUpperCase()}${meal['status'].substring(1)}',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: meal['status'] == 'chiuso'
+                                                  ? Colors.red
+                                                  : Colors.green,
+                                            ),
+                                          ),
+                                          AutoSizeText(
+                                            '${meal['giorno']} ${meal['data'].split(' ')[0]}',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 25,
+                                            ),
+                                            maxLines: 1,
+                                            minFontSize: 18,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ],
                                       ),
+                                      subtitle: Text(
+                                        '${meal['orario']}',
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                    ),
+                                  ),
+                                  if (meal['status'] == 'aperto')
+                                    InkWell(
+                                      onTap: () => _toggleReservation(meal),
+                                      borderRadius: BorderRadius.circular(50),
                                       child: Icon(
                                         meal['prenotazioni']
                                                 .contains(widget.name)
@@ -320,26 +433,83 @@ class _LunchState extends State<Lunch> {
                                                 .contains(widget.name)
                                             ? Colors.green
                                             : Colors.black,
-                                        size: 30,
+                                        size: 35,
                                       ),
                                     ),
-                                  ),
+                                  widget.isAdmin
+                                      ? PopupMenuButton(
+                                          offset: const Offset(0, 40),
+                                          iconSize: 30,
+                                          itemBuilder: (BuildContext context) {
+                                            return [
+                                              meal['status'] == 'aperto'
+                                                  ? PopupMenuItem(
+                                                      child:
+                                                          const Text('Chiudi'),
+                                                      onTap: () async {
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection('pasti')
+                                                            .doc(meal['id'])
+                                                            .update({
+                                                          'status': 'chiuso',
+                                                          'modificato': true
+                                                        });
+                                                        meal['status'] =
+                                                            'chiuso';
+                                                        meal['modificato'] =
+                                                            true;
+                                                        setState(() {});
+                                                      },
+                                                    )
+                                                  : PopupMenuItem(
+                                                      child: const Text('Apri'),
+                                                      onTap: () async {
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection('pasti')
+                                                            .doc(meal['id'])
+                                                            .update({
+                                                          'status': 'aperto',
+                                                          'modificato': true
+                                                        });
+                                                        meal['status'] =
+                                                            'aperto';
+                                                        meal['modificato'] =
+                                                            true;
+                                                        setState(() {});
+                                                      },
+                                                    ),
+                                              PopupMenuItem(
+                                                child: const Text('Elimina'),
+                                                onTap: () {
+                                                  _confirmDelete(
+                                                      context, meal['id']);
+                                                },
+                                              ),
+                                            ];
+                                          },
+                                        )
+                                      : const SizedBox.shrink(),
                                 ],
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 5),
                               ExpansionTile(
-                                title: const Text('Prenotazioni'),
-                                leading: const Icon(Icons.check_circle_outline),
+                                title: Text(
+                                    'Prenotazioni (${meal['prenotazioni'].length})',
+                                    style: const TextStyle(fontSize: 20)),
                                 children: meal['prenotazioni'].isNotEmpty
                                     ? meal['prenotazioni']
                                         .map<Widget>((name) => ListTile(
-                                              title: Text(name),
-                                            ))
+                                                title: Text(
+                                              name,
+                                              style:
+                                                  const TextStyle(fontSize: 18),
+                                            )))
                                         .toList()
                                     : [
                                         const ListTile(
-                                          title: Text('Nessuna prenotazione'),
-                                        ),
+                                            title: Text('Nessuna prenotazione'))
                                       ],
                                 shape: const RoundedRectangleBorder(
                                   side: BorderSide.none,
@@ -362,10 +532,7 @@ class _LunchState extends State<Lunch> {
               onPressed: _showAddMealDialog,
               shape: const CircleBorder(),
               backgroundColor: Colors.white,
-              child: const Icon(
-                Icons.add,
-                color: Colors.black,
-              ),
+              child: const Icon(Icons.add, color: Colors.black),
             )
           : null,
     );

@@ -11,7 +11,8 @@ const config = require('./config.js');
 
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
-
+const { addDays, format } = require('date-fns');
+const { it } = require('date-fns/locale'); 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
@@ -20,6 +21,84 @@ const { google } = require('googleapis');
 admin.initializeApp();
 
 const { GoogleAuth } = require('google-auth-library');
+
+
+exports.closeDefaultMeals = functions.pubsub.schedule('every monday 12:00').timeZone('Europe/Rome').onRun(async (context) => {
+    try {
+      const snapshot = await admin.firestore().collection('pasti').where('default', '==', true).get();
+      if (snapshot.empty) {
+        console.log('No matching documents.');
+        return null;
+      }
+      const batch = admin.firestore().batch();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.status === 'aperto') {
+            batch.update(doc.ref, { status: 'chiuso' });
+        }
+      });
+      await batch.commit();
+      console.log('Updated documents successfully');
+    } catch (error) {
+      console.error('Error updating documents: ', error);
+    }
+    return null;
+});
+
+exports.openDefaultMeals = functions.pubsub.schedule('every saturday 08:00').timeZone('Europe/Rome').onRun(async (context) => {
+    try {
+      const snapshot = await admin.firestore().collection('pasti').where('default', '==', true).get();
+      if (snapshot.empty) {
+        console.log('No matching documents');
+        return null;
+      }
+      const batch = admin.firestore().batch();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.status === 'chiuso') {
+            batch.update(doc.ref, { status: 'aperto' });
+        }
+      });
+      await batch.commit();
+      console.log('Updated documents successfully');
+    } catch (error) {
+      console.error('Error updating documents: ', error);
+    }
+    return null;
+});
+
+exports.createMondayLunch = functions.pubsub.schedule('every tuesday 00:01').timeZone('Europe/Rome').onRun(async (context) => {
+    try {
+        const today = new Date();
+        const nextMondayDate = addDays(today, (1 - today.getDay() + 7) % 7);
+        const formattedDate = format(nextMondayDate, 'dd MMM yyyy', { locale: it }).toUpperCase();
+        const formattedAppuntamento = format(nextMondayDate, 'dd-MM-yyyy');
+
+        const existingDocs = await admin.firestore().collection('pasti').where('default', '==', true).get();
+        if (!existingDocs.empty) {
+            const batch = admin.firestore().batch();
+            existingDocs.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            console.log('Documenti esistenti con default==true eliminati.');
+        }
+
+        await admin.firestore().collection('pasti').add({
+            'data': formattedDate,
+            'giorno': 'LUNEDÌ',
+            'orario': '14:30',
+            'prenotazioni': [],
+            'appuntamento': formattedAppuntamento,
+            'default': true,
+            'status': 'chiuso',
+            'modificato': false,
+        });
+        console.log('Documento creato correttamente con data:', formattedDate);
+    } catch (error) {
+        console.error('Errore durante la creazione del documento:', error);
+    }
+});
 
 exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
   try {
@@ -217,7 +296,7 @@ async function sendNotification(token, section, name, filter, id, focused) {
         data = {
             click_action: 'FLUTTER_NOTIFICATION_CLICK',
             id: Date.now().toString(),
-            focusedDay: focused,//.toString(),
+            focusedDay: focused,
             docId: docId.toString(),
             selectedOption: selectedOption.toString(),
             status: 'done',
