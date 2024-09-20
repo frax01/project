@@ -420,77 +420,57 @@ class _LunchState extends State<Lunch> {
                                       ),
                                     ),
                                   ),
-                                  if (meal['status'] == 'aperto')
-                                    InkWell(
-                                      onTap: () => _toggleReservation(meal),
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Icon(
-                                        meal['prenotazioni']
-                                                .contains(widget.name)
-                                            ? Icons.check_circle
-                                            : Icons.check_circle_outline,
-                                        color: meal['prenotazioni']
-                                                .contains(widget.name)
-                                            ? Colors.green
-                                            : Colors.black,
-                                        size: 35,
-                                      ),
-                                    ),
-                                  widget.isAdmin
-                                      ? PopupMenuButton(
-                                          offset: const Offset(0, 40),
-                                          iconSize: 30,
-                                          itemBuilder: (BuildContext context) {
-                                            return [
-                                              meal['status'] == 'aperto'
-                                                  ? PopupMenuItem(
-                                                      child:
-                                                          const Text('Chiudi'),
-                                                      onTap: () async {
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection('pasti')
-                                                            .doc(meal['id'])
-                                                            .update({
-                                                          'status': 'chiuso',
-                                                          'modificato': true
-                                                        });
-                                                        meal['status'] =
-                                                            'chiuso';
-                                                        meal['modificato'] =
-                                                            true;
-                                                        setState(() {});
-                                                      },
-                                                    )
-                                                  : PopupMenuItem(
-                                                      child: const Text('Apri'),
-                                                      onTap: () async {
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection('pasti')
-                                                            .doc(meal['id'])
-                                                            .update({
-                                                          'status': 'aperto',
-                                                          'modificato': true
-                                                        });
-                                                        meal['status'] =
-                                                            'aperto';
-                                                        meal['modificato'] =
-                                                            true;
-                                                        setState(() {});
-                                                      },
-                                                    ),
-                                              PopupMenuItem(
-                                                child: const Text('Elimina'),
-                                                onTap: () {
-                                                  _confirmDelete(
-                                                      context, meal['id']);
-                                                },
-                                              ),
-                                            ];
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      if (meal['status'] == 'aperto')
+                                        IconButton(
+                                          onPressed: () => _toggleReservation(meal),
+                                          icon: Icon(
+                                            meal['prenotazioni'].contains(widget.name)
+                                                ? Icons.check_circle
+                                                : Icons.check_circle_outline,
+                                            color: meal['prenotazioni'].contains(widget.name)
+                                                ? Colors.green
+                                                : Colors.black,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      if (widget.isAdmin && meal['status'] == 'aperto')
+                                        IconButton(
+                                          onPressed: () async {
+                                            await FirebaseFirestore.instance
+                                                .collection('pasti')
+                                                .doc(meal['id'])
+                                                .update({'status': 'chiuso', 'modificato': true});
+                                            meal['status'] = 'chiuso';
+                                            meal['modificato'] = true;
+                                            setState(() {});
                                           },
-                                        )
-                                      : const SizedBox.shrink(),
+                                          icon: const Icon(Icons.close, size: 30),
+                                        ),
+                                      if (widget.isAdmin && meal['status'] == 'chiuso')
+                                        IconButton(
+                                          onPressed: () async {
+                                            await FirebaseFirestore.instance
+                                                .collection('pasti')
+                                                .doc(meal['id'])
+                                                .update({'status': 'aperto', 'modificato': true});
+                                            meal['status'] = 'aperto';
+                                            meal['modificato'] = true;
+                                            setState(() {});
+                                          },
+                                          icon: const Icon(Icons.open_in_new, size: 30),
+                                        ),
+                                      if (widget.isAdmin)
+                                        IconButton(
+                                          onPressed: () {
+                                            _confirmDelete(context, meal['id']);
+                                          },
+                                          icon: const Icon(Icons.delete_outline, size: 30),
+                                        ),
+                                    ],
+                                  )
                                 ],
                               ),
                               const SizedBox(height: 5),

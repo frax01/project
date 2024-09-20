@@ -58,15 +58,6 @@ class _ClubPageState extends State<ClubPage> {
           name: '${widget.name} ${widget.surname}',
         ),
       ),
-      if (widget.club == 'Tiber Club')
-        PopScope(
-          onPopInvoked: (_) {
-            SystemNavigator.pop();
-          },
-          child: TabScorer(
-            isAdmin: widget.status,
-          ),
-        ),
       PopScope(
         onPopInvoked: (_) {
           SystemNavigator.pop();
@@ -79,6 +70,15 @@ class _ClubPageState extends State<ClubPage> {
           selectedClass: widget.classes,
         ),
       ),
+      if (widget.club == 'Tiber Club')
+        PopScope(
+          onPopInvoked: (_) {
+            SystemNavigator.pop();
+          },
+          child: TabScorer(
+            isAdmin: widget.status,
+          ),
+        ),
       if (widget.club == 'Delta Club')
         PopScope(
           onPopInvoked: (_) {
@@ -145,6 +145,11 @@ class _ClubPageState extends State<ClubPage> {
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Calendario',
+          ),
           if (widget.club == 'Tiber Club') ...[
             const BottomNavigationBarItem(
               icon: Icon(Icons.sports_soccer_outlined),
@@ -152,11 +157,6 @@ class _ClubPageState extends State<ClubPage> {
               label: '11 ideale',
             ),
           ],
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Calendario',
-          ),
           if (widget.club == 'Delta Club') ...[
             const BottomNavigationBarItem(
               icon: Icon(Icons.fastfood_outlined),

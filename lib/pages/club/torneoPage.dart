@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:ms_undraw/ms_undraw.dart';
 
 class Counter extends StatelessWidget {
   const Counter({
@@ -525,6 +524,7 @@ class _TabScorerState extends State<TabScorer> {
                   },
                   shape: const CircleBorder(),
                   backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
                   child: const Icon(Icons.add),
                 )
               : null,

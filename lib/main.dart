@@ -18,7 +18,6 @@ import 'services/local_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/pages/club/eventPage.dart';
 import 'package:club/pages/club/programCard.dart';
-import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

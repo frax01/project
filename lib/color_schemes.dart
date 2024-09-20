@@ -2,7 +2,10 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 
 var lightColorSchemeTiber = FlexThemeData.light(
-  scheme: FlexScheme.redM3,
+  colors: const FlexSchemeColor(
+    primary: Color.fromARGB(255, 178, 28, 28),
+    secondary: Color.fromARGB(255, 178, 28, 28),
+  ),
   appBarStyle: FlexAppBarStyle.primary,
   appBarElevation: 4.0,
   bottomAppBarElevation: 8.0,
@@ -129,7 +132,7 @@ var darkColorSchemeTiber = FlexThemeData.dark(
 
 var lightColorSchemeDelta = FlexThemeData.light(
   colors: const FlexSchemeColor(
-    primary: Color(0xFF00296B),
+    primary: Color(0xFF00296B), 
     secondary: Color(0xFF00296B),
   ),
   appBarStyle: FlexAppBarStyle.primary,
