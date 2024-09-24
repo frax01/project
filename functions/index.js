@@ -67,10 +67,10 @@ exports.openDefaultMeals = functions.pubsub.schedule('every saturday 08:00').tim
     return null;
 });
 
-exports.createMondayLunch = functions.pubsub.schedule('every tuesday 00:01').timeZone('Europe/Rome').onRun(async (context) => {
+exports.createMondayLunch = functions.pubsub.schedule('every tuesday 09:07').timeZone('Europe/Rome').onRun(async (context) => {
     try {
         const today = new Date();
-        const nextMondayDate = addDays(today, (1 - today.getDay() + 7) % 7);
+        const nextMondayDate = addDays(today, 6);
         const formattedDate = format(nextMondayDate, 'dd MMM yyyy', { locale: it }).toUpperCase();
         const formattedAppuntamento = format(nextMondayDate, 'dd-MM-yyyy');
 
