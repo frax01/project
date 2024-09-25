@@ -115,7 +115,7 @@ exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
 });
 
 
-exports.scheduleNotification = functions.pubsub.schedule('every day 10:00').timeZone('Europe/Rome').onRun(async (context) => {
+exports.scheduleNotification = functions.pubsub.schedule('every day 08:00').timeZone('Europe/Rome').onRun(async (context) => {
 
     for (const elem of ['Tiber Club', 'Delta Club']) {
         const usersBirthday = await fetchUsersBirthday(elem);
@@ -241,7 +241,7 @@ async function fetchTokensBirthday(elem) {
     return tokens
 }
 
-async function sendNotification(token, section, name, filter, id, focused) {
+async function sendNotification(token, section, name, filter, id, focused, role) {
 
     let accessToken;
     try {
@@ -260,6 +260,7 @@ async function sendNotification(token, section, name, filter, id, focused) {
     let category = '';
     let notTitle = '';
     let message = '';
+    let role = '';
 
     if(section=='birthday' && filter=='broadcast') {
         docId = '';
@@ -267,18 +268,21 @@ async function sendNotification(token, section, name, filter, id, focused) {
         category = section;
         notTitle = `Oggi è il compleanno di ${name}`;
         message = 'Fagli gli auguri!';
+        role = '';
     } else if(section=='birthday' && filter=='personale') {
         docId = '';
         selectedOption = '';
         category = section;
         notTitle = `Buon compleanno!`;
         message = 'Festeggia al Tiber!';
+        role = '';
     } else {
         docId = id;
         selectedOption = '';
         category = section;
         notTitle = `Oggi: ${name}`;
         message = 'Ricordati di partecipare!';
+        role = '';
     }
 
     if(section=='birthday') {
@@ -290,7 +294,8 @@ async function sendNotification(token, section, name, filter, id, focused) {
             status: 'done',
             category: category.toString(),
             notTitle: notTitle.toString(),
-            notBody: message.toString()
+            notBody: message.toString(),
+            role: role.toString(),
         };
     } else if(section=='evento') {
         data = {
@@ -302,7 +307,8 @@ async function sendNotification(token, section, name, filter, id, focused) {
             status: 'done',
             category: category.toString(),
             notTitle: notTitle.toString(),
-            notBody: message.toString()
+            notBody: message.toString(),
+            role: role.toString(),
         };
     }
 

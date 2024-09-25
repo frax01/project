@@ -10,6 +10,7 @@ class HomePage extends StatefulWidget {
     required this.section,
     required this.isAdmin,
     required this.name,
+    required this.role,
   });
 
   final String club;
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
   final String section;
   final bool isAdmin;
   final String name;
+  final String role;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -48,16 +50,16 @@ class _HomePageState extends State<HomePage> {
             int year = int.parse(parts[2]);
             DateTime dateTime = DateTime(year, month, day);
             _listItems.add(ProgramCard(
-              club: widget.club,
-              documentId: doc.id,
-              selectedOption: collection.split('_')[1],
-              selectedClass: widget.selectedClass,
-              isAdmin: widget.isAdmin,
-              refreshList: refreshList,
-              startDate: dateTime,
-              name: doc['creator'],
-              user: widget.name,
-            ));
+                club: widget.club,
+                documentId: doc.id,
+                selectedOption: collection.split('_')[1],
+                selectedClass: widget.selectedClass,
+                isAdmin: widget.isAdmin,
+                refreshList: refreshList,
+                startDate: dateTime,
+                name: doc['creator'],
+                user: widget.name,
+                role: widget.role));
             _listKey.currentState?.insertItem(_listItems.length - 1);
           }
         });
@@ -75,16 +77,16 @@ class _HomePageState extends State<HomePage> {
             int year = int.parse(parts[2]);
             DateTime dateTime = DateTime(year, month, day);
             _listItems.add(ProgramCard(
-              club: widget.club,
-              documentId: doc.id,
-              selectedOption: collection.split('_')[1],
-              selectedClass: widget.selectedClass,
-              isAdmin: widget.isAdmin,
-              refreshList: refreshList,
-              startDate: dateTime,
-              name: doc['creator'],
-              user: widget.name,
-            ));
+                club: widget.club,
+                documentId: doc.id,
+                selectedOption: collection.split('_')[1],
+                selectedClass: widget.selectedClass,
+                isAdmin: widget.isAdmin,
+                refreshList: refreshList,
+                startDate: dateTime,
+                name: doc['creator'],
+                user: widget.name,
+                role: widget.role));
             _listKey.currentState?.insertItem(_listItems.length - 1);
           }
         });

@@ -11,20 +11,21 @@ import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class EventPage extends StatefulWidget {
-  const EventPage({
-    super.key,
-    required this.club,
-    required this.documentId,
-    required this.isAdmin,
-    required this.name,
-    required this.focusedDay,
-  });
+  const EventPage(
+      {super.key,
+      required this.club,
+      required this.documentId,
+      required this.isAdmin,
+      required this.name,
+      required this.focusedDay,
+      required this.role});
 
   final String club;
   final String documentId;
   final bool isAdmin;
   final String name;
   final DateTime focusedDay;
+  final String role;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -85,7 +86,8 @@ class _EventPageState extends State<EventPage> {
     PlatformFile? file;
     bool isLink = false;
     bool isFile = false;
-    final TextEditingController _programNameController = TextEditingController();
+    final TextEditingController _programNameController =
+        TextEditingController();
     final TextEditingController _linkController = TextEditingController();
 
     return showDialog<void>(
@@ -122,12 +124,11 @@ class _EventPageState extends State<EventPage> {
                             children: [
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isLink ? Theme
-                                      .of(context)
-                                      .primaryColor : Colors.white,
-                                  foregroundColor: isLink
-                                      ? Colors.white
-                                      : Colors.black,
+                                  backgroundColor: isLink
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.white,
+                                  foregroundColor:
+                                      isLink ? Colors.white : Colors.black,
                                   textStyle: const TextStyle(fontSize: 20),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -146,12 +147,11 @@ class _EventPageState extends State<EventPage> {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: isFile ? Theme
-                                      .of(context)
-                                      .primaryColor : Colors.white,
-                                  foregroundColor: isFile
-                                      ? Colors.white
-                                      : Colors.black,
+                                  backgroundColor: isFile
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.white,
+                                  foregroundColor:
+                                      isFile ? Colors.white : Colors.black,
                                   textStyle: const TextStyle(fontSize: 20),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -198,17 +198,18 @@ class _EventPageState extends State<EventPage> {
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        textStyle: const TextStyle(
-                                            fontSize: 20),
+                                        textStyle:
+                                            const TextStyle(fontSize: 20),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         elevation: 5,
                                       ),
                                       onPressed: () async {
-                                        FilePickerResult? result = await FilePicker
-                                            .platform.pickFiles();
+                                        FilePickerResult? result =
+                                            await FilePicker.platform
+                                                .pickFiles();
                                         if (result != null) {
                                           setState(() {
                                             file = result.files.first;
@@ -227,9 +228,9 @@ class _EventPageState extends State<EventPage> {
                                     if (formFieldState.hasError)
                                       Text(
                                         formFieldState.errorText!,
-                                        style: TextStyle(color: Theme
-                                            .of(context)
-                                            .primaryColor),
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor),
                                       ),
                                   ],
                                 );
@@ -250,14 +251,8 @@ class _EventPageState extends State<EventPage> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    validation(
-                        title,
-                        _programNameController,
-                        isLink,
-                        _linkController,
-                        isFile,
-                        file
-                    );
+                    validation(title, _programNameController, isLink,
+                        _linkController, isFile, file);
                     setState(() {});
                   },
                   child: const Text('OK'),
@@ -278,8 +273,8 @@ class _EventPageState extends State<EventPage> {
 
     try {
       final bytes = File(file.path!).readAsBytesSync();
-      final storageRef = FirebaseStorage.instance.ref().child(
-          'uploads/${file.name}');
+      final storageRef =
+          FirebaseStorage.instance.ref().child('uploads/${file.name}');
       final uploadTask = storageRef.putData(bytes);
       final snapshot = await uploadTask.whenComplete(() {});
 
@@ -290,12 +285,14 @@ class _EventPageState extends State<EventPage> {
     }
   }
 
-  void validation(String title,
-      TextEditingController _programNameController,
-      bool isLink,
-      TextEditingController _linkController,
-      bool isFile,
-      PlatformFile? file,) async {
+  void validation(
+    String title,
+    TextEditingController _programNameController,
+    bool isLink,
+    TextEditingController _linkController,
+    bool isFile,
+    PlatformFile? file,
+  ) async {
     if (_formKey.currentState!.validate()) {
       title = _programNameController.text;
       if (title.isNotEmpty &&
@@ -324,66 +321,72 @@ class _EventPageState extends State<EventPage> {
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
       child: fileData['link'] != null && fileData['link'].isNotEmpty
           ? TextButton(
-        onPressed: () => _openFileOrLink(fileData['link']),
-        style: TextButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          backgroundColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          side: const BorderSide(color: Colors.black),
-          //overlayColor: Colors.grey[500],
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.link, color: Colors.black),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                fileData['title'],
-                style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              onPressed: () => _openFileOrLink(fileData['link']),
+              style: TextButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                side: const BorderSide(color: Colors.black),
+                //overlayColor: Colors.grey[500],
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.black),
-              highlightColor: Colors.grey[300],
-              onPressed: () => _showDeleteConfirmationDialog(fileData),
-            ),
-          ],
-        ),
-      ) : fileData['path'] != null && fileData['path'].isNotEmpty ? TextButton(
-        onPressed: () => _openFileOrLink(fileData['path']),
-        style: TextButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          backgroundColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          side: const BorderSide(color: Colors.black),
-          //overlayColor: Colors.grey[500],
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.file_copy, color: Colors.black),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                fileData['title'],
-                style: const TextStyle(fontSize: 16.0, color: Colors.black),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                children: [
+                  const Icon(Icons.link, color: Colors.black),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      fileData['title'],
+                      style:
+                          const TextStyle(fontSize: 16.0, color: Colors.black),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.black),
+                    highlightColor: Colors.grey[300],
+                    onPressed: () => _showDeleteConfirmationDialog(fileData),
+                  ),
+                ],
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.black),
-              highlightColor: Colors.grey[300],
-              onPressed: () => _showDeleteConfirmationDialog(fileData),
-            ),
-          ],
-        ),
-      ) : Container(),
+            )
+          : fileData['path'] != null && fileData['path'].isNotEmpty
+              ? TextButton(
+                  onPressed: () => _openFileOrLink(fileData['path']),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    side: const BorderSide(color: Colors.black),
+                    //overlayColor: Colors.grey[500],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.file_copy, color: Colors.black),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          fileData['title'],
+                          style: const TextStyle(
+                              fontSize: 16.0, color: Colors.black),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.black),
+                        highlightColor: Colors.grey[300],
+                        onPressed: () =>
+                            _showDeleteConfirmationDialog(fileData),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
     );
   }
 
@@ -441,8 +444,8 @@ class _EventPageState extends State<EventPage> {
 
     if (fileData['path'] != null && fileData['path'].isNotEmpty) {
       try {
-        final storageRef = FirebaseStorage.instance.refFromURL(
-            fileData['path']);
+        final storageRef =
+            FirebaseStorage.instance.refFromURL(fileData['path']);
         await storageRef.delete();
       } catch (e) {
         print("Errore durante l'eliminazione del file da Firebase Storage: $e");
@@ -478,24 +481,21 @@ class _EventPageState extends State<EventPage> {
             onPressed: () {
               String data = _formatTimestampToDate(_event['data']);
               String description = _event['description'] ?? '';
-              if(_event['fine']!='') {
-                Share.share(
-                    'Promemoria: ${_event['titolo']}\n\n'
-                        'Data: $data\n\n'
-                        'Dalle ${_event['inizio']} alle ${_event['fine']}'
-                        '\n\n${description.isNotEmpty ? description : ''}\n');
+              if (_event['fine'] != '') {
+                Share.share('Promemoria: ${_event['titolo']}\n\n'
+                    'Data: $data\n\n'
+                    'Dalle ${_event['inizio']} alle ${_event['fine']}'
+                    '\n\n${description.isNotEmpty ? description : ''}\n');
               } else {
-                if(_event['inizio']!='') {
-                  Share.share(
-                      'Promemoria: ${_event['titolo']}\n\n'
-                          'Data: $data\n\n'
-                          'Dalle ${_event['inizio']}'
-                          '\n\n${description.isNotEmpty ? description : ''}\n');
+                if (_event['inizio'] != '') {
+                  Share.share('Promemoria: ${_event['titolo']}\n\n'
+                      'Data: $data\n\n'
+                      'Dalle ${_event['inizio']}'
+                      '\n\n${description.isNotEmpty ? description : ''}\n');
                 } else {
-                  Share.share(
-                      'Promemoria: ${_event['titolo']}\n\n'
-                          'Data: $data'
-                          '\n\n${description.isNotEmpty ? description : ''}\n');
+                  Share.share('Promemoria: ${_event['titolo']}\n\n'
+                      'Data: $data'
+                      '\n\n${description.isNotEmpty ? description : ''}\n');
                 }
               }
             },
@@ -505,28 +505,28 @@ class _EventPageState extends State<EventPage> {
           ),
           widget.isAdmin
               ? PopupMenuButton(itemBuilder: (BuildContext context) {
-            return [
-              PopupMenuItem(
-                child: const Text('Modifica'),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => AddEditProgram(
-                        club: widget.club,
-                        selectedOption: 'evento',
-                        document: _event,
-                        refreshProgram: refreshProgram,
-                        name: widget.name,
-                        focusedDay: widget.focusedDay,
-                      )));
-                },
-              ),
-              PopupMenuItem(
-                  child: const Text('Elimina'),
-                  onTap: () {
-                    _showDeleteDialog(context, _event['id']);
-                  }),
-            ];
-          })
+                  return [
+                    PopupMenuItem(
+                      child: const Text('Modifica'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => AddEditProgram(
+                                club: widget.club,
+                                selectedOption: 'evento',
+                                document: _event,
+                                refreshProgram: refreshProgram,
+                                name: widget.name,
+                                focusedDay: widget.focusedDay,
+                                role: widget.role)));
+                      },
+                    ),
+                    PopupMenuItem(
+                        child: const Text('Elimina'),
+                        onTap: () {
+                          _showDeleteDialog(context, _event['id']);
+                        }),
+                  ];
+                })
               : const SizedBox.shrink(),
         ],
       ),
@@ -567,18 +567,19 @@ class _EventPageState extends State<EventPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.event, size: 35,),
-                                const SizedBox(width: 10),
-                                Text(
-                                  _formatTimestampToDate(_event['data']),
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                  ),
+                            Row(children: [
+                              const Icon(
+                                Icons.event,
+                                size: 35,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                _formatTimestampToDate(_event['data']),
+                                style: const TextStyle(
+                                  fontSize: 24,
                                 ),
-                              ]
-                            ),
+                              ),
+                            ]),
                             const SizedBox(height: 20),
                             Row(
                               children: [
@@ -589,8 +590,8 @@ class _EventPageState extends State<EventPage> {
                                     _event['fine'].isNotEmpty
                                         ? 'Dalle ${_event['inizio']} alle ${_event['fine']}'
                                         : _event['inizio'].isNotEmpty
-                                        ? 'Dalle ${_event['inizio']}'
-                                        : 'Orario non specificato',
+                                            ? 'Dalle ${_event['inizio']}'
+                                            : 'Orario non specificato',
                                     style: const TextStyle(fontSize: 24.0),
                                     maxLines: 4,
                                     minFontSize: 15,
@@ -603,8 +604,10 @@ class _EventPageState extends State<EventPage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Descrizione:',
-                                  style: const TextStyle(fontSize: 17, color: Colors.grey),
+                                const Text(
+                                  'Descrizione:',
+                                  style: const TextStyle(
+                                      fontSize: 17, color: Colors.grey),
                                 ),
                                 Text(
                                   _event['descrizione']?.isNotEmpty
@@ -625,21 +628,24 @@ class _EventPageState extends State<EventPage> {
                               ),
                             widget.isAdmin
                                 ? TextButton(
-                              onPressed: () {
-                                _showAddLinkFileDialog(context);
-                              },
-                              style: TextButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 50),
-                                backgroundColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                side: const BorderSide(color: Colors.black),
-                                //overlayColor: Colors.grey[500],
-                              ),
-                              child: const Icon(
-                                  Icons.upload, color: Colors.black),
-                            ) : const SizedBox.shrink(),
+                                    onPressed: () {
+                                      _showAddLinkFileDialog(context);
+                                    },
+                                    style: TextButton.styleFrom(
+                                      minimumSize:
+                                          const Size(double.infinity, 50),
+                                      backgroundColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      side:
+                                          const BorderSide(color: Colors.black),
+                                      //overlayColor: Colors.grey[500],
+                                    ),
+                                    child: const Icon(Icons.upload,
+                                        color: Colors.black),
+                                  )
+                                : const SizedBox.shrink(),
                           ],
                         ),
                       ),

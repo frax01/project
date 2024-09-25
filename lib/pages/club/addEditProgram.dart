@@ -21,7 +21,8 @@ class AddEditProgram extends StatefulWidget {
       this.document,
       required this.name,
       this.focusedDay,
-      this.visibility});
+      this.visibility,
+      required this.role});
 
   final String club;
   final Function? refreshList;
@@ -31,6 +32,7 @@ class AddEditProgram extends StatefulWidget {
   final String name;
   final focusedDay;
   final Map<String, bool>? visibility;
+  final String role;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
@@ -80,6 +82,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
   ];
   List<String> selectedClasses = [];
 
+  bool modifiedNotification = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +99,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _startTimeController.text = widget.document!['inizio'];
         _endTimeController.text = widget.document!['fine'];
         modifiedUsers = widget.document!['utenti'];
-        if (Set.from(modifiedUsers).containsAll(users) && Set.from(users).containsAll(modifiedUsers)) {
+        if (Set.from(modifiedUsers).containsAll(users) &&
+            Set.from(users).containsAll(modifiedUsers)) {
           tutor = true;
         } else {
           for (var user in modifiedUsers) {
@@ -116,10 +121,12 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _latitude = widget.document!['lat'];
         _longitude = widget.document!['lon'];
         selectedClasses = List<String>.from(widget.document!['selectedClass']);
-        reservations = widget.document!.containsKey('prenotazioni') ? true : false;
+        reservations =
+            widget.document!.containsKey('prenotazioni') ? true : false;
       }
     } else {
-      final String formattedDate = DateFormat('dd-MM-yyyy').format(widget.focusedDay);
+      final String formattedDate =
+          DateFormat('dd-MM-yyyy').format(widget.focusedDay);
       setState(() {
         _startDateController.text = formattedDate;
       });
@@ -153,9 +160,10 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
       final storageRef = FirebaseStorage.instance.ref();
       final imagesRef =
-      storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
+          storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
 
-      final UploadTask uploadTask = imagesRef.putData(await image!.readAsBytes());
+      final UploadTask uploadTask =
+          imagesRef.putData(await image!.readAsBytes());
       final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
       final String imageUrl = await snapshot.ref.getDownloadURL();
 
@@ -318,11 +326,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 });
               }
             },
-          ),),
+          ),
+        ),
         const SizedBox(width: 20),
         Expanded(
-          child:
-          TextFormField(
+          child: TextFormField(
             controller: _endTimeController,
             focusNode: _endTimeFocusNode,
             readOnly: true,
@@ -339,7 +347,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 });
               }
             },
-          ),),
+          ),
+        ),
       ],
     );
   }
@@ -402,7 +411,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
           if (startDateTime.isAfter(endDateTime)) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('L\'orario iniziale non può essere dopo l\'orario finale'),
+                content: Text(
+                    'L\'orario iniziale non può essere dopo l\'orario finale'),
               ),
             );
             return false;
@@ -415,7 +425,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           );
           return false;
         }
-      } else if(startTimeText.isEmpty && endTimeText.isNotEmpty) {
+      } else if (startTimeText.isEmpty && endTimeText.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Inserisci l\'ora d\'inizio'),
@@ -433,9 +443,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
   Future<void> _handleCreate(context) async {
     if (!_validate()) return;
     setState(() {
-        _isLoadingCreation = true;
-      });
-    if(widget.selectedOption == 'evento') {
+      _isLoadingCreation = true;
+    });
+    if (widget.selectedOption == 'evento') {
       try {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         Map<String, dynamic> document = {
@@ -446,12 +456,10 @@ class _AddEditProgramState extends State<AddEditProgram> {
           'club': widget.club,
           'inizio': _startTimeController.text,
           'fine': _endTimeController.text,
-          'utenti': selected.isEmpty? users : selected,
+          'utenti': selected.isEmpty ? users : selected,
         };
 
-        await firestore
-            .collection('calendario')
-            .add(document);
+        await firestore.collection('calendario').add(document);
 
         setState(() {
           _isLoadingCreation = false;
@@ -471,11 +479,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
     } else {
       try {
         if (_address == '') {
-          if (widget.club=='Tiber Club') {
+          if (widget.club == 'Tiber Club') {
             _address = 'Tiber Club';
             _latitude = '41.91805195';
             _longitude = '12.47788708';
-          } else if (widget.club=='Delta Club') {
+          } else if (widget.club == 'Delta Club') {
             _address = 'Centro Delta';
             _latitude = '45.468245';
             _longitude = '9.164332';
@@ -484,7 +492,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         Map<String, dynamic> document = {};
-        if(reservations)  {
+        if (reservations) {
           document = {
             'title': _programNameController.text,
             'selectedOption': widget.selectedOption,
@@ -506,7 +514,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'lon': _longitude,
             'creator': widget.name,
             'club': widget.club,
-            'prenotazioni': []
+            'prenotazioni': [],
+            'assenze': [],
           };
         } else {
           document = {
@@ -540,7 +549,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
         List<String> token = [];
         for (String value in selectedClasses) {
-          List<String> items = await fetchToken('club_class', value, widget.club);
+          List<String> items =
+              await fetchToken('club_class', value, widget.club);
           for (String elem in items) {
             if (!token.contains(elem)) {
               token.add(elem);
@@ -552,19 +562,19 @@ class _AddEditProgramState extends State<AddEditProgram> {
         });
         sendNotification(
             token, 'Nuovo programma!', document['title'], 'new_event',
-            docId: doc.id, selectedOption: widget.selectedOption);
+            docId: doc.id,
+            selectedOption: widget.selectedOption,
+            role: widget.role);
         widget.refreshList!();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) =>
-                ProgramPage(
-                    club: widget.club,
-                    documentId: doc.id,
-                    selectedOption: widget.selectedOption ?? '',
-                    isAdmin: true,
-                    refreshList: widget.refreshList,
-                    name: widget.name
-                )
-        ));
+            builder: (context) => ProgramPage(
+                club: widget.club,
+                documentId: doc.id,
+                selectedOption: widget.selectedOption ?? '',
+                isAdmin: true,
+                refreshList: widget.refreshList,
+                name: widget.name,
+                role: widget.role)));
       } catch (e) {
         setState(() {
           _isLoadingCreation = false;
@@ -583,7 +593,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     setState(() {
       _isLoadingModify = true;
     });
-    if(widget.selectedOption == 'evento') {
+    if (widget.selectedOption == 'evento') {
       Map<String, dynamic> newDocument = {
         'titolo': _programNameController.text,
         'descrizione': _programDescriptionController.text,
@@ -606,7 +616,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       widget.refreshProgram!();
     } else {
       Map<Object, Object?> newDocument = {};
-      if(reservations) {
+      if (reservations) {
         newDocument = {
           'id': widget.document!['id'],
           'title': _programNameController.text,
@@ -629,10 +639,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
           'lon': _longitude,
           'creator': widget.name,
           'club': widget.club,
-          'prenotazioni': widget.document!.containsKey('prenotazioni') ? widget.document!['prenotazioni'] : [],
+          'prenotazioni': widget.document!.containsKey('prenotazioni')
+              ? widget.document!['prenotazioni']
+              : [],
+          'assenze': widget.document!.containsKey('assenze')
+              ? widget.document!['assenze']
+              : [],
         };
       } else {
-        if(widget.document!.containsKey('prenotazioni')) {
+        if (widget.document!.containsKey('prenotazioni')) {
           newDocument = {
             'id': widget.document!['id'],
             'title': _programNameController.text,
@@ -656,6 +671,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'creator': widget.name,
             'club': widget.club,
             'prenotazioni': FieldValue.delete(),
+            'assenze': FieldValue.delete(),
           };
         } else {
           newDocument = {
@@ -683,24 +699,27 @@ class _AddEditProgramState extends State<AddEditProgram> {
           };
         }
       }
-
-      List<String> token = [];
-      for (String value in selectedClasses) {
-        List<String> items = await fetchToken('club_class', value, widget.club);
-        for (String elem in items) {
-          if (!token.contains(elem)) {
-            token.add(elem);
+      
+      if (modifiedNotification) {
+        List<String> token = [];
+        for (String value in selectedClasses) {
+          List<String> items =
+              await fetchToken('club_class', value, widget.club);
+          for (String elem in items) {
+            if (!token.contains(elem)) {
+              token.add(elem);
+            }
           }
         }
+        sendNotification(
+            token,
+            'Programma modificato!',
+            newDocument['title'] ?? widget.document!['title'],
+            'modified_event',
+            docId: widget.document!['id'],
+            selectedOption: widget.selectedOption,
+            role: widget.role);
       }
-      sendNotification(
-        token,
-        'Programma modificato!',
-        newDocument['title'] ?? widget.document!['title'],
-        'modified_event',
-        docId: widget.document!['id'],
-        selectedOption: widget.selectedOption,
-      );
 
       for (var key in widget.document!.keys) {
         if (newDocument[key] == widget.document![key]) {
@@ -734,7 +753,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
   final FocusNode _startDateFocusNode = FocusNode();
   final FocusNode _endDateFocusNode = FocusNode();
 
-
   void _unfocusAll() {
     _programNameFocusNode.unfocus();
     _programLocationFocusNode.unfocus();
@@ -759,204 +777,207 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
   bool reservations = false;
 
-
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title:
-      widget.selectedOption == 'evento' && _isEditing ? const Text('Modifica evento')
-          : widget.selectedOption == 'evento' ? const Text('Crea evento')
-          : widget.selectedOption == 'weekend' && _isEditing ? const Text('Modifica programma')
-          : widget.selectedOption == 'weekend' ? const Text('Crea programma')
-          : _isEditing ? const Text('Modifica convivenza')
-          : const Text('Crea convivenza'),
-    ),
-    body: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.selectedOption != 'evento') ...[
-                SizedBox(
-                  height: 200,
-                  child: InkWell(
-                    onTap: () async {
-                      _unfocusAll();
-                      await _uploadImage('programs', isCreate: true);
-                    },
-                    child: _isUploading ?
-                      const Center(
-                        child: CircularProgressIndicator()
-                      ) : _image.isNotEmpty ? Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey[200]!,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                          image: NetworkImage(_image),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(
-                            Colors.white.withOpacity(0.5),
-                            BlendMode.lighten,
-                          ),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.edit,
-                          size: 50,
-                        ),
-                      ),
-                    )
-                        : Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.add_a_photo,
-                          size: 50,
-                        ),
-                      ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: widget.selectedOption == 'evento' && _isEditing
+            ? const Text('Modifica evento')
+            : widget.selectedOption == 'evento'
+                ? const Text('Crea evento')
+                : widget.selectedOption == 'weekend' && _isEditing
+                    ? const Text('Modifica programma')
+                    : widget.selectedOption == 'weekend'
+                        ? const Text('Crea programma')
+                        : _isEditing
+                            ? const Text('Modifica convivenza')
+                            : const Text('Crea convivenza'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.selectedOption != 'evento') ...[
+                  SizedBox(
+                    height: 200,
+                    child: InkWell(
+                      onTap: () async {
+                        _unfocusAll();
+                        await _uploadImage('programs', isCreate: true);
+                      },
+                      child: _isUploading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _image.isNotEmpty
+                              ? Container(
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey[200]!,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: NetworkImage(_image),
+                                      fit: BoxFit.cover,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.white.withOpacity(0.5),
+                                        BlendMode.lighten,
+                                      ),
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.edit,
+                                      size: 50,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.add_a_photo,
+                                      size: 50,
+                                    ),
+                                  ),
+                                ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
-              TextFormField(
-                controller: _programNameController,
-                focusNode: _programNameFocusNode,
-                decoration: const InputDecoration(
-                  labelText: 'Titolo',
-                  icon: Icon(Icons.short_text),
-                ),
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                maxLength: widget.selectedOption != 'evento' ? 20 : null,
-                validator: (String? value) {
-                  if (value!.isEmpty) {
-                    return 'Inserisci il nome del programma';
-                  }
-                  return null;
-                },
-              ),
-              if (widget.selectedOption == 'evento') ...[
-                const SizedBox(height: 20),
-                _showTimePicker(),
-              ],
-              if (widget.selectedOption != 'evento') ...[
-                const SizedBox(height: 20),
-                _showDatePickers(),
-                const SizedBox(height: 20),
-                TypeAheadField(
-                  controller: _programLocationController,
-                  focusNode: _programLocationFocusNode,
-                  autoFlipDirection: true,
-                  hideOnEmpty: true,
-                  builder: (context, controller, focusNode) {
-                    return TextFormField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      autofocus: false,
-                      decoration: InputDecoration(
-                        labelText: (widget.selectedOption == 'trip')
-                            ? 'Luogo'
-                            : 'Luogo (facoltativo)',
-                        icon: const Icon(Icons.location_on),
-                      ),
-                      validator: (value) {
-                        if (widget.selectedOption == 'trip' &&
-                            (value == null || value.isEmpty)) {
-                          return 'Inserire un indirizzo';
-                        }
-                        return null;
-                      },
-                    );
-                  },
-                  suggestionsCallback: (pattern) async {
-                    return pattern == '' ? [] : await getSuggestions(pattern);
-                  },
-                  itemBuilder: (context, suggestion) {
-                    return ListTile(
-                      title: Text(suggestion["display_name"]),
-                    );
-                  },
-                  decorationBuilder: (context, child) {
-                    return Padding(
-                      padding:
-                      const EdgeInsets.only(left: 40, top: 5, bottom: 5),
-                      child: Material(
-                        type: MaterialType.card,
-                        elevation: 4,
-                        borderRadius: BorderRadius.circular(8),
-                        child: child,
-                      ),
-                    );
-                  },
-                  onSelected: (suggestion) {
-                    var address = suggestion["address"]["name"];
-                    var number = suggestion["address"]["house_number"] ?? '';
-                    var city = suggestion["address"]["city"] ?? '';
-                    var country = suggestion["address"]["country"];
-                    var lat = suggestion["lat"];
-                    var lon = suggestion["lon"];
-
-                    var completeAddress = '';
-                    if (city != '' && number != '') {
-                      if (country != 'Italy') {
-                        completeAddress =
-                        '$address, $number, $city, $country';
-                      } else {
-                        completeAddress = '$address, $number, $city';
-                      }
-                    } else {
-                      if (country != 'Italy') {
-                        completeAddress = '$address, $country';
-                      } else {
-                        completeAddress = address;
-                      }
+                  const SizedBox(height: 20),
+                ],
+                TextFormField(
+                  controller: _programNameController,
+                  focusNode: _programNameFocusNode,
+                  decoration: const InputDecoration(
+                    labelText: 'Titolo',
+                    icon: Icon(Icons.short_text),
+                  ),
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  maxLength: widget.selectedOption != 'evento' ? 20 : null,
+                  validator: (String? value) {
+                    if (value!.isEmpty) {
+                      return 'Inserisci il nome del programma';
                     }
-
-                    setState(() {
-                      _latitude = lat;
-                      _longitude = lon;
-                      _address = completeAddress;
-                      _programLocationController.text = completeAddress;
-                    });
+                    return null;
                   },
                 ),
-              ],
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _programDescriptionController,
-                focusNode: _programDescriptionFocusNode,
-                keyboardType: TextInputType.multiline,
-                minLines: 4,
-                maxLines: null,
-                decoration: const InputDecoration(
-                  labelText: 'Descrizione (facoltativo)',
-                  icon: Icon(Icons.description),
-                ),
-              ),
-              if (widget.selectedOption != 'evento') ...[
+                if (widget.selectedOption == 'evento') ...[
+                  const SizedBox(height: 20),
+                  _showTimePicker(),
+                ],
+                if (widget.selectedOption != 'evento') ...[
+                  const SizedBox(height: 20),
+                  _showDatePickers(),
+                  const SizedBox(height: 20),
+                  TypeAheadField(
+                    controller: _programLocationController,
+                    focusNode: _programLocationFocusNode,
+                    autoFlipDirection: true,
+                    hideOnEmpty: true,
+                    builder: (context, controller, focusNode) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          labelText: (widget.selectedOption == 'trip')
+                              ? 'Luogo'
+                              : 'Luogo (facoltativo)',
+                          icon: const Icon(Icons.location_on),
+                        ),
+                        validator: (value) {
+                          if (widget.selectedOption == 'trip' &&
+                              (value == null || value.isEmpty)) {
+                            return 'Inserire un indirizzo';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+                    suggestionsCallback: (pattern) async {
+                      return pattern == '' ? [] : await getSuggestions(pattern);
+                    },
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(suggestion["display_name"]),
+                      );
+                    },
+                    decorationBuilder: (context, child) {
+                      return Padding(
+                        padding:
+                            const EdgeInsets.only(left: 40, top: 5, bottom: 5),
+                        child: Material(
+                          type: MaterialType.card,
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          child: child,
+                        ),
+                      );
+                    },
+                    onSelected: (suggestion) {
+                      var address = suggestion["address"]["name"];
+                      var number = suggestion["address"]["house_number"] ?? '';
+                      var city = suggestion["address"]["city"] ?? '';
+                      var country = suggestion["address"]["country"];
+                      var lat = suggestion["lat"];
+                      var lon = suggestion["lon"];
+
+                      var completeAddress = '';
+                      if (city != '' && number != '') {
+                        if (country != 'Italy') {
+                          completeAddress =
+                              '$address, $number, $city, $country';
+                        } else {
+                          completeAddress = '$address, $number, $city';
+                        }
+                      } else {
+                        if (country != 'Italy') {
+                          completeAddress = '$address, $country';
+                        } else {
+                          completeAddress = address;
+                        }
+                      }
+
+                      setState(() {
+                        _latitude = lat;
+                        _longitude = lon;
+                        _address = completeAddress;
+                        _programLocationController.text = completeAddress;
+                      });
+                    },
+                  ),
+                ],
                 const SizedBox(height: 20),
-                Row(
-                  children: [
+                TextFormField(
+                  controller: _programDescriptionController,
+                  focusNode: _programDescriptionFocusNode,
+                  keyboardType: TextInputType.multiline,
+                  minLines: 4,
+                  maxLines: null,
+                  decoration: const InputDecoration(
+                    labelText: 'Descrizione (facoltativo)',
+                    icon: Icon(Icons.description),
+                  ),
+                ),
+                if (widget.selectedOption != 'evento') ...[
+                  const SizedBox(height: 20),
+                  Row(children: [
                     const Icon(Icons.check_circle),
                     const SizedBox(width: 5),
                     Expanded(
                       child: ListTile(
-                        title: const Text('Prenotazione', style: TextStyle(fontSize: 20)),
+                        title: const Text('Prenotazione',
+                            style: TextStyle(fontSize: 20)),
                         trailing: Switch(
                           value: reservations,
-                            onChanged: (bool value) {
+                          onChanged: (bool value) {
                             setState(() {
                               reservations = value;
                             });
@@ -969,124 +990,149 @@ Widget build(BuildContext context) {
                         },
                       ),
                     ),
-                  ]
-                ),
-              ],
-              if (widget.selectedOption == 'evento') ...[
-                const SizedBox(height: 20),
-                ListTile(
-                  title: const Text('Visibilità'),
-                  subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
-                  trailing: const Icon(Icons.arrow_forward),
-                  onTap: () async {
-                    _unfocusAll();
-                    selected = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VisibilitySelectionPage(visibility: _visibility, club: widget.club),
-                      ),
-                    );
-                    setState(() {
-                      if (Set.from(selected).containsAll(users) && Set.from(users).containsAll(selected)) {
-                        tutor = true;
-                      } else {
-                        for (var user in selected) {
-                          _visibility[user]=true;
-                        }
-                        tutor = false;
-                      }
-                    });
-                  }
-                ),
-              ],
-              if (widget.selectedOption != 'evento') ...[
-                const SizedBox(height: 20),
-                const Row(
-                  children: [
-                    Icon(Icons.class_rounded, color: Colors.black),
-                    SizedBox(width: 25),
-                    Text('Classi',
-                        style: TextStyle(fontSize: 18, color: Colors.black)),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  alignment: WrapAlignment.start,
-                  spacing: 10,
-                  children:
-                  widget.club=='Tiber Club' ?
-                  tiberClassOptions.map((e) {
-                    return ChoiceChip(
-                      label: Text(e),
-                      selected: selectedClasses.contains(e),
-                      onSelected: (bool selected) {
-                        setState(() {
-                          if (selected) {
-                            selectedClasses.add(e);
-                          } else {
-                            selectedClasses.remove(e);
-                          }
-                        });
-                      },
-                    );
-                  }).toList()
-                  : deltaClassOptions.map((e) {
-                    return ChoiceChip(
-                      label: Text(e),
-                      selected: selectedClasses.contains(e),
-                      onSelected: (bool selected) {
-                        setState(() {
-                          if (selected) {
-                            selectedClasses.add(e);
-                          } else {
-                            selectedClasses.remove(e);
-                          }
-                        });
-                      },
-                    );
-                  }).toList()
-                ),
-              ],
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _isEditing
-                      ? ElevatedButton(
-                      onPressed: () {
-                        if (_isLoadingModify) {
-                          null;
-                        } else {
-                          _handleEdit(context);
-                        }
-                      },
-                      child: _isLoadingModify ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white),
+                  ]),
+                  const SizedBox(height: 20),
+                  Row(children: [
+                    const Icon(Icons.notification_add),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: ListTile(
+                        title: const Text('Inviare notifica?',
+                            style: TextStyle(fontSize: 20)),
+                        trailing: Switch(
+                          value: modifiedNotification,
+                          onChanged: (bool value) {
+                            setState(() {
+                              modifiedNotification = value;
+                            });
+                          },
                         ),
-                      ) : const Text('Modifica', style: TextStyle(color: Colors.white))
-                    ) : ElevatedButton(
-                      onPressed: () {
-                        if (_isLoadingModify) {
-                          null;
-                        } else {
-                          _handleCreate(context);
-                        }
-                      },
-                      child: _isLoadingModify
-                          ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white
-                              ),
-                            ),
-                          ) : const Text('Crea', style: TextStyle(color: Colors.white))
+                        onTap: () {
+                          setState(() {
+                            modifiedNotification = !modifiedNotification;
+                          });
+                        },
+                      ),
                     ),
+                  ]),
+                ],
+                if (widget.selectedOption == 'evento') ...[
+                  const SizedBox(height: 20),
+                  ListTile(
+                      title: const Text('Visibilità'),
+                      subtitle: Text(tutor ? 'solo tutor' : 'Personalizzata'),
+                      trailing: const Icon(Icons.arrow_forward),
+                      onTap: () async {
+                        _unfocusAll();
+                        selected = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VisibilitySelectionPage(
+                                visibility: _visibility, club: widget.club),
+                          ),
+                        );
+                        setState(() {
+                          if (Set.from(selected).containsAll(users) &&
+                              Set.from(users).containsAll(selected)) {
+                            tutor = true;
+                          } else {
+                            for (var user in selected) {
+                              _visibility[user] = true;
+                            }
+                            tutor = false;
+                          }
+                        });
+                      }),
+                ],
+                if (widget.selectedOption != 'evento') ...[
+                  const SizedBox(height: 20),
+                  const Row(
+                    children: [
+                      Icon(Icons.class_rounded, color: Colors.black),
+                      SizedBox(width: 25),
+                      Text('Classi',
+                          style: TextStyle(fontSize: 18, color: Colors.black)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                      alignment: WrapAlignment.start,
+                      spacing: 10,
+                      children: widget.club == 'Tiber Club'
+                          ? tiberClassOptions.map((e) {
+                              return ChoiceChip(
+                                label: Text(e),
+                                selected: selectedClasses.contains(e),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedClasses.add(e);
+                                    } else {
+                                      selectedClasses.remove(e);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList()
+                          : deltaClassOptions.map((e) {
+                              return ChoiceChip(
+                                label: Text(e),
+                                selected: selectedClasses.contains(e),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedClasses.add(e);
+                                    } else {
+                                      selectedClasses.remove(e);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList()),
+                ],
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _isEditing
+                        ? ElevatedButton(
+                            onPressed: () {
+                              if (_isLoadingModify) {
+                                null;
+                              } else {
+                                _handleEdit(context);
+                              }
+                            },
+                            child: _isLoadingModify
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Modifica',
+                                    style: TextStyle(color: Colors.white)))
+                        : ElevatedButton(
+                            onPressed: () {
+                              if (_isLoadingModify) {
+                                null;
+                              } else {
+                                _handleCreate(context);
+                              }
+                            },
+                            child: _isLoadingModify
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : const Text('Crea',
+                                    style: TextStyle(color: Colors.white))),
                   ],
                 ),
               ],

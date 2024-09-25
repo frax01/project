@@ -56,7 +56,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     var lightTheme;
     var darkTheme;
 
@@ -122,6 +121,7 @@ class _HomePageState extends State<HomePage> {
   bool status = false;
   String id = '';
   String club = '';
+  String role = '';
   List token = [];
 
   final _listItems = <ProgramCard>[];
@@ -135,27 +135,27 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildClubPage(String club, int selectedIndex) {
     return ClubPage(
-      club: club,
-      classes: classes,
-      status: status,
-      id: id,
-      name: name,
-      surname: surname,
-      email: email,
-      selectedIndex: selectedIndex,
-    );
+        club: club,
+        classes: classes,
+        status: status,
+        id: id,
+        name: name,
+        surname: surname,
+        email: email,
+        selectedIndex: selectedIndex,
+        role: role);
   }
 
   Future<void> retrieveData() async {
-
     QueryDocumentSnapshot value = await data('user', 'email', email);
 
     name = value['name'];
     surname = value['surname'];
     email = value['email'];
     classes = value['club_class'];
-    status = value['status'] == 'Admin'? true : false;
+    status = value['status'] == 'Admin' ? true : false;
     token = value['token'];
+    role = value['role'];
     id = value.id;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -167,12 +167,12 @@ class _HomePageState extends State<HomePage> {
 
     List tokenList = [getToken];
 
-    if(token.isEmpty) {
+    if (token.isEmpty) {
       await FirebaseFirestore.instance
           .collection('user')
           .doc(id)
           .update({'token': tokenList});
-    } else if(token.isNotEmpty && !token.contains(getToken)) {
+    } else if (token.isNotEmpty && !token.contains(getToken)) {
       token.add(getToken);
       await FirebaseFirestore.instance
           .collection('user')
@@ -182,7 +182,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> setupInteractedMessage() async {
-    LocalNotificationService.initialize(handleMessageFromBackgroundAndForegroundState);
+    LocalNotificationService.initialize(
+        handleMessageFromBackgroundAndForegroundState);
 
     //terminated
     initialMessage = await FirebaseMessaging.instance.getInitialMessage();
@@ -203,7 +204,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void handleMessageFromBackgroundAndForegroundState(RemoteMessage message) async {
+  void handleMessageFromBackgroundAndForegroundState(
+      RemoteMessage message) async {
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -218,29 +220,27 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
-                    club: club,
-                    documentId: message.data["docId"],
-                    selectedOption: message.data["selectedOption"],
-                    isAdmin: status,
-                    name: '$name $surname'
-                  )));
+                  club: club,
+                  documentId: message.data["docId"],
+                  selectedOption: message.data["selectedOption"],
+                  isAdmin: status,
+                  name: '$name $surname',
+                  role: message.data['role'])));
     } else if (message.data['category'] == 'modified_event') {
       await retrieveData();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
-                    club: club,
-                    documentId: message.data["docId"],
-                    selectedOption: message.data["selectedOption"],
-                    isAdmin: status,
-                    name: '$name $surname'
-                  )));
+                  club: club,
+                  documentId: message.data["docId"],
+                  selectedOption: message.data["selectedOption"],
+                  isAdmin: status,
+                  name: '$name $surname',
+                  role: message.data['role'])));
     } else if (message.data['category'] == 'birthday') {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => buildClubPage(club, 2)));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => buildClubPage(club, 1)));
     } else if (message.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(message.data['focusedDay']);
@@ -252,8 +252,8 @@ class _HomePageState extends State<HomePage> {
                   documentId: message.data['docId'],
                   isAdmin: status,
                   name: name,
-                  focusedDay: focusedDay
-              )));
+                  focusedDay: focusedDay,
+                  role: role)));
     }
   }
 
@@ -271,26 +271,25 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => ProgramPage(
-                club: club,
-                documentId: initialMessage?.data["docId"],
-                selectedOption: initialMessage?.data["selectedOption"],
-                isAdmin: status,
-                name: '$name $surname'
-              )));
+                  club: club,
+                  documentId: initialMessage?.data["docId"],
+                  selectedOption: initialMessage?.data["selectedOption"],
+                  isAdmin: status,
+                  name: '$name $surname',
+                  role: initialMessage?.data['role'])));
     } else if (initialMessage?.data['category'] == 'modified_event') {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  ProgramPage(
-                    club: club,
-                    documentId: initialMessage?.data["docId"],
-                    selectedOption: initialMessage?.data["selectedOption"],
-                    isAdmin: status,
-                    name: '$name $surname'
-                  )));
+              builder: (context) => ProgramPage(
+                  club: club,
+                  documentId: initialMessage?.data["docId"],
+                  selectedOption: initialMessage?.data["selectedOption"],
+                  isAdmin: status,
+                  name: '$name $surname',
+                  role: initialMessage?.data['role'])));
     } else if (initialMessage?.data['category'] == 'birthday') {
-      return buildClubPage(club, 2);
+      return buildClubPage(club, 1);
     } else if (initialMessage?.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(initialMessage?.data['focusedDay']);
@@ -302,9 +301,9 @@ class _HomePageState extends State<HomePage> {
                   documentId: initialMessage?.data['docId'],
                   isAdmin: status,
                   name: name,
-                  focusedDay: focusedDay
-              )));
-      return buildClubPage(club, 2);
+                  focusedDay: focusedDay,
+                  role: role)));
+      return buildClubPage(club, 1);
     }
     return buildClubPage(club, 0);
   }
@@ -313,6 +312,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     setupInteractedMessage();
+    retrieveData();
   }
 
   @override

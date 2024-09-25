@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'verify.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -121,6 +122,10 @@ class _SignUpState extends State<SignUp> {
         );
 
         await _saveUser(user);
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('email', _emailController.text);
+        prefs.setString('club', club);
 
         List<String> token = await retrieveToken('status', 'Admin', _clubController.text);
         sendNotification(token, 'Nuova registrazione!', 'Accetta il nuovo utente', 'new_user');

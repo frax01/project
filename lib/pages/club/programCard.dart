@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class ProgramCard extends StatefulWidget {
   const ProgramCard(
       {super.key,
-        required this.club,
+      required this.club,
       required this.documentId,
       required this.selectedOption,
       required this.selectedClass,
@@ -16,7 +16,8 @@ class ProgramCard extends StatefulWidget {
       required this.refreshList,
       required this.startDate,
       required this.name,
-      required this.user});
+      required this.user,
+      required this.role});
 
   final String club;
   final String documentId;
@@ -27,6 +28,7 @@ class ProgramCard extends StatefulWidget {
   final DateTime startDate;
   final String name;
   final String user;
+  final String role;
 
   @override
   _ProgramCardState createState() => _ProgramCardState();
@@ -43,10 +45,9 @@ class _ProgramCardState extends State<ProgramCard> {
         .doc(widget.documentId)
         .get();
     newData = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    if(widget.isAdmin) {
+    if (widget.isAdmin) {
       data = newData;
-    }
-    else {
+    } else {
       for (String value in newData["selectedClass"]) {
         if (widget.selectedClass.contains(value)) {
           data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
@@ -151,33 +152,33 @@ class _ProgramCardState extends State<ProgramCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.0),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              Text(
+                                endDate != ""
+                                    ? '$startDate - $endDate'
+                                    : startDate,
+                                style: const TextStyle(
+                                  fontSize: 17.0,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black54,
                                 ),
-                                Text(
-                                  endDate != "" ? '$startDate - $endDate' : startDate,
-                                  style: const TextStyle(
-                                    fontSize: 17.0,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black54,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ]
-                          )
-                        ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ])),
                         const SizedBox(width: 10),
                         Text(
-                          level == 'weekend'
-                              ? 'Programma'
-                              : 'Convivenza',
+                          level == 'weekend' ? 'Programma' : 'Convivenza',
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ],
@@ -223,12 +224,14 @@ class _ProgramCardState extends State<ProgramCard> {
         },
         openBuilder: (context, action) {
           return ProgramPage(
-              club: widget.club,
-              documentId: data['id'],
-              selectedOption: data['selectedOption'],
-              isAdmin: widget.isAdmin,
-              refreshList: widget.refreshList,
-              name: widget.user);
+            club: widget.club,
+            documentId: data['id'],
+            selectedOption: data['selectedOption'],
+            isAdmin: widget.isAdmin,
+            refreshList: widget.refreshList,
+            name: widget.user,
+            role: widget.role,
+          );
         },
       ),
     );

@@ -19,6 +19,7 @@ class ClubPage extends StatefulWidget {
     required this.surname,
     required this.email,
     this.selectedIndex = 0,
+    required this.role,
   });
 
   final String club;
@@ -29,6 +30,7 @@ class ClubPage extends StatefulWidget {
   final String surname;
   final String email;
   final int selectedIndex;
+  final String role;
 
   @override
   State<ClubPage> createState() => _ClubPageState();
@@ -56,6 +58,7 @@ class _ClubPageState extends State<ClubPage> {
           section: section.toLowerCase(),
           isAdmin: widget.status,
           name: '${widget.name} ${widget.surname}',
+          role: widget.role,
         ),
       ),
       PopScope(
@@ -68,6 +71,7 @@ class _ClubPageState extends State<ClubPage> {
           name: '${widget.name} ${widget.surname}',
           email: widget.email,
           selectedClass: widget.classes,
+          role: widget.role
         ),
       ),
       if (widget.club == 'Tiber Club')
@@ -84,7 +88,8 @@ class _ClubPageState extends State<ClubPage> {
           onPopInvoked: (_) {
             SystemNavigator.pop();
           },
-          child: Lunch(isAdmin: widget.status, name: '${widget.name} ${widget.surname}'),
+          child: Lunch(
+              isAdmin: widget.status, name: '${widget.name} ${widget.surname}', role: widget.role, club: widget.club, classes: widget.classes),
         ),
     ];
   }
@@ -161,7 +166,7 @@ class _ClubPageState extends State<ClubPage> {
             const BottomNavigationBarItem(
               icon: Icon(Icons.fastfood_outlined),
               activeIcon: Icon(Icons.fastfood),
-              label: 'Pranzi',
+              label: 'Pasti',
             ),
           ],
         ],

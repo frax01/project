@@ -16,13 +16,15 @@ class Calendar extends StatefulWidget {
       required this.club,
       required this.name,
       required this.email,
-      required this.selectedClass});
+      required this.selectedClass,
+      required this.role});
 
   final bool isAdmin;
   final String club;
   final String name;
   final String email;
   final List selectedClass;
+  final String role;
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -227,7 +229,8 @@ class _CalendarState extends State<Calendar> {
     }
 
     setState(() {
-      final selectedDayOnly = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
+      final selectedDayOnly =
+          DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
       _events = events;
       _selectedDayEvents = _events[selectedDayOnly] ?? [];
       _isLoading = false;
@@ -533,15 +536,15 @@ class _CalendarState extends State<Calendar> {
                                   : null,
                               onTap: event['tipo'] == 'evento'
                                   ? () async {
-                                      await Navigator.of(context)
-                                          .push(MaterialPageRoute(
+                                      await Navigator.of(context).push(
+                                          MaterialPageRoute(
                                               builder: (context) => EventPage(
-                                                    club: widget.club,
-                                                    documentId: event['id'],
-                                                    isAdmin: widget.isAdmin,
-                                                    name: widget.name,
-                                                    focusedDay: _focusedDay,
-                                                  )));
+                                                  club: widget.club,
+                                                  documentId: event['id'],
+                                                  isAdmin: widget.isAdmin,
+                                                  name: widget.name,
+                                                  focusedDay: _focusedDay,
+                                                  role: widget.role)));
                                       await _loadEvents();
                                     }
                                   : event['tipo'] == 'programma'
@@ -559,7 +562,8 @@ class _CalendarState extends State<Calendar> {
                                                               widget.isAdmin,
                                                           refreshList:
                                                               refreshList,
-                                                          name: widget.name)));
+                                                          name: widget.name,
+                                                          role: widget.role)));
                                           await _loadEvents();
                                         }
                                       : event['tipo'] == 'convivenza'
@@ -578,7 +582,8 @@ class _CalendarState extends State<Calendar> {
                                                               refreshList:
                                                                   refreshList,
                                                               name: widget
-                                                                  .name)));
+                                                                  .name,
+                                                                  role: widget.role)));
                                               await _loadEvents();
                                             }
                                           : null,
@@ -614,7 +619,8 @@ class _CalendarState extends State<Calendar> {
                             refreshList: refreshList,
                             selectedOption: 'weekend',
                             name: widget.name,
-                            focusedDay: _focusedDay)));
+                            focusedDay: _focusedDay,
+                            role: widget.role)));
                     await _loadEvents();
                   },
                 ),
@@ -628,7 +634,8 @@ class _CalendarState extends State<Calendar> {
                             refreshList: refreshList,
                             selectedOption: 'trip',
                             name: widget.name,
-                            focusedDay: _focusedDay)));
+                            focusedDay: _focusedDay,
+                            role: widget.role)));
                     await _loadEvents();
                   },
                 ),
@@ -643,7 +650,8 @@ class _CalendarState extends State<Calendar> {
                             selectedOption: 'evento',
                             name: widget.name,
                             focusedDay: _focusedDay,
-                            visibility: _selectedTutors)));
+                            visibility: _selectedTutors,
+                            role: widget.role)));
                     await _loadEvents();
                   },
                 ),
