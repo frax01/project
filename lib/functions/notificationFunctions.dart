@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 Future<void> sendNotification(
     List fcmToken, String notTitle, String message, String category,
-    {String? docId, String? selectedOption}) async {
+    {String? docId, String? selectedOption, String? role}) async {
   const String serverKey = Config.serverKey;
   const String fcmUrl = 'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
   Uri uri = Uri.parse(fcmUrl);
@@ -20,6 +20,7 @@ Future<void> sendNotification(
       'category': category,
       'notTitle': notTitle,
       'notBody': message,
+      'role': role,
     };
 
     final Map<String, dynamic> notification = {

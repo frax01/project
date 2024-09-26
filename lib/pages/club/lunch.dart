@@ -2,12 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class Lunch extends StatefulWidget {
-  const Lunch({super.key, required this.isAdmin, required this.name});
+  const Lunch(
+      {super.key,
+      required this.isAdmin,
+      required this.name,
+      required this.role,
+      required this.club,
+      required this.classes});
 
   final bool isAdmin;
   final String name;
+  final String role;
+  final String club;
+  final List classes;
 
   @override
   _LunchState createState() => _LunchState();
@@ -16,8 +26,7 @@ class Lunch extends StatefulWidget {
 class _LunchState extends State<Lunch> {
   Future<List<Map<String, dynamic>>> _fetchMeals() async {
     try {
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('pasti').get();
+      final querySnapshot = widget.isAdmin? await FirebaseFirestore.instance.collection('pasti').get() : await FirebaseFirestore.instance.collection('pasti').where('classi', arrayContainsAny: widget.classes).get();
 
       if (querySnapshot.docs.isEmpty) {
         return [];
@@ -33,6 +42,7 @@ class _LunchState extends State<Lunch> {
             'default': doc['default'],
             'status': doc['status'],
             'modificato': doc['modificato'],
+            'classi': doc['classi'],
           };
         }).toList();
 
@@ -223,6 +233,16 @@ class _LunchState extends State<Lunch> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 15),
+                    buildDropdownClasse(
+                        "Classe",
+                        widget.club == 'Tiber Club'
+                            ? tiberClubClassOptions
+                            : deltaClubClassOptions, (value) {
+                      setState(() {
+                        selectedClubClass = value.toString();
+                      });
+                    }),
                   ],
                 ),
               );
@@ -253,6 +273,7 @@ class _LunchState extends State<Lunch> {
                     'default': false,
                     'status': 'aperto',
                     'modificato': false,
+                    'classi': classList,
                   });
                   Navigator.of(context).pop();
                   setState(() {});
@@ -325,6 +346,65 @@ class _LunchState extends State<Lunch> {
       );
     }
   }
+
+  final List<String> tiberClubClassOptions = [
+    '1° media',
+    '2° media',
+    '3° media',
+    "1° liceo",
+    "2° liceo",
+    "3° liceo",
+    "4° liceo",
+    "5° liceo",
+  ];
+  final List<String> deltaClubClassOptions = [
+    "1° liceo",
+    "2° liceo",
+    "3° liceo",
+    "4° liceo",
+    "5° liceo",
+  ];
+  List<String> classList = [];
+  String selectedClubClass = "";
+
+  Widget buildDropdownClasse(
+      String label, List<String> options, void Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MultiSelectDialogField(
+          title: const Text('Seleziona le classi'),
+          selectedColor: Theme.of(context).primaryColor,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          items: options
+              .map((option) => MultiSelectItem<String>(option, option))
+              .toList(),
+          buttonText: const Text('Classe'),
+          confirmText: const Text('Ok'),
+          cancelText: const Text('Annulla'),
+          initialValue: classList,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Inserire almeno una classe';
+            }
+            return null;
+          },
+          onConfirm: (value) {
+            setState(() {
+              classList = value;
+            });
+          },
+        ),
+        const SizedBox(height: 8.0),
+      ],
+    );
+  }
+
+  final List<String> options = [
+    'Le tue classi',
+    'Tutti i pranzi',
+  ];
+  List<String> selectedOptions = ['Le tue classi'];
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +483,7 @@ class _LunchState extends State<Lunch> {
                                             ),
                                           ),
                                           AutoSizeText(
-                                            '${meal['giorno']} ${meal['data'].split(' ')[0]}',
+                                            '${meal['giorno'][0]}${meal['giorno'][1]}${meal['giorno'][2]} ${meal['data'].split(' ')[0]}',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 25,
@@ -425,76 +505,121 @@ class _LunchState extends State<Lunch> {
                                     children: [
                                       if (meal['status'] == 'aperto')
                                         IconButton(
-                                          onPressed: () => _toggleReservation(meal),
+                                          onPressed: () =>
+                                              _toggleReservation(meal),
                                           icon: Icon(
-                                            meal['prenotazioni'].contains(widget.name)
+                                            meal['prenotazioni']
+                                                    .contains(widget.name)
                                                 ? Icons.check_circle
                                                 : Icons.check_circle_outline,
-                                            color: meal['prenotazioni'].contains(widget.name)
+                                            color: meal['prenotazioni']
+                                                    .contains(widget.name)
                                                 ? Colors.green
                                                 : Colors.black,
                                             size: 30,
                                           ),
                                         ),
-                                      if (widget.isAdmin && meal['status'] == 'aperto')
+                                      if (widget.isAdmin &&
+                                          meal['status'] == 'aperto')
                                         IconButton(
                                           onPressed: () async {
                                             await FirebaseFirestore.instance
                                                 .collection('pasti')
                                                 .doc(meal['id'])
-                                                .update({'status': 'chiuso', 'modificato': true});
+                                                .update({
+                                              'status': 'chiuso',
+                                              'modificato': true
+                                            });
                                             meal['status'] = 'chiuso';
                                             meal['modificato'] = true;
                                             setState(() {});
                                           },
-                                          icon: const Icon(Icons.close, size: 30),
+                                          icon:
+                                              const Icon(Icons.close, size: 30),
                                         ),
-                                      if (widget.isAdmin && meal['status'] == 'chiuso')
+                                      if (widget.isAdmin &&
+                                          meal['status'] == 'chiuso')
                                         IconButton(
                                           onPressed: () async {
                                             await FirebaseFirestore.instance
                                                 .collection('pasti')
                                                 .doc(meal['id'])
-                                                .update({'status': 'aperto', 'modificato': true});
+                                                .update({
+                                              'status': 'aperto',
+                                              'modificato': true
+                                            });
                                             meal['status'] = 'aperto';
                                             meal['modificato'] = true;
                                             setState(() {});
                                           },
-                                          icon: const Icon(Icons.open_in_new, size: 30),
+                                          icon: const Icon(Icons.open_in_new,
+                                              size: 30),
                                         ),
                                       if (widget.isAdmin)
                                         IconButton(
                                           onPressed: () {
                                             _confirmDelete(context, meal['id']);
                                           },
-                                          icon: const Icon(Icons.delete_outline, size: 30),
+                                          icon: const Icon(Icons.delete_outline,
+                                              size: 30),
                                         ),
                                     ],
                                   )
                                 ],
                               ),
-                              const SizedBox(height: 5),
-                              ExpansionTile(
-                                title: Text(
-                                    'Prenotazioni (${meal['prenotazioni'].length})',
-                                    style: const TextStyle(fontSize: 20)),
-                                children: meal['prenotazioni'].isNotEmpty
-                                    ? meal['prenotazioni']
-                                        .map<Widget>((name) => ListTile(
-                                                title: Text(
-                                              name,
-                                              style:
-                                                  const TextStyle(fontSize: 18),
-                                            )))
-                                        .toList()
-                                    : [
-                                        const ListTile(
-                                            title: Text('Nessuna prenotazione'))
-                                      ],
-                                shape: const RoundedRectangleBorder(
-                                  side: BorderSide.none,
+                              ListTile(
+                                title: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Classi:',
+                                      style: TextStyle(
+                                        fontSize: 23,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    AutoSizeText(
+                                      '${meal['classi'].join(', ')}',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                      ),
+                                      maxLines: 2,
+                                      minFontSize: 18,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
                               ),
+                              if (meal.containsKey('prenotazioni') &&
+                                  widget.role != 'Genitore')
+                                Column(
+                                  children: [
+                                    const SizedBox(height: 5),
+                                    ExpansionTile(
+                                      title: Text(
+                                          'Prenotazioni (${meal['prenotazioni'].length})',
+                                          style: const TextStyle(fontSize: 20)),
+                                      children: meal['prenotazioni'].isNotEmpty
+                                          ? meal['prenotazioni']
+                                              .map<Widget>((name) => ListTile(
+                                                      title: Text(
+                                                    name,
+                                                    style: const TextStyle(
+                                                        fontSize: 18),
+                                                  )))
+                                              .toList()
+                                          : [
+                                              const ListTile(
+                                                  title: Text(
+                                                      'Nessuna prenotazione'))
+                                            ],
+                                      shape: const RoundedRectangleBorder(
+                                        side: BorderSide.none,
+                                      ),
+                                    ),
+                                  ],
+                                )
                             ],
                           ),
                         );

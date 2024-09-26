@@ -41,6 +41,7 @@ class _LoginState extends State<Login> {
       name: name,
       surname: surname,
       email: email,
+      role: role,
     );
   }
 
