@@ -3,6 +3,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 
 class Tiber extends StatelessWidget {
   const Tiber({super.key, required this.club});
@@ -270,7 +271,7 @@ class Tiber extends StatelessWidget {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                       onTap: () async {
-                        await launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'), mode: LaunchMode.externalApplication);
+                        await launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/49853451'), mode: LaunchMode.externalApplication);
                       },
                     ),
                   ]
@@ -537,6 +538,25 @@ class _DeltaState extends State<Delta> {
                         },
                       ),
                       ListTile(
+                        leading: const Icon(Icons.mail_outline),
+                        title: const AutoSizeText(
+                          'staff@centrodelta.it',
+                          style: TextStyle(fontSize: 18.0),
+                          maxLines: 1,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                        onTap: () {
+                          final Uri params = Uri(
+                            scheme: 'mailto',
+                            path: 'staff@centrodelta.it', 
+                          );
+                          String url = params.toString();
+                          launchUrl(Uri.parse(url));
+                        },
+                      ),
+                      ListTile(
                         leading: const Icon(Icons.location_on),
                         title: const AutoSizeText(
                           'Via Alberto da Giussano, 6, MI',
@@ -561,7 +581,9 @@ class _DeltaState extends State<Delta> {
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                         onTap: () {
-                          launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'));
+                          FlutterWebBrowser.openWebPage(
+                            url: 'https://www.iubenda.com/privacy-policy/49853451'
+                          );
                         },
                       ),
                     ]
@@ -573,3 +595,5 @@ class _DeltaState extends State<Delta> {
     );
   }
 }
+
+//launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/49853451'));

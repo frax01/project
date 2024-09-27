@@ -33,6 +33,7 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   Map<String, dynamic> _event = {};
+  List<String> _users = [];
 
   Future<void> _loadEvent() async {
     var doc = await FirebaseFirestore.instance
@@ -40,6 +41,18 @@ class _EventPageState extends State<EventPage> {
         .doc(widget.documentId)
         .get();
     _event = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
+    for (var userEmail in _event['utenti']) {
+      var value = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: userEmail)
+          .get();
+          
+      for (var doc in value.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        _users.add('${data['name']} ${data['surname']}');
+      }
+    }
+
     if (!_event.containsKey('file')) {
       _event['file'] = [];
     }
@@ -616,6 +629,30 @@ class _EventPageState extends State<EventPage> {
                                   style: const TextStyle(fontSize: 22),
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: 20.0),
+                            ExpansionTile(
+                              title: Text(
+                                  'Partecipanti (${_users.length})',
+                                  style: const TextStyle(fontSize: 20)
+                                  ),
+                              shape: const RoundedRectangleBorder(
+                                side: BorderSide.none,
+                              ),
+                              children: _users.isNotEmpty
+                                  ? _users
+                                      .map<Widget>((name) => ListTile(
+                                              title: Text(
+                                            name,
+                                            style: const TextStyle(
+                                                fontSize: 18),
+                                          )))
+                                      .toList()
+                                  : [
+                                      const ListTile(
+                                          title: Text(
+                                              'Nessuna prenotazione'))
+                                    ],
                             ),
                             const SizedBox(height: 20.0),
                             if (_event.containsKey('file'))
