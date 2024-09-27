@@ -259,7 +259,8 @@ class Tiber extends StatelessWidget {
                         MapsLauncher.launchCoordinates(41.918306, 12.474556);
                       },
                     ),
-                    ListTile(
+                    GestureDetector(
+                    child: ListTile(
                       leading: const Icon(Icons.policy),
                       title: const AutoSizeText(
                         'Privacy e policy',
@@ -269,10 +270,9 @@ class Tiber extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                      onTap: () async {
-                        await launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344'), mode: LaunchMode.externalApplication);
-                      },
-                    ),
+                      onTap: () => launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/73232344')),
+                      //},
+                    ),)
                   ]
               ).toList(),
             ),)
