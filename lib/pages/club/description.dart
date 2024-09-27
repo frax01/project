@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:maps_launcher/maps_launcher.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -12,6 +10,17 @@ class Tiber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final FirebaseStorage _storage = FirebaseStorage.instance;
+
+    Future<void> _openFileOrLink(String? url) async {
+    if (url == null || url.isEmpty) {
+      return;
+    }
+    FlutterWebBrowser.openWebPage(
+      url: url
+    );
+  }
 
     const TextStyle textStyle = TextStyle(
       fontSize: 20.0,
@@ -247,6 +256,22 @@ class Tiber extends StatelessWidget {
                   context: context,
                   tiles: [
                     ListTile(
+                      leading: const Icon(Icons.schedule_outlined),
+                      title: const AutoSizeText(
+                        'Orario e iscrizione',
+                        style: TextStyle(fontSize: 18.0),
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                      onTap: () async {
+                        final ref = _storage.ref().child('Orari/IscrizioneTiber2024-25.pdf');
+                        final url = await ref.getDownloadURL();
+                        _openFileOrLink(url);
+                      }
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.location_on),
                       title: const AutoSizeText(
                         'Via di Villa Giulia, 27, RM',
@@ -257,7 +282,9 @@ class Tiber extends StatelessWidget {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                       onTap: () {
-                        MapsLauncher.launchCoordinates(41.918306, 12.474556);
+                        FlutterWebBrowser.openWebPage(
+                          url: 'https://www.google.com/maps/search/?api=1&query=41.918306,12.474556'
+                        );
                       },
                     ),
                     ListTile(
@@ -270,8 +297,10 @@ class Tiber extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                      onTap: () async {
-                        await launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/49853451'), mode: LaunchMode.externalApplication);
+                      onTap: () {
+                        FlutterWebBrowser.openWebPage(
+                            url: 'https://www.iubenda.com/privacy-policy/49853451'
+                          );
                       },
                     ),
                   ]
@@ -301,16 +330,9 @@ class _DeltaState extends State<Delta> {
     if (url == null || url.isEmpty) {
       return;
     }
-
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('File non valido'),
-        ),
-      );
-    }
+    FlutterWebBrowser.openWebPage(
+      url: url
+    );
   }
 
   Future<void> getFileUrl(String filePath) async {
@@ -534,7 +556,9 @@ class _DeltaState extends State<Delta> {
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                         onTap: () {
-                          launchUrl(Uri.parse('https://bit.ly/m/centrodelta'));
+                          FlutterWebBrowser.openWebPage(
+                            url: 'https://bit.ly/m/centrodelta'
+                          );
                         },
                       ),
                       ListTile(
@@ -553,7 +577,9 @@ class _DeltaState extends State<Delta> {
                             path: 'staff@centrodelta.it', 
                           );
                           String url = params.toString();
-                          launchUrl(Uri.parse(url));
+                          FlutterWebBrowser.openWebPage(
+                            url: url
+                          );
                         },
                       ),
                       ListTile(
@@ -567,7 +593,9 @@ class _DeltaState extends State<Delta> {
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                         onTap: () {
-                          MapsLauncher.launchCoordinates(45.468245, 9.164332);
+                          FlutterWebBrowser.openWebPage(
+                            url: 'https://www.google.com/maps/search/?api=1&query=45.468245,9.164332'
+                          );
                         },
                       ),
                       ListTile(
@@ -595,5 +623,3 @@ class _DeltaState extends State<Delta> {
     );
   }
 }
-
-//launchUrl(Uri.parse('https://www.iubenda.com/privacy-policy/49853451'));

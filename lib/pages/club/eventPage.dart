@@ -6,9 +6,9 @@ import 'package:share_plus/share_plus.dart';
 import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage(
@@ -408,15 +408,9 @@ class _EventPageState extends State<EventPage> {
       return;
     }
 
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link non valido'),
-        ),
-      );
-    }
+    FlutterWebBrowser.openWebPage(
+      url: url
+    );
   }
 
   void _showDeleteConfirmationDialog(Map<String, dynamic> fileData) {
