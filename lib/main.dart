@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                   documentId: message.data['docId'],
                   isAdmin: status,
                   name: name,
-                  focusedDay: focusedDay,
+                  selectedDay: focusedDay,
                   role: role)));
     }
   }
@@ -301,7 +301,7 @@ class _HomePageState extends State<HomePage> {
                   documentId: initialMessage?.data['docId'],
                   isAdmin: status,
                   name: name,
-                  focusedDay: focusedDay,
+                  selectedDay: focusedDay,
                   role: role)));
       return buildClubPage(club, 1);
     }

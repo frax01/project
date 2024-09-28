@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'status.dart';
 import 'package:club/main.dart';
+import 'package:club/pages/main/signup.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -38,7 +39,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    //_currentUser!.reload();
   }
 
   Future<void> _showDeleteAccountDialog() async {
@@ -141,6 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
     if (confirm == true) {
+      print("email: ${_currentUser}");
       _logout(_currentUser!.email!);
     }
   }

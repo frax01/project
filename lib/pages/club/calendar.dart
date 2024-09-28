@@ -543,7 +543,7 @@ class _CalendarState extends State<Calendar> {
                                                   documentId: event['id'],
                                                   isAdmin: widget.isAdmin,
                                                   name: widget.name,
-                                                  focusedDay: _focusedDay,
+                                                  selectedDay: _selectedDay,
                                                   role: widget.role)));
                                       await _loadEvents();
                                     }
@@ -619,7 +619,7 @@ class _CalendarState extends State<Calendar> {
                             refreshList: refreshList,
                             selectedOption: 'weekend',
                             name: widget.name,
-                            focusedDay: _focusedDay,
+                            selectedDay: _selectedDay,
                             role: widget.role)));
                     await _loadEvents();
                   },
@@ -634,7 +634,7 @@ class _CalendarState extends State<Calendar> {
                             refreshList: refreshList,
                             selectedOption: 'trip',
                             name: widget.name,
-                            focusedDay: _focusedDay,
+                            selectedDay: _selectedDay,
                             role: widget.role)));
                     await _loadEvents();
                   },
@@ -649,7 +649,7 @@ class _CalendarState extends State<Calendar> {
                             refreshList: refreshList,
                             selectedOption: 'evento',
                             name: widget.name,
-                            focusedDay: _focusedDay,
+                            selectedDay: _selectedDay,
                             visibility: _selectedTutors,
                             role: widget.role)));
                     await _loadEvents();

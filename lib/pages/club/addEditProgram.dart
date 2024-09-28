@@ -20,7 +20,7 @@ class AddEditProgram extends StatefulWidget {
       this.selectedOption,
       this.document,
       required this.name,
-      this.focusedDay,
+      this.selectedDay,
       this.visibility,
       required this.role});
 
@@ -30,7 +30,7 @@ class AddEditProgram extends StatefulWidget {
   final String? selectedOption;
   final Map<dynamic, dynamic>? document;
   final String name;
-  final focusedDay;
+  final selectedDay;
   final Map<String, bool>? visibility;
   final String role;
 
@@ -126,7 +126,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       }
     } else {
       final String formattedDate =
-          DateFormat('dd-MM-yyyy').format(widget.focusedDay);
+          DateFormat('dd-MM-yyyy').format(widget.selectedDay);
       setState(() {
         _startDateController.text = formattedDate;
       });
@@ -451,7 +451,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
         Map<String, dynamic> document = {
           'titolo': _programNameController.text,
           'descrizione': _programDescriptionController.text,
-          'data': widget.focusedDay,
+          'data': widget.selectedDay,
           'creatore': widget.name,
           'club': widget.club,
           'inizio': _startTimeController.text,
@@ -597,7 +597,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       Map<String, dynamic> newDocument = {
         'titolo': _programNameController.text,
         'descrizione': _programDescriptionController.text,
-        'data': widget.focusedDay,
+        'data': widget.selectedDay,
         'creatore': widget.name,
         'club': widget.club,
         'inizio': _startTimeController.text,

@@ -17,14 +17,14 @@ class EventPage extends StatefulWidget {
       required this.documentId,
       required this.isAdmin,
       required this.name,
-      required this.focusedDay,
+      required this.selectedDay,
       required this.role});
 
   final String club;
   final String documentId;
   final bool isAdmin;
   final String name;
-  final DateTime focusedDay;
+  final DateTime selectedDay;
   final String role;
 
   @override
@@ -523,7 +523,7 @@ class _EventPageState extends State<EventPage> {
                                 document: _event,
                                 refreshProgram: refreshProgram,
                                 name: widget.name,
-                                focusedDay: widget.focusedDay,
+                                selectedDay: widget.selectedDay,
                                 role: widget.role)));
                       },
                     ),
