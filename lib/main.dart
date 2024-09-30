@@ -43,16 +43,46 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
 
-  runApp(MyApp(club: club));
+  Widget startWidget;
+  if (prefs.getString('email') != null &&
+      prefs.getString('email')!.isNotEmpty) {
+    QueryDocumentSnapshot value =
+        await data('user', 'email', prefs.getString('email'));
+
+    String name = value['name'];
+    String surname = value['surname'];
+    String email = value['email'];
+    List classes = value['club_class'];
+    bool status = value['status'] == 'Admin' ? true : false;
+    String token = value['token'];
+    String role = value['role'];
+    String id = value.id;
+
+    startWidget = ClubPage(
+      classes: classes,
+      club: club,
+      status: status,
+      id: id,
+      name: name,
+      surname: surname,
+      email: email,
+      role: role,
+    );
+  } else {
+    startWidget = const Login();
+  }
+
+  runApp(MyApp(club: club, startWidget: startWidget));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.club});
+  const MyApp({super.key, required this.club, required this.startWidget});
 
   final String club;
+  final Widget startWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +119,8 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.light,
-      home: const Login(),
-      initialRoute: '/home',
+      home: startWidget,
+      //initialRoute: '/home',
       routes: {
         '/home': (context) => HomePage(club: club),
         '/login': (context) => const Login(),
@@ -364,23 +394,25 @@ class _HomePageState extends State<HomePage> {
                   return Scaffold(
                     body: Center(
                       child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text('Si è verificato un errore nel recupero dei dati!'),
-                        const SizedBox(height: 20.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const Login()),
-                            );
-                          },
-                          child: const Text('Torna al Login'),
-                        ),
-                      ],
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Text(
+                              'Si è verificato un errore nel recupero dei dati!'),
+                          const SizedBox(height: 20.0),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Login()),
+                              );
+                            },
+                            child: const Text('Torna al Login'),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
+                  );
                 } else if (terminated == false) {
                   return buildClubPage(club, 0);
                 } else {
