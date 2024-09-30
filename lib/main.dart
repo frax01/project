@@ -370,7 +370,6 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 20.0),
                         ElevatedButton(
                           onPressed: () {
-                            // Naviga di nuovo alla pagina di login
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => const Login()),

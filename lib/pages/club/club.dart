@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'info.dart';
 import 'calendar.dart';
 import 'lunch.dart';
+import 'dart:io';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -41,58 +42,81 @@ class _ClubPageState extends State<ClubPage> {
   int _selectedIndex = 0;
   late List<Widget> _widgetOptions;
 
-  @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
 
-    _selectedIndex = widget.selectedIndex;
+  _selectedIndex = widget.selectedIndex;
 
-    _widgetOptions = <Widget>[
+  _widgetOptions = <Widget>[
+    PopScope(
+      onPopInvoked: (_) {
+        // Intercetta il back su Android e iOS
+        if (Platform.isAndroid) {
+          // Su Android manda l'app in background
+          SystemNavigator.pop();
+        } else if (Platform.isIOS) {
+          // Su iOS non fare nulla (disabilita lo swipe-back)
+        }
+      },
+      child: HomePage(
+        club: widget.club,
+        selectedClass: widget.classes,
+        section: section.toLowerCase(),
+        isAdmin: widget.status,
+        name: '${widget.name} ${widget.surname}',
+        role: widget.role,
+      ),
+    ),
+    PopScope(
+      onPopInvoked: (_) {
+        if (Platform.isAndroid) {
+          SystemNavigator.pop();
+        } else if (Platform.isIOS) {
+          // Non fare nulla su iOS per evitare lo swipe-back
+        }
+      },
+      child: Calendar(
+        isAdmin: widget.status,
+        club: widget.club,
+        name: '${widget.name} ${widget.surname}',
+        email: widget.email,
+        selectedClass: widget.classes,
+        role: widget.role,
+      ),
+    ),
+    if (widget.club == 'Tiber Club')
       PopScope(
         onPopInvoked: (_) {
-          SystemNavigator.pop();
+          if (Platform.isAndroid) {
+            SystemNavigator.pop();
+          } else if (Platform.isIOS) {
+            // Non fare nulla su iOS per evitare lo swipe-back
+          }
         },
-        child: HomePage(
-          club: widget.club,
-          selectedClass: widget.classes,
-          section: section.toLowerCase(),
+        child: TabScorer(
+          isAdmin: widget.status,
+        ),
+      ),
+    if (widget.club == 'Delta Club')
+      PopScope(
+        onPopInvoked: (_) {
+          if (Platform.isAndroid) {
+            SystemNavigator.pop();
+          } else if (Platform.isIOS) {
+            // Non fare nulla su iOS per evitare lo swipe-back
+          }
+        },
+        child: Lunch(
           isAdmin: widget.status,
           name: '${widget.name} ${widget.surname}',
           role: widget.role,
-        ),
-      ),
-      PopScope(
-        onPopInvoked: (_) {
-          SystemNavigator.pop();
-        },
-        child: Calendar(
-          isAdmin: widget.status,
           club: widget.club,
-          name: '${widget.name} ${widget.surname}',
-          email: widget.email,
-          selectedClass: widget.classes,
-          role: widget.role
+          classes: widget.classes,
         ),
       ),
-      if (widget.club == 'Tiber Club')
-        PopScope(
-          onPopInvoked: (_) {
-            SystemNavigator.pop();
-          },
-          child: TabScorer(
-            isAdmin: widget.status,
-          ),
-        ),
-      if (widget.club == 'Delta Club')
-        PopScope(
-          onPopInvoked: (_) {
-            SystemNavigator.pop();
-          },
-          child: Lunch(
-              isAdmin: widget.status, name: '${widget.name} ${widget.surname}', role: widget.role, club: widget.club, classes: widget.classes),
-        ),
-    ];
-  }
+  ];
+}
 
   @override
   Widget build(BuildContext context) {
