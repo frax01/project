@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'status.dart';
 import 'package:club/main.dart';
-import 'package:club/pages/main/signup.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
@@ -298,10 +297,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     widget.isAdmin
                         ? ListTile(
                       leading: const Icon(Icons.build),
-                      title: const Text('Modifica'),
+                      title: const Text('Iscritti'),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                       subtitle: const AutoSizeText(
-                        'Permessi utente',
+                        'Modifica utenti',
                         style: TextStyle(fontSize: 20.0),
                         maxLines: 1,
                         minFontSize: 10,

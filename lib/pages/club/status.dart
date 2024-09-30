@@ -1,5 +1,7 @@
+import 'package:club/pages/club/editUser.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class Status extends StatefulWidget {
   const Status({super.key, required this.club});
@@ -17,13 +19,13 @@ class _StatusState extends State<Status> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Permessi utente'),
+        title: const Text('Iscritti'),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('user')
+        stream: _firestore
+            .collection('user')
             .where('club', isEqualTo: widget.club)
-            .where('role', whereIn: ['Tutor', 'Ragazzo'])
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -34,72 +36,113 @@ class _StatusState extends State<Status> {
 
           final users = snapshot.data!.docs;
 
-          users.sort((a, b) {
-            final firstNameA = a['name'].toLowerCase();
-            final firstNameB = b['name'].toLowerCase();
-            return firstNameA.compareTo(firstNameB);
-          });
+          List<QueryDocumentSnapshot> tutors = [];
+          List<QueryDocumentSnapshot> ragazzi = [];
+          List<QueryDocumentSnapshot> genitori = [];
 
-          List<ListTile> userTiles = [];
           for (var user in users) {
-            final firstName = user['name'];
-            final lastName = user['surname'];
-            final status = user['status'];
-            final userId = user.id;
-
-            final userTile = ListTile(
-              title: Text('$firstName $lastName', style: const TextStyle(fontSize: 20.0),),
-              subtitle: Text(status == 'User' ? 'Utente' : 'Admin', style: const TextStyle(fontSize: 15.0),),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-              onTap: () => _updateStatus(context, userId, status),
-            );
-
-            userTiles.add(userTile);
+            final role = user['role'];
+            if (role == 'Tutor') {
+              tutors.add(user);
+            } else if (role == 'Ragazzo') {
+              ragazzi.add(user);
+            } else if (role == 'Genitore') {
+              genitori.add(user);
+            }
           }
+
+          tutors.sort((a, b) =>
+              a['name'].toLowerCase().compareTo(b['name'].toLowerCase()));
+          ragazzi.sort((a, b) =>
+              a['name'].toLowerCase().compareTo(b['name'].toLowerCase()));
+          genitori.sort((a, b) =>
+              a['name'].toLowerCase().compareTo(b['name'].toLowerCase()));
+
+          List<Widget> createUserTiles(List<QueryDocumentSnapshot> users) {
+            final tiles = users.map((user) {
+              final firstName = user['name'];
+              final lastName = user['surname'];
+              final status = user['status'] == 'User' ? 'Utente' : 'Admin';
+              final role = user['role'];
+              final classes = user['club_class'];
+              final userId = user.id;
+
+              return ListTile(
+                title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$role, $status',
+                        style: const TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      AutoSizeText(
+                        '$firstName $lastName',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
+                        ),
+                        maxLines: 1,
+                        minFontSize: 18,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ]),
+                subtitle: Text('${classes.join(', ')}',
+                    style: const TextStyle(fontSize: 15.0)),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 10.0),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EditUser(
+                            club: widget.club,
+                            id: userId,
+                            name: '$firstName $lastName'))),
+              );
+            }).toList();
+
+            return ListTile.divideTiles(
+              context: context,
+              tiles: tiles,
+              color: Colors.grey,
+            ).toList();
+          }
+
+          int index = createUserTiles(tutors).length +
+              createUserTiles(ragazzi).length +
+              createUserTiles(genitori).length;
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: ListView(
-              children: ListTile.divideTiles(
-                context: context,
-                tiles: userTiles,
-              ).toList(),
+              children: [
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(index==1? "$index utente" : "$index utenti",
+                    style: const TextStyle(fontSize: 25),
+                  ),
+                ),
+                const Text('Tutor',
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                ...createUserTiles(tutors),
+                const SizedBox(height: 20),
+                const Text('Ragazzi',
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                ...createUserTiles(ragazzi),
+                const SizedBox(height: 20),
+                const Text('Genitori',
+                    style:
+                        TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                ...createUserTiles(genitori),
+              ],
             ),
           );
         },
       ),
-    );
-  }
-
-  void _updateStatus(BuildContext context, String userId, String currentStatus) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Conferma'),
-          content: currentStatus=='User'?
-            const Text('Cambiare lo status da Utente a Admin?', style: const TextStyle(fontSize: 20.0))
-            : const Text('Cambiare lo status da Admin a Utente?', style: const TextStyle(fontSize: 20.0)),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Annulla'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Conferma'),
-              onPressed: () async {
-                final newStatus = currentStatus == 'User' ? 'Admin' : 'User';
-                await _firestore.collection('user').doc(userId).update({
-                  'status': newStatus,
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

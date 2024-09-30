@@ -309,9 +309,9 @@ class _ProgramPageState extends State<ProgramPage> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    validation(title, _programNameController, isLink,
+                    await validation(title, _programNameController, isLink,
                         _linkController, isFile, file);
-                    setState(() {});
+                    Navigator.of(context).pop();
                   },
                   child: const Text('OK'),
                 ),
@@ -351,7 +351,7 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  void validation(
+  Future<void> validation(
     String title,
     TextEditingController _programNameController,
     bool isLink,
@@ -376,7 +376,6 @@ class _ProgramPageState extends State<ProgramPage> {
             .update({
           'file': FieldValue.arrayUnion([dataToSave])
         });
-        Navigator.of(context).pop();
         setState(() {});
       }
     }
@@ -428,7 +427,6 @@ class _ProgramPageState extends State<ProgramPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     side: const BorderSide(color: Colors.black),
-                    //overlayColor: Colors.grey[500],
                   ),
                   child: Row(
                     children: [
@@ -460,10 +458,14 @@ class _ProgramPageState extends State<ProgramPage> {
     if (url == null || url.isEmpty) {
       return;
     }
-
-    FlutterWebBrowser.openWebPage(
-      url: url
-    );
+    
+    try {
+      await FlutterWebBrowser.openWebPage(url: url);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nell\'aperatura del link')),
+      );
+    }
   }
 
   void _showDeleteConfirmationDialog(Map<String, dynamic> fileData) {
@@ -522,7 +524,7 @@ class _ProgramPageState extends State<ProgramPage> {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Presenza cancellata')));
       } else {
-        if(assenze.contains(widget.name)) {
+        if (assenze.contains(widget.name)) {
           prenotazioni.add(widget.name);
           assenze.remove(widget.name);
         } else {
@@ -553,7 +555,7 @@ class _ProgramPageState extends State<ProgramPage> {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Assenza cancellata')));
       } else {
-        if(prenotazioni.contains(widget.name)) {
+        if (prenotazioni.contains(widget.name)) {
           assenze.add(widget.name);
           prenotazioni.remove(widget.name);
         } else {
@@ -664,7 +666,8 @@ class _ProgramPageState extends State<ProgramPage> {
                               ),
                             ),
                           ),
-                          if (_data.containsKey('prenotazioni') && _data.containsKey('assenze'))
+                          if (_data.containsKey('prenotazioni') &&
+                              _data.containsKey('assenze'))
                             SizedBox(
                               height: 175,
                               child: Stack(
@@ -728,8 +731,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                           ],
                                         ),
                                         child: Icon(
-                                          _data['assenze']
-                                                  .contains(widget.name)
+                                          _data['assenze'].contains(widget.name)
                                               ? Icons.close
                                               : Icons.close_outlined,
                                           color: _data['assenze']
@@ -958,78 +960,64 @@ class _ProgramPageState extends State<ProgramPage> {
                                             .toList()
                                         : [
                                             const ListTile(
-                                              title:
-                                                  Text('Nessuna assenza'),
+                                              title: Text('Nessuna assenza'),
                                             ),
                                           ],
                                   ),
                                 ],
                               ),
-                            if (_data.containsKey('prenotazioni') && widget.role=='Genitore')
+                            if (_data.containsKey('prenotazioni') &&
+                                widget.role == 'Genitore')
                               Column(
                                 children: [
                                   const SizedBox(height: 20.0),
-                                  Text('Prenotazioni (${_data['prenotazioni'].length})', style: const TextStyle(fontSize: 20)),
+                                  Text(
+                                      'Prenotazioni (${_data['prenotazioni'].length})',
+                                      style: const TextStyle(fontSize: 20)),
                                 ],
                               ),
-                            const SizedBox(height: 20.0),
                             if (_data.containsKey('file'))
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const SizedBox(height: 20.0),
                                   for (var fileData in _data['file'])
                                     buildFileLinkButton(fileData),
+                                  const SizedBox(height: 10.0),
                                 ],
                               ),
-                            widget.isAdmin
-                                ? TextButton(
-                                    onPressed: () {
-                                      _showAddLinkFileDialog(context);
-                                    },
-                                    style: TextButton.styleFrom(
-                                      minimumSize:
-                                          const Size(double.infinity, 50),
-                                      backgroundColor: Colors.transparent,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      side:
-                                          const BorderSide(color: Colors.black),
-                                      //overlayColor: Colors.grey[500],
-                                    ),
-                                    child: const Icon(Icons.upload,
-                                        color: Colors.black),
-                                  )
-                                : const SizedBox.shrink(),
-                            const SizedBox(height: 20.0),
                             Center(
                                 child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                   Text(
                                     'Creato da ${_data['creator']}',
-                                    style: const TextStyle(fontSize: 15, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.black54),
                                   ),
-                                ])),
+                                ])
+                            ),
                           ],
                         ),
                       ),
                     ],
-                  ),                  
+                  ),
                 ),
               );
             }
           },
         ),
       ),
-      //floatingActionButton: widget.isAdmin
-      //    ? FloatingActionButton(
-      //        onPressed: _showAddLinkFileDialog(context);,
-      //        shape: const CircleBorder(),
-      //        backgroundColor: Colors.white,
-      //        child: const Icon(Icons.add, color: Colors.black),
-      //      )
-      //    : null,
+      floatingActionButton: widget.isAdmin
+          ? FloatingActionButton(
+              onPressed: () async {
+                _showAddLinkFileDialog(context);
+              },
+              shape: const CircleBorder(),
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.upload, color: Colors.black),
+            )
+          : null,
     );
   }
 }

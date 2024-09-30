@@ -361,11 +361,27 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 } else if (snapshot.hasError) {
-                  return const Scaffold(
+                  return Scaffold(
                     body: Center(
-                      child: Text("Errore durante il recupero dei dati"),
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const Text('Si è verificato un errore nel recupero dei dati!'),
+                        const SizedBox(height: 20.0),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Naviga di nuovo alla pagina di login
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Login()),
+                            );
+                          },
+                          child: const Text('Torna al Login'),
+                        ),
+                      ],
                     ),
-                  );
+                  ),
+                );
                 } else if (terminated == false) {
                   return buildClubPage(club, 0);
                 } else {

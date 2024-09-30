@@ -991,30 +991,32 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       ),
                     ),
                   ]),
-                  const SizedBox(height: 20),
-                  Row(children: [
-                    const Icon(Icons.notification_add),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: ListTile(
-                        title: const Text('Inviare notifica?',
-                            style: TextStyle(fontSize: 20)),
-                        trailing: Switch(
-                          value: modifiedNotification,
-                          onChanged: (bool value) {
+                  if(_isEditing)...[
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      const Icon(Icons.notification_add),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: ListTile(
+                          title: const Text('Inviare notifica?',
+                              style: TextStyle(fontSize: 20)),
+                          trailing: Switch(
+                            value: modifiedNotification,
+                            onChanged: (bool value) {
+                              setState(() {
+                                modifiedNotification = value;
+                              });
+                            },
+                          ),
+                          onTap: () {
                             setState(() {
-                              modifiedNotification = value;
+                              modifiedNotification = !modifiedNotification;
                             });
                           },
                         ),
-                        onTap: () {
-                          setState(() {
-                            modifiedNotification = !modifiedNotification;
-                          });
-                        },
                       ),
-                    ),
-                  ]),
+                    ]),
+                  ],
                 ],
                 if (widget.selectedOption == 'evento') ...[
                   const SizedBox(height: 20),
