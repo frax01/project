@@ -3,7 +3,7 @@ import 'package:club/pages/club/homePage.dart';
 import 'package:club/pages/club/profilePage.dart';
 import 'package:club/pages/club/torneoPage.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'info.dart';
 import 'calendar.dart';
 import 'lunch.dart';
@@ -48,12 +48,11 @@ class _ClubPageState extends State<ClubPage> {
     _selectedIndex = widget.selectedIndex;
 
     _widgetOptions = <Widget>[
-      //PopScope(
-      //  onPopInvoked: (_) {
-      //    SystemNavigator.pop();
-      //  },
-      //  child: 
-      HomePage(
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
+        child: HomePage(
           club: widget.club,
           selectedClass: widget.classes,
           section: section.toLowerCase(),
@@ -61,13 +60,12 @@ class _ClubPageState extends State<ClubPage> {
           name: '${widget.name} ${widget.surname}',
           role: widget.role,
         ),
-      //),
-      //PopScope(
-      //  onPopInvoked: (_) {
-      //    SystemNavigator.pop();
-      //  },
-      //  child: 
-      Calendar(
+      ),
+      PopScope(
+        onPopInvoked: (_) {
+          SystemNavigator.pop();
+        },
+        child: Calendar(
           isAdmin: widget.status,
           club: widget.club,
           name: '${widget.name} ${widget.surname}',
@@ -75,26 +73,24 @@ class _ClubPageState extends State<ClubPage> {
           selectedClass: widget.classes,
           role: widget.role
         ),
-      //),
+      ),
       if (widget.club == 'Tiber Club')
-        //PopScope(
-        //  onPopInvoked: (_) {
-        //    SystemNavigator.pop();
-        //  },
-        //  child: 
-        TabScorer(
+        PopScope(
+          onPopInvoked: (_) {
+            SystemNavigator.pop();
+          },
+          child: TabScorer(
             isAdmin: widget.status,
           ),
-        //),
+        ),
       if (widget.club == 'Delta Club')
-        //PopScope(
-        //  onPopInvoked: (_) {
-        //    SystemNavigator.pop();
-        //  },
-        //  child: 
-        Lunch(
+        PopScope(
+          onPopInvoked: (_) {
+            SystemNavigator.pop();
+          },
+          child: Lunch(
               isAdmin: widget.status, name: '${widget.name} ${widget.surname}', role: widget.role, club: widget.club, classes: widget.classes),
-        //),
+        ),
     ];
   }
 
