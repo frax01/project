@@ -43,46 +43,51 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
 
-  Widget startWidget;
-  if (prefs.getString('email') != null &&
-      prefs.getString('email')!.isNotEmpty) {
-    QueryDocumentSnapshot value =
-        await data('user', 'email', prefs.getString('email'));
+  //Widget startWidget;
+  //if (prefs.getString('email') != null &&
+  //    prefs.getString('email')!.isNotEmpty) {
+  //  QueryDocumentSnapshot value =
+  //      await data('user', 'email', prefs.getString('email'));
+//
+  //  String name = value['name'];
+  //  String surname = value['surname'];
+  //  String email = value['email'];
+  //  List classes = value['club_class'];
+  //  bool status = value['status'] == 'Admin' ? true : false;
+  //  String token = value['token'];
+  //  String role = value['role'];
+  //  String id = value.id;
+//
+  //  startWidget = ClubPage(
+  //    classes: classes,
+  //    club: club,
+  //    status: status,
+  //    id: id,
+  //    name: name,
+  //    surname: surname,
+  //    email: email,
+  //    role: role,
+  //  );
+  //} else {
+  //  startWidget = const Login();
+  //}
 
-    String name = value['name'];
-    String surname = value['surname'];
-    String email = value['email'];
-    List classes = value['club_class'];
-    bool status = value['status'] == 'Admin' ? true : false;
-    String token = value['token'];
-    String role = value['role'];
-    String id = value.id;
-
-    startWidget = ClubPage(
-      classes: classes,
-      club: club,
-      status: status,
-      id: id,
-      name: name,
-      surname: surname,
-      email: email,
-      role: role,
-    );
-  } else {
-    startWidget = const Login();
-  }
-
-  runApp(MyApp(club: club, startWidget: startWidget));
+  runApp(MyApp(
+    club: club,
+  )); // startWidget: startWidget));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.club, required this.startWidget});
+  const MyApp({
+    super.key,
+    required this.club,
+  }); // required this.startWidget});
 
   final String club;
-  final Widget startWidget;
+  //final Widget startWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +124,7 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.light,
-      home: startWidget,
+      home: const Login(),
       initialRoute: '/home',
       routes: {
         '/home': (context) => HomePage(club: club),
