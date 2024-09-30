@@ -120,7 +120,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.light,
       home: startWidget,
-      //initialRoute: '/home',
+      initialRoute: '/home',
       routes: {
         '/home': (context) => HomePage(club: club),
         '/login': (context) => const Login(),
