@@ -26,7 +26,12 @@ class Lunch extends StatefulWidget {
 class _LunchState extends State<Lunch> {
   Future<List<Map<String, dynamic>>> _fetchMeals() async {
     try {
-      final querySnapshot = widget.isAdmin? await FirebaseFirestore.instance.collection('pasti').get() : await FirebaseFirestore.instance.collection('pasti').where('classi', arrayContainsAny: widget.classes).get();
+      final querySnapshot = widget.isAdmin
+          ? await FirebaseFirestore.instance.collection('pasti').get()
+          : await FirebaseFirestore.instance
+              .collection('pasti')
+              .where('classi', arrayContainsAny: widget.classes)
+              .get();
 
       if (querySnapshot.docs.isEmpty) {
         return [];
@@ -400,12 +405,6 @@ class _LunchState extends State<Lunch> {
     );
   }
 
-  final List<String> options = [
-    'Le tue classi',
-    'Tutti i pranzi',
-  ];
-  List<String> selectedOptions = ['Le tue classi'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -569,8 +568,7 @@ class _LunchState extends State<Lunch> {
                               ),
                               ListTile(
                                 title: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
                                       'Classi:',

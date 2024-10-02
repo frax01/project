@@ -79,9 +79,9 @@ class _EventPageState extends State<EventPage> {
             TextButton(
               onPressed: () async {
                 final FirebaseFirestore firestore = FirebaseFirestore.instance;
+                Navigator.pop(context);
+                Navigator.pop(context);
                 await firestore.collection('calendario').doc(id).delete();
-                Navigator.pop(context);
-                Navigator.pop(context);
               },
               child: const Text('Elimina'),
             ),

@@ -138,7 +138,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('user')
         .where('role', isEqualTo: 'Tutor')
-        .where('club', isEqualTo: 'Tiber Club')
+        .where('club', isEqualTo: widget.club)
         .get();
 
     for (var doc in querySnapshot.docs) {
