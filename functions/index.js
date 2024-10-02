@@ -67,12 +67,12 @@ exports.openDefaultMeals = functions.pubsub.schedule('every saturday 08:00').tim
     return null;
 });
 
-exports.createMondayLunch = functions.pubsub.schedule('every tuesday 09:07').timeZone('Europe/Rome').onRun(async (context) => {
+exports.createMondayLunch = functions.pubsub.schedule('every tuesday 00:01').timeZone('Europe/Rome').onRun(async (context) => {
     try {
         const today = new Date();
         const nextMondayDate = addDays(today, 6);
-        const formattedDate = format(nextMondayDate, 'dd MMM yyyy', { locale: it }).toUpperCase();
-        const formattedAppuntamento = format(nextMondayDate, 'dd-MM-yyyy');
+        const formattedAppuntamento = format(nextMondayDate, 'dd-MM-yyyy', { locale: it }).toUpperCase();
+        const formattedDate = format(nextMondayDate, 'dd', { locale: it });
 
         const existingDocs = await admin.firestore().collection('pasti').where('default', '==', true).get();
         if (!existingDocs.empty) {
@@ -93,6 +93,7 @@ exports.createMondayLunch = functions.pubsub.schedule('every tuesday 09:07').tim
             'default': true,
             'status': 'chiuso',
             'modificato': false,
+            'classi': ['1° liceo', '2° liceo']
         });
         console.log('Documento creato correttamente con data:', formattedDate);
     } catch (error) {
@@ -241,7 +242,7 @@ async function fetchTokensBirthday(elem) {
     return tokens
 }
 
-async function sendNotification(token, section, name, filter, id, focused, role) {
+async function sendNotification(token, section, name, filter, id, focused) {
 
     let accessToken;
     try {
@@ -260,7 +261,7 @@ async function sendNotification(token, section, name, filter, id, focused, role)
     let category = '';
     let notTitle = '';
     let message = '';
-    let role = '';
+    //let role = '';
 
     if(section=='birthday' && filter=='broadcast') {
         docId = '';
@@ -268,21 +269,21 @@ async function sendNotification(token, section, name, filter, id, focused, role)
         category = section;
         notTitle = `Oggi è il compleanno di ${name}`;
         message = 'Fagli gli auguri!';
-        role = '';
+        //role = '';
     } else if(section=='birthday' && filter=='personale') {
         docId = '';
         selectedOption = '';
         category = section;
         notTitle = `Buon compleanno!`;
         message = 'Festeggia al Tiber!';
-        role = '';
+        //role = '';
     } else {
         docId = id;
         selectedOption = '';
         category = section;
         notTitle = `Oggi: ${name}`;
         message = 'Ricordati di partecipare!';
-        role = '';
+        //role = '';
     }
 
     if(section=='birthday') {
@@ -295,7 +296,7 @@ async function sendNotification(token, section, name, filter, id, focused, role)
             category: category.toString(),
             notTitle: notTitle.toString(),
             notBody: message.toString(),
-            role: role.toString(),
+            //role: role.toString(),
         };
     } else if(section=='evento') {
         data = {
@@ -308,7 +309,7 @@ async function sendNotification(token, section, name, filter, id, focused, role)
             category: category.toString(),
             notTitle: notTitle.toString(),
             notBody: message.toString(),
-            role: role.toString(),
+            //role: role.toString(),
         };
     }
 
