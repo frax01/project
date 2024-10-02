@@ -581,6 +581,9 @@ class _ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
+    //return PopScope(
+    //canPop: false,
+    //child: 
     return Scaffold(
       appBar: AppBar(
         title: widget.selectedOption == 'weekend'

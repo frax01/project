@@ -96,7 +96,9 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+    canPop: false,
+    child: Scaffold(
       appBar: AppBar(
           title: widget.club == 'Delta Club'
               ? const Text('Centro Delta')
@@ -171,6 +173,6 @@ class _ClubPageState extends State<ClubPage> {
           ],
         ],
       ),
-    );
+    ));
   }
 }

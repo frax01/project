@@ -43,51 +43,62 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
 
-  //Widget startWidget;
-  //if (prefs.getString('email') != null &&
-  //    prefs.getString('email')!.isNotEmpty) {
-  //  QueryDocumentSnapshot value =
-  //      await data('user', 'email', prefs.getString('email'));
-//
-  //  String name = value['name'];
-  //  String surname = value['surname'];
-  //  String email = value['email'];
-  //  List classes = value['club_class'];
-  //  bool status = value['status'] == 'Admin' ? true : false;
-  //  String token = value['token'];
-  //  String role = value['role'];
-  //  String id = value.id;
-//
-  //  startWidget = ClubPage(
-  //    classes: classes,
-  //    club: club,
-  //    status: status,
-  //    id: id,
-  //    name: name,
-  //    surname: surname,
-  //    email: email,
-  //    role: role,
-  //  );
-  //} else {
-  //  startWidget = const Login();
-  //}
-
   runApp(MyApp(
     club: club,
-    ));//startWidget: startWidget));
+    ));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-  const MyApp({
+   MyApp({
     super.key,
     required this.club,
-    });//required this.startWidget});
+    });
 
   final String club;
-  //final Widget startWidget;
+  Widget startWidget = Container();
+
+  Future<void> fetchPage() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+  String club = prefs.getString('club') ?? '';
+
+  if (prefs.getString('email') != null &&
+      prefs.getString('email')!.isNotEmpty) {
+    QueryDocumentSnapshot value =
+        await data('user', 'email', prefs.getString('email'));
+
+    String name = value['name'];
+    String surname = value['surname'];
+    String email = value['email'];
+    List classes = value['club_class'];
+    bool status = value['status'] == 'Admin' ? true : false;
+    String role = value['role'];
+    String id = value.id;
+
+    startWidget =
+      ClubPage(
+      classes: classes,
+      club: club,
+      status: status,
+      id: id,
+      name: name,
+      surname: surname,
+      email: email,
+      role: role,
+    );
+  } else {
+    startWidget = const Login();
+  }
+  
+  }
+
+  @override
+  void initState() {
+    fetchPage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +135,7 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.light,
-      home: const Login(),
+      home: startWidget,
       initialRoute: '/home',
       routes: {
         '/home': (context) => HomePage(club: club),
@@ -182,6 +193,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> retrieveData() async {
+    print("1");
     QueryDocumentSnapshot value = await data('user', 'email', email);
 
     name = value['name'];
@@ -402,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           const Text(
-                              'Si è verificato un errore nel recupero dei dati!'),
+                              'Si è verificato un errore nel recupero dei dati'),
                           const SizedBox(height: 20.0),
                           ElevatedButton(
                             onPressed: () {
