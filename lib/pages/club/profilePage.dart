@@ -148,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void restartApp(BuildContext context, String club) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club,)),// startWidget: const Login(),)),
+      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club, )),//startWidget: const Login(),)),
           (Route<dynamic> route) => false,
     );
   }

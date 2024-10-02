@@ -74,7 +74,7 @@ void main() async {
 
   runApp(MyApp(
     club: club,
-  )); // startWidget: startWidget));
+    ));//startWidget: startWidget));
 }
 
 @pragma('vm:entry-point')
@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
     required this.club,
-  }); // required this.startWidget});
+    });//required this.startWidget});
 
   final String club;
   //final Widget startWidget;
