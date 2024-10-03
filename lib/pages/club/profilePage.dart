@@ -140,7 +140,6 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
     if (confirm == true) {
-      print("email: ${_currentUser}");
       _logout(_currentUser!.email!);
     }
   }
@@ -148,7 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void restartApp(BuildContext context, String club) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club, )),//startWidget: const Login(),)),
+      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club, )),
           (Route<dynamic> route) => false,
     );
   }

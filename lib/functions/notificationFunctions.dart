@@ -7,7 +7,8 @@ Future<void> sendNotification(
     List fcmToken, String notTitle, String message, String category,
     {String? docId, String? selectedOption, String? role}) async {
   const String serverKey = Config.serverKey;
-  const String fcmUrl = 'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
+  const String fcmUrl =
+      'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
@@ -57,7 +58,8 @@ Future<void> sendNotification(
 
 Future<String> _generateAccessToken() async {
   final response = await http.post(
-    Uri.parse('https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken'),
+    Uri.parse(
+        'https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken'),
     headers: <String, String>{
       'Content-Type': 'application/json',
     },
@@ -71,7 +73,8 @@ Future<String> _generateAccessToken() async {
   }
 }
 
-Future<List<String>> fetchToken(String section, String target, String club) async {
+Future<List<String>> fetchToken(
+    String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -88,12 +91,14 @@ Future<List<String>> fetchToken(String section, String target, String club) asyn
     }
     return tokens;
   } catch (e) {
-    print('Errore durante l\'accesso a Firestore per il recupero dei token: $e');
+    print(
+        'Errore durante l\'accesso a Firestore per il recupero dei token: $e');
     return [];
   }
 }
 
-Future<List<String>> retrieveToken(String section, String target, String club) async {
+Future<List<String>> retrieveToken(
+    String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -110,7 +115,8 @@ Future<List<String>> retrieveToken(String section, String target, String club) a
     }
     return tokens;
   } catch (e) {
-    print('Errore durante l\'accesso a Firestore per il recupero dei token: $e');
+    print(
+        'Errore durante l\'accesso a Firestore per il recupero dei token: $e');
     return [];
   }
 }

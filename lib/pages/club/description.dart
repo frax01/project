@@ -530,7 +530,23 @@ class _DeltaState extends State<Delta> {
                     context: context,
                     tiles: [
                       ListTile(
-                        leading: const Icon(Icons.schedule_outlined),
+                        leading: const Icon(Icons.create),
+                        title: const AutoSizeText(
+                          'Modulo d\'iscrizione',
+                          style: TextStyle(fontSize: 18.0),
+                          maxLines: 1,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
+                        onTap: () {
+                          FlutterWebBrowser.openWebPage(
+                            url: 'https://docs.google.com/forms/d/e/1FAIpQLSfrT5ejlm58fmgqIAxRZDcWlSFpPvSx6N6gBp7qbczHR-ZV6Q/viewform?usp=sf_link'
+                          );
+                        }
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.schedule),
                         title: const AutoSizeText(
                           'Programma dettagliato',
                           style: TextStyle(fontSize: 18.0),
@@ -558,27 +574,6 @@ class _DeltaState extends State<Delta> {
                         onTap: () {
                           FlutterWebBrowser.openWebPage(
                             url: 'https://bit.ly/m/centrodelta'
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.mail_outline),
-                        title: const AutoSizeText(
-                          'staff@centrodelta.it',
-                          style: TextStyle(fontSize: 18.0),
-                          maxLines: 1,
-                          minFontSize: 10,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                        onTap: () {
-                          final Uri params = Uri(
-                            scheme: 'mailto',
-                            path: 'staff@centrodelta.it', 
-                          );
-                          String url = params.toString();
-                          FlutterWebBrowser.openWebPage(
-                            url: url
                           );
                         },
                       ),

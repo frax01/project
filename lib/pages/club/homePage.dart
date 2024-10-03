@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   _loadItems() async {
+    refreshList();
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip']) {
       if (widget.isAdmin && selectedOptions[0] == 'Tutti i programmi') {

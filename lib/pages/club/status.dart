@@ -72,7 +72,7 @@ class _StatusState extends State<Status> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$role, $status',
+                        status,
                         style: const TextStyle(
                           fontSize: 18,
                         ),

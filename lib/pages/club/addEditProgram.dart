@@ -78,7 +78,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '2° liceo',
     '3° liceo',
     '4° liceo',
-    '5° liceo'
+    '5° liceo',
+    //'6° liceo'
   ];
   List<String> selectedClasses = [];
 
@@ -699,7 +700,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           };
         }
       }
-      
+
       if (modifiedNotification) {
         List<String> token = [];
         for (String value in selectedClasses) {
@@ -711,11 +712,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
             }
           }
         }
-        sendNotification(
-            token,
-            'Programma modificato!',
-            newDocument['title'] ?? widget.document!['title'],
-            'modified_event',
+        sendNotification(token, 'Programma modificato!',
+            newDocument['title'] ?? widget.document!['title'], 'modified_event',
             docId: widget.document!['id'],
             selectedOption: widget.selectedOption,
             role: widget.role);
@@ -991,7 +989,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       ),
                     ),
                   ]),
-                  if(_isEditing)...[
+                  if (_isEditing) ...[
                     const SizedBox(height: 20),
                     Row(children: [
                       const Icon(Icons.notification_add),
