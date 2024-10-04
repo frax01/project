@@ -502,7 +502,7 @@ class _LunchState extends State<Lunch> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      if (meal['status'] == 'aperto')
+                                      if (meal['status'] == 'aperto' && widget.role != 'Genitore')
                                         IconButton(
                                           onPressed: () =>
                                               _toggleReservation(meal),

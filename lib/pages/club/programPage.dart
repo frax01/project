@@ -21,6 +21,7 @@ class ProgramPage extends StatefulWidget {
     required this.name,
     required this.role,
     this.refreshList,
+    required this.classes,
   });
 
   final String club;
@@ -30,6 +31,7 @@ class ProgramPage extends StatefulWidget {
   final Function? refreshList;
   final String name;
   final String role;
+  final List classes;
 
   @override
   State<ProgramPage> createState() => _ProgramPageState();
@@ -458,7 +460,7 @@ class _ProgramPageState extends State<ProgramPage> {
     if (url == null || url.isEmpty) {
       return;
     }
-    
+
     try {
       await FlutterWebBrowser.openWebPage(url: url);
     } catch (e) {
@@ -546,6 +548,39 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+  Future<void> _toggleReservationFood() async {
+    print("1");
+    if (_data.containsKey('prenotazionePranzo')) {
+      List<dynamic> prenotazioni = _data['prenotazionePranzo'];
+      List<dynamic> assenze = _data['assenzaPranzo'];
+      if (prenotazioni.contains(widget.name)) {
+        prenotazioni.remove(widget.name);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Presenza cancellata')));
+      } else {
+        if (assenze.contains(widget.name)) {
+          prenotazioni.add(widget.name);
+          assenze.remove(widget.name);
+        } else {
+          prenotazioni.add(widget.name);
+        }
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Presenza confermata')));
+      }
+
+      await FirebaseFirestore.instance
+          .collection('club_${widget.selectedOption}')
+          .doc(widget.documentId)
+          .update(
+              {'prenotazionePranzo': prenotazioni, 'assenzaPranzo': assenze});
+
+      setState(() {
+        _data['prenotazionePranzo'] = prenotazioni;
+        _data['assenzaPranzo'] = assenze;
+      });
+    }
+  }
+
   Future<void> _toggleAbsence() async {
     if (_data.containsKey('assenze')) {
       List<dynamic> assenze = _data['assenze'];
@@ -577,13 +612,45 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+  Future<void> _toggleAbsenceFood() async {
+    if (_data.containsKey('assenzaPranzo')) {
+      List<dynamic> assenze = _data['assenzaPranzo'];
+      List<dynamic> prenotazioni = _data['prenotazionePranzo'];
+      if (assenze.contains(widget.name)) {
+        assenze.remove(widget.name);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Assenza cancellata')));
+      } else {
+        if (prenotazioni.contains(widget.name)) {
+          assenze.add(widget.name);
+          prenotazioni.remove(widget.name);
+        } else {
+          assenze.add(widget.name);
+        }
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Assenza confermata')));
+      }
+
+      await FirebaseFirestore.instance
+          .collection('club_${widget.selectedOption}')
+          .doc(widget.documentId)
+          .update(
+              {'prenotazionePranzo': prenotazioni, 'assenzaPranzo': assenze});
+
+      setState(() {
+        _data['prenotazionePranzo'] = prenotazioni;
+        _data['assenzaPranzo'] = assenze;
+      });
+    }
+  }
+
   bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     //return PopScope(
     //canPop: false,
-    //child: 
+    //child:
     return Scaffold(
       appBar: AppBar(
         title: widget.selectedOption == 'weekend'
@@ -613,13 +680,15 @@ class _ProgramPageState extends State<ProgramPage> {
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddEditProgram(
-                            club: widget.club,
-                            selectedOption: _data['selectedOption'],
-                            document: _data,
-                            refreshList: widget.refreshList,
-                            refreshProgram: refreshProgram,
-                            name: widget.name,
-                            role: widget.role)));
+                              club: widget.club,
+                              selectedOption: _data['selectedOption'],
+                              document: _data,
+                              refreshList: widget.refreshList,
+                              refreshProgram: refreshProgram,
+                              name: widget.name,
+                              role: widget.role,
+                              classes: widget.classes,
+                            )));
                   },
                   icon: const Icon(
                     Icons.edit,
@@ -671,84 +740,118 @@ class _ProgramPageState extends State<ProgramPage> {
                           ),
                           if (_data.containsKey('prenotazioni') &&
                               _data.containsKey('assenze'))
-                            SizedBox(
-                              height: 175,
-                              child: Stack(
-                                children: [
-                                  Positioned(
-                                    top: 10,
-                                    right: 80,
-                                    child: InkWell(
-                                      onTap: _toggleReservation,
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Container(
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 7,
-                                              offset: const Offset(0, 3),
+                            ((widget.club == 'Delta Club' &&
+                                        (_data['selectedOption'] == 'trip' &&
+                                            widget.role == 'Ragazzo' &&
+                                            !_data['selectedClass'].any(
+                                                (className) => [
+                                                      '3° liceo',
+                                                      '4° liceo',
+                                                      '5° liceo'
+                                                    ].contains(className)) &&
+                                            _data['selectedClass'].any((className) => [
+                                                  '1° liceo',
+                                                  '2° liceo'
+                                                ].contains(className)))) ||
+                                    ((widget.club == 'Delta Club' &&
+                                        _data['selectedOption'] == 'weekend' &&
+                                        widget.role == 'Genitore')))
+                                ? Container()
+                                : (widget.club == 'Tiber Club' &&
+                                        _data['selectedOption'] == 'weekend' &&
+                                        widget.role == 'Genitore' &&
+                                        !_data['selectedClass'].any((className) => [
+                                              '1° media',
+                                              '2° media',
+                                              '3° media'
+                                            ].contains(className)))
+                                    ? Container()
+                                    : SizedBox(
+                                        height: 175,
+                                        child: Stack(
+                                          children: [
+                                            Positioned(
+                                              top: 10,
+                                              right: 80,
+                                              child: InkWell(
+                                                onTap: _toggleReservation,
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                child: Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.5),
+                                                        spreadRadius: 2,
+                                                        blurRadius: 7,
+                                                        offset:
+                                                            const Offset(0, 3),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Icon(
+                                                    _data['prenotazioni']
+                                                            .contains(
+                                                                widget.name)
+                                                        ? Icons.check
+                                                        : Icons.check_outlined,
+                                                    color: _data['prenotazioni']
+                                                            .contains(
+                                                                widget.name)
+                                                        ? Colors.green
+                                                        : Colors.black,
+                                                    size: 30,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 10,
+                                              right: 10,
+                                              child: InkWell(
+                                                onTap: _toggleAbsence,
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                child: Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.5),
+                                                        spreadRadius: 2,
+                                                        blurRadius: 7,
+                                                        offset:
+                                                            const Offset(0, 3),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Icon(
+                                                    _data['assenze'].contains(
+                                                            widget.name)
+                                                        ? Icons.close
+                                                        : Icons.close_outlined,
+                                                    color: _data['assenze']
+                                                            .contains(
+                                                                widget.name)
+                                                        ? Colors.red
+                                                        : Colors.black,
+                                                    size: 30,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
-                                        child: Icon(
-                                          _data['prenotazioni']
-                                                  .contains(widget.name)
-                                              ? Icons.check
-                                              : Icons.check_outlined,
-                                          color: _data['prenotazioni']
-                                                  .contains(widget.name)
-                                              ? Colors.green
-                                              : Colors.black,
-                                          size: 30,
-                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: InkWell(
-                                      onTap: _toggleAbsence,
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Container(
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 2,
-                                              blurRadius: 7,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          _data['assenze'].contains(widget.name)
-                                              ? Icons.close
-                                              : Icons.close_outlined,
-                                          color: _data['assenze']
-                                                  .contains(widget.name)
-                                              ? Colors.red
-                                              : Colors.black,
-                                          size: 30,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           Positioned(
                             bottom: -25,
                             left: 15,
@@ -876,7 +979,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                             const Text(
                                               'Dove',
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 15,
                                                 color: Colors.grey,
                                               ),
                                             ),
@@ -910,7 +1013,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                             const Text(
                                               'Descrizione',
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 15,
                                                 color: Colors.grey,
                                               ),
                                             ),
@@ -926,6 +1029,78 @@ class _ProgramPageState extends State<ProgramPage> {
                                     ),
                                   ])
                                 : Container(),
+                            if (_data.containsKey('pasto'))
+                              Column(children: [
+                                const SizedBox(height: 20.0),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                          child: ListTile(
+                                        leading: const Icon(Icons.fastfood,
+                                            size: 35),
+                                        title: const AutoSizeText(
+                                            "Conferma pranzo/cena",
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black54
+                                            ),
+                                            maxLines: 1,
+                                            minFontSize: 13,
+                                            overflow: TextOverflow.ellipsis,
+                                        ),
+                                        subtitle: AutoSizeText(
+                                          _data['pasto'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 25,
+                                          ),
+                                          maxLines: 1,
+                                          minFontSize: 18,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )),
+                                      Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            IconButton(
+                                              onPressed: _toggleReservationFood,
+                                              icon: Icon(
+                                                _data['prenotazionePranzo']
+                                                        .contains(widget.name)
+                                                    ? Icons.check_circle
+                                                    : Icons
+                                                        .check_circle_outline,
+                                                color:
+                                                    _data['prenotazionePranzo']
+                                                            .contains(
+                                                                widget.name)
+                                                        ? Colors.green
+                                                        : Colors.black,
+                                                size: 30,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed: _toggleAbsenceFood,
+                                              icon: Icon(
+                                                _data['assenzaPranzo']
+                                                        .contains(widget.name)
+                                                    ? Icons.close
+                                                    : Icons.close_outlined,
+                                                color:
+                                                    _data['assenzaPranzo']
+                                                            .contains(
+                                                                widget.name)
+                                                        ? Colors.red
+                                                        : Colors.black,
+                                                size: 30,
+                                              ),
+                                            ),
+                                          ])
+                                    ])
+                              ]),
                             if (_data.containsKey('prenotazioni') &&
                                 widget.role != 'Genitore')
                               Column(
@@ -998,8 +1173,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                     style: const TextStyle(
                                         fontSize: 15, color: Colors.black54),
                                   ),
-                                ])
-                            ),
+                                ])),
                           ],
                         ),
                       ),

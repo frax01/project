@@ -193,7 +193,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> retrieveData() async {
-    print("1");
     QueryDocumentSnapshot value = await data('user', 'email', email);
 
     name = value['name'];
@@ -272,7 +271,8 @@ class _HomePageState extends State<HomePage> {
                   selectedOption: message.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: message.data['role'])));
+                  role: message.data['role'],
+                  classes: classes)));
     } else if (message.data['category'] == 'modified_event') {
       await retrieveData();
       Navigator.push(
@@ -284,7 +284,8 @@ class _HomePageState extends State<HomePage> {
                   selectedOption: message.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: message.data['role'])));
+                  role: message.data['role'],
+                  classes: classes)));
     } else if (message.data['category'] == 'birthday') {
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (context) => buildClubPage(club, 1)));
@@ -300,7 +301,8 @@ class _HomePageState extends State<HomePage> {
                   isAdmin: status,
                   name: name,
                   selectedDay: focusedDay,
-                  role: role)));
+                  role: role,
+                  classes: classes,)));
     }
   }
 
@@ -323,7 +325,8 @@ class _HomePageState extends State<HomePage> {
                   selectedOption: initialMessage?.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: initialMessage?.data['role'])));
+                  role: initialMessage?.data['role'],
+                  classes: classes)));
     } else if (initialMessage?.data['category'] == 'modified_event') {
       Navigator.push(
           context,
@@ -334,7 +337,8 @@ class _HomePageState extends State<HomePage> {
                   selectedOption: initialMessage?.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: initialMessage?.data['role'])));
+                  role: initialMessage?.data['role'],
+                  classes: classes)));
     } else if (initialMessage?.data['category'] == 'birthday') {
       return buildClubPage(club, 1);
     } else if (initialMessage?.data['category'] == 'evento') {
@@ -349,7 +353,8 @@ class _HomePageState extends State<HomePage> {
                   isAdmin: status,
                   name: name,
                   selectedDay: focusedDay,
-                  role: role)));
+                  role: role,
+                  classes: classes,)));
       return buildClubPage(club, 1);
     }
     return buildClubPage(club, 0);

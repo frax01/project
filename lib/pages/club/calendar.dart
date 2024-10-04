@@ -544,7 +544,8 @@ class _CalendarState extends State<Calendar> {
                                                   isAdmin: widget.isAdmin,
                                                   name: widget.name,
                                                   selectedDay: _selectedDay,
-                                                  role: widget.role)));
+                                                  role: widget.role,
+                                                  classes: widget.selectedClass,)));
                                       await _loadEvents();
                                     }
                                   : event['tipo'] == 'programma'
@@ -563,7 +564,8 @@ class _CalendarState extends State<Calendar> {
                                                           refreshList:
                                                               refreshList,
                                                           name: widget.name,
-                                                          role: widget.role)));
+                                                          role: widget.role,
+                                                          classes: widget.selectedClass,)));
                                           await _loadEvents();
                                         }
                                       : event['tipo'] == 'convivenza'
@@ -583,7 +585,8 @@ class _CalendarState extends State<Calendar> {
                                                                   refreshList,
                                                               name: widget
                                                                   .name,
-                                                                  role: widget.role)));
+                                                                  role: widget.role,
+                                                                  classes: widget.selectedClass,)));
                                               await _loadEvents();
                                             }
                                           : null,
@@ -620,7 +623,8 @@ class _CalendarState extends State<Calendar> {
                             selectedOption: 'weekend',
                             name: widget.name,
                             selectedDay: _selectedDay,
-                            role: widget.role)));
+                            role: widget.role,
+                            classes: widget.selectedClass,)));
                     await _loadEvents();
                   },
                 ),
@@ -635,7 +639,8 @@ class _CalendarState extends State<Calendar> {
                             selectedOption: 'trip',
                             name: widget.name,
                             selectedDay: _selectedDay,
-                            role: widget.role)));
+                            role: widget.role,
+                            classes: widget.selectedClass,)));
                     await _loadEvents();
                   },
                 ),
@@ -651,7 +656,8 @@ class _CalendarState extends State<Calendar> {
                             name: widget.name,
                             selectedDay: _selectedDay,
                             visibility: _selectedTutors,
-                            role: widget.role)));
+                            role: widget.role,
+                            classes: widget.selectedClass,)));
                     await _loadEvents();
                   },
                 ),

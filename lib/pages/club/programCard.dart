@@ -231,6 +231,7 @@ class _ProgramCardState extends State<ProgramCard> {
             refreshList: widget.refreshList,
             name: widget.user,
             role: widget.role,
+            classes: widget.selectedClass,
           );
         },
       ),

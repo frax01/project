@@ -10,6 +10,7 @@ import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import 'visibility.dart';
 import 'programPage.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class AddEditProgram extends StatefulWidget {
   const AddEditProgram(
@@ -22,7 +23,8 @@ class AddEditProgram extends StatefulWidget {
       required this.name,
       this.selectedDay,
       this.visibility,
-      required this.role});
+      required this.role,
+      required this.classes});
 
   final String club;
   final Function? refreshList;
@@ -33,6 +35,7 @@ class AddEditProgram extends StatefulWidget {
   final selectedDay;
   final Map<String, bool>? visibility;
   final String role;
+  final List classes;
 
   @override
   _AddEditProgramState createState() => _AddEditProgramState();
@@ -52,6 +55,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
+
+  final timeController = TextEditingController();
 
   final Map<String, bool> _visibility = {};
   List selected = [];
@@ -79,11 +84,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '3° liceo',
     '4° liceo',
     '5° liceo',
-    //'6° liceo'
+    '6° liceo'
   ];
   List<String> selectedClasses = [];
-
   bool modifiedNotification = false;
+  String time = '';
 
   @override
   void initState() {
@@ -124,6 +129,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
         selectedClasses = List<String>.from(widget.document!['selectedClass']);
         reservations =
             widget.document!.containsKey('prenotazioni') ? true : false;
+        food = widget.document!.containsKey('pasto') ? true : false;
+        timeController.text = widget.document!.containsKey('pasto')
+            ? widget.document!['pasto']
+            : '';
+        print("time: ${timeController.text}");
       }
     } else {
       final String formattedDate =
@@ -493,54 +503,113 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         Map<String, dynamic> document = {};
+
         if (reservations) {
-          document = {
-            'title': _programNameController.text,
-            'selectedOption': widget.selectedOption,
-            'imagePath': _image,
-            'selectedClass': selectedClasses.sorted((a, b) {
-              if (a.contains('media') && b.contains('liceo')) {
-                return -1;
-              } else if (a.contains('liceo') && b.contains('media')) {
-                return 1;
-              } else {
-                return a.compareTo(b);
-              }
-            }),
-            'description': _programDescriptionController.text,
-            'startDate': _startDateController.text,
-            'endDate': _endDateController.text,
-            'address': _address,
-            'lat': _latitude,
-            'lon': _longitude,
-            'creator': widget.name,
-            'club': widget.club,
-            'prenotazioni': [],
-            'assenze': [],
-          };
+          if (food) {
+            document = {
+              'title': _programNameController.text,
+              'selectedOption': widget.selectedOption,
+              'imagePath': _image,
+              'selectedClass': selectedClasses.sorted((a, b) {
+                if (a.contains('media') && b.contains('liceo')) {
+                  return -1;
+                } else if (a.contains('liceo') && b.contains('media')) {
+                  return 1;
+                } else {
+                  return a.compareTo(b);
+                }
+              }),
+              'description': _programDescriptionController.text,
+              'startDate': _startDateController.text,
+              'endDate': _endDateController.text,
+              'address': _address,
+              'lat': _latitude,
+              'lon': _longitude,
+              'creator': widget.name,
+              'club': widget.club,
+              'prenotazioni': [],
+              'assenze': [],
+              'pasto': timeController.text,
+              'prenotazionePranzo': [],
+              'assenzaPranzo': [],
+            };
+          } else {
+            document = {
+              'title': _programNameController.text,
+              'selectedOption': widget.selectedOption,
+              'imagePath': _image,
+              'selectedClass': selectedClasses.sorted((a, b) {
+                if (a.contains('media') && b.contains('liceo')) {
+                  return -1;
+                } else if (a.contains('liceo') && b.contains('media')) {
+                  return 1;
+                } else {
+                  return a.compareTo(b);
+                }
+              }),
+              'description': _programDescriptionController.text,
+              'startDate': _startDateController.text,
+              'endDate': _endDateController.text,
+              'address': _address,
+              'lat': _latitude,
+              'lon': _longitude,
+              'creator': widget.name,
+              'club': widget.club,
+              'prenotazioni': [],
+              'assenze': [],
+            };
+          }
         } else {
-          document = {
-            'title': _programNameController.text,
-            'selectedOption': widget.selectedOption,
-            'imagePath': _image,
-            'selectedClass': selectedClasses.sorted((a, b) {
-              if (a.contains('media') && b.contains('liceo')) {
-                return -1;
-              } else if (a.contains('liceo') && b.contains('media')) {
-                return 1;
-              } else {
-                return a.compareTo(b);
-              }
-            }),
-            'description': _programDescriptionController.text,
-            'startDate': _startDateController.text,
-            'endDate': _endDateController.text,
-            'address': _address,
-            'lat': _latitude,
-            'lon': _longitude,
-            'creator': widget.name,
-            'club': widget.club
-          };
+          if (food) {
+            document = {
+              'title': _programNameController.text,
+              'selectedOption': widget.selectedOption,
+              'imagePath': _image,
+              'selectedClass': selectedClasses.sorted((a, b) {
+                if (a.contains('media') && b.contains('liceo')) {
+                  return -1;
+                } else if (a.contains('liceo') && b.contains('media')) {
+                  return 1;
+                } else {
+                  return a.compareTo(b);
+                }
+              }),
+              'description': _programDescriptionController.text,
+              'startDate': _startDateController.text,
+              'endDate': _endDateController.text,
+              'address': _address,
+              'lat': _latitude,
+              'lon': _longitude,
+              'creator': widget.name,
+              'club': widget.club,
+              'pasto': timeController.text,
+              'prenotazionePranzo': [],
+              'assenzaPranzo': [],
+            };
+          } else {
+            document = {
+              'title': _programNameController.text,
+              'selectedOption': widget.selectedOption,
+              'imagePath': _image,
+              'selectedClass': selectedClasses.sorted((a, b) {
+                if (a.contains('media') && b.contains('liceo')) {
+                  return -1;
+                } else if (a.contains('liceo') && b.contains('media')) {
+                  return 1;
+                } else {
+                  return a.compareTo(b);
+                }
+              }),
+              'description': _programDescriptionController.text,
+              'startDate': _startDateController.text,
+              'endDate': _endDateController.text,
+              'address': _address,
+              'lat': _latitude,
+              'lon': _longitude,
+              'creator': widget.name,
+              'club': widget.club,
+            };
+          }
         }
 
         var doc = await firestore
@@ -569,13 +638,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
         widget.refreshList!();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => ProgramPage(
-                club: widget.club,
-                documentId: doc.id,
-                selectedOption: widget.selectedOption ?? '',
-                isAdmin: true,
-                refreshList: widget.refreshList,
-                name: widget.name,
-                role: widget.role)));
+                  club: widget.club,
+                  documentId: doc.id,
+                  selectedOption: widget.selectedOption ?? '',
+                  isAdmin: true,
+                  refreshList: widget.refreshList,
+                  name: widget.name,
+                  role: widget.role,
+                  classes: widget.classes,
+                )));
       } catch (e) {
         setState(() {
           _isLoadingCreation = false;
@@ -618,6 +689,44 @@ class _AddEditProgramState extends State<AddEditProgram> {
     } else {
       Map<Object, Object?> newDocument = {};
       if (reservations) {
+        //if(food) {
+        //  newDocument = {
+        //    'id': widget.document!['id'],
+        //    'title': _programNameController.text,
+        //    'selectedOption': widget.selectedOption,
+        //    'imagePath': _image,
+        //    'selectedClass': selectedClasses.sorted((a, b) {
+        //      if (a.contains('media') && b.contains('liceo')) {
+        //        return -1;
+        //      } else if (a.contains('liceo') && b.contains('media')) {
+        //        return 1;
+        //      } else {
+        //        return a.compareTo(b);
+        //      }
+        //    }),
+        //    'description': _programDescriptionController.text,
+        //    'startDate': _startDateController.text,
+        //    'endDate': _endDateController.text,
+        //    'address': _address,
+        //    'lat': _latitude,
+        //    'lon': _longitude,
+        //    'creator': widget.name,
+        //    'club': widget.club,
+        //    'prenotazioni': widget.document!.containsKey('prenotazioni')
+        //        ? widget.document!['prenotazioni']
+        //        : [],
+        //    'assenze': widget.document!.containsKey('assenze')
+        //        ? widget.document!['assenze']
+        //        : [],
+        //    'pasto': timeController.text,
+        //    'prenotazionePranzo': widget.document!.containsKey('prenotazionePranzo')
+        //        ? widget.document!['prenotazionePranzo']
+        //        : [],
+        //    'assenzaPranzo': widget.document!.containsKey('assenzaPranzo')
+        //        ? widget.document!['assenzaPranzo']
+        //        : [],
+        //  };
+        //} else {
         newDocument = {
           'id': widget.document!['id'],
           'title': _programNameController.text,
@@ -647,8 +756,39 @@ class _AddEditProgramState extends State<AddEditProgram> {
               ? widget.document!['assenze']
               : [],
         };
+        //}
       } else {
         if (widget.document!.containsKey('prenotazioni')) {
+          //if(widget.document!.containsKey('prenotazionePranzo')) {
+          //  newDocument = {
+          //  'id': widget.document!['id'],
+          //  'title': _programNameController.text,
+          //  'selectedOption': widget.selectedOption,
+          //  'imagePath': _image,
+          //  'selectedClass': selectedClasses.sorted((a, b) {
+          //    if (a.contains('media') && b.contains('liceo')) {
+          //      return -1;
+          //    } else if (a.contains('liceo') && b.contains('media')) {
+          //      return 1;
+          //    } else {
+          //      return a.compareTo(b);
+          //    }
+          //  }),
+          //  'description': _programDescriptionController.text,
+          //  'startDate': _startDateController.text,
+          //  'endDate': _endDateController.text,
+          //  'address': _address,
+          //  'lat': _latitude,
+          //  'lon': _longitude,
+          //  'creator': widget.name,
+          //  'club': widget.club,
+          //  'prenotazioni': FieldValue.delete(),
+          //  'assenze': FieldValue.delete(),
+          //  'pasto': FieldValue.delete(),
+          //  'prenotazionePranzo': FieldValue.delete(),
+          //  'assenzaPranzo': FieldValue.delete(),
+          //};
+          //} else {
           newDocument = {
             'id': widget.document!['id'],
             'title': _programNameController.text,
@@ -674,7 +814,36 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'prenotazioni': FieldValue.delete(),
             'assenze': FieldValue.delete(),
           };
+          //}
         } else {
+          //if(widget.document!.containsKey('prenotazionePranzo')) {
+          //  newDocument = {
+          //    'id': widget.document!['id'],
+          //    'title': _programNameController.text,
+          //    'selectedOption': widget.selectedOption,
+          //    'imagePath': _image,
+          //    'selectedClass': selectedClasses.sorted((a, b) {
+          //      if (a.contains('media') && b.contains('liceo')) {
+          //        return -1;
+          //      } else if (a.contains('liceo') && b.contains('media')) {
+          //        return 1;
+          //      } else {
+          //        return a.compareTo(b);
+          //      }
+          //    }),
+          //    'description': _programDescriptionController.text,
+          //    'startDate': _startDateController.text,
+          //    'endDate': _endDateController.text,
+          //    'address': _address,
+          //    'lat': _latitude,
+          //    'lon': _longitude,
+          //    'creator': widget.name,
+          //    'club': widget.club,
+          //    'pasto': FieldValue.delete(),
+          //    'prenotazionePranzo': FieldValue.delete(),
+          //    'assenzaPranzo': FieldValue.delete(),
+          //  };
+          //} else {
           newDocument = {
             'id': widget.document!['id'],
             'title': _programNameController.text,
@@ -698,6 +867,25 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'creator': widget.name,
             'club': widget.club,
           };
+          //}
+        }
+      }
+
+      if (food) {
+        newDocument['pasto'] = timeController.text;
+        newDocument['prenotazionePranzo'] =
+            widget.document!.containsKey('prenotazionePranzo')
+                ? widget.document!['prenotazionePranzo']
+                : [];
+        newDocument['assenzaPranzo'] =
+            widget.document!.containsKey('assenzaPranzo')
+                ? widget.document!['assenzaPranzo']
+                : [];
+      } else {
+        if (widget.document!.containsKey('prenotazionePranzo')) {
+          newDocument['pasto'] = FieldValue.delete();
+          newDocument['prenotazionePranzo'] = FieldValue.delete();
+          newDocument['assenzaPranzo'] = FieldValue.delete();
         }
       }
 
@@ -759,6 +947,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     _endTimeFocusNode.unfocus();
     _startDateFocusNode.unfocus();
     _endDateFocusNode.unfocus();
+    _timeFocusNode.unfocus();
   }
 
   @override
@@ -770,10 +959,15 @@ class _AddEditProgramState extends State<AddEditProgram> {
     _endTimeFocusNode.dispose();
     _startDateFocusNode.dispose();
     _endDateFocusNode.dispose();
+    _timeFocusNode.dispose();
     super.dispose();
   }
 
   bool reservations = false;
+  bool food = false;
+
+  TimeOfDay? selectedTime;
+  final FocusNode _timeFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -989,14 +1183,71 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       ),
                     ),
                   ]),
+                  if (widget.selectedOption == 'weekend') ...[
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      const Icon(Icons.fastfood),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: ListTile(
+                          title: const Text('Crea pasto',
+                              style: TextStyle(fontSize: 20)),
+                          trailing: Switch(
+                            value: food,
+                            onChanged: (bool value) {
+                              setState(() {
+                                food = value;
+                                if (food == false) {
+                                  timeController.text = '';
+                                }
+                              });
+                            },
+                          ),
+                          onTap: () {
+                            setState(() {
+                              food = !food;
+                            });
+                          },
+                        ),
+                      ),
+                    ]),
+                  ],
+                  if (food) ...[
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Ora'),
+                      readOnly: true,
+                      controller: timeController,
+                      focusNode: _timeFocusNode,
+                      onTap: () async {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        _unfocusAll();
+                        if (pickedTime != null) {
+                          setState(() {
+                            selectedTime = pickedTime;
+                            timeController.text = selectedTime!.format(context);
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Seleziona un orario';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   if (_isEditing) ...[
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Row(children: [
                       const Icon(Icons.notification_add),
                       const SizedBox(width: 5),
                       Expanded(
                         child: ListTile(
-                          title: const Text('Inviare notifica?',
+                          title: const Text('Inviare notifica',
                               style: TextStyle(fontSize: 20)),
                           trailing: Switch(
                             value: modifiedNotification,

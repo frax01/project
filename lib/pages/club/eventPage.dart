@@ -18,7 +18,8 @@ class EventPage extends StatefulWidget {
       required this.isAdmin,
       required this.name,
       required this.selectedDay,
-      required this.role});
+      required this.role,
+      required this.classes});
 
   final String club;
   final String documentId;
@@ -26,6 +27,7 @@ class EventPage extends StatefulWidget {
   final String name;
   final DateTime selectedDay;
   final String role;
+  final List classes;
 
   @override
   State<EventPage> createState() => _EventPageState();
@@ -46,7 +48,7 @@ class _EventPageState extends State<EventPage> {
           .collection('user')
           .where('email', isEqualTo: userEmail)
           .get();
-          
+
       for (var doc in value.docs) {
         var data = doc.data() as Map<String, dynamic>;
         _users.add('${data['name']} ${data['surname']}');
@@ -408,9 +410,7 @@ class _EventPageState extends State<EventPage> {
       return;
     }
 
-    FlutterWebBrowser.openWebPage(
-      url: url
-    );
+    FlutterWebBrowser.openWebPage(url: url);
   }
 
   void _showDeleteConfirmationDialog(Map<String, dynamic> fileData) {
@@ -518,13 +518,15 @@ class _EventPageState extends State<EventPage> {
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => AddEditProgram(
-                                club: widget.club,
-                                selectedOption: 'evento',
-                                document: _event,
-                                refreshProgram: refreshProgram,
-                                name: widget.name,
-                                selectedDay: widget.selectedDay,
-                                role: widget.role)));
+                                  club: widget.club,
+                                  selectedOption: 'evento',
+                                  document: _event,
+                                  refreshProgram: refreshProgram,
+                                  name: widget.name,
+                                  selectedDay: widget.selectedDay,
+                                  role: widget.role,
+                                  classes: widget.classes,
+                                )));
                       },
                     ),
                     PopupMenuItem(
@@ -626,10 +628,8 @@ class _EventPageState extends State<EventPage> {
                             ),
                             const SizedBox(height: 20.0),
                             ExpansionTile(
-                              title: Text(
-                                  'Partecipanti (${_users.length})',
-                                  style: const TextStyle(fontSize: 20)
-                                  ),
+                              title: Text('Partecipanti (${_users.length})',
+                                  style: const TextStyle(fontSize: 20)),
                               shape: const RoundedRectangleBorder(
                                 side: BorderSide.none,
                               ),
@@ -638,14 +638,13 @@ class _EventPageState extends State<EventPage> {
                                       .map<Widget>((name) => ListTile(
                                               title: Text(
                                             name,
-                                            style: const TextStyle(
-                                                fontSize: 18),
+                                            style:
+                                                const TextStyle(fontSize: 18),
                                           )))
                                       .toList()
                                   : [
                                       const ListTile(
-                                          title: Text(
-                                              'Nessuna prenotazione'))
+                                          title: Text('Nessuna prenotazione'))
                                     ],
                             ),
                             const SizedBox(height: 20.0),
