@@ -84,7 +84,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '3° liceo',
     '4° liceo',
     '5° liceo',
-    '6° liceo'
+    //'6° liceo'
   ];
   List<String> selectedClasses = [];
   bool modifiedNotification = false;

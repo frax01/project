@@ -108,14 +108,14 @@ class _ProgramPageState extends State<ProgramPage> {
         weather["image"] != "") {
       return Row(
         children: [
-          Image.network(weather["image"], width: 50, height: 50),
+          Image.network(weather["image"], width:60, height: 60),
           const SizedBox(width: 10),
           Column(
             children: [
               Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red)),
+                  style: const TextStyle(color: Colors.red, fontSize: 17)),
               Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue)),
+                  style: const TextStyle(color: Colors.blue, fontSize: 17)),
             ],
           ),
         ],
@@ -126,9 +126,9 @@ class _ProgramPageState extends State<ProgramPage> {
           Column(
             children: [
               Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red)),
+                  style: const TextStyle(color: Colors.red, fontSize: 17)),
               Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue)),
+                  style: const TextStyle(color: Colors.blue, fontSize: 17)),
             ],
           ),
         ],
@@ -549,7 +549,6 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Future<void> _toggleReservationFood() async {
-    print("1");
     if (_data.containsKey('prenotazionePranzo')) {
       List<dynamic> prenotazioni = _data['prenotazionePranzo'];
       List<dynamic> assenze = _data['assenzaPranzo'];
@@ -648,9 +647,6 @@ class _ProgramPageState extends State<ProgramPage> {
 
   @override
   Widget build(BuildContext context) {
-    //return PopScope(
-    //canPop: false,
-    //child:
     return Scaffold(
       appBar: AppBar(
         title: widget.selectedOption == 'weekend'
@@ -723,325 +719,239 @@ class _ProgramPageState extends State<ProgramPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
+                      Card(
+                        clipBehavior: Clip.antiAlias,
+                        elevation: 10,
+                        child: SizedBox(
+                          height: 175,
+                          width: double.infinity,
+                          child: Image.network(
+                            _data['imagePath'],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5.0),
+                      ListTile(
+                        title: AutoSizeText(
+                          _data['title'],
+                          style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          minFontSize: 18,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Row(
+                          children: [
+                            Expanded(
+                              child: AutoSizeText(
+                                _data['selectedClass'].join(', '),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                                maxLines: 2,
+                                minFontSize: 15,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
                         children: [
-                          Card(
-                            clipBehavior: Clip.antiAlias,
-                            elevation: 10,
-                            child: SizedBox(
-                              height: 175,
-                              width: double.infinity,
-                              child: Image.network(
-                                _data['imagePath'],
-                                fit: BoxFit.cover,
+                          Expanded(
+                            child: ListTile(
+                              leading: const Icon(Icons.location_on, size: 30,),
+                              title: const Text('Dove', style: TextStyle(color: Colors.black54)),
+                              subtitle: AutoSizeText(
+                                _data['address'],
+                                style: const TextStyle(fontSize: 20.0),
+                                maxLines: 2,
+                                minFontSize: 10,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
-                          if (_data.containsKey('prenotazioni') &&
-                              _data.containsKey('assenze'))
-                            ((widget.club == 'Delta Club' &&
-                                        (_data['selectedOption'] == 'trip' &&
-                                            widget.role == 'Ragazzo' &&
-                                            !_data['selectedClass'].any(
-                                                (className) => [
-                                                      '3° liceo',
-                                                      '4° liceo',
-                                                      '5° liceo'
-                                                    ].contains(className)) &&
-                                            _data['selectedClass'].any((className) => [
-                                                  '1° liceo',
-                                                  '2° liceo'
-                                                ].contains(className)))) ||
-                                    ((widget.club == 'Delta Club' &&
-                                        _data['selectedOption'] == 'weekend' &&
-                                        widget.role == 'Genitore')))
-                                ? Container()
-                                : (widget.club == 'Tiber Club' &&
-                                        _data['selectedOption'] == 'weekend' &&
-                                        widget.role == 'Genitore' &&
-                                        !_data['selectedClass'].any((className) => [
-                                              '1° media',
-                                              '2° media',
-                                              '3° media'
-                                            ].contains(className)))
-                                    ? Container()
-                                    : SizedBox(
-                                        height: 175,
-                                        child: Stack(
-                                          children: [
-                                            Positioned(
-                                              top: 10,
-                                              right: 80,
-                                              child: InkWell(
-                                                onTap: _toggleReservation,
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                                child: Container(
-                                                  width: 50,
-                                                  height: 50,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.5),
-                                                        spreadRadius: 2,
-                                                        blurRadius: 7,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Icon(
-                                                    _data['prenotazioni']
-                                                            .contains(
-                                                                widget.name)
-                                                        ? Icons.check
-                                                        : Icons.check_outlined,
-                                                    color: _data['prenotazioni']
-                                                            .contains(
-                                                                widget.name)
-                                                        ? Colors.green
-                                                        : Colors.black,
-                                                    size: 30,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 10,
-                                              right: 10,
-                                              child: InkWell(
-                                                onTap: _toggleAbsence,
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                                child: Container(
-                                                  width: 50,
-                                                  height: 50,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    shape: BoxShape.circle,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.5),
-                                                        spreadRadius: 2,
-                                                        blurRadius: 7,
-                                                        offset:
-                                                            const Offset(0, 3),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Icon(
-                                                    _data['assenze'].contains(
-                                                            widget.name)
-                                                        ? Icons.close
-                                                        : Icons.close_outlined,
-                                                    color: _data['assenze']
-                                                            .contains(
-                                                                widget.name)
-                                                        ? Colors.red
-                                                        : Colors.black,
-                                                    size: 30,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                          Positioned(
-                            bottom: -25,
-                            left: 15,
-                            right: 15,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width - 30,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                      child: Center(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 2,
-                                            blurRadius: 7,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            10, 5, 10, 5),
-                                        child: AutoSizeText(
-                                          _data['title'],
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 30,
-                                          ),
-                                          maxFontSize: 30,
-                                          minFontSize: 20,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                  )),
-                                ],
-                              ),
-                            ),
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: weatherTile(_weather),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 30.0),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                      children: List<Widget>.generate(
-                                          _data['selectedClass'].length,
-                                          (index) {
-                                    String classValue = _data['selectedClass']
-                                            [index]
-                                        .toString();
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.5),
-                                            spreadRadius: 1,
-                                            blurRadius: 2,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 5),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(classValue),
-                                      ),
-                                    );
-                                  })),
-                                )),
-                                const SizedBox(width: 15),
-                                Chip(
-                                  label: Text(
-                                    _data['endDate'].isNotEmpty
-                                        ? '${convertDateFormat(_data['startDate'])} ~ ${convertDateFormat(_data['endDate'])}'
-                                        : convertDateFormat(_data['startDate']),
-                                  ),
-                                  labelStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold),
-                                  labelPadding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                  ),
-                                  backgroundColor: Colors.white,
-                                ),
-                              ],
+                      ListTile(
+                        leading: const Icon(Icons.timelapse, size: 30,),
+                        title: const Text('Quando', style: TextStyle(color: Colors.black54)),
+                        subtitle: AutoSizeText(
+                          _data['endDate'].isNotEmpty
+                              ? '${convertDateFormat(_data['startDate'])} - ${convertDateFormat(_data['endDate'])}'
+                              : convertDateFormat(_data['startDate']),
+                          style: const TextStyle(fontSize: 20.0),
+                          maxLines: 2,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      _data['description'] != '' ? 
+                      ListTile(
+                        title: const Text('Descrizione', style: TextStyle(color: Colors.black54)),
+                        subtitle: Text(
+                          _data['description'],
+                          style: const TextStyle(fontSize: 20.0),
+                        ),
+                      ) : Container(),
+                      //programma
+                      if (_data.containsKey('prenotazioni') && _data.containsKey('assenze'))
+                        ((widget.club == 'Delta Club' && (_data['selectedOption'] == 'trip' && widget.role == 'Ragazzo' && !_data['selectedClass'].any( (className) => ['3° liceo', '4° liceo', '5° liceo'].contains(className)) && _data['selectedClass'].any((className) => ['1° liceo', '2° liceo'].contains(className)))) || ((widget.club == 'Delta Club' && _data['selectedOption'] == 'weekend' && widget.role == 'Genitore'))) ? Container() 
+                        : (widget.club == 'Tiber Club' && _data['selectedOption'] == 'weekend' && widget.role == 'Genitore' && !_data['selectedClass'].any((className) => ['1° media', '2° media', '3° media'].contains(className))) ? Container()
+                        : Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            const SizedBox(height: 20.0),
-                            Card(
-                                surfaceTintColor: Colors.white,
-                                elevation: 5,
-                                margin: const EdgeInsets.all(0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                          child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                            const Text(
-                                              'Dove',
+                            padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                            margin: const EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
+                            child: Column(
+                              children: [
+                                Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: ListTile(
+                                            leading: const Icon(Icons.calendar_month_outlined, size: 35),
+                                            title: const AutoSizeText(
+                                              "Conferma",
                                               style: TextStyle(
-                                                fontSize: 15,
-                                                color: Colors.grey,
+                                                  fontSize: 15,
+                                                  color: Colors.black54
                                               ),
-                                            ),
-                                            const SizedBox(height: 15),
-                                            Text(
-                                              _data['address'],
-                                              style:
-                                                  const TextStyle(fontSize: 15),
+                                              maxLines: 1,
+                                              minFontSize: 13,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                          ])),
-                                      const SizedBox(width: 10),
-                                      weatherTile(_weather),
-                                    ],
-                                  ),
-                                )),
-                            _data['description'] != ''
-                                ? Column(children: [
-                                    const SizedBox(height: 20.0),
-                                    Card(
-                                      surfaceTintColor: Colors.white,
-                                      elevation: 5,
-                                      margin: const EdgeInsets.all(0),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                            subtitle: AutoSizeText(
+                                              widget.selectedOption == 'weekend' ? 'Programma' : 'Convivenza',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 25,
+                                              ),
+                                              maxLines: 1,
+                                              minFontSize: 18,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          )
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            const Text(
-                                              'Descrizione',
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                color: Colors.grey,
+                                            IconButton(
+                                              onPressed: _toggleReservation,
+                                              icon: Icon(_data['prenotazioni'].contains(widget.name) 
+                                                ? Icons.check_circle
+                                                : Icons.check_circle_outline,
+                                                color: _data['prenotazioni'].contains(widget.name) 
+                                                ? Colors.green
+                                                : Colors.black,
+                                                size: 30,
                                               ),
                                             ),
-                                            const SizedBox(height: 15),
-                                            Text(
-                                              _data['description'],
-                                              style:
-                                                  const TextStyle(fontSize: 17),
+                                            IconButton(
+                                              onPressed: _toggleAbsence,
+                                              icon: Icon(_data['assenze'].contains(widget.name)
+                                                ? Icons.close
+                                                : Icons.close_outlined,
+                                                color: _data['assenze'].contains(widget.name)
+                                                ? Colors.red
+                                                : Colors.black,
+                                                size: 30,
+                                              ),
                                             ),
-                                          ],
+                                          ]
                                         ),
+                                      ]
+                                    )
+                                  ]
+                                ),
+                                //prenotazioni programma
+                                if (_data.containsKey('prenotazioni') && widget.role != 'Genitore')
+                                  Column(
+                                    children: [
+                                      ExpansionTile(
+                                        title: AutoSizeText('Presenti (${_data['prenotazioni'].length}) - Assenti (${_data['assenze'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,),
+                                        children: [
+                                          const ListTile(
+                                            title: AutoSizeText(
+                                              'Presenti',
+                                              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (_data['prenotazioni'].isNotEmpty)
+                                            ..._data['prenotazioni']
+                                              .map<Widget>((name) => ListTile(
+                                                    title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                                  ))
+                                              .toList()
+                                          else
+                                            const ListTile(
+                                              title: AutoSizeText('Nessuna prenotazione', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                            ),
+                                          const Divider(),
+                                          const ListTile(
+                                            title: AutoSizeText(
+                                              'Assenti',
+                                              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (_data['assenze'].isNotEmpty)
+                                            ..._data['assenze']
+                                                .map<Widget>((name) => ListTile(
+                                                      title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                                    ))
+                                                .toList()
+                                          else
+                                            const ListTile(
+                                              title: AutoSizeText('Nessuna assenza', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                            ),
+                                        ],
                                       ),
-                                    ),
-                                  ])
-                                : Container(),
-                            if (_data.containsKey('pasto'))
+                                    ],
+                                  ),
+                                if (_data.containsKey('prenotazioni') && widget.role == 'Genitore')
+                                  Column(
+                                    children: [
+                                      const SizedBox(height: 20.0),
+                                      AutoSizeText('Prenotazioni (${_data['prenotazioni'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 20.0),
+                                    ],
+                                  ),
+                              ],
+                            )
+                        ),
+                        //pranzo
+                        if (_data.containsKey('pasto'))
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                            margin: const EdgeInsets.fromLTRB(0, 10.0, 0, 10.0),
+                            child:
+                            Column(children: [
                               Column(children: [
-                                const SizedBox(height: 20.0),
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                Column(children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
-                                          child: ListTile(
-                                        leading: const Icon(Icons.fastfood,
-                                            size: 35),
-                                        title: const AutoSizeText(
-                                            "Conferma pranzo/cena",
+                                        child: ListTile(
+                                          leading: const Icon(Icons.fastfood, size: 35),
+                                          title: const AutoSizeText(
+                                            "Pranzo/Cena",
                                             style: TextStyle(
                                                 fontSize: 15,
                                                 color: Colors.black54
@@ -1049,134 +959,123 @@ class _ProgramPageState extends State<ProgramPage> {
                                             maxLines: 1,
                                             minFontSize: 13,
                                             overflow: TextOverflow.ellipsis,
-                                        ),
-                                        subtitle: AutoSizeText(
-                                          _data['pasto'],
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 25,
                                           ),
-                                          maxLines: 1,
-                                          minFontSize: 18,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      )),
+                                          subtitle: AutoSizeText(
+                                            _data['pasto'],
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 25,
+                                            ),
+                                            maxLines: 1,
+                                            minFontSize: 18,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        )
+                                      ),
                                       Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            IconButton(
-                                              onPressed: _toggleReservationFood,
-                                              icon: Icon(
-                                                _data['prenotazionePranzo']
-                                                        .contains(widget.name)
-                                                    ? Icons.check_circle
-                                                    : Icons
-                                                        .check_circle_outline,
-                                                color:
-                                                    _data['prenotazionePranzo']
-                                                            .contains(
-                                                                widget.name)
-                                                        ? Colors.green
-                                                        : Colors.black,
-                                                size: 30,
-                                              ),
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            onPressed: _toggleReservationFood,
+                                            icon: Icon(_data['prenotazionePranzo'].contains(widget.name)
+                                              ? Icons.check_circle
+                                              : Icons.check_circle_outline,
+                                              color: _data['prenotazionePranzo'].contains(widget.name)
+                                              ? Colors.green
+                                              : Colors.black,
+                                              size: 30,
                                             ),
-                                            IconButton(
-                                              onPressed: _toggleAbsenceFood,
-                                              icon: Icon(
-                                                _data['assenzaPranzo']
-                                                        .contains(widget.name)
-                                                    ? Icons.close
-                                                    : Icons.close_outlined,
-                                                color:
-                                                    _data['assenzaPranzo']
-                                                            .contains(
-                                                                widget.name)
-                                                        ? Colors.red
-                                                        : Colors.black,
-                                                size: 30,
-                                              ),
+                                          ),
+                                          IconButton(
+                                            onPressed: _toggleAbsenceFood,
+                                            icon: Icon(_data['assenzaPranzo'].contains(widget.name)
+                                              ? Icons.close
+                                              : Icons.close_outlined,
+                                              color: _data['assenzaPranzo'].contains(widget.name)
+                                              ? Colors.red
+                                              : Colors.black,
+                                              size: 30,
                                             ),
-                                          ])
-                                    ])
-                              ]),
-                            if (_data.containsKey('prenotazioni') &&
-                                widget.role != 'Genitore')
-                              Column(
-                                children: [
-                                  const SizedBox(height: 20.0),
-                                  ExpansionTile(
-                                    title: Text(
-                                        'Prenotati (${_data['prenotazioni'].length})'),
-                                    leading:
-                                        const Icon(Icons.check_circle_outline),
-                                    children: _data['prenotazioni'].isNotEmpty
-                                        ? _data['prenotazioni']
+                                          ),
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]
+                              ),
+                              //prenotazioni pranzo
+                              if (_data.containsKey('prenotazionePranzo') && widget.role != 'Genitore')
+                                Column(
+                                  children: [
+                                    ExpansionTile(
+                                      title: AutoSizeText('Presenti (${_data['prenotazionePranzo'].length}) - Assenti (${_data['assenzaPranzo'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                      children: [
+                                        const ListTile(
+                                          title: AutoSizeText(
+                                            'Presenti', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                          ),
+                                        if (_data['prenotazionePranzo'].isNotEmpty)
+                                          ..._data['prenotazionePranzo']
                                             .map<Widget>((name) => ListTile(
-                                                  title: Text(name),
+                                                  title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
                                                 ))
                                             .toList()
-                                        : [
-                                            const ListTile(
-                                              title:
-                                                  Text('Nessuna prenotazione'),
-                                            ),
-                                          ],
-                                  ),
-                                  const SizedBox(height: 15.0),
-                                  ExpansionTile(
-                                    title: Text(
-                                        'Assenti (${_data['assenze'].length})'),
-                                    leading:
-                                        const Icon(Icons.check_circle_outline),
-                                    children: _data['assenze'].isNotEmpty
-                                        ? _data['assenze']
+                                        else
+                                          const ListTile(
+                                            title: AutoSizeText('Nessuna prenotazione', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                          ),
+                                        const Divider(),
+                                        const ListTile(
+                                          title: AutoSizeText(
+                                            'Assenti', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                        ),
+                                        if (_data['assenzaPranzo'].isNotEmpty)
+                                          ..._data['assenzaPranzo']
                                             .map<Widget>((name) => ListTile(
-                                                  title: Text(name),
+                                                  title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
                                                 ))
                                             .toList()
-                                        : [
-                                            const ListTile(
-                                              title: Text('Nessuna assenza'),
-                                            ),
-                                          ],
-                                  ),
-                                ],
-                              ),
-                            if (_data.containsKey('prenotazioni') &&
-                                widget.role == 'Genitore')
-                              Column(
-                                children: [
-                                  const SizedBox(height: 20.0),
-                                  Text(
-                                      'Prenotazioni (${_data['prenotazioni'].length})',
-                                      style: const TextStyle(fontSize: 20)),
-                                ],
-                              ),
-                            if (_data.containsKey('file'))
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 20.0),
-                                  for (var fileData in _data['file'])
-                                    buildFileLinkButton(fileData),
-                                  const SizedBox(height: 10.0),
-                                ],
-                              ),
-                            Center(
-                                child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                  Text(
-                                    'Creato da ${_data['creator']}',
-                                    style: const TextStyle(
-                                        fontSize: 15, color: Colors.black54),
-                                  ),
-                                ])),
-                          ],
-                        ),
-                      ),
+                                        else
+                                          const ListTile(
+                                            title: AutoSizeText('Nessuna assenza', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              if (_data.containsKey('prenotazionePranzo') && widget.role == 'Genitore')
+                                Column(
+                                  children: [
+                                    const SizedBox(height: 20.0),
+                                    AutoSizeText('Prenotazioni (${_data['prenotazionePranzo'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                    const SizedBox(height: 20.0),
+                                  ],
+                                ),
+                              ])
+                            ])
+                          ),
+                          if (_data.containsKey('file'))
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 10.0),
+                                for (var fileData in _data['file'])
+                                  buildFileLinkButton(fileData),
+                                const SizedBox(height: 10.0),
+                              ],
+                            ),
+                          Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Creato da ${_data['creator']}',
+                                  style: const TextStyle(
+                                      fontSize: 15, color: Colors.black54),
+                                ),
+                              ]
+                            )
+                          ),
                     ],
                   ),
                 ),
@@ -1186,15 +1085,15 @@ class _ProgramPageState extends State<ProgramPage> {
         ),
       ),
       floatingActionButton: widget.isAdmin
-          ? FloatingActionButton(
-              onPressed: () async {
-                _showAddLinkFileDialog(context);
-              },
-              shape: const CircleBorder(),
-              backgroundColor: Colors.white,
-              child: const Icon(Icons.upload, color: Colors.black),
-            )
-          : null,
+        ? FloatingActionButton(
+            onPressed: () async {
+              _showAddLinkFileDialog(context);
+            },
+            shape: const CircleBorder(),
+            backgroundColor: Colors.white,
+            child: const Icon(Icons.upload, color: Colors.black),
+          )
+        : null,
     );
   }
 }
