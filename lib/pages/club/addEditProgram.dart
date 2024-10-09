@@ -76,7 +76,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '2° liceo',
     '3° liceo',
     '4° liceo',
-    '5° liceo'
+    '5° liceo',
+    //'6° liceo'
   ];
   final List<String> deltaClassOptions = [
     '1° liceo',

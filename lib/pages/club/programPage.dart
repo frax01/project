@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProgramPage extends StatefulWidget {
   const ProgramPage({
@@ -41,6 +42,7 @@ class _ProgramPageState extends State<ProgramPage> {
   Map<String, dynamic> _data = {};
   Map<String, dynamic> _weather = {};
   Map<String, dynamic> _event = {};
+  String newRole = '';
 
   Future<void> _loadData() async {
     var doc = await FirebaseFirestore.instance
@@ -52,6 +54,21 @@ class _ProgramPageState extends State<ProgramPage> {
         _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
     if (!_data.containsKey('file')) {
       _data['file'] = [];
+    }
+
+    if (widget.role == '') {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String email = prefs.getString('email') ?? '';
+      var docUser = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: email)
+          .get();
+      var userDoc = docUser.docs.isNotEmpty ? docUser.docs.first : null;
+      if (userDoc != null) {
+        newRole = userDoc.data()['role'];
+      } else {
+        print("Nessun utente trovato con l'email: $email");
+      }
     }
   }
 
@@ -108,7 +125,7 @@ class _ProgramPageState extends State<ProgramPage> {
         weather["image"] != "") {
       return Row(
         children: [
-          Image.network(weather["image"], width:60, height: 60),
+          Image.network(weather["image"], width: 60, height: 60),
           const SizedBox(width: 10),
           Column(
             children: [
@@ -736,8 +753,8 @@ class _ProgramPageState extends State<ProgramPage> {
                         title: AutoSizeText(
                           _data['title'],
                           style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           minFontSize: 18,
@@ -763,8 +780,12 @@ class _ProgramPageState extends State<ProgramPage> {
                         children: [
                           Expanded(
                             child: ListTile(
-                              leading: const Icon(Icons.location_on, size: 30,),
-                              title: const Text('Dove', style: TextStyle(color: Colors.black54)),
+                              leading: const Icon(
+                                Icons.location_on,
+                                size: 30,
+                              ),
+                              title: const Text('Dove',
+                                  style: TextStyle(color: Colors.black54)),
                               subtitle: AutoSizeText(
                                 _data['address'],
                                 style: const TextStyle(fontSize: 20.0),
@@ -782,8 +803,12 @@ class _ProgramPageState extends State<ProgramPage> {
                         ],
                       ),
                       ListTile(
-                        leading: const Icon(Icons.timelapse, size: 30,),
-                        title: const Text('Quando', style: TextStyle(color: Colors.black54)),
+                        leading: const Icon(
+                          Icons.timelapse,
+                          size: 30,
+                        ),
+                        title: const Text('Quando',
+                            style: TextStyle(color: Colors.black54)),
                         subtitle: AutoSizeText(
                           _data['endDate'].isNotEmpty
                               ? '${convertDateFormat(_data['startDate'])} - ${convertDateFormat(_data['endDate'])}'
@@ -794,168 +819,289 @@ class _ProgramPageState extends State<ProgramPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      _data['description'] != '' ? 
-                      ListTile(
-                        title: const Text('Descrizione', style: TextStyle(color: Colors.black54)),
-                        subtitle: Text(
-                          _data['description'],
-                          style: const TextStyle(fontSize: 20.0),
-                        ),
-                      ) : Container(),
-                      //programma
-                      if (_data.containsKey('prenotazioni') && _data.containsKey('assenze'))
-                        ((widget.club == 'Delta Club' && (_data['selectedOption'] == 'trip' && widget.role == 'Ragazzo' && !_data['selectedClass'].any( (className) => ['3° liceo', '4° liceo', '5° liceo'].contains(className)) && _data['selectedClass'].any((className) => ['1° liceo', '2° liceo'].contains(className)))) || ((widget.club == 'Delta Club' && _data['selectedOption'] == 'weekend' && widget.role == 'Genitore'))) ? Container() 
-                        : (widget.club == 'Tiber Club' && _data['selectedOption'] == 'weekend' && widget.role == 'Genitore' && !_data['selectedClass'].any((className) => ['1° media', '2° media', '3° media'].contains(className))) ? Container()
-                        : Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
-                            margin: const EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
-                            child: Column(
-                              children: [
-                                Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: ListTile(
-                                            leading: const Icon(Icons.calendar_month_outlined, size: 35),
-                                            title: const AutoSizeText(
-                                              "Conferma",
-                                              style: TextStyle(
-                                                  fontSize: 15,
-                                                  color: Colors.black54
-                                              ),
-                                              maxLines: 1,
-                                              minFontSize: 13,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            subtitle: AutoSizeText(
-                                              widget.selectedOption == 'weekend' ? 'Programma' : 'Convivenza',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 25,
-                                              ),
-                                              maxLines: 1,
-                                              minFontSize: 18,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          )
-                                        ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            IconButton(
-                                              onPressed: _toggleReservation,
-                                              icon: Icon(_data['prenotazioni'].contains(widget.name) 
-                                                ? Icons.check_circle
-                                                : Icons.check_circle_outline,
-                                                color: _data['prenotazioni'].contains(widget.name) 
-                                                ? Colors.green
-                                                : Colors.black,
-                                                size: 30,
-                                              ),
-                                            ),
-                                            IconButton(
-                                              onPressed: _toggleAbsence,
-                                              icon: Icon(_data['assenze'].contains(widget.name)
-                                                ? Icons.close
-                                                : Icons.close_outlined,
-                                                color: _data['assenze'].contains(widget.name)
-                                                ? Colors.red
-                                                : Colors.black,
-                                                size: 30,
-                                              ),
-                                            ),
-                                          ]
-                                        ),
-                                      ]
-                                    )
-                                  ]
-                                ),
-                                //prenotazioni programma
-                                if (_data.containsKey('prenotazioni') && widget.role != 'Genitore')
-                                  Column(
-                                    children: [
-                                      ExpansionTile(
-                                        title: AutoSizeText('Presenti (${_data['prenotazioni'].length}) - Assenti (${_data['assenze'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,),
-                                        children: [
-                                          const ListTile(
-                                            title: AutoSizeText(
-                                              'Presenti',
-                                              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (_data['prenotazioni'].isNotEmpty)
-                                            ..._data['prenotazioni']
-                                              .map<Widget>((name) => ListTile(
-                                                    title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                                  ))
-                                              .toList()
-                                          else
-                                            const ListTile(
-                                              title: AutoSizeText('Nessuna prenotazione', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                            ),
-                                          const Divider(),
-                                          const ListTile(
-                                            title: AutoSizeText(
-                                              'Assenti',
-                                              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (_data['assenze'].isNotEmpty)
-                                            ..._data['assenze']
-                                                .map<Widget>((name) => ListTile(
-                                                      title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                                    ))
-                                                .toList()
-                                          else
-                                            const ListTile(
-                                              title: AutoSizeText('Nessuna assenza', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                            ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                if (_data.containsKey('prenotazioni') && widget.role == 'Genitore')
-                                  Column(
-                                    children: [
-                                      const SizedBox(height: 20.0),
-                                      AutoSizeText('Prenotazioni (${_data['prenotazioni'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                      const SizedBox(height: 20.0),
-                                    ],
-                                  ),
-                              ],
+                      _data['description'] != ''
+                          ? ListTile(
+                              title: const Text('Descrizione',
+                                  style: TextStyle(color: Colors.black54)),
+                              subtitle: Text(
+                                _data['description'],
+                                style: const TextStyle(fontSize: 20.0),
+                              ),
                             )
-                        ),
-                        //pranzo
-                        if (_data.containsKey('pasto'))
-                          Container(
+                          : Container(),
+                      //programma
+                      if (_data.containsKey('prenotazioni') &&
+                          _data.containsKey('assenze'))
+                        ((widget.club == 'Delta Club' &&
+                                    (_data['selectedOption'] == 'trip' &&
+                                        (widget.role == 'Ragazzo' || newRole == 'Ragazzo') &&
+                                        !_data['selectedClass'].any((className) => [
+                                              '3° liceo',
+                                              '4° liceo',
+                                              '5° liceo'
+                                            ].contains(className)) &&
+                                        _data['selectedClass'].any((className) => [
+                                              '1° liceo',
+                                              '2° liceo'
+                                            ].contains(className)))) ||
+                                ((widget.club == 'Delta Club' &&
+                                    _data['selectedOption'] == 'weekend' &&
+                                    (widget.role == 'Genitore' || newRole == 'Genitore'))))
+                            ? Container()
+                            : (widget.club == 'Tiber Club' &&
+                                    _data['selectedOption'] == 'weekend' &&
+                                    (widget.role == 'Genitore' || newRole == 'Genitore') &&
+                                    !_data['selectedClass'].any((className) => [
+                                          '1° media',
+                                          '2° media',
+                                          '3° media'
+                                        ].contains(className)))
+                                ? Container()
+                                : Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                                    margin: const EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
+                                    child: Column(
+                                      children: [
+                                        Column(children: [
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Expanded(
+                                                    child: ListTile(
+                                                  leading: const Icon(
+                                                      Icons
+                                                          .calendar_month_outlined,
+                                                      size: 35),
+                                                  title: const AutoSizeText(
+                                                    "Conferma",
+                                                    style: TextStyle(
+                                                        fontSize: 15,
+                                                        color: Colors.black54),
+                                                    maxLines: 1,
+                                                    minFontSize: 13,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  subtitle: AutoSizeText(
+                                                    widget.selectedOption ==
+                                                            'weekend'
+                                                        ? 'Programma'
+                                                        : 'Convivenza',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 25,
+                                                    ),
+                                                    maxLines: 1,
+                                                    minFontSize: 18,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                )),
+                                                Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      IconButton(
+                                                        onPressed:
+                                                            _toggleReservation,
+                                                        icon: Icon(
+                                                          _data['prenotazioni']
+                                                                  .contains(
+                                                                      widget
+                                                                          .name)
+                                                              ? Icons
+                                                                  .check_circle
+                                                              : Icons
+                                                                  .check_circle_outline,
+                                                          color: _data[
+                                                                      'prenotazioni']
+                                                                  .contains(
+                                                                      widget
+                                                                          .name)
+                                                              ? Colors.green
+                                                              : Colors.black,
+                                                          size: 30,
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        onPressed:
+                                                            _toggleAbsence,
+                                                        icon: Icon(
+                                                          _data['assenze']
+                                                                  .contains(
+                                                                      widget
+                                                                          .name)
+                                                              ? Icons.close
+                                                              : Icons
+                                                                  .close_outlined,
+                                                          color: _data[
+                                                                      'assenze']
+                                                                  .contains(
+                                                                      widget
+                                                                          .name)
+                                                              ? Colors.red
+                                                              : Colors.black,
+                                                          size: 30,
+                                                        ),
+                                                      ),
+                                                    ]),
+                                              ])
+                                        ]),
+                                        //prenotazioni programma
+                                        if (_data.containsKey('prenotazioni') &&
+                                            (widget.role != 'Genitore' || newRole != 'Genitore'))
+                                          Column(
+                                            children: [
+                                              ExpansionTile(
+                                                title: AutoSizeText(
+                                                  'Presenti (${_data['prenotazioni'].length}) - Assenti (${_data['assenze'].length})',
+                                                  style: const TextStyle(
+                                                      fontSize: 20),
+                                                  maxLines: 1,
+                                                  minFontSize: 15,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                children: [
+                                                  const ListTile(
+                                                    title: AutoSizeText(
+                                                      'Presenti',
+                                                      style: TextStyle(
+                                                          fontSize: 23,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                      maxLines: 1,
+                                                      minFontSize: 15,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (_data['prenotazioni']
+                                                      .isNotEmpty)
+                                                    ..._data['prenotazioni']
+                                                        .map<Widget>((name) =>
+                                                            ListTile(
+                                                              title: AutoSizeText(
+                                                                  name,
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          20),
+                                                                  maxLines: 1,
+                                                                  minFontSize:
+                                                                      15,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis),
+                                                            ))
+                                                        .toList()
+                                                  else
+                                                    const ListTile(
+                                                      title: AutoSizeText(
+                                                          'Nessuna prenotazione',
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                          maxLines: 1,
+                                                          minFontSize: 15,
+                                                          overflow: TextOverflow
+                                                              .ellipsis),
+                                                    ),
+                                                  const Divider(),
+                                                  const ListTile(
+                                                    title: AutoSizeText(
+                                                      'Assenti',
+                                                      style: TextStyle(
+                                                          fontSize: 23,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                      maxLines: 1,
+                                                      minFontSize: 15,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (_data['assenze']
+                                                      .isNotEmpty)
+                                                    ..._data['assenze']
+                                                        .map<Widget>((name) =>
+                                                            ListTile(
+                                                              title: AutoSizeText(
+                                                                  name,
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          20),
+                                                                  maxLines: 1,
+                                                                  minFontSize:
+                                                                      15,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis),
+                                                            ))
+                                                        .toList()
+                                                  else
+                                                    const ListTile(
+                                                      title: AutoSizeText(
+                                                          'Nessuna assenza',
+                                                          style: TextStyle(
+                                                              fontSize: 20),
+                                                          maxLines: 1,
+                                                          minFontSize: 15,
+                                                          overflow: TextOverflow
+                                                              .ellipsis),
+                                                    ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        if (_data.containsKey('prenotazioni') &&
+                                            (widget.role == 'Genitore' || newRole == 'Genitore'))
+                                          Column(
+                                            children: [
+                                              const SizedBox(height: 20.0),
+                                              AutoSizeText(
+                                                  'Prenotazioni (${_data['prenotazioni'].length})',
+                                                  style: const TextStyle(
+                                                      fontSize: 20),
+                                                  maxLines: 1,
+                                                  minFontSize: 15,
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                              const SizedBox(height: 20.0),
+                                            ],
+                                          ),
+                                      ],
+                                    )),
+                      //pranzo
+                      if (_data.containsKey('pasto'))
+                        Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                             margin: const EdgeInsets.fromLTRB(0, 10.0, 0, 10.0),
-                            child:
-                            Column(children: [
+                            child: Column(children: [
                               Column(children: [
                                 Column(children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: ListTile(
-                                          leading: const Icon(Icons.fastfood, size: 35),
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                            child: ListTile(
+                                          leading: const Icon(Icons.fastfood,
+                                              size: 35),
                                           title: const AutoSizeText(
                                             "Pranzo/Cena",
                                             style: TextStyle(
                                                 fontSize: 15,
-                                                color: Colors.black54
-                                            ),
+                                                color: Colors.black54),
                                             maxLines: 1,
                                             minFontSize: 13,
                                             overflow: TextOverflow.ellipsis,
@@ -970,112 +1116,172 @@ class _ProgramPageState extends State<ProgramPage> {
                                             minFontSize: 18,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                        )
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        )),
+                                        Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              IconButton(
+                                                onPressed:
+                                                    _toggleReservationFood,
+                                                icon: Icon(
+                                                  _data['prenotazionePranzo']
+                                                          .contains(widget.name)
+                                                      ? Icons.check_circle
+                                                      : Icons
+                                                          .check_circle_outline,
+                                                  color:
+                                                      _data['prenotazionePranzo']
+                                                              .contains(
+                                                                  widget.name)
+                                                          ? Colors.green
+                                                          : Colors.black,
+                                                  size: 30,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                onPressed: _toggleAbsenceFood,
+                                                icon: Icon(
+                                                  _data['assenzaPranzo']
+                                                          .contains(widget.name)
+                                                      ? Icons.close
+                                                      : Icons.close_outlined,
+                                                  color: _data['assenzaPranzo']
+                                                          .contains(widget.name)
+                                                      ? Colors.red
+                                                      : Colors.black,
+                                                  size: 30,
+                                                ),
+                                              ),
+                                            ])
+                                      ])
+                                ]),
+                                //prenotazioni pranzo
+                                if (_data.containsKey('prenotazionePranzo') &&
+                                    (widget.role != 'Genitore' || newRole == 'Genitore'))
+                                  Column(
+                                    children: [
+                                      ExpansionTile(
+                                        title: AutoSizeText(
+                                            'Presenti (${_data['prenotazionePranzo'].length}) - Assenti (${_data['assenzaPranzo'].length})',
+                                            style:
+                                                const TextStyle(fontSize: 20),
+                                            maxLines: 1,
+                                            minFontSize: 15,
+                                            overflow: TextOverflow.ellipsis),
                                         children: [
-                                          IconButton(
-                                            onPressed: _toggleReservationFood,
-                                            icon: Icon(_data['prenotazionePranzo'].contains(widget.name)
-                                              ? Icons.check_circle
-                                              : Icons.check_circle_outline,
-                                              color: _data['prenotazionePranzo'].contains(widget.name)
-                                              ? Colors.green
-                                              : Colors.black,
-                                              size: 30,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            onPressed: _toggleAbsenceFood,
-                                            icon: Icon(_data['assenzaPranzo'].contains(widget.name)
-                                              ? Icons.close
-                                              : Icons.close_outlined,
-                                              color: _data['assenzaPranzo'].contains(widget.name)
-                                              ? Colors.red
-                                              : Colors.black,
-                                              size: 30,
-                                            ),
-                                          ),
-                                        ]
-                                      )
-                                    ]
-                                  )
-                                ]
-                              ),
-                              //prenotazioni pranzo
-                              if (_data.containsKey('prenotazionePranzo') && widget.role != 'Genitore')
-                                Column(
-                                  children: [
-                                    ExpansionTile(
-                                      title: AutoSizeText('Presenti (${_data['prenotazionePranzo'].length}) - Assenti (${_data['assenzaPranzo'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                      children: [
-                                        const ListTile(
-                                          title: AutoSizeText(
-                                            'Presenti', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                          ),
-                                        if (_data['prenotazionePranzo'].isNotEmpty)
-                                          ..._data['prenotazionePranzo']
-                                            .map<Widget>((name) => ListTile(
-                                                  title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                                ))
-                                            .toList()
-                                        else
                                           const ListTile(
-                                            title: AutoSizeText('Nessuna prenotazione', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                            title: AutoSizeText('Presenti',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                maxLines: 1,
+                                                minFontSize: 15,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ),
-                                        const Divider(),
-                                        const ListTile(
-                                          title: AutoSizeText(
-                                            'Assenti', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                        ),
-                                        if (_data['assenzaPranzo'].isNotEmpty)
-                                          ..._data['assenzaPranzo']
-                                            .map<Widget>((name) => ListTile(
-                                                  title: AutoSizeText(name, style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                                ))
-                                            .toList()
-                                        else
+                                          if (_data['prenotazionePranzo']
+                                              .isNotEmpty)
+                                            ..._data['prenotazionePranzo']
+                                                .map<Widget>((name) => ListTile(
+                                                      title: AutoSizeText(name,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 20),
+                                                          maxLines: 1,
+                                                          minFontSize: 15,
+                                                          overflow: TextOverflow
+                                                              .ellipsis),
+                                                    ))
+                                                .toList()
+                                          else
+                                            const ListTile(
+                                              title: AutoSizeText(
+                                                  'Nessuna prenotazione',
+                                                  style:
+                                                      TextStyle(fontSize: 20),
+                                                  maxLines: 1,
+                                                  minFontSize: 15,
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                          const Divider(),
                                           const ListTile(
-                                            title: AutoSizeText('Nessuna assenza', style: TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
+                                            title: AutoSizeText('Assenti',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                maxLines: 1,
+                                                minFontSize: 15,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              if (_data.containsKey('prenotazionePranzo') && widget.role == 'Genitore')
-                                Column(
-                                  children: [
-                                    const SizedBox(height: 20.0),
-                                    AutoSizeText('Prenotazioni (${_data['prenotazionePranzo'].length})', style: const TextStyle(fontSize: 20), maxLines: 1, minFontSize: 15, overflow: TextOverflow.ellipsis),
-                                    const SizedBox(height: 20.0),
-                                  ],
-                                ),
+                                          if (_data['assenzaPranzo'].isNotEmpty)
+                                            ..._data['assenzaPranzo']
+                                                .map<Widget>((name) => ListTile(
+                                                      title: AutoSizeText(name,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 20),
+                                                          maxLines: 1,
+                                                          minFontSize: 15,
+                                                          overflow: TextOverflow
+                                                              .ellipsis),
+                                                    ))
+                                                .toList()
+                                          else
+                                            const ListTile(
+                                              title: AutoSizeText(
+                                                  'Nessuna assenza',
+                                                  style:
+                                                      TextStyle(fontSize: 20),
+                                                  maxLines: 1,
+                                                  minFontSize: 15,
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                if (_data.containsKey('prenotazionePranzo') &&
+                                    (widget.role == 'Genitore' || newRole == 'Genitore'))
+                                  Column(
+                                    children: [
+                                      const SizedBox(height: 20.0),
+                                      AutoSizeText(
+                                          'Prenotazioni (${_data['prenotazionePranzo'].length})',
+                                          style: const TextStyle(fontSize: 20),
+                                          maxLines: 1,
+                                          minFontSize: 15,
+                                          overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 20.0),
+                                    ],
+                                  ),
                               ])
-                            ])
-                          ),
-                          if (_data.containsKey('file'))
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 10.0),
-                                for (var fileData in _data['file'])
-                                  buildFileLinkButton(fileData),
-                                const SizedBox(height: 10.0),
-                              ],
-                            ),
-                          Center(
-                            child: Row(
+                            ])),
+                      if (_data.containsKey('file'))
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10.0),
+                            for (var fileData in _data['file'])
+                              buildFileLinkButton(fileData),
+                            const SizedBox(height: 10.0),
+                          ],
+                        ),
+                      Center(
+                          child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'Creato da ${_data['creator']}',
-                                  style: const TextStyle(
-                                      fontSize: 15, color: Colors.black54),
-                                ),
-                              ]
-                            )
-                          ),
+                            Text(
+                              'Creato da ${_data['creator']}',
+                              style: const TextStyle(
+                                  fontSize: 15, color: Colors.black54),
+                            ),
+                          ])),
                     ],
                   ),
                 ),
@@ -1085,15 +1291,15 @@ class _ProgramPageState extends State<ProgramPage> {
         ),
       ),
       floatingActionButton: widget.isAdmin
-        ? FloatingActionButton(
-            onPressed: () async {
-              _showAddLinkFileDialog(context);
-            },
-            shape: const CircleBorder(),
-            backgroundColor: Colors.white,
-            child: const Icon(Icons.upload, color: Colors.black),
-          )
-        : null,
+          ? FloatingActionButton(
+              onPressed: () async {
+                _showAddLinkFileDialog(context);
+              },
+              shape: const CircleBorder(),
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.upload, color: Colors.black),
+            )
+          : null,
     );
   }
 }

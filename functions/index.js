@@ -115,6 +115,82 @@ exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
   }
 });
 
+exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 18:40').timeZone('Europe/Rome').onRun(async (context) => {
+
+    for (const elem of ['Tiber Club', 'Delta Club']) {
+        const userstoken = await fetchPrograms(elem);
+        if (userstoken.length > 0) {
+            for (const list of userstoken) {
+                const newTokens = [...new Set(list[0])];
+                for (const token of newTokens) {
+                    await sendNotification(token, 'modified_event', list[1], list[2], list[3], ''); //title, selectedOption, id
+                }
+            }
+        }
+    }
+});
+
+async function fetchPrograms(elem) {
+    let tokens = [];
+    let info = [];
+
+    const tomorrow = new Date();
+    tomorrow.setDate(new Date().getDate() + 1);
+    const dayTomorrow = String(tomorrow.getDate()).padStart(2, '0');
+    const monthTomorrow = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const yearTomorrow = tomorrow.getFullYear();
+
+    try {
+        for (const value of ['club_weekend', 'club_trip']) {
+            const events = await admin.firestore()
+                .collection(value)
+                .where('club', '==', elem)
+                .get();
+
+            for (const event of events.docs) {
+                const [day, month, year] = event.data().startDate.split('-');
+                if (day == dayTomorrow && month == monthTomorrow && year == yearTomorrow) {
+                    const userTokens = await fetchProgramsTokens(event.data().selectedClass, elem);
+                    tokens.push(...userTokens);
+                    info.push([tokens, event.data().title, event.data().selectedOption, event.id]);
+                    console.log(`info: ${info}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Errore nel recupero dei token: ', error);
+    }
+    return info;
+}
+
+async function fetchProgramsTokens(classes, elem) {
+    let tokens = [];
+
+    try {
+        const promises = classes.map(classe => 
+            admin.firestore()
+                .collection('user')
+                .where('club', '==', elem)
+                .where('club_class', 'array-contains', classe)
+                .get()
+        );
+        const querySnapshots = await Promise.all(promises);
+
+        const seenUsers = new Set();
+        for (const snapshot of querySnapshots) {
+            for (const user of snapshot.docs) {
+                if (!seenUsers.has(user.id)) {
+                    tokens.push(...user.data().token);
+                    seenUsers.add(user.id);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Errore nel recupero dei token: ', error);
+    }
+
+    return tokens;
+}
 
 exports.scheduleNotification = functions.pubsub.schedule('every day 08:00').timeZone('Europe/Rome').onRun(async (context) => {
 
@@ -141,7 +217,6 @@ exports.scheduleNotification = functions.pubsub.schedule('every day 08:00').time
 
     try {
         for (const elem of ['Tiber Club', 'Delta Club']) {
-            console.log(`elem: ${elem}`);
             const calendar = await admin.firestore()
                 .collection('calendario')
                 .where('club', '==', elem)
@@ -248,7 +323,6 @@ async function sendNotification(token, section, name, filter, id, focused) {
     try {
         const response = await axios.get('https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken');
         accessToken = response.data.accessToken;
-        console.log(`access: ${accessToken}`);
     } catch (error) {
         console.error('Errore nel recupero del token di accesso:', error);
         return;
@@ -261,32 +335,50 @@ async function sendNotification(token, section, name, filter, id, focused) {
     let category = '';
     let notTitle = '';
     let message = '';
-    //let role = '';
+    let role = '';
 
-    if(section=='birthday' && filter=='broadcast') {
+    if(section=='modified_event') {
+        docId = id;
+        selectedOption = filter;
+        category = section;
+        notTitle = `${name}`;
+        message = 'Domani';
+        role = '';
+    }
+    else if(section=='birthday' && filter=='broadcast') {
         docId = '';
         selectedOption = '';
         category = section;
         notTitle = `Oggi è il compleanno di ${name}`;
         message = 'Fagli gli auguri!';
-        //role = '';
     } else if(section=='birthday' && filter=='personale') {
         docId = '';
         selectedOption = '';
         category = section;
         notTitle = `Buon compleanno!`;
         message = 'Festeggia al Tiber!';
-        //role = '';
     } else {
         docId = id;
         selectedOption = '';
         category = section;
-        notTitle = `Oggi: ${name}`;
-        message = 'Ricordati di partecipare!';
-        //role = '';
+        notTitle = `${name}`;
+        message = 'Oggi';
     }
 
-    if(section=='birthday') {
+    if(section=='modified_event') {
+        data = {
+            click_action: 'FLUTTER_NOTIFICATION_CLICK',
+            id: Date.now().toString(),
+            docId: docId.toString(),
+            selectedOption: selectedOption.toString(),
+            status: 'done',
+            category: category.toString(),
+            notTitle: notTitle.toString(),
+            notBody: message.toString(),
+            role: role.toString(),
+        };
+    }
+    else if(section=='birthday') {
         data = {
             click_action: 'FLUTTER_NOTIFICATION_CLICK',
             id: Date.now().toString(),
