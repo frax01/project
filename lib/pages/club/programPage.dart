@@ -984,7 +984,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                         ]),
                                         //prenotazioni programma
                                         if (_data.containsKey('prenotazioni') &&
-                                            (widget.role != 'Genitore' || newRole != 'Genitore'))
+                                            (widget.role != 'Genitore' || (newRole != '' && newRole != 'Genitore')))
                                           Column(
                                             children: [
                                               ExpansionTile(
@@ -1088,7 +1088,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                             ],
                                           ),
                                         if (_data.containsKey('prenotazioni') &&
-                                            (widget.role == 'Genitore' || newRole == 'Genitore'))
+                                            (widget.role == 'Genitore' || (newRole != '' && newRole == 'Genitore')))
                                           Column(
                                             children: [
                                               const SizedBox(height: 20.0),
@@ -1186,7 +1186,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                 ]),
                                 //prenotazioni pranzo
                                 if (_data.containsKey('prenotazionePranzo') &&
-                                    (widget.role != 'Genitore' || newRole == 'Genitore'))
+                                    (widget.role != 'Genitore' || newRole != 'Genitore'))
                                   Column(
                                     children: [
                                       ExpansionTile(
