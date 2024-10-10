@@ -109,7 +109,7 @@ class _ClubPageState extends State<ClubPage> {
               icon: const Icon(Icons.info_outline),
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => Info(club: widget.club)));
+                    builder: (context) => Info(club: widget.club, role: widget.role, isAdmin: widget.status,)));
               },
             ),
             IconButton(

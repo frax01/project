@@ -115,7 +115,7 @@ exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
   }
 });
 
-exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 18:40').timeZone('Europe/Rome').onRun(async (context) => {
+exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 18:30').timeZone('Europe/Rome').onRun(async (context) => {
 
     for (const elem of ['Tiber Club', 'Delta Club']) {
         const userstoken = await fetchPrograms(elem);

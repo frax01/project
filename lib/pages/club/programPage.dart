@@ -125,7 +125,7 @@ class _ProgramPageState extends State<ProgramPage> {
         weather["image"] != "") {
       return Row(
         children: [
-          Image.network(weather["image"], width: 60, height: 60),
+          Image.network(weather["image"], width: 55, height: 55),
           const SizedBox(width: 10),
           Column(
             children: [
@@ -847,7 +847,21 @@ class _ProgramPageState extends State<ProgramPage> {
                                 ((widget.club == 'Delta Club' &&
                                     _data['selectedOption'] == 'weekend' &&
                                     (widget.role == 'Genitore' || newRole == 'Genitore'))))
-                            ? Container()
+                            ? Column(
+                              children: [
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: AutoSizeText(
+                                    'Presenti (${_data['prenotazioni'].length})',
+                                    style: const TextStyle(
+                                        fontSize: 20),
+                                    maxLines: 1,
+                                    minFontSize: 15,
+                                    overflow:
+                                        TextOverflow.ellipsis,
+                                  ))
+                              ])
                             : (widget.club == 'Tiber Club' &&
                                     _data['selectedOption'] == 'weekend' &&
                                     (widget.role == 'Genitore' || newRole == 'Genitore') &&
@@ -856,7 +870,21 @@ class _ProgramPageState extends State<ProgramPage> {
                                           '2° media',
                                           '3° media'
                                         ].contains(className)))
-                                ? Container()
+                                ? Column(
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: AutoSizeText(
+                                        'Presenti (${_data['prenotazioni'].length})',
+                                        style: const TextStyle(
+                                            fontSize: 20),
+                                        maxLines: 1,
+                                        minFontSize: 15,
+                                        overflow:
+                                            TextOverflow.ellipsis,
+                                      ))
+                                  ])
                                 : Container(
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.grey),
