@@ -660,7 +660,7 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  bool _isExpanded = false;
+  //bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {

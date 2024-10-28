@@ -63,7 +63,7 @@ class _StatusState extends State<Status> {
               final firstName = user['name'];
               final lastName = user['surname'];
               final status = user['status'] == 'User' ? 'Utente' : 'Admin';
-              final role = user['role'];
+              //final role = user['role'];
               final classes = user['club_class'];
               final userId = user.id;
 

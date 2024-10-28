@@ -10,7 +10,6 @@ import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import 'visibility.dart';
 import 'programPage.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class AddEditProgram extends StatefulWidget {
   const AddEditProgram(
@@ -57,6 +56,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
   final TextEditingController _endTimeController = TextEditingController();
 
   final timeController = TextEditingController();
+
+  bool _isLoadingCreation = false;
 
   final Map<String, bool> _visibility = {};
   List selected = [];
@@ -134,7 +135,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
         timeController.text = widget.document!.containsKey('pasto')
             ? widget.document!['pasto']
             : '';
-        print("time: ${timeController.text}");
       }
     } else {
       final String formattedDate =
@@ -175,7 +175,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
           storageRef.child('$level/${DateTime.now().toIso8601String()}.jpeg');
 
       final UploadTask uploadTask =
-          imagesRef.putData(await image!.readAsBytes());
+          imagesRef.putData(await image.readAsBytes());
       final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
       final String imageUrl = await snapshot.ref.getDownloadURL();
 
@@ -929,7 +929,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
     Navigator.pop(context);
   }
 
-  bool _isLoadingCreation = false;
   bool _isLoadingModify = false;
 
   final FocusNode _programNameFocusNode = FocusNode();

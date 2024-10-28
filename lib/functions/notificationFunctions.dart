@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:club/config.dart';
+//import 'package:club/config.dart';
 import 'package:http/http.dart' as http;
 
 Future<void> sendNotification(
     List fcmToken, String notTitle, String message, String category,
     {String? docId, String? selectedOption, String? role}) async {
-  const String serverKey = Config.serverKey;
+  //const String serverKey = Config.serverKey;
   const String fcmUrl =
       'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
   Uri uri = Uri.parse(fcmUrl);

@@ -342,14 +342,14 @@ class _DeltaState extends State<Delta> {
     FlutterWebBrowser.openWebPage(url: url);
   }
 
-  Future<void> getFileUrl(String filePath) async {
-    try {
-      final ref = _storage.ref().child(filePath);
-      final url = await ref.getDownloadURL();
-    } catch (e) {
-      print('Errore: $e');
-    }
-  }
+  //Future<void> getFileUrl(String filePath) async {
+  //  try {
+  //    final ref = _storage.ref().child(filePath);
+  //    final url = await ref.getDownloadURL();
+  //  } catch (e) {
+  //    print('Errore: $e');
+  //  }
+  //}
 
   @override
   Widget build(BuildContext context) {

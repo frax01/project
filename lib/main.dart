@@ -18,7 +18,6 @@ import 'services/local_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/pages/club/eventPage.dart';
 import 'package:club/pages/club/programCard.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -95,7 +94,7 @@ class MyApp extends StatelessWidget {
   
   }
 
-  @override
+  //@override
   void initState() {
     fetchPage();
   }
@@ -158,6 +157,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   bool terminated = false;
 
   String name = '';
