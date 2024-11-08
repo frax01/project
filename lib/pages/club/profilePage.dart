@@ -7,18 +7,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'status.dart';
 import 'package:club/main.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({
-    super.key,
-    required this.id,
-    required this.classes,
-    required this.name,
-    required this.surname,
-    required this.email,
-    required this.isAdmin,
-    required this.club
-  });
+  const SettingsPage(
+      {super.key,
+      required this.id,
+      required this.classes,
+      required this.name,
+      required this.surname,
+      required this.email,
+      required this.isAdmin,
+      required this.club});
 
   final String id;
   final List classes;
@@ -147,56 +147,103 @@ class _SettingsPageState extends State<SettingsPage> {
   void restartApp(BuildContext context, String club) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (BuildContext context) => MyApp(club: club, )),
-          (Route<dynamic> route) => false,
+      MaterialPageRoute(
+          builder: (BuildContext context) => MyApp(
+                club: club,
+              )),
+      (Route<dynamic> route) => false,
     );
+  }
+
+  Future<void> _showConfirmDialogVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final bool confirm = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Conferma'),
+              content: Text('Aggiornare alla versione ${packageInfo.version}?'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Annulla'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Conferma'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+    if (confirm) {
+      _updateVersion();
+    }
   }
 
   Future<void> _showConfirmDialog() async {
     final bool confirm = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Conferma'),
-          content: Text(
-            widget.club == 'Tiber Club'
-                ? 'Sei sicuro di voler passare al Delta?'
-                : 'Sei sicuro di voler passare al Tiber?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Annulla'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            TextButton(
-              child: const Text('Conferma'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Conferma'),
+              content: Text(
+                widget.club == 'Tiber Club'
+                    ? 'Sei sicuro di voler passare al Delta?'
+                    : 'Sei sicuro di voler passare al Tiber?',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Annulla'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Conferma'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
     if (confirm) {
       _updateClub();
     }
   }
 
+  Future<void> _updateVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    await FirebaseFirestore.instance
+          .collection('aggiornamento')
+          .doc('unico')
+          .update({
+            'versione': packageInfo.version,
+            'obbligatorio': false,
+          });
+  }
+
   Future<void> _updateClub() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String newClub = widget.club == 'Tiber Club'
-        ? 'Delta Club'
-        : 'Tiber Club';
+    final String newClub =
+        widget.club == 'Tiber Club' ? 'Delta Club' : 'Tiber Club';
 
     await prefs.setString('club', newClub);
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final userRef = FirebaseFirestore.instance.collection('user').doc(widget.id);
+      final userRef =
+          FirebaseFirestore.instance.collection('user').doc(widget.id);
       await userRef.update({'club': newClub});
     }
     restartApp(context, newClub);
@@ -204,10 +251,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-
     List<String> medie = [];
     List<String> liceo = [];
-  
+
     for (var club in widget.classes) {
       if (club.toString().contains("media")) {
         medie.add(club.toString());
@@ -249,7 +295,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         minFontSize: 10,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 10.0),
                     ),
                     ListTile(
                       leading: const Icon(Icons.email),
@@ -261,11 +308,14 @@ class _SettingsPageState extends State<SettingsPage> {
                         minFontSize: 10,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 10.0),
                     ),
                     ListTile(
                       leading: const Icon(Icons.class_rounded),
-                      title: medie.length==1? const Text('Classe') : const Text('Classi'),
+                      title: medie.length == 1
+                          ? const Text('Classe')
+                          : const Text('Classi'),
                       subtitle: AutoSizeText(
                         '${medie.join(', ')}${medie.isNotEmpty && liceo.isNotEmpty ? ', ' : ''}${liceo.join(', ')}',
                         style: const TextStyle(fontSize: 20.0),
@@ -273,70 +323,93 @@ class _SettingsPageState extends State<SettingsPage> {
                         minFontSize: 10,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 10.0),
                     ),
                     widget.isAdmin
-                    ? ListTile(
-                        leading: const Icon(Icons.check_circle),
-                        title: const Text('Richieste'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                        subtitle: const AutoSizeText(
-                          'Accetta i nuovi utenti',
-                          style: TextStyle(fontSize: 20.0),
-                          maxLines: 1,
-                          minFontSize: 10,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                        onTap: () {
-                          Navigator.pushNamed(context, '/acceptance');
-                        },
-                      )
-                    : const SizedBox.shrink(),
+                        ? ListTile(
+                            leading: const Icon(Icons.check_circle),
+                            title: const Text('Richieste'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Accetta i nuovi utenti',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () {
+                              Navigator.pushNamed(context, '/acceptance');
+                            },
+                          )
+                        : const SizedBox.shrink(),
                     widget.isAdmin
                         ? ListTile(
-                      leading: const Icon(Icons.build),
-                      title: const Text('Iscritti'),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                      subtitle: const AutoSizeText(
-                        'Modifica utenti',
-                        style: TextStyle(fontSize: 20.0),
-                        maxLines: 1,
-                        minFontSize: 10,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Status(club: widget.club)));
-                      },
-                    ) : const SizedBox.shrink(),
+                            leading: const Icon(Icons.build),
+                            title: const Text('Iscritti'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Modifica utenti',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Status(club: widget.club)));
+                            },
+                          )
+                        : const SizedBox.shrink(),
                     widget.email == 'francescomartignoni1@gmail.com'
                         ? ListTile(
-                      leading: const Icon(Icons.change_circle),
-                      title: const Text('Sezione'),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 20),
-                      subtitle: const AutoSizeText(
-                        'Cambia Club',
-                        style: TextStyle(fontSize: 20.0),
-                        maxLines: 1,
-                        minFontSize: 10,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                      onTap: () async {
-                        await _showConfirmDialog();
-                        //SharedPreferences prefs = await SharedPreferences.getInstance();
-                        //if(widget.club=='Tiber Club') {
-                        //  prefs.setString('club', 'Delta Club');
-                        //} else {
-                        //  prefs.setString('club', 'Tiber Club');
-                        //}
-                        //String club = prefs.getString('club') ?? '';
-                      },
-                    ) : const SizedBox.shrink(),
+                            leading: const Icon(Icons.change_circle),
+                            title: const Text('Sezione'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Cambia Club',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () async {
+                              await _showConfirmDialog();
+                            },
+                          )
+                        : const SizedBox.shrink(),
+                    widget.email == 'francescomartignoni1@gmail.com'
+                        ? ListTile(
+                            leading: const Icon(Icons.update),
+                            title: const Text('Nuova versione'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Aggiornamento',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () async {
+                              await _showConfirmDialogVersion();
+                            },
+                          )
+                        : const SizedBox.shrink(),
                     ListTile(
                       leading: const Icon(Icons.delete_forever),
                       title: const Text('Elimina account'),
@@ -348,7 +421,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         minFontSize: 10,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 10.0),
                       onTap: () {
                         _showDeleteAccountDialog();
                       },
@@ -364,7 +438,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         minFontSize: 10,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 10.0),
                       onTap: () {
                         _showLogoutDialog();
                       },
