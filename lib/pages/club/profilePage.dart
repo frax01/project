@@ -157,13 +157,31 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _showConfirmDialogVersion() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    bool isChecked = false;
     final bool confirm = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
               title: const Text('Conferma'),
-              content: Text('Aggiornare alla versione ${packageInfo.version}?'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text('Aggiornare alla versione ${packageInfo.version}?'),
+                  const SizedBox(height: 15),
+                  CheckboxListTile(
+                    value: isChecked,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isChecked = value ?? false;
+                      });
+                    },
+                    title: const Text("Obbligatorio"),
+                  ),
+                ],
+              ),
               actions: <Widget>[
                 TextButton(
                   child: const Text('Annulla'),
@@ -180,12 +198,15 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             );
           },
-        ) ??
-        false;
+        );
+      },
+    ) ?? false;
+
     if (confirm) {
-      _updateVersion();
+      _updateVersion(isChecked);
     }
   }
+
 
   Future<void> _showConfirmDialog() async {
     final bool confirm = await showDialog<bool>(
@@ -222,15 +243,15 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> _updateVersion() async {
+  Future<void> _updateVersion(bool isChecked) async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     await FirebaseFirestore.instance
-          .collection('aggiornamento')
-          .doc('unico')
-          .update({
-            'versione': packageInfo.version,
-            'obbligatorio': false,
-          });
+        .collection('aggiornamento')
+        .doc('unico')
+        .update({
+      'versione': packageInfo.version,
+      'obbligatorio': isChecked,
+    });
   }
 
   Future<void> _updateClub() async {

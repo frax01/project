@@ -7,6 +7,10 @@ import 'package:flutter/services.dart';
 import 'info.dart';
 import 'calendar.dart';
 import 'lunch.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -41,9 +45,88 @@ class _ClubPageState extends State<ClubPage> {
   int _selectedIndex = 0;
   late List<Widget> _widgetOptions;
 
+  Future<void> _fetchVersion() async {
+    String versione = '';
+    bool obbligatorio = false;
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('aggiornamento')
+        .doc('unico')
+        .get();
+    if (querySnapshot.exists) {
+      versione = querySnapshot.data()!['versione'];
+      obbligatorio = querySnapshot.data()!['obbligatorio'];
+    }
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    bool confirm = false;
+    if (versione != packageInfo.version) {
+      confirm = await showDialog<bool>(
+            context: context,
+            barrierDismissible: obbligatorio ? false : true,
+            barrierColor: const Color.fromARGB(255, 206, 203, 203),
+            builder: (BuildContext context) {
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return AlertDialog(
+                    title: const Center(
+                        child: Text('Aggiornamento',
+                            style: TextStyle(fontSize: 35))),
+                    content: obbligatorio
+                        ? const Text(
+                            'È necessario installare l\'ultima versione dell\'app per continuare ad usarla',
+                            style: TextStyle(fontSize: 20))
+                        : const Text('Scarica la nuova versione dell\'app', style: TextStyle(fontSize: 20)),
+                    actions: <Widget>[
+                      Center(
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                            !obbligatorio
+                                ? TextButton(
+                                    child: const Text('Più tardi',
+                                        style: TextStyle(fontSize: 20)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop(false);
+                                    },
+                                  )
+                                : Container(),
+                            TextButton(
+                              child: const Text('Aggiorna', style: TextStyle(fontSize: 20)),
+                              onPressed: () {
+                                if (Platform.isAndroid) {
+                                  FlutterWebBrowser.openWebPage(url: 'https://play.google.com/store/apps/details?id=com.mycompany.dima');
+                                } else if (Platform.isIOS) {
+                                  FlutterWebBrowser.openWebPage(url: 'https://apps.apple.com/it/app/club-app/id6642671734');
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Aggiornamento non disponibile, contatta il tuo tutor'),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ]
+                        )
+                      )
+                    ],
+                  );
+                },
+              );
+            },
+          ) ??
+          false;
+    }
+
+    if (confirm) {
+      //_updateVersion(isChecked);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _fetchVersion();
 
     _selectedIndex = widget.selectedIndex;
 

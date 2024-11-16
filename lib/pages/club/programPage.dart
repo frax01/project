@@ -866,6 +866,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                     _data['selectedOption'] == 'weekend' &&
                                     (widget.role == 'Genitore' || newRole == 'Genitore') &&
                                     !_data['selectedClass'].any((className) => [
+                                          '4° elem',
+                                          '5° elem',
                                           '1° media',
                                           '2° media',
                                           '3° media'

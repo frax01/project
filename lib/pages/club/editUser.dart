@@ -50,6 +50,8 @@ class _EditUserState extends State<EditUser> {
               final classes = userData['club_class'];
 
               final List<String> tiberClubClassOptions = [
+                '4° elem',
+                '5° elem',
                 '1° media',
                 '2° media',
                 '3° media',

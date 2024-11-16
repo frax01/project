@@ -28,6 +28,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
   final List<String> roleOptions = ["", "Ragazzo", "Genitore", "Tutor"];
   final List<String> tiberClubClassOptions = [
+    '4° elem',
+    '5° elem',
     '1° media',
     '2° media',
     '3° media',

@@ -70,6 +70,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
   String _latitude = '';
   String _longitude = '';
   final List<String> tiberClassOptions = [
+    '4° elem',
+    '5° elem',
     '1° media',
     '2° media',
     '3° media',
@@ -204,6 +206,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
     );
 
     if (picked != null && picked != initialDate) {
+      return DateFormat('dd-MM-yyyy').format(picked);
+    } else if (picked != null && picked == initialDate && widget.selectedOption == 'trip') {
       return DateFormat('dd-MM-yyyy').format(picked);
     }
     return null;
@@ -512,14 +516,33 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'selectedOption': widget.selectedOption,
               'imagePath': _image,
               'selectedClass': selectedClasses.sorted((a, b) {
-                if (a.contains('media') && b.contains('liceo')) {
-                  return -1;
-                } else if (a.contains('liceo') && b.contains('media')) {
-                  return 1;
-                } else {
-                  return a.compareTo(b);
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
                 }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
+                return a.compareTo(b);
               }),
+              //selectedClasses.sorted((a, b) {
+              //  if (a.contains('media') && b.contains('liceo')) {
+              //    return -1;
+              //  } else if (a.contains('liceo') && b.contains('media')) {
+              //    return 1;
+              //  } else {
+              //    return a.compareTo(b);
+              //  }
+              //}),
               'description': _programDescriptionController.text,
               'startDate': _startDateController.text,
               'endDate': _endDateController.text,
@@ -540,13 +563,23 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'selectedOption': widget.selectedOption,
               'imagePath': _image,
               'selectedClass': selectedClasses.sorted((a, b) {
-                if (a.contains('media') && b.contains('liceo')) {
-                  return -1;
-                } else if (a.contains('liceo') && b.contains('media')) {
-                  return 1;
-                } else {
-                  return a.compareTo(b);
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
                 }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
+                return a.compareTo(b);
               }),
               'description': _programDescriptionController.text,
               'startDate': _startDateController.text,
@@ -567,13 +600,23 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'selectedOption': widget.selectedOption,
               'imagePath': _image,
               'selectedClass': selectedClasses.sorted((a, b) {
-                if (a.contains('media') && b.contains('liceo')) {
-                  return -1;
-                } else if (a.contains('liceo') && b.contains('media')) {
-                  return 1;
-                } else {
-                  return a.compareTo(b);
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
                 }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
+                return a.compareTo(b);
               }),
               'description': _programDescriptionController.text,
               'startDate': _startDateController.text,
@@ -593,13 +636,23 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'selectedOption': widget.selectedOption,
               'imagePath': _image,
               'selectedClass': selectedClasses.sorted((a, b) {
-                if (a.contains('media') && b.contains('liceo')) {
-                  return -1;
-                } else if (a.contains('liceo') && b.contains('media')) {
-                  return 1;
-                } else {
-                  return a.compareTo(b);
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
                 }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
+                return a.compareTo(b);
               }),
               'description': _programDescriptionController.text,
               'startDate': _startDateController.text,
@@ -734,13 +787,23 @@ class _AddEditProgramState extends State<AddEditProgram> {
           'selectedOption': widget.selectedOption,
           'imagePath': _image,
           'selectedClass': selectedClasses.sorted((a, b) {
-            if (a.contains('media') && b.contains('liceo')) {
-              return -1;
-            } else if (a.contains('liceo') && b.contains('media')) {
-              return 1;
-            } else {
-              return a.compareTo(b);
+            int getPriority(String item) {
+              if (item.contains('elem')) {
+                return 0;
+              } else if (item.contains('media')) {
+                return 1;
+              } else if (item.contains('liceo')) {
+                return 2;
+              } else {
+                return 3;
+              }
             }
+            final int priorityA = getPriority(a);
+            final int priorityB = getPriority(b);
+            if (priorityA != priorityB) {
+              return priorityA - priorityB;
+            }
+            return a.compareTo(b);
           }),
           'description': _programDescriptionController.text,
           'startDate': _startDateController.text,
@@ -796,14 +859,24 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'selectedOption': widget.selectedOption,
             'imagePath': _image,
             'selectedClass': selectedClasses.sorted((a, b) {
-              if (a.contains('media') && b.contains('liceo')) {
-                return -1;
-              } else if (a.contains('liceo') && b.contains('media')) {
-                return 1;
-              } else {
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
+                }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
                 return a.compareTo(b);
-              }
-            }),
+              }),
             'description': _programDescriptionController.text,
             'startDate': _startDateController.text,
             'endDate': _endDateController.text,
@@ -851,14 +924,24 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'selectedOption': widget.selectedOption,
             'imagePath': _image,
             'selectedClass': selectedClasses.sorted((a, b) {
-              if (a.contains('media') && b.contains('liceo')) {
-                return -1;
-              } else if (a.contains('liceo') && b.contains('media')) {
-                return 1;
-              } else {
+                int getPriority(String item) {
+                  if (item.contains('elem')) {
+                    return 0;
+                  } else if (item.contains('media')) {
+                    return 1;
+                  } else if (item.contains('liceo')) {
+                    return 2;
+                  } else {
+                    return 3;
+                  }
+                }
+                final int priorityA = getPriority(a);
+                final int priorityB = getPriority(b);
+                if (priorityA != priorityB) {
+                  return priorityA - priorityB;
+                }
                 return a.compareTo(b);
-              }
-            }),
+              }),
             'description': _programDescriptionController.text,
             'startDate': _startDateController.text,
             'endDate': _endDateController.text,
