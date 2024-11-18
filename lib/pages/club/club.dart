@@ -74,7 +74,8 @@ class _ClubPageState extends State<ClubPage> {
                         ? const Text(
                             'È necessario installare l\'ultima versione dell\'app per continuare ad usarla',
                             style: TextStyle(fontSize: 20))
-                        : const Text('Scarica la nuova versione dell\'app', style: TextStyle(fontSize: 20)),
+                        : const Text('Scarica la nuova versione dell\'app',
+                            style: TextStyle(fontSize: 20)),
                     actions: <Widget>[
                       Center(
                           child: Row(
@@ -90,24 +91,28 @@ class _ClubPageState extends State<ClubPage> {
                                   )
                                 : Container(),
                             TextButton(
-                              child: const Text('Aggiorna', style: TextStyle(fontSize: 20)),
+                              child: const Text('Aggiorna',
+                                  style: TextStyle(fontSize: 20)),
                               onPressed: () {
                                 if (Platform.isAndroid) {
-                                  FlutterWebBrowser.openWebPage(url: 'https://play.google.com/store/apps/details?id=com.mycompany.dima');
+                                  FlutterWebBrowser.openWebPage(
+                                      url:
+                                          'https://play.google.com/store/apps/details?id=com.mycompany.dima');
                                 } else if (Platform.isIOS) {
-                                  FlutterWebBrowser.openWebPage(url: 'https://apps.apple.com/it/app/club-app/id6642671734');
+                                  FlutterWebBrowser.openWebPage(
+                                      url:
+                                          'https://apps.apple.com/it/app/club-app/id6642671734');
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Aggiornamento non disponibile, contatta il tuo tutor'),
+                                      content: Text(
+                                          'Aggiornamento non disponibile, contatta il tuo tutor'),
                                     ),
                                   );
                                 }
                               },
                             ),
-                          ]
-                        )
-                      )
+                          ]))
                     ],
                   );
                 },

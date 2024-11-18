@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
 import 'package:flutter/gestures.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -52,11 +54,7 @@ class _LoginState extends State<Login> {
 
   _goToHome(String club) {
     Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => buildClubPage(club)
-        )
-    );
+        context, MaterialPageRoute(builder: (context) => buildClubPage(club)));
   }
 
   Future<void> _sendVerificationEmail(String email, String password) async {
@@ -91,6 +89,25 @@ class _LoginState extends State<Login> {
     }
   }
 
+  Future<String> getDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        print("Android Info:");
+        print("Model: ${androidInfo.model}");
+        return androidInfo as String;
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        print("iOS Info:");
+        print("Model: ${iosInfo.utsname.machine}");
+        return iosInfo as String;
+      }
+    } catch (e) {
+      print("Failed to get device info: $e");
+    }
+    return '';
+  }
 
   _handleLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -101,6 +118,7 @@ class _LoginState extends State<Login> {
       });
 
       try {
+        String device = await getDeviceInfo();
         var credentials = await _auth.signInWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
@@ -119,15 +137,21 @@ class _LoginState extends State<Login> {
                 text: TextSpan(
                   children: [
                     const TextSpan(
-                      text: 'Per favore verifica la tua email prima di effettuare l\'accesso\n\n',
+                      text:
+                          'Per favore verifica la tua email prima di effettuare l\'accesso\n\n',
                       style: TextStyle(color: Colors.white),
                     ),
                     TextSpan(
-                      text: 'Clicca qui per inviare una nuova email di verifica',
-                      style: const TextStyle(color: Colors.red, decoration: TextDecoration.underline,),
+                      text:
+                          'Clicca qui per inviare una nuova email di verifica',
+                      style: const TextStyle(
+                        color: Colors.red,
+                        decoration: TextDecoration.underline,
+                      ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () async {
-                          await _sendVerificationEmail(_emailController.text, _passwordController.text);
+                          await _sendVerificationEmail(
+                              _emailController.text, _passwordController.text);
                         },
                     ),
                   ],
@@ -162,8 +186,8 @@ class _LoginState extends State<Login> {
         name = value['name'];
         surname = value['surname'];
         email = value['email'];
-        classes = value['club_class'].isEmpty? [] : value['club_class'];
-        status = value['status'] == 'Admin'? true : false;
+        classes = value['club_class'].isEmpty ? [] : value['club_class'];
+        status = value['status'] == 'Admin' ? true : false;
         role = value['role'];
         club = value['club'];
         id = value.id;
@@ -339,14 +363,16 @@ class _LoginState extends State<Login> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green[800],
+                                  backgroundColor: Colors.green[800],
                                 ),
                                 onPressed: () {
                                   _emailFocusNode.unfocus();
                                   _passwordFocusNode.unfocus();
                                   Navigator.pushNamed(context, '/signup');
                                 },
-                                child: const Text('Registrati', style: TextStyle(color: Colors.white, fontSize: 17)),
+                                child: const Text('Registrati',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 17)),
                               ),
                             ),
                             const SizedBox(width: 20),
@@ -364,7 +390,8 @@ class _LoginState extends State<Login> {
                                         ),
                                       )
                                     : const Text('Accedi',
-                                        style: TextStyle(color: Colors.white, fontSize: 17)),
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 17)),
                               ),
                             ),
                           ],
@@ -375,7 +402,8 @@ class _LoginState extends State<Login> {
                         onPressed: _showForgotPasswordDialog,
                         child: const Text(
                           'Password dimenticata?',
-                          style: TextStyle(color: Color(0xFF0D47A1), fontSize: 15),
+                          style:
+                              TextStyle(color: Color(0xFF0D47A1), fontSize: 15),
                         ),
                       ),
                     ],

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'verify.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -88,6 +90,26 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
+  Future<String> getDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        print("Android Info:");
+        print("Model: ${androidInfo.model}");
+        return androidInfo as String;
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        print("iOS Info:");
+        print("Model: ${iosInfo.utsname.machine}");
+        return iosInfo as String;
+      }
+    } catch (e) {
+      print("Failed to get device info: $e");
+    }
+    return '';
+  }
+
   _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -100,6 +122,8 @@ class _SignUpState extends State<SignUp> {
         String password = _passwordController.text;
         String birthdate = _birthdateController.text;
         String club = _clubController.text;
+
+        String device = await getDeviceInfo();
 
         await _auth.createUserWithEmailAndPassword(
             email: email, password: password);

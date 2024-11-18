@@ -18,6 +18,8 @@ import 'services/local_notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/pages/club/eventPage.dart';
 import 'package:club/pages/club/programCard.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,54 +47,51 @@ void main() async {
 
   runApp(MyApp(
     club: club,
-    ));
+  ));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-   MyApp({
+  MyApp({
     super.key,
     required this.club,
-    });
+  });
 
   final String club;
   Widget startWidget = Container();
 
   Future<void> fetchPage() async {
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
-  String club = prefs.getString('club') ?? '';
+    String club = prefs.getString('club') ?? '';
 
-  if (prefs.getString('email') != null &&
-      prefs.getString('email')!.isNotEmpty) {
-    QueryDocumentSnapshot value =
-        await data('user', 'email', prefs.getString('email'));
+    if (prefs.getString('email') != null &&
+        prefs.getString('email')!.isNotEmpty) {
+      QueryDocumentSnapshot value =
+          await data('user', 'email', prefs.getString('email'));
 
-    String name = value['name'];
-    String surname = value['surname'];
-    String email = value['email'];
-    List classes = value['club_class'];
-    bool status = value['status'] == 'Admin' ? true : false;
-    String role = value['role'];
-    String id = value.id;
+      String name = value['name'];
+      String surname = value['surname'];
+      String email = value['email'];
+      List classes = value['club_class'];
+      bool status = value['status'] == 'Admin' ? true : false;
+      String role = value['role'];
+      String id = value.id;
 
-    startWidget =
-      ClubPage(
-      classes: classes,
-      club: club,
-      status: status,
-      id: id,
-      name: name,
-      surname: surname,
-      email: email,
-      role: role,
-    );
-  } else {
-    startWidget = const Login();
-  }
-  
+      startWidget = ClubPage(
+        classes: classes,
+        club: club,
+        status: status,
+        id: id,
+        name: name,
+        surname: surname,
+        email: email,
+        role: role,
+      );
+    } else {
+      startWidget = const Login();
+    }
   }
 
   //@override
@@ -158,7 +157,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool terminated = false;
 
   String name = '';
@@ -193,38 +191,84 @@ class _HomePageState extends State<HomePage> {
         role: role);
   }
 
+  Future<String> getDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        print("Android Info:");
+        print("Model: ${androidInfo.model}");
+        return androidInfo.model;
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        print("iOS Info:");
+        print("Model: ${iosInfo.utsname.machine}");
+        return iosInfo.model;
+      }
+    } catch (e) {
+      print("Failed to get device info: $e");
+    }
+    return '';
+  }
+
   Future<void> retrieveData() async {
-    QueryDocumentSnapshot value = await data('user', 'email', email);
 
-    name = value['name'];
-    surname = value['surname'];
-    email = value['email'];
-    classes = value['club_class'];
-    status = value['status'] == 'Admin' ? true : false;
-    token = value['token'];
-    role = value['role'];
-    id = value.id;
+    if(email!='') {
+      QueryDocumentSnapshot value = await data('user', 'email', email);
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    club = prefs.getString('club') ?? '';
+      name = value['name'];
+      surname = value['surname'];
+      email = value['email'];
+      classes = value['club_class'];
+      status = value['status'] == 'Admin' ? true : false;
+      token = value['token'];
+      role = value['role'];
+      id = value.id;
 
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    String? getToken = await messaging.getToken();
-    print("token: $getToken");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      club = prefs.getString('club') ?? '';
 
-    List tokenList = [getToken];
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? getToken = await messaging.getToken();
+      print("token: $getToken");
 
-    if (token.isEmpty) {
-      await FirebaseFirestore.instance
-          .collection('user')
-          .doc(id)
-          .update({'token': tokenList});
-    } else if (token.isNotEmpty && !token.contains(getToken)) {
-      token.add(getToken);
-      await FirebaseFirestore.instance
-          .collection('user')
-          .doc(id)
-          .update({'token': token});
+      //
+      String device = await getDeviceInfo();
+      print("device: $device");
+      Map deviceToken = {device: getToken};
+      //
+
+      if (token.isEmpty) {
+        await FirebaseFirestore.instance.collection('user').doc(id).update({
+          'token': [deviceToken]
+        });
+      }
+
+      //else {
+        //print("1");
+        //int existingIndex =
+        //    token.indexWhere((element) => element.containsKey(device));
+        //print("bool: $existingIndex");
+        //if (existingIndex != -1) {
+        //  print("2");
+        //  token[existingIndex] = deviceToken;
+        //} else {
+        //  print("3");
+        //  token.add(deviceToken);
+        //}
+        //await FirebaseFirestore.instance
+        //    .collection('user')
+        //    .doc(id)
+        //    .update({'token': token});
+      //}
+
+      //else if (token.isNotEmpty && !token.contains(getToken)) {
+      //token.add(getToken);
+      //await FirebaseFirestore.instance
+      //    .collection('user')
+      //    .doc(id)
+      //    .update({'token': token});
+      //}
     }
   }
 
@@ -297,13 +341,14 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => EventPage(
-                  club: club,
-                  documentId: message.data['docId'],
-                  isAdmin: status,
-                  name: name,
-                  selectedDay: focusedDay,
-                  role: role,
-                  classes: classes,)));
+                    club: club,
+                    documentId: message.data['docId'],
+                    isAdmin: status,
+                    name: name,
+                    selectedDay: focusedDay,
+                    role: role,
+                    classes: classes,
+                  )));
     }
   }
 
@@ -349,13 +394,14 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
               builder: (context) => EventPage(
-                  club: club,
-                  documentId: initialMessage?.data['docId'],
-                  isAdmin: status,
-                  name: name,
-                  selectedDay: focusedDay,
-                  role: role,
-                  classes: classes,)));
+                    club: club,
+                    documentId: initialMessage?.data['docId'],
+                    isAdmin: status,
+                    name: name,
+                    selectedDay: focusedDay,
+                    role: role,
+                    classes: classes,
+                  )));
       return buildClubPage(club, 1);
     }
     return buildClubPage(club, 0);
@@ -395,6 +441,7 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           email = snapshot.data ?? '';
+          print("xyz: $email");
           if (email == '') {
             return const Login();
           } else {
