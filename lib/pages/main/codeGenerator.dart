@@ -194,7 +194,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'club_class': classList,
         'status': selectedStatus,
       });
-      List token = querySnapshot.docs.first["token"];
+      //List token = querySnapshot.docs.first["token"];
+      List tokenList = querySnapshot.docs.first["token"];
+      List<String> token = [];
+      for (var elem in tokenList) {
+        if (elem is String) {
+          token.add(elem);
+        } else if (elem is Map<String, String>) {
+          token.add(elem.values.first);
+        }
+      }
       sendNotification(token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
       Navigator.pop(context);
     } catch (e) {

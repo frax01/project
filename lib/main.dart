@@ -196,13 +196,9 @@ class _HomePageState extends State<HomePage> {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfoPlugin.androidInfo;
-        print("Android Info:");
-        print("Model: ${androidInfo.model}");
         return androidInfo.model;
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfoPlugin.iosInfo;
-        print("iOS Info:");
-        print("Model: ${iosInfo.utsname.machine}");
         return iosInfo.model;
       }
     } catch (e) {
@@ -232,43 +228,31 @@ class _HomePageState extends State<HomePage> {
       String? getToken = await messaging.getToken();
       print("token: $getToken");
 
-      //
       String device = await getDeviceInfo();
-      print("device: $device");
       Map deviceToken = {device: getToken};
-      //
 
-      if (token.isEmpty) {
+      if (token.isEmpty || token.any((element) => element is String)) {
         await FirebaseFirestore.instance.collection('user').doc(id).update({
           'token': [deviceToken]
         });
+      } else {
+        if (token.any((map) => map.containsKey(device))) {
+          for (var map in token) {
+            if (map.containsKey(device)) {
+              if (map[device] != getToken) {
+                map[device] = getToken;
+              }
+              break;
+            }
+          }
+        } else {
+          token.add({device: getToken});
+        }
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(id)
+            .update({'token': token});
       }
-
-      //else {
-        //print("1");
-        //int existingIndex =
-        //    token.indexWhere((element) => element.containsKey(device));
-        //print("bool: $existingIndex");
-        //if (existingIndex != -1) {
-        //  print("2");
-        //  token[existingIndex] = deviceToken;
-        //} else {
-        //  print("3");
-        //  token.add(deviceToken);
-        //}
-        //await FirebaseFirestore.instance
-        //    .collection('user')
-        //    .doc(id)
-        //    .update({'token': token});
-      //}
-
-      //else if (token.isNotEmpty && !token.contains(getToken)) {
-      //token.add(getToken);
-      //await FirebaseFirestore.instance
-      //    .collection('user')
-      //    .doc(id)
-      //    .update({'token': token});
-      //}
     }
   }
 

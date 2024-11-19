@@ -83,9 +83,16 @@ Future<List<String>> fetchToken(
         .where(section, arrayContains: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      for (String value in documentSnapshot['token']) {
-        if (!tokens.contains(value)) {
-          tokens.add(value);
+      for (var value in documentSnapshot['token']) {
+        if (value is String) {
+          if (!tokens.contains(value)) {
+            tokens.add(value);
+          }
+        } else if (value is Map<String, String>) {
+          String tokenValue = value.values.first;
+          if (!tokens.contains(tokenValue)) {
+            tokens.add(tokenValue);
+          }
         }
       }
     }
@@ -97,8 +104,7 @@ Future<List<String>> fetchToken(
   }
 }
 
-Future<List<String>> retrieveToken(
-    String section, String target, String club) async {
+Future<List<String>> retrieveToken(String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -107,9 +113,16 @@ Future<List<String>> retrieveToken(
         .where(section, isEqualTo: target)
         .get();
     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      for (String value in documentSnapshot['token']) {
-        if (!tokens.contains(value)) {
-          tokens.add(value);
+      for (var value in documentSnapshot['token']) {
+        if (value is String) {
+          if (!tokens.contains(value)) {
+            tokens.add(value);
+          }
+        } else if (value is Map<String, String>) {
+          String tokenValue = value.values.first;
+          if (!tokens.contains(tokenValue)) {
+            tokens.add(tokenValue);
+          }
         }
       }
     }

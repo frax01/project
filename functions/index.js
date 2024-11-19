@@ -180,7 +180,21 @@ async function fetchProgramsTokens(classes, elem) {
         for (const snapshot of querySnapshots) {
             for (const user of snapshot.docs) {
                 if (!seenUsers.has(user.id)) {
-                    tokens.push(...user.data().token);
+                    //da qua
+                    const userTokens = user.data().token;
+                    userTokens.forEach(token => {
+                        if (typeof token === 'string') {
+                            tokens.push(token);
+                        } else if (typeof token === 'object' && token !== null) {
+                            const firstValue = Object.values(token)[0];
+                            if (firstValue) {
+                                tokens.push(firstValue);
+                            }
+                        }
+                    });
+                    //a qua
+
+                    //tokens.push(...user.data().token); tolto
                     seenUsers.add(user.id);
                 }
             }
@@ -261,9 +275,26 @@ async function fetchTokensEvent(users) {
             });
         }
 
+        //da qua
         userDocs.forEach(user => {
-            tokens.push(...user.token);
-        });        
+            if (user.token) {
+                user.token.forEach(token => {
+                    if (typeof token === 'string') {
+                        tokens.push(token);
+                    } else if (typeof token === 'object' && token !== null) {
+                        const firstValue = Object.values(token)[0];
+                        if (firstValue) {
+                            tokens.push(firstValue);
+                        }
+                    }
+                });
+            }
+        });
+        //a qua
+
+        //userDocs.forEach(user => {
+        //    tokens.push(...user.token); tolto
+        //});        
 
     } catch (error) {
         console.error('Errore nel recupero dei token: ', error);
@@ -289,7 +320,20 @@ async function fetchUsersBirthday(elem) {
             const [day, month, year] = user.data().birthdate.split('-');
             if(day==dayToday && month==monthToday) {
                 birthdays.push(`${user.data().name} ${user.data().surname}`);
-                tokens.push(...user.data().token);
+                //da qua
+                const userTokens = user.data().token;
+                userTokens.forEach(token => {
+                    if (typeof token === 'string') {
+                        tokens.push(token);
+                    } else if (typeof token === 'object' && token !== null) {
+                        const firstValue = Object.values(token)[0];
+                        if (firstValue) {
+                            tokens.push(firstValue);
+                        }
+                    }
+                });
+                //a qua
+                //tokens.push(...user.data().token); tolto
             }
         });
     } catch (error) {
@@ -307,9 +351,25 @@ async function fetchTokensBirthday(elem) {
         .where('role', 'in', ['Tutor', 'Ragazzo'])
         .get();
         users.forEach(user => {
-            if (user.data().token) {
-                tokens.push(...user.data().token);
+            //da qua
+            const userTokens = user.data().token;
+            if (userTokens) {
+                userTokens.forEach(token => {
+                    if (typeof token === 'string') {
+                        tokens.push(token);
+                    } else if (typeof token === 'object' && token !== null) {
+                        const firstValue = Object.values(token)[0];
+                        if (firstValue) {
+                            tokens.push(firstValue);
+                        }
+                    }
+                });
             }
+            //a qua
+
+            //if (user.data().token) {
+            //    tokens.push(...user.data().token); tolto
+            //}
         });
     } catch (error) {
         console.error('Errore nel recupero dei token: ', error);
@@ -434,11 +494,3 @@ async function sendNotification(token, section, name, filter, id, focused) {
         console.error('Errore nell\'invio della notifica: ', error);
     }
 }
-
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
