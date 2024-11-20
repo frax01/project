@@ -153,7 +153,6 @@ async function fetchPrograms(elem) {
                     const userTokens = await fetchProgramsTokens(event.data().selectedClass, elem);
                     tokens.push(...userTokens);
                     info.push([tokens, event.data().title, event.data().selectedOption, event.id]);
-                    console.log(`info: ${info}`);
                 }
             }
         }

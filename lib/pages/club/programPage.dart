@@ -804,7 +804,7 @@ class _ProgramPageState extends State<ProgramPage> {
                       ),
                       ListTile(
                         leading: const Icon(
-                          Icons.timelapse,
+                          Icons.calendar_today,
                           size: 30,
                         ),
                         title: const Text('Quando',
@@ -819,6 +819,24 @@ class _ProgramPageState extends State<ProgramPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      _data['inizio'].isNotEmpty? //fare la divisione tra weekend e trip
+                      ListTile(
+                        leading: const Icon(
+                          Icons.timelapse,
+                          size: 30,
+                        ),
+                        title: const Text('Orario',
+                            style: TextStyle(color: Colors.black54)),
+                        subtitle: AutoSizeText(
+                          _data['fine'].isNotEmpty?
+                          'Dalle ${_data['inizio']} alle ${_data['fine']}'
+                          : '${_data['inizio']}',
+                          style: const TextStyle(fontSize: 20.0),
+                          maxLines: 2,
+                          minFontSize: 10,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ) : Container(),
                       _data['description'] != ''
                           ? ListTile(
                               title: const Text('Descrizione',

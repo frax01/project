@@ -12,6 +12,7 @@ Future<void> sendNotification(
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
+    print("tok: $token");
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -88,7 +89,7 @@ Future<List<String>> fetchToken(
           if (!tokens.contains(value)) {
             tokens.add(value);
           }
-        } else if (value is Map<String, String>) {
+        } else if (value is Map) {
           String tokenValue = value.values.first;
           if (!tokens.contains(tokenValue)) {
             tokens.add(tokenValue);
@@ -104,7 +105,8 @@ Future<List<String>> fetchToken(
   }
 }
 
-Future<List<String>> retrieveToken(String section, String target, String club) async {
+Future<List<String>> retrieveToken(
+    String section, String target, String club) async {
   List<String> tokens = [];
   try {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -118,7 +120,7 @@ Future<List<String>> retrieveToken(String section, String target, String club) a
           if (!tokens.contains(value)) {
             tokens.add(value);
           }
-        } else if (value is Map<String, String>) {
+        } else if (value is Map) {
           String tokenValue = value.values.first;
           if (!tokens.contains(tokenValue)) {
             tokens.add(tokenValue);

@@ -425,7 +425,6 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           email = snapshot.data ?? '';
-          print("xyz: $email");
           if (email == '') {
             return const Login();
           } else {

@@ -80,7 +80,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '3° liceo',
     '4° liceo',
     '5° liceo',
-    //'6° liceo'
+    '6° liceo'
   ];
   final List<String> deltaClassOptions = [
     '1° liceo',
@@ -207,7 +207,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
     if (picked != null && picked != initialDate) {
       return DateFormat('dd-MM-yyyy').format(picked);
-    } else if (picked != null && picked == initialDate && widget.selectedOption == 'trip') {
+    } else if (picked != null &&
+        picked == initialDate &&
+        widget.selectedOption == 'trip') {
       return DateFormat('dd-MM-yyyy').format(picked);
     }
     return null;
@@ -331,8 +333,19 @@ class _AddEditProgramState extends State<AddEditProgram> {
             focusNode: _startTimeFocusNode,
             readOnly: true,
             decoration: const InputDecoration(
-              labelText: 'Ora inizio',
               icon: Icon(Icons.schedule),
+              label: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Ora inizio'),
+                  Text(
+                    '(facoltativo)',
+                    style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
             onTap: () async {
               final String? orario = await _selectTime();
@@ -352,8 +365,19 @@ class _AddEditProgramState extends State<AddEditProgram> {
             readOnly: true,
             enabled: _startTimeController.text.isNotEmpty,
             decoration: const InputDecoration(
-              labelText: 'Ora fine',
               icon: Icon(Icons.schedule),
+              label: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Ora fine'),
+                  Text(
+                    '(facoltativo)',
+                    style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
             onTap: () async {
               final String? orario = await _selectTime();
@@ -527,6 +551,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     return 3;
                   }
                 }
+
                 final int priorityA = getPriority(a);
                 final int priorityB = getPriority(b);
                 if (priorityA != priorityB) {
@@ -556,6 +581,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'pasto': timeController.text,
               'prenotazionePranzo': [],
               'assenzaPranzo': [],
+              'inizio': _startTimeController.text,
+              'fine': _endTimeController.text,
             };
           } else {
             document = {
@@ -574,6 +601,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     return 3;
                   }
                 }
+
                 final int priorityA = getPriority(a);
                 final int priorityB = getPriority(b);
                 if (priorityA != priorityB) {
@@ -591,6 +619,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'club': widget.club,
               'prenotazioni': [],
               'assenze': [],
+              'inizio': _startTimeController.text,
+              'fine': _endTimeController.text,
             };
           }
         } else {
@@ -611,6 +641,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     return 3;
                   }
                 }
+
                 final int priorityA = getPriority(a);
                 final int priorityB = getPriority(b);
                 if (priorityA != priorityB) {
@@ -629,6 +660,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'pasto': timeController.text,
               'prenotazionePranzo': [],
               'assenzaPranzo': [],
+              'inizio': _startTimeController.text,
+              'fine': _endTimeController.text,
             };
           } else {
             document = {
@@ -647,6 +680,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                     return 3;
                   }
                 }
+
                 final int priorityA = getPriority(a);
                 final int priorityB = getPriority(b);
                 if (priorityA != priorityB) {
@@ -662,6 +696,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
               'lon': _longitude,
               'creator': widget.name,
               'club': widget.club,
+              'inizio': _startTimeController.text,
+              'fine': _endTimeController.text,
             };
           }
         }
@@ -798,6 +834,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 return 3;
               }
             }
+
             final int priorityA = getPriority(a);
             final int priorityB = getPriority(b);
             if (priorityA != priorityB) {
@@ -859,24 +896,25 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'selectedOption': widget.selectedOption,
             'imagePath': _image,
             'selectedClass': selectedClasses.sorted((a, b) {
-                int getPriority(String item) {
-                  if (item.contains('elem')) {
-                    return 0;
-                  } else if (item.contains('media')) {
-                    return 1;
-                  } else if (item.contains('liceo')) {
-                    return 2;
-                  } else {
-                    return 3;
-                  }
+              int getPriority(String item) {
+                if (item.contains('elem')) {
+                  return 0;
+                } else if (item.contains('media')) {
+                  return 1;
+                } else if (item.contains('liceo')) {
+                  return 2;
+                } else {
+                  return 3;
                 }
-                final int priorityA = getPriority(a);
-                final int priorityB = getPriority(b);
-                if (priorityA != priorityB) {
-                  return priorityA - priorityB;
-                }
-                return a.compareTo(b);
-              }),
+              }
+
+              final int priorityA = getPriority(a);
+              final int priorityB = getPriority(b);
+              if (priorityA != priorityB) {
+                return priorityA - priorityB;
+              }
+              return a.compareTo(b);
+            }),
             'description': _programDescriptionController.text,
             'startDate': _startDateController.text,
             'endDate': _endDateController.text,
@@ -924,24 +962,25 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'selectedOption': widget.selectedOption,
             'imagePath': _image,
             'selectedClass': selectedClasses.sorted((a, b) {
-                int getPriority(String item) {
-                  if (item.contains('elem')) {
-                    return 0;
-                  } else if (item.contains('media')) {
-                    return 1;
-                  } else if (item.contains('liceo')) {
-                    return 2;
-                  } else {
-                    return 3;
-                  }
+              int getPriority(String item) {
+                if (item.contains('elem')) {
+                  return 0;
+                } else if (item.contains('media')) {
+                  return 1;
+                } else if (item.contains('liceo')) {
+                  return 2;
+                } else {
+                  return 3;
                 }
-                final int priorityA = getPriority(a);
-                final int priorityB = getPriority(b);
-                if (priorityA != priorityB) {
-                  return priorityA - priorityB;
-                }
-                return a.compareTo(b);
-              }),
+              }
+
+              final int priorityA = getPriority(a);
+              final int priorityB = getPriority(b);
+              if (priorityA != priorityB) {
+                return priorityA - priorityB;
+              }
+              return a.compareTo(b);
+            }),
             'description': _programDescriptionController.text,
             'startDate': _startDateController.text,
             'endDate': _endDateController.text,
@@ -1150,6 +1189,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 if (widget.selectedOption != 'evento') ...[
                   const SizedBox(height: 20),
                   _showDatePickers(),
+                  const SizedBox(height: 20),
+                  _showTimePicker(),
                   const SizedBox(height: 20),
                   TypeAheadField(
                     controller: _programLocationController,
