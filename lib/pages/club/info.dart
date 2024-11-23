@@ -19,12 +19,6 @@ class Info extends StatefulWidget {
 class _InfoState extends State<Info> {
   @override
   Widget build(BuildContext context) {
-    //const TextStyle textStyle = TextStyle(
-    //  fontSize: 20.0,
-    //  color: Colors.black,
-    //  decoration: TextDecoration.none,
-    //  fontWeight: FontWeight.normal,
-    //);
 
     return Scaffold(
         appBar: AppBar(

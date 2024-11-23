@@ -327,7 +327,6 @@ class _TabScorerState extends State<TabScorer> {
           ),
         ),
       ];
-    //);
     if (widget.isAdmin) {
       children.add(
         const Padding(

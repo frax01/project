@@ -7,8 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
 import 'package:flutter/gestures.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'dart:io';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -89,26 +87,6 @@ class _LoginState extends State<Login> {
     }
   }
 
-  Future<String> getDeviceInfo() async {
-    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-    try {
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfoPlugin.androidInfo;
-        print("Android Info:");
-        print("Model: ${androidInfo.model}");
-        return androidInfo as String;
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfoPlugin.iosInfo;
-        print("iOS Info:");
-        print("Model: ${iosInfo.utsname.machine}");
-        return iosInfo as String;
-      }
-    } catch (e) {
-      print("Failed to get device info: $e");
-    }
-    return '';
-  }
-
   _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -118,7 +96,6 @@ class _LoginState extends State<Login> {
       });
 
       try {
-        String device = await getDeviceInfo();
         var credentials = await _auth.signInWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,

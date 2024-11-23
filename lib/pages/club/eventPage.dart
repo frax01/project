@@ -35,7 +35,7 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   Map<String, dynamic> _event = {};
-  List<String> _users = [];
+  final List<String> _users = [];
 
   Future<void> _loadEvent() async {
     var doc = await FirebaseFirestore.instance
@@ -50,7 +50,7 @@ class _EventPageState extends State<EventPage> {
           .get();
 
       for (var doc in value.docs) {
-        var data = doc.data() as Map<String, dynamic>;
+        var data = doc.data();
         _users.add('${data['name']} ${data['surname']}');
       }
     }
@@ -101,9 +101,9 @@ class _EventPageState extends State<EventPage> {
     PlatformFile? file;
     bool isLink = false;
     bool isFile = false;
-    final TextEditingController _programNameController =
+    final TextEditingController programNameController =
         TextEditingController();
-    final TextEditingController _linkController = TextEditingController();
+    final TextEditingController linkController = TextEditingController();
 
     return showDialog<void>(
       context: context,
@@ -122,7 +122,7 @@ class _EventPageState extends State<EventPage> {
                       child: Column(
                         children: [
                           TextFormField(
-                            controller: _programNameController,
+                            controller: programNameController,
                             decoration: const InputDecoration(
                               labelText: 'Titolo',
                             ),
@@ -188,7 +188,7 @@ class _EventPageState extends State<EventPage> {
                           const SizedBox(height: 15),
                           if (isLink)
                             TextFormField(
-                              controller: _linkController,
+                              controller: linkController,
                               decoration: const InputDecoration(
                                 labelText: 'Link',
                               ),
@@ -266,8 +266,8 @@ class _EventPageState extends State<EventPage> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    validation(title, _programNameController, isLink,
-                        _linkController, isFile, file);
+                    validation(title, programNameController, isLink,
+                        linkController, isFile, file);
                     setState(() {});
                   },
                   child: const Text('OK'),
@@ -302,20 +302,20 @@ class _EventPageState extends State<EventPage> {
 
   void validation(
     String title,
-    TextEditingController _programNameController,
+    TextEditingController programNameController,
     bool isLink,
-    TextEditingController _linkController,
+    TextEditingController linkController,
     bool isFile,
     PlatformFile? file,
   ) async {
     if (_formKey.currentState!.validate()) {
-      title = _programNameController.text;
+      title = programNameController.text;
       if (title.isNotEmpty &&
-          (isLink && _linkController.text.isNotEmpty ||
+          (isLink && linkController.text.isNotEmpty ||
               isFile && file != null)) {
         final dataToSave = {
           'title': title,
-          'link': isLink ? _linkController.text : '',
+          'link': isLink ? linkController.text : '',
           'path': isFile ? await _uploadFileToFirebase(file!) : null,
         };
 
@@ -344,7 +344,6 @@ class _EventPageState extends State<EventPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 side: const BorderSide(color: Colors.black),
-                //overlayColor: Colors.grey[500],
               ),
               child: Row(
                 children: [
@@ -615,7 +614,7 @@ class _EventPageState extends State<EventPage> {
                               children: [
                                 const Text(
                                   'Descrizione:',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 17, color: Colors.grey),
                                 ),
                                 Text(
@@ -670,7 +669,6 @@ class _EventPageState extends State<EventPage> {
                                       ),
                                       side:
                                           const BorderSide(color: Colors.black),
-                                      //overlayColor: Colors.grey[500],
                                     ),
                                     child: const Icon(Icons.upload,
                                         color: Colors.black),

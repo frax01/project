@@ -10,9 +10,9 @@ class Tiber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FirebaseStorage _storage = FirebaseStorage.instance;
+    final FirebaseStorage storage = FirebaseStorage.instance;
 
-    Future<void> _openFileOrLink(String? url) async {
+    Future<void> openFileOrLink(String? url) async {
       if (url == null || url.isEmpty) {
         return;
       }
@@ -273,11 +273,11 @@ class Tiber extends StatelessWidget {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                       onTap: () async {
-                        final ref = _storage
+                        final ref = storage
                             .ref()
                             .child('Orari/IscrizioneTiber2024-25.pdf');
                         final url = await ref.getDownloadURL();
-                        _openFileOrLink(url);
+                        openFileOrLink(url);
                       }),
                   ListTile(
                     leading: const Icon(Icons.location_on),
@@ -341,15 +341,6 @@ class _DeltaState extends State<Delta> {
     }
     FlutterWebBrowser.openWebPage(url: url);
   }
-
-  //Future<void> getFileUrl(String filePath) async {
-  //  try {
-  //    final ref = _storage.ref().child(filePath);
-  //    final url = await ref.getDownloadURL();
-  //  } catch (e) {
-  //    print('Errore: $e');
-  //  }
-  //}
 
   @override
   Widget build(BuildContext context) {

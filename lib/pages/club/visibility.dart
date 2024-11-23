@@ -123,7 +123,7 @@ class _VisibilitySelectionPageState extends State<VisibilitySelectionPage> {
               });
             },
           );
-        }).toList(),
+        }),
       ],
     );
   }

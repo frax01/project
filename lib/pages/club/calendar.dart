@@ -70,7 +70,7 @@ class _CalendarState extends State<Calendar> {
     return _convivenzaRows[id]!;
   }
 
-  Map<String, bool> _selectedTutors = {};
+  final Map<String, bool> _selectedTutors = {};
 
   Future<void> _loadEvents() async {
     setState(() {
@@ -259,13 +259,11 @@ class _CalendarState extends State<Calendar> {
           (event['tipo'] == 'programma' &&
               !widget.selectedClass.any(
                   (selectedClass) => event['classi'].contains(selectedClass))
-              //&& !widget.isAdmin
               &&
               selectedOptions[0] != 'Tutti i programmi') ||
           (event['tipo'] == 'convivenza' &&
               !widget.selectedClass.any(
                   (selectedClass) => event['classi'].contains(selectedClass))
-              //&& !widget.isAdmin
               &&
               selectedOptions[0] != 'Tutti i programmi')) {
         return false;
@@ -482,7 +480,6 @@ class _CalendarState extends State<Calendar> {
               Expanded(
                   child: Stack(children: [
                 if (!_isLoading)
-                  //child:
                   validEvents.isNotEmpty
                       ? ListView.separated(
                           itemCount: validEvents.length,

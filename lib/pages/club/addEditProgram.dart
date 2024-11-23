@@ -137,6 +137,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
         timeController.text = widget.document!.containsKey('pasto')
             ? widget.document!['pasto']
             : '';
+        _startTimeController.text = widget.document!['inizio'];
+        _endTimeController.text = widget.document!['fine'];
       }
     } else {
       final String formattedDate =
@@ -332,13 +334,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
             controller: _startTimeController,
             focusNode: _startTimeFocusNode,
             readOnly: true,
-            decoration: const InputDecoration(
-              icon: Icon(Icons.schedule),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.schedule),
               label: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ora inizio'),
-                  Text(
+                  widget.selectedOption=='trip'? const Text('Ora partenza') : const Text('Ora inizio'),
+                  const Text(
                     '(facoltativo)',
                     style: TextStyle(
                       fontSize: 12,
@@ -364,13 +366,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
             focusNode: _endTimeFocusNode,
             readOnly: true,
             enabled: _startTimeController.text.isNotEmpty,
-            decoration: const InputDecoration(
-              icon: Icon(Icons.schedule),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.schedule),
               label: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ora fine'),
-                  Text(
+                  widget.selectedOption=='trip'? const Text('Ora arrivo') : const Text('Ora fine'),
+                  const Text(
                     '(facoltativo)',
                     style: TextStyle(
                       fontSize: 12,
@@ -425,7 +427,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
         return false;
       }
     }
-    if (widget.selectedOption == 'evento') {
       final String startTimeText = _startTimeController.text;
       final String endTimeText = _endTimeController.text;
 
@@ -448,7 +449,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
             int.parse(endTimeText.split(':')[1]),
           );
 
-          if (startDateTime.isAfter(endDateTime)) {
+          if (startDateTime.isAfter(endDateTime) && widget.selectedOption!='trip') {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
@@ -475,7 +476,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
       } else {
         return true;
       }
-    }
 
     return true;
   }
@@ -559,15 +559,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 }
                 return a.compareTo(b);
               }),
-              //selectedClasses.sorted((a, b) {
-              //  if (a.contains('media') && b.contains('liceo')) {
-              //    return -1;
-              //  } else if (a.contains('liceo') && b.contains('media')) {
-              //    return 1;
-              //  } else {
-              //    return a.compareTo(b);
-              //  }
-              //}),
               'description': _programDescriptionController.text,
               'startDate': _startDateController.text,
               'endDate': _endDateController.text,
@@ -779,44 +770,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
     } else {
       Map<Object, Object?> newDocument = {};
       if (reservations) {
-        //if(food) {
-        //  newDocument = {
-        //    'id': widget.document!['id'],
-        //    'title': _programNameController.text,
-        //    'selectedOption': widget.selectedOption,
-        //    'imagePath': _image,
-        //    'selectedClass': selectedClasses.sorted((a, b) {
-        //      if (a.contains('media') && b.contains('liceo')) {
-        //        return -1;
-        //      } else if (a.contains('liceo') && b.contains('media')) {
-        //        return 1;
-        //      } else {
-        //        return a.compareTo(b);
-        //      }
-        //    }),
-        //    'description': _programDescriptionController.text,
-        //    'startDate': _startDateController.text,
-        //    'endDate': _endDateController.text,
-        //    'address': _address,
-        //    'lat': _latitude,
-        //    'lon': _longitude,
-        //    'creator': widget.name,
-        //    'club': widget.club,
-        //    'prenotazioni': widget.document!.containsKey('prenotazioni')
-        //        ? widget.document!['prenotazioni']
-        //        : [],
-        //    'assenze': widget.document!.containsKey('assenze')
-        //        ? widget.document!['assenze']
-        //        : [],
-        //    'pasto': timeController.text,
-        //    'prenotazionePranzo': widget.document!.containsKey('prenotazionePranzo')
-        //        ? widget.document!['prenotazionePranzo']
-        //        : [],
-        //    'assenzaPranzo': widget.document!.containsKey('assenzaPranzo')
-        //        ? widget.document!['assenzaPranzo']
-        //        : [],
-        //  };
-        //} else {
         newDocument = {
           'id': widget.document!['id'],
           'title': _programNameController.text,
@@ -834,7 +787,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
                 return 3;
               }
             }
-
             final int priorityA = getPriority(a);
             final int priorityB = getPriority(b);
             if (priorityA != priorityB) {
@@ -856,40 +808,11 @@ class _AddEditProgramState extends State<AddEditProgram> {
           'assenze': widget.document!.containsKey('assenze')
               ? widget.document!['assenze']
               : [],
+          'inizio': _startTimeController.text,
+          'fine': _endTimeController.text,
         };
-        //}
       } else {
         if (widget.document!.containsKey('prenotazioni')) {
-          //if(widget.document!.containsKey('prenotazionePranzo')) {
-          //  newDocument = {
-          //  'id': widget.document!['id'],
-          //  'title': _programNameController.text,
-          //  'selectedOption': widget.selectedOption,
-          //  'imagePath': _image,
-          //  'selectedClass': selectedClasses.sorted((a, b) {
-          //    if (a.contains('media') && b.contains('liceo')) {
-          //      return -1;
-          //    } else if (a.contains('liceo') && b.contains('media')) {
-          //      return 1;
-          //    } else {
-          //      return a.compareTo(b);
-          //    }
-          //  }),
-          //  'description': _programDescriptionController.text,
-          //  'startDate': _startDateController.text,
-          //  'endDate': _endDateController.text,
-          //  'address': _address,
-          //  'lat': _latitude,
-          //  'lon': _longitude,
-          //  'creator': widget.name,
-          //  'club': widget.club,
-          //  'prenotazioni': FieldValue.delete(),
-          //  'assenze': FieldValue.delete(),
-          //  'pasto': FieldValue.delete(),
-          //  'prenotazionePranzo': FieldValue.delete(),
-          //  'assenzaPranzo': FieldValue.delete(),
-          //};
-          //} else {
           newDocument = {
             'id': widget.document!['id'],
             'title': _programNameController.text,
@@ -907,7 +830,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
                   return 3;
                 }
               }
-
               final int priorityA = getPriority(a);
               final int priorityB = getPriority(b);
               if (priorityA != priorityB) {
@@ -925,37 +847,10 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'club': widget.club,
             'prenotazioni': FieldValue.delete(),
             'assenze': FieldValue.delete(),
+            'inizio': _startTimeController.text,
+            'fine': _endTimeController.text,
           };
-          //}
         } else {
-          //if(widget.document!.containsKey('prenotazionePranzo')) {
-          //  newDocument = {
-          //    'id': widget.document!['id'],
-          //    'title': _programNameController.text,
-          //    'selectedOption': widget.selectedOption,
-          //    'imagePath': _image,
-          //    'selectedClass': selectedClasses.sorted((a, b) {
-          //      if (a.contains('media') && b.contains('liceo')) {
-          //        return -1;
-          //      } else if (a.contains('liceo') && b.contains('media')) {
-          //        return 1;
-          //      } else {
-          //        return a.compareTo(b);
-          //      }
-          //    }),
-          //    'description': _programDescriptionController.text,
-          //    'startDate': _startDateController.text,
-          //    'endDate': _endDateController.text,
-          //    'address': _address,
-          //    'lat': _latitude,
-          //    'lon': _longitude,
-          //    'creator': widget.name,
-          //    'club': widget.club,
-          //    'pasto': FieldValue.delete(),
-          //    'prenotazionePranzo': FieldValue.delete(),
-          //    'assenzaPranzo': FieldValue.delete(),
-          //  };
-          //} else {
           newDocument = {
             'id': widget.document!['id'],
             'title': _programNameController.text,
@@ -973,7 +868,6 @@ class _AddEditProgramState extends State<AddEditProgram> {
                   return 3;
                 }
               }
-
               final int priorityA = getPriority(a);
               final int priorityB = getPriority(b);
               if (priorityA != priorityB) {
@@ -989,8 +883,9 @@ class _AddEditProgramState extends State<AddEditProgram> {
             'lon': _longitude,
             'creator': widget.name,
             'club': widget.club,
+            'inizio': _startTimeController.text,
+            'fine': _endTimeController.text,
           };
-          //}
         }
       }
 

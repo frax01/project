@@ -163,9 +163,9 @@ class _ProgramPageState extends State<ProgramPage> {
     PlatformFile? file;
     bool isLink = false;
     bool isFile = false;
-    final TextEditingController _programNameController =
+    final TextEditingController programNameController =
         TextEditingController();
-    final TextEditingController _linkController = TextEditingController();
+    final TextEditingController linkController = TextEditingController();
 
     return showDialog<void>(
       context: context,
@@ -184,7 +184,7 @@ class _ProgramPageState extends State<ProgramPage> {
                       child: Column(
                         children: [
                           TextFormField(
-                            controller: _programNameController,
+                            controller: programNameController,
                             decoration: const InputDecoration(
                               labelText: 'Titolo',
                             ),
@@ -250,7 +250,7 @@ class _ProgramPageState extends State<ProgramPage> {
                           const SizedBox(height: 15),
                           if (isLink)
                             TextFormField(
-                              controller: _linkController,
+                              controller: linkController,
                               decoration: const InputDecoration(
                                 labelText: 'Link',
                               ),
@@ -328,8 +328,8 @@ class _ProgramPageState extends State<ProgramPage> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    await validation(title, _programNameController, isLink,
-                        _linkController, isFile, file);
+                    await validation(title, programNameController, isLink,
+                        linkController, isFile, file);
                     Navigator.of(context).pop();
                   },
                   child: const Text('OK'),
@@ -372,20 +372,20 @@ class _ProgramPageState extends State<ProgramPage> {
 
   Future<void> validation(
     String title,
-    TextEditingController _programNameController,
+    TextEditingController programNameController,
     bool isLink,
-    TextEditingController _linkController,
+    TextEditingController linkController,
     bool isFile,
     PlatformFile? file,
   ) async {
     if (_formKey.currentState!.validate()) {
-      title = _programNameController.text;
+      title = programNameController.text;
       if (title.isNotEmpty &&
-          (isLink && _linkController.text.isNotEmpty ||
+          (isLink && linkController.text.isNotEmpty ||
               isFile && file != null)) {
         final dataToSave = {
           'title': title,
-          'link': isLink ? _linkController.text : '',
+          'link': isLink ? linkController.text : '',
           'path': isFile ? await _uploadFileToFirebase(file!) : null,
         };
 
@@ -413,7 +413,6 @@ class _ProgramPageState extends State<ProgramPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 side: const BorderSide(color: Colors.black),
-                //overlayColor: Colors.grey[500],
               ),
               child: Row(
                 children: [
@@ -660,8 +659,6 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  //bool _isExpanded = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -819,7 +816,7 @@ class _ProgramPageState extends State<ProgramPage> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      _data['inizio'].isNotEmpty? //fare la divisione tra weekend e trip
+                      _data['inizio'].isNotEmpty?
                       ListTile(
                         leading: const Icon(
                           Icons.timelapse,
@@ -828,9 +825,13 @@ class _ProgramPageState extends State<ProgramPage> {
                         title: const Text('Orario',
                             style: TextStyle(color: Colors.black54)),
                         subtitle: AutoSizeText(
-                          _data['fine'].isNotEmpty?
-                          'Dalle ${_data['inizio']} alle ${_data['fine']}'
-                          : '${_data['inizio']}',
+                          _data['selectedOption']=='weekend' ?
+                            _data['fine'].isNotEmpty?
+                            'Dalle ${_data['inizio']} alle ${_data['fine']}'
+                            : '${_data['inizio']}'
+                          : _data['fine'].isNotEmpty?
+                            'Partenza: ${_data['inizio']} - Rientro: ${_data['fine']}'
+                            : 'Partenza: ${_data['inizio']}',
                           style: const TextStyle(fontSize: 20.0),
                           maxLines: 2,
                           minFontSize: 10,
@@ -1126,7 +1127,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                       ],
                                     )),
                       //pranzo
-                      if (_data.containsKey('pasto'))
+                      if (_data.containsKey('pasto') && (widget.role != 'Genitore' || (newRole != '' && newRole != 'Genitore')))
                         Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey),
@@ -1206,7 +1207,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                 ]),
                                 //prenotazioni pranzo
                                 if (_data.containsKey('prenotazionePranzo') &&
-                                    (widget.role != 'Genitore' || newRole != 'Genitore'))
+                                    (widget.role != 'Genitore' || (newRole != '' && newRole != 'Genitore')))
                                   Column(
                                     children: [
                                       ExpansionTile(
@@ -1295,7 +1296,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                     ],
                                   ),
                                 if (_data.containsKey('prenotazionePranzo') &&
-                                    (widget.role == 'Genitore' || newRole == 'Genitore'))
+                                    (widget.role == 'Genitore' || (newRole != '' && newRole == 'Genitore')))
                                   Column(
                                     children: [
                                       const SizedBox(height: 20.0),

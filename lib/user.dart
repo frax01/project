@@ -11,6 +11,7 @@ class ClubUser {
   final String status;
   final String token;
   final DateTime created_time;
+  final String version;
 
   ClubUser(
       {required this.name,
@@ -24,5 +25,6 @@ class ClubUser {
       required this.soccer_class,
       required this.status,
       required this.token,
-      required this.created_time});
+      required this.created_time,
+      required this.version});
 }

@@ -94,15 +94,14 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  //@override
   void initState() {
     fetchPage();
   }
 
   @override
   Widget build(BuildContext context) {
-    var lightTheme;
-    var darkTheme;
+    ThemeData lightTheme;
+    ThemeData darkTheme;
 
     switch (club) {
       case 'Tiber Club':

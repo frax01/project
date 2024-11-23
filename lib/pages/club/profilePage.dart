@@ -38,6 +38,54 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+
+    printUsersWithOldVersion();
+  }
+
+  Future<void> printUsersWithOldVersion() async {
+    try {
+      String versione = '';
+      final querySnapshot1 = await FirebaseFirestore.instance
+          .collection('aggiornamento')
+          .doc('unico')
+          .get();
+      if (querySnapshot1.exists) {
+        versione = querySnapshot1.data()!['versione'];
+      }
+      CollectionReference users = FirebaseFirestore.instance.collection('user');
+      QuerySnapshot querySnapshot2 =
+          await users.where('versione', isNotEqualTo: versione).get();
+      if (querySnapshot2.docs.isNotEmpty) {
+        int count = 1;
+        print("Devono aggiornare:");
+        for (var doc in querySnapshot2.docs) {
+          String nome = doc['name'] ?? 'N/A';
+          String cognome = doc['surname'] ?? 'N/A';
+          print('$count. $nome $cognome');
+          count++;
+        }
+      } else {
+        print('Nessun utente trovato con una versione diversa da $versione');
+      }
+
+      QuerySnapshot querySnapshot3 =
+          await users.where('versione', isEqualTo: versione).get();
+      if (querySnapshot3.docs.isNotEmpty) {
+        int count = 1;
+        print("");
+        print("Hanno aggiornato:");
+        for (var doc in querySnapshot3.docs) {
+          String nome = doc['name'] ?? 'N/A';
+          String cognome = doc['surname'] ?? 'N/A';
+          print('$count. $nome $cognome');
+          count++;
+        }
+      } else {
+        print('Nessun utente trovato con una versione uguale a $versione');
+      }
+    } catch (e) {
+      print('Errore durante la ricerca degli utenti: $e');
+    }
   }
 
   Future<void> _showDeleteAccountDialog() async {
@@ -159,54 +207,54 @@ class _SettingsPageState extends State<SettingsPage> {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     bool isChecked = false;
     final bool confirm = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              title: const Text('Conferma'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text('Aggiornare alla versione ${packageInfo.version}?'),
-                  const SizedBox(height: 15),
-                  CheckboxListTile(
-                    value: isChecked,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isChecked = value ?? false;
-                      });
-                    },
-                    title: const Text("Obbligatorio"),
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return AlertDialog(
+                  title: const Text('Conferma'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text('Aggiornare alla versione ${packageInfo.version}?'),
+                      const SizedBox(height: 15),
+                      CheckboxListTile(
+                        value: isChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isChecked = value ?? false;
+                          });
+                        },
+                        title: const Text("Obbligatorio"),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Annulla'),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                ),
-                TextButton(
-                  child: const Text('Conferma'),
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                ),
-              ],
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Annulla'),
+                      onPressed: () {
+                        Navigator.of(context).pop(false);
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Conferma'),
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           },
-        );
-      },
-    ) ?? false;
+        ) ??
+        false;
 
     if (confirm) {
       _updateVersion(isChecked);
     }
   }
-
 
   Future<void> _showConfirmDialog() async {
     final bool confirm = await showDialog<bool>(

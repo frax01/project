@@ -7,8 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'verify.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'dart:io';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -26,7 +25,8 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _surnameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmController = TextEditingController();
+  final TextEditingController _passwordConfirmController =
+      TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _clubController = TextEditingController();
 
@@ -39,7 +39,6 @@ class _SignUpState extends State<SignUp> {
   final FocusNode _pwFocusNode = FocusNode();
   final FocusNode _confirmPwFocusNode = FocusNode();
 
-
   @override
   void dispose() {
     _nameFocusNode.dispose();
@@ -49,7 +48,6 @@ class _SignUpState extends State<SignUp> {
     _confirmPwFocusNode.dispose();
     super.dispose();
   }
-
 
   _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
@@ -90,26 +88,6 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
-  Future<String> getDeviceInfo() async {
-    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-    try {
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfoPlugin.androidInfo;
-        print("Android Info:");
-        print("Model: ${androidInfo.model}");
-        return androidInfo as String;
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfoPlugin.iosInfo;
-        print("iOS Info:");
-        print("Model: ${iosInfo.utsname.machine}");
-        return iosInfo as String;
-      }
-    } catch (e) {
-      print("Failed to get device info: $e");
-    }
-    return '';
-  }
-
   _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -123,7 +101,8 @@ class _SignUpState extends State<SignUp> {
         String birthdate = _birthdateController.text;
         String club = _clubController.text;
 
-        String device = await getDeviceInfo();
+        final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        String versione = packageInfo.version;
 
         await _auth.createUserWithEmailAndPassword(
             email: email, password: password);
@@ -131,18 +110,19 @@ class _SignUpState extends State<SignUp> {
         String tokenKey = await _firebaseMessaging();
 
         var user = ClubUser(
-          name: name,
-          surname: surname,
-          email: email,
-          password: password,
-          birthdate: birthdate,
-          club: club,
-          role: '',
-          club_class: '',
-          soccer_class: '',
-          status: '',
-          token: tokenKey,
-          created_time: DateTime.now(),
+            name: name,
+            surname: surname,
+            email: email,
+            password: password,
+            birthdate: birthdate,
+            club: club,
+            role: '',
+            club_class: '',
+            soccer_class: '',
+            status: '',
+            token: tokenKey,
+            created_time: DateTime.now(),
+            version: versione
         );
 
         await _saveUser(user);
@@ -151,8 +131,10 @@ class _SignUpState extends State<SignUp> {
         prefs.setString('email', _emailController.text);
         prefs.setString('club', club);
 
-        List<String> token = await retrieveToken('status', 'Admin', _clubController.text);
-        sendNotification(token, 'Nuova registrazione!', 'Accetta il nuovo utente', 'new_user');
+        List<String> token =
+            await retrieveToken('status', 'Admin', _clubController.text);
+        sendNotification(token, 'Nuova registrazione!',
+            'Accetta il nuovo utente', 'new_user');
 
         setState(() {
           Navigator.pushReplacement(context,
@@ -174,7 +156,6 @@ class _SignUpState extends State<SignUp> {
       }
     }
   }
-
 
   _selectDate(BuildContext context) async {
     _nameFocusNode.unfocus();

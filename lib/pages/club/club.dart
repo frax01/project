@@ -57,9 +57,8 @@ class _ClubPageState extends State<ClubPage> {
       obbligatorio = querySnapshot.data()!['obbligatorio'];
     }
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    bool confirm = false;
     if (versione != packageInfo.version) {
-      confirm = await showDialog<bool>(
+      await showDialog<bool>(
             context: context,
             barrierDismissible: obbligatorio ? false : true,
             barrierColor: const Color.fromARGB(255, 206, 203, 203),
@@ -120,10 +119,11 @@ class _ClubPageState extends State<ClubPage> {
             },
           ) ??
           false;
-    }
-
-    if (confirm) {
-      //_updateVersion(isChecked);
+    } else {
+      await FirebaseFirestore.instance
+          .collection('user')
+          .doc(widget.id)
+          .update({'versione': versione});
     }
   }
 

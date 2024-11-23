@@ -9,8 +9,10 @@ class UserDetailsPage extends StatefulWidget {
       required this.title,
       required this.userEmail,
       required this.userName,
+      required this.userId,
       required this.club});
 
+  final String userId;
   final String userEmail;
   final String title;
   final String userName;
@@ -52,6 +54,18 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     setState(() {});
   }
 
+  Future<void> _deleteUser() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    try {
+      await firestore.collection('user').doc(widget.userId).delete();
+      Navigator.of(context).pop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante l\'eliminazione: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +93,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       selectedRole = value.toString();
                     });
                   }),
-                  buildDropdownClasse("Classe", widget.club=='Tiber Club'? tiberClubClassOptions : deltaClubClassOptions, (value) {
+                  buildDropdownClasse(
+                      "Classe",
+                      widget.club == 'Tiber Club'
+                          ? tiberClubClassOptions
+                          : deltaClubClassOptions, (value) {
                     setState(() {
                       selectedClubClass = value.toString();
                     });
@@ -93,6 +111,36 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          final shouldDelete = await showDialog<bool>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Conferma Eliminazione'),
+                                content: const Text(
+                                    'Sei sicuro di voler eliminare questo utente?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Annulla'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text('Elimina utente'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          if (shouldDelete == true) {
+                            await _deleteUser();
+                          }
+                        },
+                        child: const Text('Rifiuta'),
+                      ),
                       ElevatedButton(
                         onPressed: () {
                           updateUserDetails();
@@ -169,8 +217,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   void updateUserDetails() async {
     try {
       if (selectedRole == "") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Seleziona un ruolo')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Seleziona un ruolo')));
         return;
       }
       if (selectedStatus == "") {
@@ -194,7 +242,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'club_class': classList,
         'status': selectedStatus,
       });
-      //List token = querySnapshot.docs.first["token"];
       List tokenList = querySnapshot.docs.first["token"];
       List<String> token = [];
       for (var elem in tokenList) {
@@ -204,7 +251,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           token.add(elem.values.first);
         }
       }
-      sendNotification(token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
+      sendNotification(
+          token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

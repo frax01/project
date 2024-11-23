@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class EditUser extends StatefulWidget {
@@ -118,7 +117,7 @@ class _EditUserState extends State<EditUser> {
                 );
               }
 
-              Future<void> _updateUser() async {
+              Future<void> updateUser() async {
                 try {
                   await _firestore.collection('user').doc(widget.id).update({
                     'role': _selectedRole,
@@ -137,7 +136,7 @@ class _EditUserState extends State<EditUser> {
                 }
               }
 
-              void _showConfirmationDialog() {
+              void showConfirmationDialog() {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -155,7 +154,7 @@ class _EditUserState extends State<EditUser> {
                         ElevatedButton(
                           child: const Text('Conferma'),
                           onPressed: () {
-                            _updateUser();
+                            updateUser();
                             Navigator.of(context).pop();
                           },
                         ),
@@ -165,11 +164,9 @@ class _EditUserState extends State<EditUser> {
                 );
               }
 
-              Future<void> _deleteUser() async {
-                final _currentUser = FirebaseAuth.instance.currentUser;
+              Future<void> deleteUser() async {
                 try {
                   await _firestore.collection('user').doc(widget.id).delete();
-                  await _currentUser?.delete();
                   Navigator.of(context).pop();
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -251,16 +248,18 @@ class _EditUserState extends State<EditUser> {
                       height: 20,
                     ),
                     Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: buildDropdownClasse(
-                        "Classe",
-                        widget.club == 'Tiber Club'
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: buildDropdownClasse(
+                          "Classe",
+                          widget.club == 'Tiber Club'
                             ? tiberClubClassOptions
                             : deltaClubClassOptions, (value) {
-                      setState(() {
-                        selectedClubClass = value.toString();
-                      });
-                    }),),
+                              setState(() {
+                                selectedClubClass = value.toString();
+                              });
+                            }
+                      ),
+                    ),
                     const SizedBox(
                       height: 30,
                     ),
@@ -293,13 +292,13 @@ class _EditUserState extends State<EditUser> {
                             );
 
                             if (shouldDelete == true) {
-                              await _deleteUser();
+                              await deleteUser();
                             }
                           },
                           child: const Text('Elimina utente'),
                         ),
                         ElevatedButton(
-                          onPressed: _showConfirmationDialog,
+                          onPressed: showConfirmationDialog,
                           child: const Text('Conferma'),
                         ),
                       ],

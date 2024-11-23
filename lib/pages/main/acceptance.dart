@@ -20,14 +20,14 @@ class _AcceptancePageState extends State<AcceptancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Accetta utenti'),
-        centerTitle: true,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-      child: UserList(club: widget.club),
-    ));
+        appBar: AppBar(
+          title: const Text('Accetta utenti'),
+          centerTitle: true,
+        ),
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: UserList(club: widget.club),
+        ));
   }
 }
 
@@ -37,6 +37,7 @@ ListView _buildList(AsyncSnapshot<QuerySnapshot> snapshot, String club) {
     itemBuilder: (context, index) {
       var userData = snapshot.data!.docs[index];
       var userEmail = userData['email'];
+      var userId = userData.id;
       return ListTile(
         title: Text(userData['name'] + ' ' + userData['surname'],
             style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -52,6 +53,7 @@ ListView _buildList(AsyncSnapshot<QuerySnapshot> snapshot, String club) {
                 title: 'User Details',
                 userEmail: userEmail,
                 userName: userData['name'] + ' ' + userData['surname'],
+                userId: userId,
                 club: club,
               );
             },
@@ -83,7 +85,7 @@ class UserList extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -91,10 +93,10 @@ class UserList extends StatelessWidget {
         if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
-                  'Non ci sono nuovi utenti da accettare',
-                  style: TextStyle(fontSize: 20.0, color: Colors.black54),
-                  textAlign: TextAlign.center,
-                ),
+              'Non ci sono nuovi utenti da accettare',
+              style: TextStyle(fontSize: 20.0, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
           );
         }
         return Column(
@@ -105,16 +107,16 @@ class UserList extends StatelessWidget {
                 'Non ci sono nuovi utenti da accettare',
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               ),
-
-            if (snapshot.data!.docs.length==1)
+            if (snapshot.data!.docs.length == 1)
               const Text(
                 '1 nuovo utente da accettare',
                 style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
               ),
-            if (snapshot.data!.docs.length>1)
+            if (snapshot.data!.docs.length > 1)
               Text(
                 '${snapshot.data!.docs.length} nuovi utenti da accettare',
-                style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 18.0, fontWeight: FontWeight.bold),
               ),
             const SizedBox(height: 16.0),
             Expanded(

@@ -12,7 +12,6 @@ Future<void> sendNotification(
   Uri uri = Uri.parse(fcmUrl);
 
   for (String token in fcmToken) {
-    print("tok: $token");
     final Map<String, dynamic> data = {
       'click_action': 'FLUTTER_NOTIFICATION_CLICK',
       'id': DateTime.now().millisecondsSinceEpoch.toString(),

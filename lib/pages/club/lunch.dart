@@ -172,7 +172,7 @@ class _LunchState extends State<Lunch> {
 
   Future<void> _showAddMealDialog() async {
     _unfocusAll();
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     DateTime? selectedDate;
     TimeOfDay? selectedTime;
 
@@ -187,7 +187,7 @@ class _LunchState extends State<Lunch> {
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Form(
-                key: _formKey,
+                key: formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -263,7 +263,7 @@ class _LunchState extends State<Lunch> {
             ElevatedButton(
               child: const Text('Crea'),
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (formKey.currentState!.validate()) {
                   await FirebaseFirestore.instance.collection('pasti').add({
                     'data': DateFormat('dd', 'it_IT')
                         .format(selectedDate!)
@@ -591,11 +591,11 @@ class _LunchState extends State<Lunch> {
                                   ],
                                 ),
                               ),
-                              if (meal.containsKey('prenotazioni') &&
-                                  widget.role != 'Genitore')
+                              if (meal.containsKey('prenotazioni'))
                                 Column(
                                   children: [
                                     const SizedBox(height: 5),
+                                    widget.role!='Genitore'?
                                     ExpansionTile(
                                       title: Text(
                                           'Prenotazioni (${meal['prenotazioni'].length})',
@@ -617,7 +617,20 @@ class _LunchState extends State<Lunch> {
                                       shape: const RoundedRectangleBorder(
                                         side: BorderSide.none,
                                       ),
-                                    ),
+                                    ) 
+                                    : Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(18, 5, 0, 0),
+                                          child: AutoSizeText(
+                                            'Prenotazioni (${meal['prenotazioni'].length})',
+                                            style: const TextStyle(fontSize: 20),
+                                            maxLines: 1,
+                                            minFontSize: 15,
+                                            overflow: TextOverflow.ellipsis
+                                          ),
+                                        )
+                                      )
                                   ],
                                 )
                             ],
