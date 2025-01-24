@@ -11,6 +11,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/pages/cc/ccHomePage.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -219,6 +220,13 @@ class _ClubPageState extends State<ClubPage> {
                             email: widget.email,
                             isAdmin: widget.status,
                             club: widget.club)));
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.emoji_events),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => CCHomePage()));
                   },
                 ),
               ]),
