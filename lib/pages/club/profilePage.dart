@@ -198,6 +198,7 @@ class _SettingsPageState extends State<SettingsPage> {
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
                 club: club,
+                cc: 'no',
               )),
       (Route<dynamic> route) => false,
     );

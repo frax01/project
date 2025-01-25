@@ -34,23 +34,22 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
               if (isAddingClub ||
                   (!isEdit &&
                       squadra == null &&
-                      isAddingClub)) // Show club field only if adding club or not editing or editing club
+                      isAddingClub))
                 TextField(
                   controller: clubController,
-                  decoration: InputDecoration(labelText: 'Nome Club'),
+                  decoration: const InputDecoration(labelText: 'Nome Club'),
                 ),
-              const SizedBox(height: 15.0),
-              if (!isAddingClub) // Show squadra field only if not adding club
+              if (!isAddingClub)
                 TextField(
                   controller: squadraController,
-                  decoration: InputDecoration(labelText: 'Nome Squadra'),
+                  decoration: const InputDecoration(labelText: 'Nome Squadra'),
                 ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Annulla'),
+              child: const Text('Annulla'),
             ),
             TextButton(
               onPressed: () async {
@@ -64,7 +63,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
 
                   if (docSnapshot.exists) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Il club esiste già')),
+                      const SnackBar(content: Text('Il club esiste già')),
                     );
                   } else {
                     await docRef.set({
@@ -82,7 +81,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                         List<String>.from(docSnapshot['squadre']);
                     if (squadre.contains(squadraName)) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('La squadra esiste già')),
+                        const SnackBar(content: Text('La squadra esiste già')),
                       );
                     } else {
                       if (isEdit && squadra != null) {
@@ -97,7 +96,6 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                     club != null &&
                     newClubName.isNotEmpty &&
                     isEditingClub) {
-                  // If editing and the club name has changed
                   final DocumentReference oldDocRef =
                       _firestore.collection('ccSquadre').doc(club);
                   final DocumentSnapshot oldDocSnapshot = await oldDocRef.get();
@@ -105,18 +103,16 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   if (oldDocSnapshot.exists && club!=newClubName) {
                     List<String> squadre =
                         List<String>.from(oldDocSnapshot['squadre']);
-                    // Create new document with new club name
                     final DocumentReference newDocRef =
                         _firestore.collection('ccSquadre').doc(newClubName);
                     await newDocRef.set({
                       'club': newClubName,
                       'squadre': squadre,
                     });
-                    // Delete old document
                     await oldDocRef.delete();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Il club non esiste o è lo stesso')),
+                        const SnackBar(content: Text('Il club non esiste o è lo stesso')),
                       );
                   }
                 }
@@ -136,12 +132,12 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Conferma Eliminazione'),
+          title: const Text('Conferma Eliminazione'),
           content: Text('Sei sicuro di voler eliminare ${squadra ?? club}?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Annulla'),
+              child: const Text('Annulla'),
             ),
             TextButton(
               onPressed: () async {
@@ -162,7 +158,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
 
                 Navigator.of(context).pop();
               },
-              child: Text('Elimina'),
+              child: const Text('Elimina'),
             ),
           ],
         );
@@ -174,7 +170,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestione Squadre'),
+        title: const Text('Gestione Squadre'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 25, 84, 132),
@@ -185,7 +181,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
         stream: _firestore.collection('ccSquadre').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           final clubs = snapshot.data!.docs;
@@ -198,7 +194,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
               final squadre = List<String>.from(club['squadre']);
 
               return Card(
-                margin: EdgeInsets.all(8.0),
+                margin: const EdgeInsets.all(8.0),
                 child: ExpansionTile(
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,7 +203,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                       Row(
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () => _showAddEditDialog(
                               club: clubName,
                               isEdit: true,
@@ -216,11 +212,11 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () => _showDeleteDialog(club: clubName),
                           ),
                           IconButton(
-                            icon: Icon(Icons.add),
+                            icon: const Icon(Icons.add),
                             onPressed: () => _showAddEditDialog(
                               club: clubName,
                               isEdit: false,
@@ -238,7 +234,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () => _showAddEditDialog(
                               club: clubName,
                               squadra: squadra,
@@ -247,7 +243,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () => _showDeleteDialog(
                               club: clubName,
                               squadra: squadra,
@@ -265,7 +261,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditDialog(isEdit: false, isAddingClub: true),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

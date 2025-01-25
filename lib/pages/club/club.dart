@@ -11,7 +11,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
-import 'package:club/pages/cc/ccHomePage.dart';
+import 'package:club/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -186,6 +187,55 @@ class _ClubPageState extends State<ClubPage> {
     ];
   }
 
+  Future<void> _showConfirmDialog() async {
+    final bool confirm = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Conferma'),
+              content: const Text('Sei sicuro di voler passare alla CC?'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Annulla'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Conferma'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+    if (confirm) {
+      _updateCC();
+    }
+  }
+
+  Future<void> _updateCC() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+    restartApp(context, prefs.getString('club')?? '', prefs.getString('cc')?? '');
+  }
+
+  void restartApp(BuildContext context, String club, String cc) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (BuildContext context) => MyApp(
+                club: club,
+                cc: cc,
+              )),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -224,9 +274,10 @@ class _ClubPageState extends State<ClubPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.emoji_events),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => CCHomePage()));
+                  onPressed: () async {
+                    await _showConfirmDialog();
+                    //Navigator.of(context).push(MaterialPageRoute(
+                    //    builder: (context) => CCHomePage()));
                   },
                 ),
               ]),

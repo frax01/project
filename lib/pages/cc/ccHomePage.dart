@@ -6,14 +6,20 @@ import 'ccGironi.dart';
 import 'ccProgramma.dart';
 import 'package:flutter/services.dart';
 import 'ccAggiungiSquadre.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/main.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage({
     super.key,
     this.selectedIndex = 0,
+    this.club,
   });
 
   final int selectedIndex;
+  final String? club;
 
   @override
   State<CCHomePage> createState() => _CCHomePageState();
@@ -55,6 +61,55 @@ class _CCHomePageState extends State<CCHomePage> {
     ];
   }
 
+  Future<void> _showConfirmDialog() async {
+    final bool confirm = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Conferma'),
+              content: const Text('Sei sicuro di voler passare al Club?'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Annulla'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Conferma'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+    if (confirm) {
+      _updateClub();
+    }
+  }
+
+  Future<void> _updateClub() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'no');
+    restartApp(context, prefs.getString('club') ?? '', prefs.getString('cc') ?? '');
+  }
+
+  void restartApp(BuildContext context, String club, String cc) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (BuildContext context) => MyApp(
+                club: club,
+                cc: cc,
+              )),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +132,7 @@ class _CCHomePageState extends State<CCHomePage> {
           ),
         ),
       ),
-       drawer: Drawer(
+      drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -96,7 +151,7 @@ class _CCHomePageState extends State<CCHomePage> {
               title: const Text('Aggiungi squadre'),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => CcAggiungiSquadre()));
+                    builder: (context) => CcAggiungiSquadre()));
               },
             ),
             ListTile(
@@ -104,6 +159,13 @@ class _CCHomePageState extends State<CCHomePage> {
               title: const Text('Iscrivi squadre'),
               onTap: () {
                 Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.class_rounded),
+              title: const Text('Torna al Club'),
+              onTap: () async {
+                await _showConfirmDialog();
               },
             ),
           ],
@@ -130,7 +192,8 @@ class _CCHomePageState extends State<CCHomePage> {
         },
         selectedItemColor: const Color.fromARGB(255, 25, 84, 132),
         unselectedItemColor: Colors.black54,
-        selectedIconTheme: const IconThemeData(color: Color.fromARGB(255, 25, 84, 132)),
+        selectedIconTheme:
+            const IconThemeData(color: Color.fromARGB(255, 25, 84, 132)),
         unselectedIconTheme: const IconThemeData(color: Colors.black54),
         items: const [
           BottomNavigationBarItem(

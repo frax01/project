@@ -20,6 +20,7 @@ import '/pages/club/eventPage.dart';
 import 'package:club/pages/club/programCard.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
+import 'package:club/pages/cc/ccHomePage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,9 +45,11 @@ void main() async {
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
+  String cc = prefs.getString('cc') ?? '';
 
   runApp(MyApp(
     club: club,
+    cc: cc,
   ));
 }
 
@@ -57,14 +60,17 @@ class MyApp extends StatelessWidget {
   MyApp({
     super.key,
     required this.club,
+    required this.cc,
   });
 
   final String club;
+  final String cc;
   Widget startWidget = Container();
 
   Future<void> fetchPage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String club = prefs.getString('club') ?? '';
+    String cc = prefs.getString('cc') ?? '';
 
     if (prefs.getString('email') != null &&
         prefs.getString('email')!.isNotEmpty) {
@@ -79,16 +85,18 @@ class MyApp extends StatelessWidget {
       String role = value['role'];
       String id = value.id;
 
-      startWidget = ClubPage(
-        classes: classes,
-        club: club,
-        status: status,
-        id: id,
-        name: name,
-        surname: surname,
-        email: email,
-        role: role,
-      );
+      cc == 'yes'
+          ? startWidget = CCHomePage(selectedIndex: 0, club: club)
+          : startWidget = ClubPage(
+              classes: classes,
+              club: club,
+              status: status,
+              id: id,
+              name: name,
+              surname: surname,
+              email: email,
+              role: role,
+            );
     } else {
       startWidget = const Login();
     }
@@ -103,19 +111,24 @@ class MyApp extends StatelessWidget {
     ThemeData lightTheme;
     ThemeData darkTheme;
 
-    switch (club) {
-      case 'Tiber Club':
-        lightTheme = lightColorSchemeTiber;
-        darkTheme = darkColorSchemeTiber;
-        break;
-      case 'Delta Club':
-        lightTheme = lightColorSchemeDelta;
-        darkTheme = darkColorSchemeDelta;
-        break;
-      default:
-        lightTheme = lightColorSchemeTiber;
-        darkTheme = darkColorSchemeTiber;
-        break;
+    if (cc == 'yes') {
+      lightTheme = lightColorSchemeCC;
+      darkTheme = darkColorSchemeCC;
+    } else {
+      switch (club) {
+        case 'Tiber Club':
+          lightTheme = lightColorSchemeTiber;
+          darkTheme = darkColorSchemeTiber;
+          break;
+        case 'Delta Club':
+          lightTheme = lightColorSchemeDelta;
+          darkTheme = darkColorSchemeDelta;
+          break;
+        default:
+          lightTheme = lightColorSchemeTiber;
+          darkTheme = darkColorSchemeTiber;
+          break;
+      }
     }
 
     return MaterialApp(
@@ -136,7 +149,7 @@ class MyApp extends StatelessWidget {
       home: startWidget,
       initialRoute: '/home',
       routes: {
-        '/home': (context) => HomePage(club: club),
+        '/home': (context) => HomePageStart(club: club, cc: cc),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
         '/waiting': (context) => const Waiting(),
@@ -146,16 +159,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.club});
+class HomePageStart extends StatefulWidget {
+  const HomePageStart({super.key, required this.club, required this.cc});
 
   final String club;
+  final String cc;
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomePageStartState createState() => _HomePageStartState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageStartState extends State<HomePageStart> {
   bool terminated = false;
 
   String name = '';
@@ -178,16 +192,20 @@ class _HomePageState extends State<HomePage> {
   RemoteMessage? initialMessage;
 
   Widget buildClubPage(String club, int selectedIndex) {
-    return ClubPage(
-        club: club,
-        classes: classes,
-        status: status,
-        id: id,
-        name: name,
-        surname: surname,
-        email: email,
-        selectedIndex: selectedIndex,
-        role: role);
+    if (widget.cc == 'yes') {
+      return CCHomePage(selectedIndex: 0, club: club);
+    } else {
+      return ClubPage(
+          club: club,
+          classes: classes,
+          status: status,
+          id: id,
+          name: name,
+          surname: surname,
+          email: email,
+          selectedIndex: selectedIndex,
+          role: role);
+    }
   }
 
   Future<String> getDeviceInfo() async {
@@ -207,8 +225,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> retrieveData() async {
-
-    if(email!='') {
+    if (email != '') {
       QueryDocumentSnapshot value = await data('user', 'email', email);
 
       name = value['name'];
