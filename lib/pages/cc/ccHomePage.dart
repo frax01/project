@@ -5,7 +5,7 @@ import 'ccCalendario.dart';
 import 'ccGironi.dart';
 import 'ccProgramma.dart';
 import 'package:flutter/services.dart';
-import 'package:club/color_schemes.dart';
+import 'ccAggiungiSquadre.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage({
@@ -81,30 +81,31 @@ class _CCHomePageState extends State<CCHomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
+            DrawerHeader(
+              decoration: const BoxDecoration(
                 color: Color.fromARGB(255, 25, 84, 132),
               ),
-              child: Text(
-                'Drawer Header',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+              child: Image.asset(
+                'images/logo_champions_bianco.png',
+                width: 24,
+                height: 24,
               ),
             ),
             ListTile(
-              title: const Text('Item 1'),
+              leading: const Icon(Icons.add),
+              title: const Text('Aggiungi squadre'),
               onTap: () {
-                // Gestisci l'azione per l'elemento 1
-                Navigator.pop(context); // Chiude il drawer
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => CcAggiungiSquadre()));
               },
             ),
             ListTile(
-              title: const Text('Item 2'),
+              leading: const Icon(Icons.people),
+              title: const Text('Iscrivi squadre'),
               onTap: () {
-                // Gestisci l'azione per l'elemento 2
-                Navigator.pop(context); // Chiude il drawer
+                Navigator.pop(context);
               },
             ),
-            // Puoi aggiungere altri items qui
           ],
         ),
       ),
