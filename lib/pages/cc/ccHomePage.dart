@@ -6,10 +6,9 @@ import 'ccGironi.dart';
 import 'ccProgramma.dart';
 import 'package:flutter/services.dart';
 import 'ccAggiungiSquadre.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:club/main.dart';
+import 'ccIscriviSquadre.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage({
@@ -158,7 +157,8 @@ class _CCHomePageState extends State<CCHomePage> {
               leading: const Icon(Icons.people),
               title: const Text('Iscrivi squadre'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
               },
             ),
             ListTile(
