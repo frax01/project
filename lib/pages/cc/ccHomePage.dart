@@ -9,6 +9,7 @@ import 'ccAggiungiSquadre.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
+import 'ccCreazioneGironi.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage({
@@ -159,6 +160,14 @@ class _CCHomePageState extends State<CCHomePage> {
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group_work),
+              title: const Text('Creazione gironi'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ccCreazioneGironi()));
               },
             ),
             ListTile(
