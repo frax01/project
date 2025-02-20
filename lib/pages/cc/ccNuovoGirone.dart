@@ -148,10 +148,11 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                         FirebaseFirestore.instance.collection('ccGironi').doc(_nomeGironeController.text).set({
                           'nome': _nomeGironeController.text,
                           'squadre': squadreSelezionate,
-                          'punti:' : mappa,
+                          'punti' : mappa,
                           'goalFatti': mappa,
                           'goalSubiti': mappa,
                           'diffReti': mappa,
+                          'partiteG': mappa,
                         });
                         Navigator.of(context).pop();
                       }

@@ -10,11 +10,22 @@ class ccCreazioneGironi extends StatefulWidget {
 class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  List<Widget> _buildSquadreList(List<dynamic> squadre) {
+    return List<Widget>.generate(squadre.length, (index) {
+      return Row(
+          children: [
+            Text('${index + 1}. ', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+            Text(squadre[index], style: const TextStyle(fontSize: 22)),
+          ],
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestione Gironi'),
+        title: const Text('Gironi'),
       ),
       body: StreamBuilder(
         stream: _firestore.collection('ccGironi').snapshots(),
@@ -24,18 +35,33 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
           } else if (snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Nessun girone presente'));
           }
-          return 
-          ListView(
+          return Padding( padding: const EdgeInsets.all(8.0),
+            child:
+            ListView(
             children: snapshot.data!.docs.map((doc) {
-              return ListTile(
-                title: Text(doc['nome']),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _confirmDelete(context, doc.id),
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black54),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: ListTile(
+                  title: Center(child: Text('Girone ${doc['nome']}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      ..._buildSquadreList(doc['squadre']),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _confirmDelete(context, doc.id),
+                  ),
                 ),
               );
             }).toList(),
-          );
+          ));
         },
       ),
       floatingActionButton: FloatingActionButton(
