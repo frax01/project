@@ -171,6 +171,14 @@ class _CCHomePageState extends State<CCHomePage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.sports_soccer),
+              title: const Text('Creazione partite'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ccCreazioneGironi()));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.class_rounded),
               title: const Text('Torna al Club'),
               onTap: () async {

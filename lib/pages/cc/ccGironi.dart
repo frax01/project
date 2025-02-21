@@ -42,7 +42,7 @@ class _CCGironiState extends State<CCGironi> {
                                   dividerThickness: 0,
                                   columns: [
                                     DataColumn(
-                                      label: Text(
+                                      label: SelectableText(
                                         'GIRONE ${doc['nome']}',
                                         textAlign: TextAlign.right,
                                         style: const TextStyle(
@@ -65,7 +65,7 @@ class _CCGironiState extends State<CCGironi> {
                                   horizontalMargin: 0,
                                   columns: const [
                                     DataColumn(
-                                      label: Text(
+                                      label: SelectableText(
                                         'G',
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
@@ -74,7 +74,7 @@ class _CCGironiState extends State<CCGironi> {
                                       ),
                                     ),
                                     DataColumn(
-                                      label: Text(
+                                      label: SelectableText(
                                         'GOL',
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
@@ -83,7 +83,7 @@ class _CCGironiState extends State<CCGironi> {
                                       ),
                                     ),
                                     DataColumn(
-                                      label: Text(
+                                      label: SelectableText(
                                         'DR',
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
@@ -92,7 +92,7 @@ class _CCGironiState extends State<CCGironi> {
                                       ),
                                     ),
                                     DataColumn(
-                                      label: Text(
+                                      label: SelectableText(
                                         'PT',
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
@@ -149,7 +149,6 @@ class _CCGironiState extends State<CCGironi> {
                   '  ${squadre[index]}',
                   textAlign: TextAlign.right,
                   style: const TextStyle(fontSize: 17),
-                  overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
             ],)
@@ -170,28 +169,28 @@ class _CCGironiState extends State<CCGironi> {
       return DataRow(
         cells: [
           DataCell(
-            Text(
+            SelectableText(
               partite[squadra].toString(),
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
-            Text(
+            SelectableText(
               ' ${goalFatti[squadra].toString()}:${goalSubiti[squadra].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
-            Text(
+            SelectableText(
               ' ${diffReti[squadra].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
-            Text(
+            SelectableText(
               ' ${punti[squadra].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
