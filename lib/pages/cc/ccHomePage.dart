@@ -156,7 +156,7 @@ class _CCHomePageState extends State<CCHomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.people),
-              title: const Text('Iscrivi squadre'),
+              title: const Text('Iscrivi giocatori'),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
@@ -165,14 +165,6 @@ class _CCHomePageState extends State<CCHomePage> {
             ListTile(
               leading: const Icon(Icons.group_work),
               title: const Text('Creazione gironi'),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ccCreazioneGironi()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sports_soccer),
-              title: const Text('Creazione partite'),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => ccCreazioneGironi()));

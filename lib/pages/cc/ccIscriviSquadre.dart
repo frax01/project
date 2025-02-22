@@ -42,23 +42,23 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         .where('club', isEqualTo: widget.club)
         .get();
 
-    List<String> loadedSquadre = snapshot.docs
-        .expand((doc) => List<String>.from(doc['squadre']))
+    List<Map<String, dynamic>> loadedSquadre = snapshot.docs
+        .expand((doc) => List<Map<String, dynamic>>.from(doc['squadre']))
         .toList();
     Map<String, List<dynamic>> loadedGiocatori = {};
     Map<String, bool> loadedHasChanges = {};
 
     for (var squadra in loadedSquadre) {
-  List<Map<String, dynamic>> players = await retrievePlayers(squadra);
-  loadedGiocatori[squadra] = players.map((player) => player['nome']!).toList();
-  giocatoriControllers[squadra] = players.map((player) => TextEditingController(text: player['nome'])).toList();
-  magliaControllers[squadra] = players.map((player) => TextEditingController(text: player['maglia'])).toList();
-  appartamentoControllers[squadra] = players.map((player) => TextEditingController(text: player['appartamento'])).toList();
-  loadedHasChanges[squadra] = false;
-}
+      List<Map<String, dynamic>> players = await retrievePlayers(squadra['squadra']);
+      loadedGiocatori[squadra['squadra']] = players.map((player) => player['nome']!).toList();
+      giocatoriControllers[squadra['squadra']] = players.map((player) => TextEditingController(text: player['nome'])).toList();
+      magliaControllers[squadra['squadra']] = players.map((player) => TextEditingController(text: player['maglia'])).toList();
+      appartamentoControllers[squadra['squadra']] = players.map((player) => TextEditingController(text: player['appartamento'])).toList();
+      loadedHasChanges[squadra['squadra']] = false;
+    }
 
     setState(() {
-      squadre = loadedSquadre;
+      squadre = loadedSquadre.map((squadra) => squadra['squadra'] as String).toList();
       giocatori = loadedGiocatori;
       hasChanges = loadedHasChanges;
     });

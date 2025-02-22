@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class CcAggiungiSquadre extends StatefulWidget {
   @override
@@ -9,9 +12,40 @@ class CcAggiungiSquadre extends StatefulWidget {
 class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  String placeHolder = 'Logo squadra';
+  PlatformFile? file;
+
+  Future<String?> _uploadFileToFirebase(PlatformFile file) async {
+    if (file.path == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Percorso del file non disponibile'),
+        ),
+      );
+      return null;
+    }
+
+    try {
+      final bytes = File(file.path!).readAsBytesSync();
+      final storageRef =
+          FirebaseStorage.instance.ref().child('logo/${file.name}');
+      final uploadTask = storageRef.putData(bytes);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante il caricamento del file'),
+        ),
+      );
+      return null;
+    }
+  }
+
   void _showAddEditDialog({
     String? club,
-    String? squadra,
+    Map<String, dynamic>? squadra,
     bool isEdit = false,
     bool isAddingClub = false,
     bool isEditingClub = false,
@@ -19,7 +53,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
     final TextEditingController clubController =
         TextEditingController(text: club);
     final TextEditingController squadraController =
-        TextEditingController(text: squadra);
+        TextEditingController(text: squadra?['squadra']);
+    String? logoUrl = squadra?['logo'];
 
     showDialog(
       context: context,
@@ -40,10 +75,60 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   decoration: const InputDecoration(labelText: 'Nome Club'),
                 ),
               if (!isAddingClub)
-                TextField(
-                  controller: squadraController,
-                  decoration: const InputDecoration(labelText: 'Nome Squadra'),
-                ),
+                Column(
+                  children: [
+                    TextField(
+                      controller: squadraController,
+                      decoration: const InputDecoration(labelText: 'Nome Squadra'),
+                    ),
+                    const SizedBox(height: 15),
+                    FormField<PlatformFile>(
+                      validator: (value) {
+                        if (file == null && logoUrl == null) {
+                          return 'Seleziona un file';
+                        }
+                        return null;
+                      },
+                      builder: (formFieldState) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 20),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 5,
+                              ),
+                              onPressed: () async {
+                                FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                if (result != null) {
+                                  setState(() {
+                                    file = result.files.first;
+                                    placeHolder = file!.name;
+                                  });
+                                  formFieldState.didChange(file);
+                                }
+                              },
+                              child: Text(
+                                logoUrl=='' || logoUrl==null ? placeHolder : 'Cambia logo',
+                                style: const TextStyle(fontSize: 16.0),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (formFieldState.hasError)
+                              Text(
+                                formFieldState.errorText!,
+                                style: TextStyle(color: Theme.of(context).primaryColor),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                )
             ],
           ),
           actions: [
@@ -56,7 +141,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                 final String newClubName = clubController.text;
                 final String squadraName = squadraController.text;
 
-                if (isAddingClub && newClubName.isNotEmpty && isEditingClub==false) {
+                if (isAddingClub && newClubName.isNotEmpty && isEditingClub == false) {
                   final DocumentReference docRef =
                       _firestore.collection('ccSquadre').doc(newClubName);
                   final DocumentSnapshot docSnapshot = await docRef.get();
@@ -77,17 +162,27 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   final DocumentSnapshot docSnapshot = await docRef.get();
 
                   if (docSnapshot.exists) {
-                    List<String> squadre =
-                        List<String>.from(docSnapshot['squadre']);
-                    if (squadre.contains(squadraName)) {
+                    List<Map<String, dynamic>> squadre =
+                        List<Map<String, dynamic>>.from(docSnapshot['squadre']);
+                    bool squadraExists = squadre.any((s) => s['squadra'] == squadraName && s['squadra'] != squadra?['squadra']);
+                    if (squadraExists) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('La squadra esiste già')),
                       );
                     } else {
                       if (isEdit && squadra != null) {
-                        squadre[squadre.indexOf(squadra)] = squadraName;
+                        int index = squadre.indexWhere((s) => s['squadra'] == squadra['squadra']);
+                        if (index != -1) {
+                          squadre[index] = {
+                            'squadra': squadraName,
+                            'logo': file != null ? await _uploadFileToFirebase(file!) : '',
+                          };
+                        }
                       } else {
-                        squadre.add(squadraName);
+                        squadre.add({
+                          'squadra': squadraName,
+                          'logo': file != null ? await _uploadFileToFirebase(file!) : '',
+                        });
                       }
                       await docRef.update({'squadre': squadre});
                     }
@@ -100,9 +195,9 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                       _firestore.collection('ccSquadre').doc(club);
                   final DocumentSnapshot oldDocSnapshot = await oldDocRef.get();
 
-                  if (oldDocSnapshot.exists && club!=newClubName) {
-                    List<String> squadre =
-                        List<String>.from(oldDocSnapshot['squadre']);
+                  if (oldDocSnapshot.exists && club != newClubName) {
+                    List<Map<String, dynamic>> squadre =
+                        List<Map<String, dynamic>>.from(oldDocSnapshot['squadre']);
                     final DocumentReference newDocRef =
                         _firestore.collection('ccSquadre').doc(newClubName);
                     await newDocRef.set({
@@ -112,8 +207,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                     await oldDocRef.delete();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Il club non esiste o è lo stesso')),
-                      );
+                      const SnackBar(content: Text('Il club non esiste o è lo stesso')),
+                    );
                   }
                 }
 
@@ -127,7 +222,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
     );
   }
 
-  void _showDeleteDialog({required String club, String? squadra}) {
+  void _showDeleteDialog({required String club, Map<String, dynamic>? squadra}) {
     showDialog(
       context: context,
       builder: (context) {
@@ -147,9 +242,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   final DocumentSnapshot docSnapshot = await docRef.get();
 
                   if (docSnapshot.exists) {
-                    List<String> squadre =
-                        List<String>.from(docSnapshot['squadre']);
-                    squadre.remove(squadra);
+                    List<Map<String, dynamic>> squadre = List<Map<String, dynamic>>.from(docSnapshot['squadre']);
+                    squadre.removeWhere((s) => s['squadra'] == squadra['squadra'] && s['logo'] == squadra['logo']);
                     await docRef.update({'squadre': squadre});
                   }
                 } else {
@@ -191,7 +285,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
             itemBuilder: (context, index) {
               final club = clubs[index];
               final clubName = club['club'];
-              final squadre = List<String>.from(club['squadre']);
+              final squadre = List<Map<String, dynamic>>.from(club['squadre']);
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -230,7 +324,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   ),
                   children: squadre.map((squadra) {
                     return ListTile(
-                      title: Text(squadra),
+                      title: Text(squadra['squadra']?? ''),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

@@ -1,269 +1,736 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class CcAggiungiSquadre extends StatefulWidget {
+class CCnuovaPartitaGironi extends StatefulWidget {
+  const CCnuovaPartitaGironi({
+    super.key,
+  });
+
   @override
-  _CcAggiungiSquadreState createState() => _CcAggiungiSquadreState();
+  State<CCnuovaPartitaGironi> createState() => _CCnuovaPartitaGironiState();
 }
 
-class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
+  List<String> squadre = [];
+  List<String> gironi = [];
+  late String _selectedSegment;
+  late Future<void> _futureGironi;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _showAddEditDialog({
-    String? club,
-    String? squadra,
-    bool isEdit = false,
-    bool isAddingClub = false,
-    bool isEditingClub = false,
-  }) {
-    final TextEditingController clubController =
-        TextEditingController(text: club);
-    final TextEditingController squadraController =
-        TextEditingController(text: squadra);
+  String? _casa1turno1;
+  String? _fuori1turno1;
+  String? _orario1turno1;
+  String? _campo1turno;
+  String? _arbitro1turno1;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(isEdit
-              ? (isAddingClub ? 'Modifica Club' : 'Modifica Squadra')
-              : (isAddingClub ? 'Aggiungi Club' : 'Aggiungi Squadra')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isAddingClub ||
-                  (!isEdit &&
-                      squadra == null &&
-                      isAddingClub))
-                TextField(
-                  controller: clubController,
-                  decoration: const InputDecoration(labelText: 'Nome Club'),
-                ),
-              if (!isAddingClub)
-                TextField(
-                  controller: squadraController,
-                  decoration: const InputDecoration(labelText: 'Nome Squadra'),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annulla'),
-            ),
-            TextButton(
-              onPressed: () async {
-                final String newClubName = clubController.text;
-                final String squadraName = squadraController.text;
+  Future<void> _getSquadre() async {
+    final DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+        .collection('ccGironi')
+        .doc(_selectedSegment)
+        .get();
+    setState(() {
+      squadre = [''];
+      if (docSnapshot.exists) {
+        List<dynamic> squadreList = docSnapshot['squadre'];
+        squadre.addAll(squadreList.cast<String>());
+      }
+    });
+  }
 
-                if (isAddingClub && newClubName.isNotEmpty && isEditingClub==false) {
-                  final DocumentReference docRef =
-                      _firestore.collection('ccSquadre').doc(newClubName);
-                  final DocumentSnapshot docSnapshot = await docRef.get();
+  Future<void> _getGironi() async {
+    final QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('ccGironi').get();
+    setState(() {
+      gironi = querySnapshot.docs.map((doc) => doc.id).toList();
+    });
+    _selectedSegment = gironi.first;
+    await _getSquadre();
+  }
 
-                  if (docSnapshot.exists) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Il club esiste già')),
-                    );
-                  } else {
-                    await docRef.set({
-                      'club': newClubName,
-                      'squadre': [],
-                    });
-                  }
-                } else if (newClubName.isNotEmpty && squadraName.isNotEmpty) {
-                  final DocumentReference docRef =
-                      _firestore.collection('ccSquadre').doc(newClubName);
-                  final DocumentSnapshot docSnapshot = await docRef.get();
+  Future<void> _saveSquadra(String squadra) async {
+    await FirebaseFirestore.instance
+        .collection('ccPartiteGironi')
+        .doc('$_casa1turno1 VS $_fuori1turno1')
+        .set({
+      'girone': _selectedSegment,
+      'casa': _casa1turno1,
+      'fuori': _fuori1turno1,
+      'orario': _orario1turno1,
+      'campo': _campo1turno,
+      'arbitro': _arbitro1turno1,
+      'turno': '1',
+      'data': '24/04/2025'
+    });
+  }
 
-                  if (docSnapshot.exists) {
-                    List<String> squadre =
-                        List<String>.from(docSnapshot['squadre']);
-                    if (squadre.contains(squadraName)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('La squadra esiste già')),
-                      );
-                    } else {
-                      if (isEdit && squadra != null) {
-                        squadre[squadre.indexOf(squadra)] = squadraName;
-                      } else {
-                        squadre.add(squadraName);
-                      }
-                      await docRef.update({'squadre': squadre});
-                    }
-                  }
-                } else if (isEdit &&
-                    club != null &&
-                    newClubName.isNotEmpty &&
-                    isEditingClub) {
-                  final DocumentReference oldDocRef =
-                      _firestore.collection('ccSquadre').doc(club);
-                  final DocumentSnapshot oldDocSnapshot = await oldDocRef.get();
-
-                  if (oldDocSnapshot.exists && club!=newClubName) {
-                    List<String> squadre =
-                        List<String>.from(oldDocSnapshot['squadre']);
-                    final DocumentReference newDocRef =
-                        _firestore.collection('ccSquadre').doc(newClubName);
-                    await newDocRef.set({
-                      'club': newClubName,
-                      'squadre': squadre,
-                    });
-                    await oldDocRef.delete();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Il club non esiste o è lo stesso')),
-                      );
-                  }
-                }
-
-                Navigator.of(context).pop();
-              },
-              child: Text(isEdit ? 'Modifica' : 'Salva'),
-            ),
-          ],
-        );
-      },
+  InputDecoration getInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Color.fromARGB(255, 25, 84, 132)),
+      ),
     );
   }
 
-  void _showDeleteDialog({required String club, String? squadra}) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Conferma Eliminazione'),
-          content: Text('Sei sicuro di voler eliminare ${squadra ?? club}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annulla'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (squadra != null) {
-                  final DocumentReference docRef =
-                      _firestore.collection('ccSquadre').doc(club);
-                  final DocumentSnapshot docSnapshot = await docRef.get();
-
-                  if (docSnapshot.exists) {
-                    List<String> squadre =
-                        List<String>.from(docSnapshot['squadre']);
-                    squadre.remove(squadra);
-                    await docRef.update({'squadre': squadre});
-                  }
-                } else {
-                  await _firestore.collection('ccSquadre').doc(club).delete();
-                }
-
-                Navigator.of(context).pop();
-              },
-              child: const Text('Elimina'),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+    _futureGironi = _getGironi();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestione Squadre'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 25, 84, 132),
+        appBar: AppBar(
+          title: const Text('Partite girone'),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 25, 84, 132),
+            ),
           ),
         ),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('ccSquadre').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final clubs = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: clubs.length,
-            itemBuilder: (context, index) {
-              final club = clubs[index];
-              final clubName = club['club'];
-              final squadre = List<String>.from(club['squadre']);
-
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ExpansionTile(
-                  shape: Border.all(color: Colors.transparent),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(clubName),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              isEdit: true,
-                              isAddingClub: true,
-                              isEditingClub: true,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _showDeleteDialog(club: clubName),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              isEdit: false,
-                              isAddingClub: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+        body: FutureBuilder(
+            future: _futureGironi,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Errore: ${snapshot.error}'));
+              } else if (squadre.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Nessun girone',
+                    style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                    textAlign: TextAlign.center,
                   ),
-                  children: squadre.map((squadra) {
-                    return ListTile(
-                      title: Text(squadra),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              squadra: squadra,
-                              isEdit: true,
-                              isAddingClub: false,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _showDeleteDialog(
-                              club: clubName,
-                              squadra: squadra,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditDialog(isEdit: false, isAddingClub: true),
-        child: const Icon(Icons.add),
-      ),
-    );
+                );
+              } else {
+                return SingleChildScrollView(
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SegmentedButton<String>(
+                                  selectedIcon: const Icon(Icons.check),
+                                  segments: gironi.map((girone) {
+                                    return ButtonSegment<String>(
+                                      value: girone,
+                                      label: Text(girone,
+                                          style: const TextStyle(fontSize: 12)),
+                                    );
+                                  }).toList(),
+                                  selected: <String>{_selectedSegment},
+                                  onSelectionChanged:
+                                      (Set<String> newSelection) {
+                                    setState(() {
+                                      _selectedSegment = newSelection.first;
+                                      _getSquadre();
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 30),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Turno 1",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 10),
+                                      Column(children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: DropdownButtonFormField<
+                                                  String>(
+                                                value: _casa1turno1,
+                                                items:
+                                                    squadre.map((String value) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+                                                validator: (value) {
+                                                  if (value == null || value.isEmpty) {
+                                                    return 'Obbligatorio';
+                                                  }
+                                                  return null;
+                                                },
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    _casa1turno1 = newValue;
+                                                  });
+                                                },
+                                                decoration: getInputDecoration("Casa")
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: DropdownButtonFormField<
+                                                  String>(
+                                                value:
+                                                    _fuori1turno1,
+                                                items:
+                                                    squadre.map((String value) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+                                                validator: (value) {
+                                                  if (value == null || value.isEmpty) {
+                                                    return 'Obbligatorio';
+                                                  }
+                                                  return null;
+                                                },
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    _fuori1turno1 = newValue;
+                                                  });
+                                                },
+                                                decoration: getInputDecoration("Fuori")
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: TextFormField(
+                                                  textCapitalization:
+                                                      TextCapitalization
+                                                          .sentences,
+                                                  controller:
+                                                      null, //giocatoriControllers[squadra]![i],
+                                                  onChanged: (value) {
+                                                    //giocatori[squadra]![i] = value;
+                                                    setState(() {
+                                                      //hasChanges[squadra] = true;
+                                                    });
+                                                  },
+                                                  decoration: getInputDecoration("Orario")
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: TextFormField(
+                                                  textCapitalization:
+                                                      TextCapitalization
+                                                          .sentences,
+                                                  controller:
+                                                      null, //giocatoriControllers[squadra]![i],
+                                                  onChanged: (value) {
+                                                    //giocatori[squadra]![i] = value;
+                                                    setState(() {
+                                                      //hasChanges[squadra] = true;
+                                                    });
+                                                  },
+                                                  decoration: getInputDecoration("Campo")
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: TextFormField(
+                                                  textCapitalization:
+                                                      TextCapitalization
+                                                          .sentences,
+                                                  controller:
+                                                      null, //giocatoriControllers[squadra]![i],
+                                                  onChanged: (value) {
+                                                    //giocatori[squadra]![i] = value;
+                                                    setState(() {
+                                                      //hasChanges[squadra] = true;
+                                                    });
+                                                  },
+                                                  decoration: getInputDecoration("Arbitro")
+                                                ),
+                                              ),
+                                            ])
+                                      ]),
+                                      //
+                                      //
+                                      //
+                                      //
+                                      //
+                                      const SizedBox(height: 30),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value: null, //_selectedMaglia,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedMaglia = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Casa',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value:
+                                                  null, //_selectedAppartamento,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedAppartamento = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Fuori',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ]),
+                                const SizedBox(height: 30),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Turno 2",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value: null, //_selectedMaglia,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedMaglia = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Casa',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value:
+                                                  null, //_selectedAppartamento,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedAppartamento = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Fuori',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value: null, //_selectedMaglia,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedMaglia = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Casa',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value:
+                                                  null, //_selectedAppartamento,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedAppartamento = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Fuori',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ]),
+                                const SizedBox(height: 30),
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Turno 3",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value: null, //_selectedMaglia,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedMaglia = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Casa',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value:
+                                                  null, //_selectedAppartamento,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedAppartamento = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Fuori',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value: null, //_selectedMaglia,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedMaglia = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Casa',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              value:
+                                                  null, //_selectedAppartamento,
+                                              items:
+                                                  squadre.map((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (newValue) {
+                                                setState(() {
+                                                  //_selectedAppartamento = newValue;
+                                                });
+                                              },
+                                              decoration: const InputDecoration(
+                                                labelText: 'Fuori',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black54),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Color.fromARGB(
+                                                          255, 25, 84, 132)),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ]),
+                                const SizedBox(height: 30),
+                                Center(
+                                    child: ElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _saveSquadra('squadra');
+                                    }
+                                  },
+                                  child: const Text('Salva'),
+                                ))
+                              ],
+                            ))));
+              }
+            }));
   }
 }
