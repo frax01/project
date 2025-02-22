@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovaPartitaGironi.dart';
+import 'ccModificaPartita.dart';
 
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
@@ -149,7 +150,27 @@ class _CCCalendarioState extends State<CCCalendario> {
                           ...partiteGirone.map((partita) {
                             final logoCasa = _squadreLoghi[partita['casa']] ?? '';
                             final logoFuori = _squadreLoghi[partita['fuori']] ?? '';
-                            return Column(
+                            
+                            return InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CCModificaPartita(
+                                      casa: partita['casa'],
+                                      fuori: partita['fuori'],
+                                      logocasa: logoCasa,
+                                      logofuori: logoCasa,
+                                      data: '25/04/2025',
+                                      orario: partita['orario'],
+                                      campo: partita['campo'],
+                                      arbitro: partita['arbitro'],
+                                      girone: girone,
+                                      ),
+                                  ),
+                                );
+                              },
+                              child: Column(
                               children: [
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -192,7 +213,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                 ),
                                 const Divider(height: 36, thickness: 1),
                               ],
-                            );
+                            ));
                           }).toList(),
                           const SizedBox(height: 8),
                         ],
