@@ -19,7 +19,10 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
       squadreDisponibili = [''];
       for (var doc in squadreSnapshot.docs) {
         List<dynamic> squadreList = doc['squadre'];
-        squadreDisponibili.addAll(squadreList.cast<String>());
+        for (var squadra in squadreList) {
+          squadreDisponibili.add(squadra['squadra']);
+        }
+        print("squadre disponibili: $squadreDisponibili");
       }
     });
   }

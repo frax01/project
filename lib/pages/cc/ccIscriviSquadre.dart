@@ -39,7 +39,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   Future<void> _loadSquadre() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('ccSquadre')
-        .where('club', isEqualTo: widget.club)
+        //.where('club', isEqualTo: widget.club)
         .get();
 
     List<Map<String, dynamic>> loadedSquadre = snapshot.docs

@@ -26,6 +26,7 @@ class _CCGironiState extends State<CCGironi> {
           return SingleChildScrollView(
             child: Column(
               children: snapshot.data!.docs.map((doc) {
+                final squadreData = _buildSquadreData(doc.data() as Map<String, dynamic>);
                 return Card(
                   margin: const EdgeInsets.fromLTRB(12, 10, 12, 15),
                   shadowColor: Colors.black54,
@@ -51,7 +52,7 @@ class _CCGironiState extends State<CCGironi> {
                                       ),
                                     ),
                                   ],
-                                  rows: _buildDataRowsSquadre(doc['squadre']),
+                                  rows: _buildDataRowsSquadre(squadreData),
                                 ),
                               ),
                             ),
@@ -101,8 +102,7 @@ class _CCGironiState extends State<CCGironi> {
                                       ),
                                     ),
                                   ],
-                                  rows: _buildDataRows(
-                                      doc.data() as Map<String, dynamic>),
+                                  rows: _buildDataRows(squadreData),
                                 ),
                               ),
                             )
@@ -118,80 +118,114 @@ class _CCGironiState extends State<CCGironi> {
     );
   }
 
-  List<DataRow> _buildDataRowsSquadre(List<dynamic> squadre) {
-    return List<DataRow>.generate(squadre.length, (index) {
-      return DataRow(
-        cells: [
-          DataCell(
-            Row(
-              children: [
-                index==0? const FaIcon(
-                  FontAwesomeIcons.medal,
-                  color: Colors.amber,
-                  size: 22,
-                )
-                : index==1? const FaIcon(
-                  FontAwesomeIcons.medal,
-                  color: Colors.grey,
-                  size: 22,
-                )
-                : index==2? const FaIcon(
-                  FontAwesomeIcons.medal,
-                  color: Colors.brown,
-                  size: 22,
-                )
-                : const FaIcon(
-                  FontAwesomeIcons.medal,
-                  color: Colors.black,
-                  size: 22,
-                ),
-                Text(
-                  '  ${squadre[index]}',
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(fontSize: 17),
-                  maxLines: 1,
-                ),
-            ],)
-          ),
-        ],
-      );
-    });
-  }
-
-  List<DataRow> _buildDataRows(Map<String, dynamic> doc) {
+  List<Map<String, dynamic>> _buildSquadreData(Map<String, dynamic> doc) {
     final Map<String, int> partite = Map<String, int>.from(doc['partiteG']);
     final Map<String, int> goalFatti = Map<String, int>.from(doc['goalFatti']);
     final Map<String, int> goalSubiti = Map<String, int>.from(doc['goalSubiti']);
     final Map<String, int> diffReti = Map<String, int>.from(doc['diffReti']);
     final Map<String, int> punti = Map<String, int>.from(doc['punti']);
 
-    return partite.keys.map((squadra) {
+    // Crea una lista di squadre con i loro dati
+    List<Map<String, dynamic>> squadreData = partite.keys.map((squadra) {
+      return {
+        'squadra': squadra,
+        'partite': partite[squadra],
+        'goalFatti': goalFatti[squadra],
+        'goalSubiti': goalSubiti[squadra],
+        'diffReti': diffReti[squadra],
+        'punti': punti[squadra],
+      };
+    }).toList();
+
+    // Ordina le squadre in base ai criteri specificati
+    squadreData.sort((a, b) {
+      int puntiComparison = b['punti'].compareTo(a['punti']);
+      if (puntiComparison != 0) return puntiComparison;
+
+      int diffRetiComparison = b['diffReti'].compareTo(a['diffReti']);
+      if (diffRetiComparison != 0) return diffRetiComparison;
+
+      int goalFattiComparison = b['goalFatti'].compareTo(a['goalFatti']);
+      if (goalFattiComparison != 0) return goalFattiComparison;
+
+      return a['goalSubiti'].compareTo(b['goalSubiti']);
+    });
+
+    return squadreData;
+  }
+
+  List<DataRow> _buildDataRowsSquadre(List<Map<String, dynamic>> squadreData) {
+    return List<DataRow>.generate(squadreData.length, (index) {
+      return DataRow(
+        cells: [
+          DataCell(
+            Row(
+              children: [
+                index == 0
+                    ? const FaIcon(
+                        FontAwesomeIcons.medal,
+                        color: Colors.amber,
+                        size: 22,
+                      )
+                    : index == 1
+                        ? const FaIcon(
+                            FontAwesomeIcons.medal,
+                            color: Colors.grey,
+                            size: 22,
+                          )
+                        : index == 2
+                            ? const FaIcon(
+                                FontAwesomeIcons.medal,
+                                color: Colors.brown,
+                                size: 22,
+                              )
+                            : const FaIcon(
+                                FontAwesomeIcons.medal,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                Text(
+                  '  ${squadreData[index]['squadra']}',
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(fontSize: 17),
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  List<DataRow> _buildDataRows(List<Map<String, dynamic>> squadreData) {
+    return squadreData.map((squadraData) {
       return DataRow(
         cells: [
           DataCell(
             SelectableText(
-              partite[squadra].toString(),
+              squadraData['partite'].toString(),
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
             SelectableText(
-              ' ${goalFatti[squadra].toString()}:${goalSubiti[squadra].toString()}',
+              ' ${squadraData['goalFatti'].toString()}:${squadraData['goalSubiti'].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
             SelectableText(
-              ' ${diffReti[squadra].toString()}',
+              ' ${squadraData['diffReti'].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15),
             ),
           ),
           DataCell(
             SelectableText(
-              ' ${punti[squadra].toString()}',
+              ' ${squadraData['punti'].toString()}',
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),

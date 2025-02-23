@@ -18,6 +18,7 @@ class Partita {
   String? campo;
   String? arbitro;
   String? oldDocId;
+  List<Map<String, dynamic>>? marcatori;
 
   Partita(
       {this.casa,
@@ -25,7 +26,8 @@ class Partita {
       this.orario,
       this.campo,
       this.arbitro,
-      this.oldDocId});
+      this.oldDocId,
+      this.marcatori});
 
   factory Partita.fromMap(Map<String, dynamic> data) {
     return Partita(
@@ -35,6 +37,9 @@ class Partita {
       campo: data['campo'],
       arbitro: data['arbitro'],
       oldDocId: '${data['casa']} VS ${data['fuori']}',
+      marcatori: data['marcatori'] != null
+          ? List<Map<String, dynamic>>.from(data['marcatori'])
+          : null,
     );
   }
 }
@@ -57,8 +62,10 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
   Future<void> _getSquadre() async {
     squadre = [''];
     turni = List.generate(3, (_) => List.generate(2, (_) => Partita()));
-    _timeControllers = List.generate(3, (_) => List.generate(2, (_) => TextEditingController()));
-    _campiControllers = List.generate(3, (_) => List.generate(2, (_) => TextEditingController()));
+    _timeControllers = List.generate(
+        3, (_) => List.generate(2, (_) => TextEditingController()));
+    _campiControllers = List.generate(
+        3, (_) => List.generate(2, (_) => TextEditingController()));
     final DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
         .collection('ccGironi')
         .doc(_selectedSegment)
@@ -125,7 +132,10 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           'campo': p.campo ?? '',
           'arbitro': p.arbitro ?? '',
           'turno': (turno + 1).toString(),
-          'data': '24/04/2025'
+          'data': '24/04/2025',
+          'iniziata': false,
+          'finita': false,
+          'marcatori': p.marcatori ?? [],
         });
         p.oldDocId = newDocId;
       }

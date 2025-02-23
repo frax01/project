@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovaPartitaGironi.dart';
+import 'ccNuovaPartitaOttavi.dart';
 import 'ccModificaPartita.dart';
 
 class CCCalendario extends StatefulWidget {
@@ -14,25 +15,25 @@ class CCCalendario extends StatefulWidget {
 
 class _CCCalendarioState extends State<CCCalendario> {
   String _selectedSegment = 'Gironi';
-  late Future<List<Map<String, dynamic>>> _futurePartite;
+  late Stream<List<Map<String, dynamic>>> _streamPartite;
 
   @override
   void initState() {
     super.initState();
-    _futurePartite = _getPartite();
+    _streamPartite = _getPartite();
     _loadSquadre();
   }
 
   Map<String, String> _squadreLoghi = {};
 
   Future<void> _loadSquadre() async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('ccSquadre')
-        .get();
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccSquadre').get();
 
     Map<String, String> squadreLoghi = {};
     for (var doc in snapshot.docs) {
-      List<Map<String, dynamic>> squadre = List<Map<String, dynamic>>.from(doc['squadre']);
+      List<Map<String, dynamic>> squadre =
+          List<Map<String, dynamic>>.from(doc['squadre']);
       for (var squadra in squadre) {
         squadreLoghi[squadra['squadra']] = squadra['logo'];
       }
@@ -43,30 +44,35 @@ class _CCCalendarioState extends State<CCCalendario> {
     });
   }
 
-  Future<List<Map<String, dynamic>>> _getPartite() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteGironi')
-        .get();
+  Stream<List<Map<String, dynamic>>> _getPartite() {
+    if (_selectedSegment == 'Gironi') {
+      return FirebaseFirestore.instance
+          .collection('ccPartiteGironi')
+          .snapshots()
+          .map((querySnapshot) {
+        List<Map<String, dynamic>> partite = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
 
-    List<Map<String, dynamic>> partite = querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+        partite.sort((a, b) {
+          int gironeComparison = a['girone'].compareTo(b['girone']);
+          if (gironeComparison != 0) return gironeComparison;
 
-    partite.sort((a, b) {
-      int gironeComparison = a['girone'].compareTo(b['girone']);
-      if (gironeComparison != 0) return gironeComparison;
+          int turnoComparison = a['turno'].compareTo(b['turno']);
+          if (turnoComparison != 0) return turnoComparison;
 
-      int turnoComparison = a['turno'].compareTo(b['turno']);
-      if (turnoComparison != 0) return turnoComparison;
+          if (a['orario'] == '' && b['orario'] == '') return 0;
+          if (a['orario'] == '') return 1;
+          if (b['orario'] == '') return -1;
 
-      if (a['orario'] == '' && b['orario'] == '') return 0;
-      if (a['orario'] == '') return 1;
-      if (b['orario'] == '') return -1;
+          return a['orario'].compareTo(b['orario']);
+        });
 
-      return a['orario'].compareTo(b['orario']);
-    });
-
-    return partite;
+        return partite;
+      });
+    } else {
+      return Stream.value([]);
+    }
   }
 
   @override
@@ -105,12 +111,13 @@ class _CCCalendarioState extends State<CCCalendario> {
                 onSelectionChanged: (Set<String> newSelection) {
                   setState(() {
                     _selectedSegment = newSelection.first;
+                    _streamPartite = _getPartite();
                   });
                 },
               ),
               const SizedBox(height: 16),
-              FutureBuilder<List<Map<String, dynamic>>>(
-                future: _futurePartite,
+              StreamBuilder<List<Map<String, dynamic>>>(
+                stream: _streamPartite,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -148,72 +155,113 @@ class _CCCalendarioState extends State<CCCalendario> {
                           ),
                           const SizedBox(height: 14),
                           ...partiteGirone.map((partita) {
-                            final logoCasa = _squadreLoghi[partita['casa']] ?? '';
-                            final logoFuori = _squadreLoghi[partita['fuori']] ?? '';
-                            
+                            final logoCasa =
+                                _squadreLoghi[partita['casa']] ?? '';
+                            final logoFuori =
+                                _squadreLoghi[partita['fuori']] ?? '';
+
+                            int golCasa = 0;
+                            int golFuori = 0;
+                            List<Map<String, dynamic>> marcatori =
+                                List<Map<String, dynamic>>.from(
+                                    partita['marcatori'] ?? []);
+                            for (var marcatore in marcatori) {
+                              if (marcatore['dove'] == 'casa') {
+                                golCasa++;
+                              } else if (marcatore['dove'] == 'fuori') {
+                                golFuori++;
+                              }
+                            }
+
                             return InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CCModificaPartita(
-                                      casa: partita['casa'],
-                                      fuori: partita['fuori'],
-                                      logocasa: logoCasa,
-                                      logofuori: logoCasa,
-                                      data: '25/04/2025',
-                                      orario: partita['orario'],
-                                      campo: partita['campo'],
-                                      arbitro: partita['arbitro'],
-                                      girone: girone,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CCModificaPartita(
+                                        casa: partita['casa'],
+                                        fuori: partita['fuori'],
+                                        logocasa: logoCasa,
+                                        logofuori: logoCasa,
+                                        data: '25/04/2025',
+                                        orario: partita['orario'],
+                                        campo: partita['campo'],
+                                        arbitro: partita['arbitro'],
+                                        girone: girone,
+                                        iniziata: partita['iniziata'],
+                                        finita: partita['finita'],
                                       ),
-                                  ),
-                                );
-                              },
-                              child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    ),
+                                  );
+                                },
+                                child: Column(
                                   children: [
-                                    Column(
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        logoCasa.isNotEmpty
-                                        ? Image.network(
-                                            logoCasa,
-                                            width: 40,
-                                            height: 40,
-                                          )
-                                        : const Icon(Icons.sports_soccer),
-                                        Text(partita['casa']),
+                                        Column(
+                                          children: [
+                                            logoCasa.isNotEmpty
+                                                ? Image.network(
+                                                    logoCasa,
+                                                    width: 40,
+                                                    height: 40,
+                                                  )
+                                                : const Icon(
+                                                    Icons.sports_soccer),
+                                            Text(partita['casa']),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 4),
+                                        partita['iniziata'] || partita['finita']
+                                            ? Text('$golCasa',
+                                                style: const TextStyle(
+                                                    fontSize: 34))
+                                            : const Text(''),
+                                        partita['iniziata'] || partita['finita']
+                                            ? const Text(':')
+                                            : const Text('VS'),
+                                        partita['iniziata'] || partita['finita']
+                                            ? Text('$golFuori',
+                                                style: const TextStyle(
+                                                    fontSize: 34))
+                                            : const Text(''),
+                                        const SizedBox(width: 4),
+                                        Column(
+                                          children: [
+                                            logoFuori.isNotEmpty
+                                                ? Image.network(
+                                                    logoFuori,
+                                                    width: 40,
+                                                    height: 40,
+                                                  )
+                                                : const Icon(
+                                                    Icons.sports_soccer),
+                                            Text(partita['fuori']),
+                                          ],
+                                        ),
                                       ],
                                     ),
-                                    const Text('VS'),
-                                    Column(
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        logoFuori.isNotEmpty
-                                        ? Image.network(
-                                            logoFuori,
-                                            width: 40,
-                                            height: 40,
-                                          )
-                                        : const Icon(Icons.sports_soccer),
-                                        Text(partita['fuori']),
+                                        Text(partita['campo'] != ''
+                                            ? 'H ${partita['orario']} - '
+                                            : 'Ora da def. - '),
+                                        Text(partita['campo'].length > 1
+                                            ? 'Campo ${partita['campo'][1]}'
+                                            : 'Campo non def.'),
+                                        Text(partita['arbitro'] != ''
+                                            ? ' - ${partita['arbitro']}'
+                                            : ''),
                                       ],
                                     ),
+                                    const Divider(height: 36, thickness: 1),
                                   ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(partita['campo']!='' ? 'H ${partita['orario']} - ' : 'Ora da def. - '),
-                                    Text(partita['campo'].length > 1 ? 'Campo ${partita['campo'][1]}' : 'Campo non def.'),
-                                    Text(partita['arbitro']!='' ? ' - ${partita['arbitro']}' : ''),
-                                  ],
-                                ),
-                                const Divider(height: 36, thickness: 1),
-                              ],
-                            ));
+                                ));
                           }).toList(),
                           const SizedBox(height: 8),
                         ],
@@ -228,10 +276,17 @@ class _CCCalendarioState extends State<CCCalendario> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CCnuovaPartitaGironi()),
-          );
+          _selectedSegment == 'Gironi'
+              ? Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CCnuovaPartitaGironi()),
+                )
+              : Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CCnuovaPartitaOttavi()),
+                );
         },
         shape: const CircleBorder(),
         backgroundColor: Colors.white,
