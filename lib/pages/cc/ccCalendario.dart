@@ -70,9 +70,351 @@ class _CCCalendarioState extends State<CCCalendario> {
 
         return partite;
       });
+    } else if (_selectedSegment == 'Ottavi') {
+      return FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .snapshots()
+          .map((querySnapshot) {
+        List<Map<String, dynamic>> partite = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+
+        partite.sort((a, b) {
+          int turnoComparison = a['codice'].compareTo(b['codice']);
+          if (turnoComparison != 0) return turnoComparison;
+
+          if (a['orario'] == '' && b['orario'] == '') return 0;
+          if (a['orario'] == '') return 1;
+          if (b['orario'] == '') return -1;
+
+          return a['orario'].compareTo(b['orario']);
+        });
+
+        return partite;
+      });
+    } else if (_selectedSegment == 'Quarti') {
+      return FirebaseFirestore.instance
+          .collection('ccPartiteQuarti')
+          .snapshots()
+          .map((querySnapshot) {
+        List<Map<String, dynamic>> partite = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+
+        partite.sort((a, b) {
+          int codiceComparison = a['codice'].compareTo(b['codice']);
+          if (codiceComparison != 0) return codiceComparison;
+
+          if (a['orario'] == '' && b['orario'] == '') return 0;
+          if (a['orario'] == '') return 1;
+          if (b['orario'] == '') return -1;
+
+          return a['orario'].compareTo(b['orario']);
+        });
+
+        return partite;
+      });
+    } else if (_selectedSegment == 'Semifinali') {
+      return FirebaseFirestore.instance
+          .collection('ccPartiteSemifinali')
+          .snapshots()
+          .map((querySnapshot) {
+        List<Map<String, dynamic>> partite = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+
+        partite.sort((a, b) {
+          int codiceComparison = a['codice'].compareTo(b['codice']);
+          if (codiceComparison != 0) return codiceComparison;
+
+          if (a['orario'] == '' && b['orario'] == '') return 0;
+          if (a['orario'] == '') return 1;
+          if (b['orario'] == '') return -1;
+
+          return a['orario'].compareTo(b['orario']);
+        });
+
+        return partite;
+      });
     } else {
-      return Stream.value([]);
+      return FirebaseFirestore.instance
+          .collection('ccPartiteFinali')
+          .snapshots()
+          .map((querySnapshot) {
+        List<Map<String, dynamic>> partite = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+
+        partite.sort((a, b) {
+          int codiceComparison = a['codice'].compareTo(b['codice']);
+          if (codiceComparison != 0) return codiceComparison;
+
+          if (a['orario'] == '' && b['orario'] == '') return 0;
+          if (a['orario'] == '') return 1;
+          if (b['orario'] == '') return -1;
+
+          return a['orario'].compareTo(b['orario']);
+        });
+
+        return partite;
+      });
     }
+  }
+
+  Future<void> _terminaOttavi() async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('ccPartiteOttavi')
+        .get();
+
+    final partite = querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+
+    for (var partita in partite) {
+      if (partita['finita'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tutte le partite devono essere terminate')),
+        );
+        return;
+      }
+    }
+
+    final List<String> vincitori = [];
+    final List<String> perdenti = [];
+
+    for (var partita in partite) {
+      int golCasa = 0;
+      int golFuori = 0;
+      List<Map<String, dynamic>> marcatori =
+          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
+      for (var marcatore in marcatori) {
+        if (marcatore['dove'] == 'casa') {
+          golCasa++;
+        } else if (marcatore['dove'] == 'fuori') {
+          golFuori++;
+        }
+      }
+
+      if (golCasa > golFuori) {
+        vincitori.add(partita['casa']);
+        perdenti.add(partita['fuori']);
+      } else {
+        vincitori.add(partita['fuori']);
+        perdenti.add(partita['casa']);
+      }
+    }
+
+    for (int i = 0; i < vincitori.length; i += 2) {
+      final vPartita1 = vincitori[i];
+      final vPartita2 = vincitori[i + 1];
+
+      final pPartita1 = perdenti[i];
+      final pPartita2 = perdenti[i + 1];
+
+      await FirebaseFirestore.instance.collection('ccPartiteQuarti').doc('$vPartita1 VS $vPartita2').set({
+        'casa': vPartita1,
+        'fuori': vPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'quarti',
+        'codice': 'q${i ~/ 2}'
+      });
+
+      await FirebaseFirestore.instance.collection('ccPartiteQuarti').doc('$pPartita1 VS $pPartita2').set({
+        'casa': pPartita1,
+        'fuori': pPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'quarti',
+        'codice': 'q${i ~/ 2 + 4}'
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Partite dei quarti create con successo')),
+    );
+  }
+
+  Future<void> _terminaQuarti() async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('ccPartiteQuarti')
+        .get();
+
+    final partite = querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+
+    partite.sort((a, b) => a['codice'].compareTo(b['codice']));
+
+    for (var partita in partite) {
+      if (partita['finita'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tutte le partite devono essere terminate')),
+        );
+        return;
+      }
+    }
+
+    final List<String> vincitori = [];
+    final List<String> perdenti = [];
+
+    for (var partita in partite) {
+      int golCasa = 0;
+      int golFuori = 0;
+      List<Map<String, dynamic>> marcatori =
+          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
+      for (var marcatore in marcatori) {
+        if (marcatore['dove'] == 'casa') {
+          golCasa++;
+        } else if (marcatore['dove'] == 'fuori') {
+          golFuori++;
+        }
+      }
+
+      if (golCasa > golFuori) {
+        vincitori.add(partita['casa']);
+        perdenti.add(partita['fuori']);
+      } else {
+        vincitori.add(partita['fuori']);
+        perdenti.add(partita['casa']);
+      }
+    }
+
+    for (int i = 0; i < vincitori.length; i += 2) {
+      final vPartita1 = vincitori[i];
+      final vPartita2 = vincitori[i + 1];
+
+      final pPartita1 = perdenti[i];
+      final pPartita2 = perdenti[i + 1];
+
+      await FirebaseFirestore.instance.collection('ccPartiteSemifinali').doc('$vPartita1 VS $vPartita2').set({
+        'casa': vPartita1,
+        'fuori': vPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'semifinali',
+        'codice': 's${i ~/ 2}'
+      });
+
+      await FirebaseFirestore.instance.collection('ccPartiteSemifinali').doc('$pPartita1 VS $pPartita2').set({
+        'casa': pPartita1,
+        'fuori': pPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'semifinali',
+        'codice': 's${i ~/ 2 + 4}'
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Partite delle semifinali create con successo')),
+    );
+  }
+
+  Future<void> _terminaSemifinali() async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('ccPartiteSemifinali')
+        .get();
+
+    final partite = querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+
+    partite.sort((a, b) => a['codice'].compareTo(b['codice']));
+
+    for (var partita in partite) {
+      if (partita['finita'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tutte le partite devono essere terminate')),
+        );
+        return;
+      }
+    }
+
+    final List<String> vincitori = [];
+    final List<String> perdenti = [];
+
+    for (var partita in partite) {
+      int golCasa = 0;
+      int golFuori = 0;
+      List<Map<String, dynamic>> marcatori =
+          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
+      for (var marcatore in marcatori) {
+        if (marcatore['dove'] == 'casa') {
+          golCasa++;
+        } else if (marcatore['dove'] == 'fuori') {
+          golFuori++;
+        }
+      }
+
+      if (golCasa > golFuori) {
+        vincitori.add(partita['casa']);
+        perdenti.add(partita['fuori']);
+      } else {
+        vincitori.add(partita['fuori']);
+        perdenti.add(partita['casa']);
+      }
+    }
+
+    for (int i = 0; i < vincitori.length; i += 2) {
+      final vPartita1 = vincitori[i];
+      final vPartita2 = vincitori[i + 1];
+
+      final pPartita1 = perdenti[i];
+      final pPartita2 = perdenti[i + 1];
+
+      await FirebaseFirestore.instance.collection('ccPartiteFinali').doc('$vPartita1 VS $vPartita2').set({
+        'casa': vPartita1,
+        'fuori': vPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'finali',
+        'codice': 'f${i ~/ 2}'
+      });
+
+      await FirebaseFirestore.instance.collection('ccPartiteFinali').doc('$pPartita1 VS $pPartita2').set({
+        'casa': pPartita1,
+        'fuori': pPartita2,
+        'orario': '',
+        'campo': '',
+        'arbitro': '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': [],
+        'tipo': 'finali',
+        'codice': 'f${i ~/ 2 + 4}'
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Partite delle semifinali create con successo')),
+    );
   }
 
   @override
@@ -131,7 +473,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                   final groupedPartite = <String, List<Map<String, dynamic>>>{};
 
                   for (var partita in partite) {
-                    final girone = partita['girone'];
+                    final girone = partita['girone'] ?? partita['codice'];
                     if (!groupedPartite.containsKey(girone)) {
                       groupedPartite[girone] = [];
                     }
@@ -146,8 +488,64 @@ class _CCCalendarioState extends State<CCCalendario> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (_selectedSegment == 'Quarti' && girone == 'q0')
+                            const Text(
+                              '1° - 8° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (_selectedSegment == 'Quarti' && girone == 'q4')
+                            const Text(
+                              '9° - 16° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (_selectedSegment == 'Semifinali' && girone == 'q0')
+                            const Text(
+                              '1° - 4° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (_selectedSegment == 'Semifinali' && girone == 'q2')
+                            const Text(
+                              '5° - 8° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (_selectedSegment == 'Semifinali' && girone == 'q4')
+                            const Text(
+                              '9° - 12° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (_selectedSegment == 'Semifinali' && girone == 'q6')
+                            const Text(
+                              '13° - 16° posto',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           Text(
-                            'Girone $girone',
+                            _selectedSegment == 'Gironi'
+                            ? 'Girone $girone'
+                            : _selectedSegment == 'Ottavi'
+                            ? 'Ottavo ${int.parse(girone.substring(1)) + 1}'
+                            : _selectedSegment == 'Quarti'
+                            ? 'Quarto ${int.parse(girone.substring(1)) + 1}'
+                            : _selectedSegment == 'Semifinali'
+                            ? 'Semifinale ${int.parse(girone.substring(1)) + 1}'
+                            : 'Finale ${int.parse(girone.substring(1)) + 1}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -190,6 +588,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                         girone: girone,
                                         iniziata: partita['iniziata'],
                                         finita: partita['finita'],
+                                        tipo: partita['tipo'],
                                       ),
                                     ),
                                   );
@@ -270,6 +669,25 @@ class _CCCalendarioState extends State<CCCalendario> {
                   );
                 },
               ),
+              _selectedSegment=='Ottavi' ? ElevatedButton(
+                            onPressed: () {
+                                _terminaOttavi();
+                            },
+                            child: const Text('Termina Ottavi'),
+                          ) 
+                          : _selectedSegment=='Quarti' ? ElevatedButton(
+                            onPressed: () {
+                                _terminaQuarti();
+                            },
+                            child: const Text('Termina Quarti'),
+                          ) 
+                          : _selectedSegment=='Semifinali' ? ElevatedButton(
+                            onPressed: () {
+                                _terminaSemifinali();
+                            },
+                            child: const Text('Termina Semifinali'),
+                          )
+                          : Container()
             ],
           ),
         ),

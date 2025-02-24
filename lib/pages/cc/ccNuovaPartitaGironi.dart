@@ -136,6 +136,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           'iniziata': false,
           'finita': false,
           'marcatori': p.marcatori ?? [],
+          'tipo': 'girone',
         });
         p.oldDocId = newDocId;
       }

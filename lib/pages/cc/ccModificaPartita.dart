@@ -13,6 +13,7 @@ class CCModificaPartita extends StatefulWidget {
   final String girone;
   final bool iniziata;
   final bool finita;
+  final String tipo;
 
   CCModificaPartita({
     required this.casa,
@@ -26,6 +27,7 @@ class CCModificaPartita extends StatefulWidget {
     required this.girone,
     required this.iniziata,
     required this.finita,
+    required this.tipo,
   });
 
   @override
@@ -157,10 +159,33 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   }
 
   Future<void> _loadInitialData() async {
-    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteGironi')
-        .doc('${widget.casa} VS ${widget.fuori}')
-        .get();
+    DocumentSnapshot docSnapshot;
+    if (widget.tipo == 'girone') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteGironi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'ottavi') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'quarti') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteQuarti')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'semifinali') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteSemifinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteFinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    }
 
     List<dynamic> marcatoriFirestore = docSnapshot['marcatori'] ?? [];
 
@@ -180,10 +205,33 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   }
 
   void aggiungiMarcatore(String squadra, String giocatore) async {
-    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteGironi')
-        .doc('${widget.casa} VS ${widget.fuori}')
-        .get();
+    DocumentSnapshot docSnapshot;
+    if (widget.tipo == 'girone') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteGironi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'ottavi') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'quarti') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteQuarti')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'semifinali') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteSemifinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteFinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    }
 
     List<dynamic> marcatoriFirestore = docSnapshot['marcatori'] ?? [];
 
@@ -200,19 +248,70 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     marcatoriFirestore.add(
         {'nome': giocatore, 'dove': squadra == widget.casa ? 'casa' : 'fuori'});
 
-    await FirebaseFirestore.instance
-        .collection('ccPartiteGironi')
-        .doc('${widget.casa} VS ${widget.fuori}')
-        .update({
-      'marcatori': marcatoriFirestore,
-    });
+    if (widget.tipo == 'girone') {
+      await FirebaseFirestore.instance
+          .collection('ccPartiteGironi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .update({
+        'marcatori': marcatoriFirestore,
+      });
+    } else if (widget.tipo == 'ottavi') {
+      await FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .update({
+        'marcatori': marcatoriFirestore,
+      });
+    } else if (widget.tipo == 'quarti') {
+      await FirebaseFirestore.instance
+          .collection('ccPartiteQuarti')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .update({
+        'marcatori': marcatoriFirestore,
+      });
+    } else if (widget.tipo == 'semifinali') {
+      await FirebaseFirestore.instance
+          .collection('ccPartiteSemifinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .update({
+        'marcatori': marcatoriFirestore,});
+    } else {
+      await FirebaseFirestore.instance
+          .collection('ccPartiteFinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .update({
+        'marcatori': marcatoriFirestore,});
+    }
   }
 
   void rimuoviMarcatore(String squadra, String giocatore) async {
-    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteGironi')
-        .doc('${widget.casa} VS ${widget.fuori}')
-        .get();
+    DocumentSnapshot docSnapshot;
+    if (widget.tipo == 'girone') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteGironi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'ottavi') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'quarti') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteQuarti')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else if (widget.tipo == 'semifinali') {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteSemifinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    } else {
+      docSnapshot = await FirebaseFirestore.instance
+          .collection('ccPartiteFinali')
+          .doc('${widget.casa} VS ${widget.fuori}')
+          .get();
+    }
 
     List<dynamic> marcatoriFirestore = docSnapshot['marcatori'] ?? [];
 
@@ -248,12 +347,42 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     }
 
     if (foundFirestore) {
-      await FirebaseFirestore.instance
-          .collection('ccPartiteGironi')
-          .doc('${widget.casa} VS ${widget.fuori}')
-          .update({
-        'marcatori': marcatoriFirestore,
-      });
+      if (widget.tipo == 'girone') {
+        await FirebaseFirestore.instance
+            .collection('ccPartiteGironi')
+            .doc('${widget.casa} VS ${widget.fuori}')
+            .update({
+          'marcatori': marcatoriFirestore,
+        });
+      } else if (widget.tipo == 'ottavi') {
+        await FirebaseFirestore.instance
+            .collection('ccPartiteOttavi')
+            .doc('${widget.casa} VS ${widget.fuori}')
+            .update({
+          'marcatori': marcatoriFirestore,
+        });
+      } else if (widget.tipo == 'quarti') {
+        await FirebaseFirestore.instance
+            .collection('ccPartiteQuarti')
+            .doc('${widget.casa} VS ${widget.fuori}')
+            .update({
+          'marcatori': marcatoriFirestore,
+        });
+      } else if (widget.tipo == 'semifinali') {
+        await FirebaseFirestore.instance
+            .collection('ccPartiteSemifinali')
+            .doc('${widget.casa} VS ${widget.fuori}')
+            .update({
+          'marcatori': marcatoriFirestore,
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('ccPartiteFinali')
+            .doc('${widget.casa} VS ${widget.fuori}')
+            .update({
+          'marcatori': marcatoriFirestore,
+        });
+      }
     }
   }
 
@@ -308,17 +437,49 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                     ? () {
                         setState(() {
                           iniziata = true;
-                          if (finita) {
+                          if (finita && widget.tipo == 'girone') {
                             _updateGironiReverse();
                           }
                           finita = false;
-                          FirebaseFirestore.instance
-                              .collection('ccPartiteGironi')
-                              .doc('${widget.casa} VS ${widget.fuori}')
-                              .update({
-                            'iniziata': true,
-                            'finita': false,
-                          });
+                          widget.tipo == 'girone'
+                              ? FirebaseFirestore.instance
+                                  .collection('ccPartiteGironi')
+                                  .doc('${widget.casa} VS ${widget.fuori}')
+                                  .update({
+                                  'iniziata': true,
+                                  'finita': false,
+                                })
+                              : widget.tipo == 'ottavi'
+                                  ? FirebaseFirestore.instance
+                                      .collection('ccPartiteOttavi')
+                                      .doc('${widget.casa} VS ${widget.fuori}')
+                                      .update({
+                                      'iniziata': true,
+                                      'finita': false,
+                                    })
+                                  : widget.tipo == 'quarti'
+                                  ? FirebaseFirestore.instance
+                                      .collection('ccPartiteQuarti')
+                                      .doc('${widget.casa} VS ${widget.fuori}')
+                                      .update({
+                                      'iniziata': true,
+                                      'finita': false,
+                                    })
+                                  : widget.tipo == 'semifinali'
+                                  ? FirebaseFirestore.instance
+                                      .collection('ccPartiteSemifinali')
+                                      .doc('${widget.casa} VS ${widget.fuori}')
+                                      .update({
+                                      'iniziata': true,
+                                      'finita': false,
+                                    })
+                                  : FirebaseFirestore.instance
+                                    .collection('ccPartiteFinali')
+                                    .doc('${widget.casa} VS ${widget.fuori}')
+                                    .update({
+                                    'iniziata': true,
+                                    'finita': false,
+                                  });
                         });
                       }
                     : null,
@@ -337,15 +498,44 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                       setState(() {
                         iniziata = false;
                         finita = true;
-                        FirebaseFirestore.instance
-                            .collection('ccPartiteGironi')
-                            .doc('${widget.casa} VS ${widget.fuori}')
-                            .update({
-                          'iniziata': false,
-                          'finita': true,
-                        });
+                        widget.tipo == 'girone'
+                            ? FirebaseFirestore.instance
+                                .collection('ccPartiteGironi')
+                                .doc('${widget.casa} VS ${widget.fuori}')
+                                .update({
+                                'iniziata': false,
+                                'finita': true,
+                              })
+                            : widget.tipo == 'ottavi' ? FirebaseFirestore.instance
+                                .collection('ccPartiteOttavi')
+                                .doc('${widget.casa} VS ${widget.fuori}')
+                                .update({
+                                'iniziata': false,
+                                'finita': true,
+                              })
+                            : widget.tipo == 'quarti' ? FirebaseFirestore.instance
+                                .collection('ccPartiteQuarti')
+                                .doc('${widget.casa} VS ${widget.fuori}')
+                                .update({
+                                'iniziata': false,
+                                'finita': true,
+                              })
+                            : widget.tipo == 'semifinali' ? FirebaseFirestore.instance
+                              .collection('ccPartiteSemifinali')
+                              .doc('${widget.casa} VS ${widget.fuori}')
+                              .update({
+                              'iniziata': false,
+                              'finita': true,
+                            })
+                            : FirebaseFirestore.instance
+                                .collection('ccPartiteFinali')
+                                .doc('${widget.casa} VS ${widget.fuori}')
+                                .update({
+                                'iniziata': false,
+                                'finita': true,
+                              });
                       });
-                      _updateGironi();
+                      widget.tipo == 'girone' ? _updateGironi() : null;
                     }
                   : null,
               style: ElevatedButton.styleFrom(

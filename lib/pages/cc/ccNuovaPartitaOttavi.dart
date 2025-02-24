@@ -50,23 +50,21 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   late Future<void> _futureGironi;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  List<List<Partita>> turni =
-      List.generate(8, (_) => List.generate(2, (_) => Partita()));
-  List<List<TextEditingController>> _timeControllers =
-      List.generate(8, (_) => List.generate(2, (_) => TextEditingController()));
-  List<List<TextEditingController>> _campiControllers =
-      List.generate(8, (_) => List.generate(2, (_) => TextEditingController()));
+  List<Partita> turni = List.generate(8, (_) => Partita());
+  List<TextEditingController> _timeControllers =
+      List.generate(8, (_) => TextEditingController());
+  List<TextEditingController> _campiControllers =
+      List.generate(8, (_) => TextEditingController());
   List<String> campi = ['', 'C1', 'C2', 'C3'];
 
   Future<void> _getSquadre() async {
     squadre = [''];
-    turni = List.generate(8, (_) => List.generate(2, (_) => Partita()));
-    _timeControllers = List.generate(
-        8, (_) => List.generate(2, (_) => TextEditingController()));
-    _campiControllers = List.generate(
-        8, (_) => List.generate(2, (_) => TextEditingController()));
-    final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('ccOttavi').get();
+    turni = List.generate(8, (_) => Partita());
+    _timeControllers = List.generate(8, (_) => TextEditingController());
+    _campiControllers = List.generate(8, (_) => TextEditingController());
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('ccOttavi')
+        .get();
     setState(() {
       squadre = [''];
       for (var doc in querySnapshot.docs) {
@@ -75,20 +73,19 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
       }
     });
 
+    final QuerySnapshot partitaSnapshot = await FirebaseFirestore.instance
+        .collection('ccPartiteOttavi')
+        .get();
     for (int turno = 0; turno < turni.length; turno++) {
-      final QuerySnapshot partitaSnapshot =
-          await FirebaseFirestore.instance.collection('ccPartiteOttavi').get();
-      for (int partita = 0; partita < partitaSnapshot.docs.length; partita++) {
-        final doc = partitaSnapshot.docs[partita];
-        setState(() {
-          turni[turno][partita] =
-              Partita.fromMap(doc.data() as Map<String, dynamic>);
-          _timeControllers[turno][partita].text =
-              turni[turno][partita].orario ?? '';
-          _campiControllers[turno][partita].text =
-              turni[turno][partita].campo ?? '';
-        });
+      if (turno >= partitaSnapshot.docs.length) {
+        break;
       }
+      final doc = partitaSnapshot.docs[turno];
+      setState(() {
+        turni[turno] = Partita.fromMap(doc.data() as Map<String, dynamic>);
+        _timeControllers[turno].text = turni[turno].orario ?? '';
+        _campiControllers[turno].text = turni[turno].campo ?? '';
+      });
     }
   }
 
@@ -98,43 +95,43 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     setState(() {
       gironi = querySnapshot.docs.map((doc) => doc.id).toList();
     });
-    print("giorni: $gironi");
     await _getSquadre();
   }
 
   Future<void> _saveMatch() async {
     for (int turno = 0; turno < turni.length; turno++) {
-      for (int partita = 0; partita < turni[turno].length; partita++) {
-        final Partita p = turni[turno][partita];
-        print(p.casa);
-        print(p.fuori);
-        final String newDocId = '${p.casa} VS ${p.fuori}';
+      final Partita p = turni[turno];
+      final String newDocId = '${p.casa} VS ${p.fuori}';
 
-        if (p.oldDocId != null && p.oldDocId != newDocId) {
-          await FirebaseFirestore.instance
-              .collection('ccPartiteOttavi')
-              .doc(p.oldDocId)
-              .delete();
-        }
+      if (p.casa == null || p.fuori == null) {
+        print('Errore: Casa o Fuori è null');
+        continue;
+      }
 
+      if (p.oldDocId != null && p.oldDocId != newDocId) {
         await FirebaseFirestore.instance
             .collection('ccPartiteOttavi')
-            .doc('${p.casa} VS ${p.fuori}')
-            .set({
-          'casa': p.casa,
-          'fuori': p.fuori,
-          'orario': p.orario ?? '',
-          'campo': p.campo ?? '',
-          'arbitro': p.arbitro ?? '',
-          'data': '26/04/2025',
-          'iniziata': false,
-          'finita': false,
-          'marcatori': p.marcatori ?? [],
-          'tipo': 'ottavi',
-          'codice': 'o$turno$partita'
-        });
-        p.oldDocId = newDocId;
+            .doc(p.oldDocId)
+            .delete();
       }
+
+      await FirebaseFirestore.instance
+          .collection('ccPartiteOttavi')
+          .doc(newDocId)
+          .set({
+        'casa': p.casa,
+        'fuori': p.fuori,
+        'orario': p.orario ?? '',
+        'campo': p.campo ?? '',
+        'arbitro': p.arbitro ?? '',
+        'data': '26/04/2025',
+        'iniziata': false,
+        'finita': false,
+        'marcatori': p.marcatori ?? [],
+        'tipo': 'ottavi',
+        'codice': 'o$turno'
+      });
+      p.oldDocId = newDocId;
     }
     Navigator.of(context).pop();
   }
@@ -203,7 +200,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
           } else if (squadre.isEmpty) {
             return const Center(
               child: Text(
-                'Nessun girone',
+                'Nessuna squadra',
                 style: TextStyle(fontSize: 20.0, color: Colors.black54),
                 textAlign: TextAlign.center,
               ),
@@ -218,134 +215,128 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       for (int turno = 0; turno < turni.length; turno++) ...[
-                        Text("Turno ${turno + 1}",
+                        Text("Ottavo ${turno + 1}",
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
-                        for (int partita = 0;
-                            partita < turni[turno].length;
-                            partita++) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].casa,
-                                  items: squadre.map((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      turni[turno][partita].casa = newValue;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Obbligatorio';
-                                    }
-                                    return null;
-                                  },
-                                  decoration: getInputDecoration('Casa'),
-                                ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                value: turni[turno].casa,
+                                items: squadre.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    turni[turno].casa = newValue;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Obbligatorio';
+                                  }
+                                  return null;
+                                },
+                                decoration: getInputDecoration('Casa'),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].fuori,
-                                  items: squadre.map((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      turni[turno][partita].fuori = newValue;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Obbligatorio';
-                                    }
-                                    return null;
-                                  },
-                                  decoration: getInputDecoration('Fuori'),
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                value: turni[turno].fuori,
+                                items: squadre.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    turni[turno].fuori = newValue;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Obbligatorio';
+                                  }
+                                  return null;
+                                },
+                                decoration: getInputDecoration('Fuori'),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    final String? orario = await _selectTime(
-                                        turni[turno][partita]);
-                                    if (orario != null) {
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final String? orario = await _selectTime(
+                                      turni[turno]);
+                                  if (orario != null) {
+                                    setState(() {
+                                      _timeControllers[turno].text = orario;
+                                      turni[turno].orario = orario;
+                                    });
+                                  }
+                                },
+                                child: AbsorbPointer(
+                                  child: TextFormField(
+                                    controller: _timeControllers[turno],
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
+                                    onChanged: (value) {
                                       setState(() {
-                                        _timeControllers[turno][partita].text =
-                                            orario;
-                                        turni[turno][partita].orario = orario;
+                                        turni[turno].orario = value;
                                       });
-                                    }
-                                  },
-                                  child: AbsorbPointer(
-                                    child: TextFormField(
-                                      controller: _timeControllers[turno]
-                                          [partita],
-                                      textCapitalization:
-                                          TextCapitalization.sentences,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          turni[turno][partita].orario = value;
-                                        });
-                                      },
-                                      decoration: getInputDecoration('Orario'),
-                                    ),
+                                    },
+                                    decoration: getInputDecoration('Orario'),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].campo,
-                                  items: campi.map((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      turni[turno][partita].campo = newValue;
-                                    });
-                                  },
-                                  decoration: getInputDecoration('Campo'),
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                value: turni[turno].campo,
+                                items: campi.map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    turni[turno].campo = newValue;
+                                  });
+                                },
+                                decoration: getInputDecoration('Campo'),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextFormField(
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  initialValue: turni[turno][partita].arbitro,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      turni[turno][partita].arbitro = value;
-                                    });
-                                  },
-                                  decoration: getInputDecoration('Arbitro'),
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                initialValue: turni[turno].arbitro,
+                                onChanged: (value) {
+                                  setState(() {
+                                    turni[turno].arbitro = value;
+                                  });
+                                },
+                                decoration: getInputDecoration('Arbitro'),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-                        ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
                       ],
                       Center(
                         child: ElevatedButton(
