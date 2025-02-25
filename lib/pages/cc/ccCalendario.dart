@@ -15,6 +15,7 @@ class CCCalendario extends StatefulWidget {
 
 class _CCCalendarioState extends State<CCCalendario> {
   String _selectedSegment = 'Gironi';
+  String _selectedGirone = 'A';
   late Stream<List<Map<String, dynamic>>> _streamPartite;
 
   @override
@@ -425,39 +426,6 @@ class _CCCalendarioState extends State<CCCalendario> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SegmentedButton<String>(
-                selectedIcon: const Icon(Icons.check),
-                segments: const <ButtonSegment<String>>[
-                  ButtonSegment<String>(
-                    value: 'Gironi',
-                    label: Text('Gir', style: TextStyle(fontSize: 12)),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'Ottavi',
-                    label: Text('Ott', style: TextStyle(fontSize: 12)),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'Quarti',
-                    label: Text('Qua', style: TextStyle(fontSize: 12)),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'Semifinali',
-                    label: Text('Sem', style: TextStyle(fontSize: 12)),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'Finali',
-                    label: Text('Fin', style: TextStyle(fontSize: 12)),
-                  ),
-                ],
-                selected: <String>{_selectedSegment},
-                onSelectionChanged: (Set<String> newSelection) {
-                  setState(() {
-                    _selectedSegment = newSelection.first;
-                    _streamPartite = _getPartite();
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
               StreamBuilder<List<Map<String, dynamic>>>(
                 stream: _streamPartite,
                 builder: (context, snapshot) {
@@ -481,7 +449,70 @@ class _CCCalendarioState extends State<CCCalendario> {
                   }
 
                   return Column(
-                    children: groupedPartite.entries.map((entry) {
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SegmentedButton<String>(
+                        selectedIcon: const Icon(Icons.check),
+                        segments: const <ButtonSegment<String>>[
+                          ButtonSegment<String>(
+                            value: 'Gironi',
+                            label: Text('Gir', style: TextStyle(fontSize: 12)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Ottavi',
+                            label: Text('Ott', style: TextStyle(fontSize: 12)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Quarti',
+                            label: Text('Qua', style: TextStyle(fontSize: 12)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Semifinali',
+                            label: Text('Sem', style: TextStyle(fontSize: 12)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Finali',
+                            label: Text('Fin', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                        selected: <String>{_selectedSegment},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          setState(() {
+                            _selectedSegment = newSelection.first;
+                            _streamPartite = _getPartite();
+                          });
+                        },
+                      ),
+                      if (_selectedSegment == 'Gironi')
+                        SegmentedButton<String>(
+                            selectedIcon: const Icon(Icons.check),
+                            segments: const <ButtonSegment<String>>[
+                              ButtonSegment<String>(
+                                value: 'A',
+                                label: Text('A', style: TextStyle(fontSize: 12)),
+                              ),
+                              ButtonSegment<String>(
+                                value: 'B',
+                                label: Text('B', style: TextStyle(fontSize: 12)),
+                              ),
+                              ButtonSegment<String>(
+                                value: 'C',
+                                label: Text('C', style: TextStyle(fontSize: 12)),
+                              ),
+                              ButtonSegment<String>(
+                                value: 'D',
+                                label: Text('D', style: TextStyle(fontSize: 12)),
+                              ),
+                            ],
+                            selected: <String>{_selectedGirone},
+                            onSelectionChanged: (Set<String> newSelection) {
+                              setState(() {
+                                _selectedGirone = newSelection.first;
+                                _streamPartite = _getPartite();
+                              });
+                            },
+                          ),
+                      ...groupedPartite.entries.map((entry) {
                       final girone = entry.key;
                       final partiteGirone = entry.value;
 
@@ -666,7 +697,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                         ],
                       );
                     }).toList(),
-                  );
+                  ]);
                 },
               ),
               _selectedSegment=='Ottavi' ? ElevatedButton(
