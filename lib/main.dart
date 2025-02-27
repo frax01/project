@@ -20,7 +20,9 @@ import '/pages/club/eventPage.dart';
 import 'package:club/pages/club/programCard.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
+import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

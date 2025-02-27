@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 class CCModificaPartita extends StatefulWidget {
   final String casa;
@@ -237,10 +238,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
     setState(() {
       if (squadra == widget.casa) {
-        marcatori.add({'nome': giocatore, 'dove': 'casa'});
+        marcatori.insert(0, {'nome': giocatore, 'dove': 'casa'});
         golCasa++;
       } else {
-        marcatori.add({'nome': giocatore, 'dove': 'fuori'});
+        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori'});
         golFuori++;
       }
     });
@@ -274,13 +275,15 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
           .collection('ccPartiteSemifinali')
           .doc('${widget.casa} VS ${widget.fuori}')
           .update({
-        'marcatori': marcatoriFirestore,});
+        'marcatori': marcatoriFirestore,
+      });
     } else {
       await FirebaseFirestore.instance
           .collection('ccPartiteFinali')
           .doc('${widget.casa} VS ${widget.fuori}')
           .update({
-        'marcatori': marcatoriFirestore,});
+        'marcatori': marcatoriFirestore,
+      });
     }
   }
 
@@ -390,273 +393,364 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Partita'),
+        title: widget.girone != ''
+            ? Text('Girone ${widget.girone}')
+            : Text(
+                '${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}'),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(32.0, 8, 32, 8),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('ccPartiteGironi')
+              .doc('${widget.casa} VS ${widget.fuori}')
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+            var marcatoriFirestore = data['marcatori'] ?? [];
+
+            int golCasa = 0;
+            int golFuori = 0;
+            List<Map<String, String>> marcatori = [];
+            for (var marcatore in marcatoriFirestore) {
+              if (marcatore['dove'] == 'casa') {
+                golCasa++;
+              } else if (marcatore['dove'] == 'fuori') {
+                golFuori++;
+              }
+              marcatori.insert(0, {
+                'nome': marcatore['nome'],
+                'dove': marcatore['dove'],
+              });
+            }
+
+            return Column(
               children: [
-                Text('${widget.data} - '),
-                Text(widget.orario),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
-                    Image.network(widget.logocasa, width: 90, height: 90),
-                    const SizedBox(height: 8),
-                    Text(widget.casa, style: const TextStyle(fontSize: 22)),
-                  ],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$golCasa',
-                  style: const TextStyle(fontSize: 34),
-                ),
-                const Text(':',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
-                Text('$golFuori', style: const TextStyle(fontSize: 34)),
-                const SizedBox(width: 4),
-                Column(
-                  children: [
-                    Image.network(widget.logofuori, width: 90, height: 90),
-                    const SizedBox(height: 8),
-                    Text(widget.fuori, style: const TextStyle(fontSize: 22)),
-                  ],
-                ),
-              ],
-            ),
-            ElevatedButton(
-                onPressed: !iniziata
-                    ? () {
-                        setState(() {
-                          iniziata = true;
-                          if (finita && widget.tipo == 'girone') {
-                            _updateGironiReverse();
-                          }
-                          finita = false;
-                          widget.tipo == 'girone'
-                              ? FirebaseFirestore.instance
-                                  .collection('ccPartiteGironi')
-                                  .doc('${widget.casa} VS ${widget.fuori}')
-                                  .update({
-                                  'iniziata': true,
-                                  'finita': false,
-                                })
-                              : widget.tipo == 'ottavi'
-                                  ? FirebaseFirestore.instance
-                                      .collection('ccPartiteOttavi')
-                                      .doc('${widget.casa} VS ${widget.fuori}')
-                                      .update({
-                                      'iniziata': true,
-                                      'finita': false,
-                                    })
-                                  : widget.tipo == 'quarti'
-                                  ? FirebaseFirestore.instance
-                                      .collection('ccPartiteQuarti')
-                                      .doc('${widget.casa} VS ${widget.fuori}')
-                                      .update({
-                                      'iniziata': true,
-                                      'finita': false,
-                                    })
-                                  : widget.tipo == 'semifinali'
-                                  ? FirebaseFirestore.instance
-                                      .collection('ccPartiteSemifinali')
-                                      .doc('${widget.casa} VS ${widget.fuori}')
-                                      .update({
-                                      'iniziata': true,
-                                      'finita': false,
-                                    })
-                                  : FirebaseFirestore.instance
-                                    .collection('ccPartiteFinali')
-                                    .doc('${widget.casa} VS ${widget.fuori}')
-                                    .update({
-                                    'iniziata': true,
-                                    'finita': false,
-                                  });
-                        });
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: iniziata
-                      ? Colors.grey
-                      : const Color.fromARGB(255, 25, 84, 132),
-                ),
-                child: const Text("Avvia partita")),
-            const SizedBox(
-              width: 16,
-            ),
-            ElevatedButton(
-              onPressed: iniziata
-                  ? () {
-                      setState(() {
-                        iniziata = false;
-                        finita = true;
-                        widget.tipo == 'girone'
-                            ? FirebaseFirestore.instance
-                                .collection('ccPartiteGironi')
-                                .doc('${widget.casa} VS ${widget.fuori}')
-                                .update({
-                                'iniziata': false,
-                                'finita': true,
-                              })
-                            : widget.tipo == 'ottavi' ? FirebaseFirestore.instance
-                                .collection('ccPartiteOttavi')
-                                .doc('${widget.casa} VS ${widget.fuori}')
-                                .update({
-                                'iniziata': false,
-                                'finita': true,
-                              })
-                            : widget.tipo == 'quarti' ? FirebaseFirestore.instance
-                                .collection('ccPartiteQuarti')
-                                .doc('${widget.casa} VS ${widget.fuori}')
-                                .update({
-                                'iniziata': false,
-                                'finita': true,
-                              })
-                            : widget.tipo == 'semifinali' ? FirebaseFirestore.instance
-                              .collection('ccPartiteSemifinali')
-                              .doc('${widget.casa} VS ${widget.fuori}')
-                              .update({
-                              'iniziata': false,
-                              'finita': true,
-                            })
-                            : FirebaseFirestore.instance
-                                .collection('ccPartiteFinali')
-                                .doc('${widget.casa} VS ${widget.fuori}')
-                                .update({
-                                'iniziata': false,
-                                'finita': true,
-                              });
-                      });
-                      widget.tipo == 'girone' ? _updateGironi() : null;
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: !iniziata
-                    ? Colors.grey
-                    : const Color.fromARGB(255, 25, 84, 132),
-              ),
-              child: const Text("Termina partita"),
-            ),
-            iniziata
-                ? Row(
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      FutureBuilder<List<String>>(
-                        future: getGiocatori(widget.casa),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) return Container();
-                          return DropdownButton<String>(
-                            hint: const Text('Marcatore'),
-                            items: snapshot.data!
-                                .map((giocatore) => DropdownMenuItem<String>(
-                                      value: giocatore,
-                                      child: Text(giocatore),
-                                    ))
-                                .toList(),
-                            onChanged: (giocatore) {
-                              if (giocatore != null) {
-                                aggiungiMarcatore(widget.casa, giocatore);
-                              }
-                            },
-                          );
-                        },
+                      Column(
+                        children: [
+                          Image.network(widget.logocasa, width: 90, height: 90),
+                          const SizedBox(height: 8),
+                          Text(widget.casa,
+                              style: const TextStyle(fontSize: 22)),
+                        ],
                       ),
-                      FutureBuilder<List<String>>(
-                        future: getGiocatori(widget.fuori),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) return Container();
-                          return DropdownButton<String>(
-                            hint: const Text('Marcatore'),
-                            items: snapshot.data!
-                                .map((giocatore) => DropdownMenuItem<String>(
-                                      value: giocatore,
-                                      child: Text(giocatore),
-                                    ))
-                                .toList(),
-                            onChanged: (giocatore) {
-                              if (giocatore != null) {
-                                aggiungiMarcatore(widget.fuori, giocatore);
-                              }
-                            },
-                          );
-                        },
+                      const SizedBox(width: 4),
+                      Text(
+                        '$golCasa',
+                        style: const TextStyle(fontSize: 34),
+                      ),
+                      const Text(':',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 22)),
+                      Text('$golFuori', style: const TextStyle(fontSize: 34)),
+                      const SizedBox(width: 4),
+                      Column(
+                        children: [
+                          Image.network(widget.logofuori,
+                              width: 90, height: 90),
+                          const SizedBox(height: 8),
+                          Text(widget.fuori,
+                              style: const TextStyle(fontSize: 22)),
+                        ],
                       ),
                     ],
-                  )
-                : Container(),
-            Column(
-              children: [
-                Text(widget.campo),
-                Text(widget.arbitro),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: marcatori
-                          .where((element) => element['dove'] == 'casa')
-                          .length,
-                      itemBuilder: (context, index) {
-                        final marcatore = marcatori
-                            .where((element) => element['dove'] == 'casa')
-                            .elementAt(index);
-                        return ListTile(
-                          title: Text(marcatore['nome']!),
-                          trailing: iniziata
-                              ? IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    rimuoviMarcatore(
-                                        widget.casa, marcatore['nome']!);
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: !iniziata
+                              ? () {
+                                  setState(() {
+                                    iniziata = true;
+                                    if (finita && widget.tipo == 'girone') {
+                                      _updateGironiReverse();
+                                    }
+                                    finita = false;
+                                    widget.tipo == 'girone'
+                                        ? FirebaseFirestore.instance
+                                            .collection('ccPartiteGironi')
+                                            .doc(
+                                                '${widget.casa} VS ${widget.fuori}')
+                                            .update({
+                                            'iniziata': true,
+                                            'finita': false,
+                                          })
+                                        : widget.tipo == 'ottavi'
+                                            ? FirebaseFirestore.instance
+                                                .collection('ccPartiteOttavi')
+                                                .doc(
+                                                    '${widget.casa} VS ${widget.fuori}')
+                                                .update({
+                                                'iniziata': true,
+                                                'finita': false,
+                                              })
+                                            : widget.tipo == 'quarti'
+                                                ? FirebaseFirestore.instance
+                                                    .collection(
+                                                        'ccPartiteQuarti')
+                                                    .doc(
+                                                        '${widget.casa} VS ${widget.fuori}')
+                                                    .update({
+                                                    'iniziata': true,
+                                                    'finita': false,
+                                                  })
+                                                : widget.tipo == 'semifinali'
+                                                    ? FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteSemifinali')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': true,
+                                                        'finita': false,
+                                                      })
+                                                    : FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteFinali')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': true,
+                                                        'finita': false,
+                                                      });
+                                  });
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: iniziata
+                                ? Colors.grey
+                                : const Color.fromARGB(255, 16, 108, 47),
+                          ),
+                          child: const Text("Inizio partita"),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: iniziata
+                              ? () {
+                                  setState(() {
+                                    iniziata = false;
+                                    finita = true;
+                                    widget.tipo == 'girone'
+                                        ? FirebaseFirestore.instance
+                                            .collection('ccPartiteGironi')
+                                            .doc(
+                                                '${widget.casa} VS ${widget.fuori}')
+                                            .update({
+                                            'iniziata': false,
+                                            'finita': true,
+                                          })
+                                        : widget.tipo == 'ottavi'
+                                            ? FirebaseFirestore.instance
+                                                .collection('ccPartiteOttavi')
+                                                .doc(
+                                                    '${widget.casa} VS ${widget.fuori}')
+                                                .update({
+                                                'iniziata': false,
+                                                'finita': true,
+                                              })
+                                            : widget.tipo == 'quarti'
+                                                ? FirebaseFirestore.instance
+                                                    .collection(
+                                                        'ccPartiteQuarti')
+                                                    .doc(
+                                                        '${widget.casa} VS ${widget.fuori}')
+                                                    .update({
+                                                    'iniziata': false,
+                                                    'finita': true,
+                                                  })
+                                                : widget.tipo == 'semifinali'
+                                                    ? FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteSemifinali')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': false,
+                                                        'finita': true,
+                                                      })
+                                                    : FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteFinali')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': false,
+                                                        'finita': true,
+                                                      });
+                                  });
+                                  widget.tipo == 'girone'
+                                      ? _updateGironi()
+                                      : null;
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: !iniziata
+                                ? Colors.grey
+                                : const Color.fromARGB(255, 150, 9, 9),
+                          ),
+                          child: const Text("Fine partita"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                iniziata
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            FutureBuilder<List<String>>(
+                              future: getGiocatori(widget.casa),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) return Container();
+                                return DropdownButton<String>(
+                                  hint: const Text('Marcatore'),
+                                  items: snapshot.data!
+                                      .map((giocatore) =>
+                                          DropdownMenuItem<String>(
+                                            value: giocatore,
+                                            child: Text(giocatore),
+                                          ))
+                                      .toList(),
+                                  onChanged: (giocatore) {
+                                    if (giocatore != null) {
+                                      aggiungiMarcatore(widget.casa, giocatore);
+                                    }
                                   },
-                                )
-                              : const SizedBox(
-                                  width: 1,
+                                );
+                              },
+                            ),
+                            FutureBuilder<List<String>>(
+                              future: getGiocatori(widget.fuori),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) return Container();
+                                return DropdownButton<String>(
+                                  hint: const Text('Marcatore'),
+                                  items: snapshot.data!
+                                      .map((giocatore) =>
+                                          DropdownMenuItem<String>(
+                                            value: giocatore,
+                                            child: Text(giocatore),
+                                          ))
+                                      .toList(),
+                                  onChanged: (giocatore) {
+                                    if (giocatore != null) {
+                                      aggiungiMarcatore(
+                                          widget.fuori, giocatore);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(),
+                const SizedBox(height: 16),
+                !iniziata && !finita
+                    ? Container()
+                    : const Center(
+                        child: Text("Cronaca",
+                            style: TextStyle(
+                                fontSize: 24, fontStyle: FontStyle.italic))),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: marcatori.length,
+                    itemBuilder: (context, index) {
+                      final marcatore = marcatori[index];
+                      return Padding(
+                        padding: iniziata
+                            ? const EdgeInsets.fromLTRB(2, 16, 2, 4)
+                            : const EdgeInsets.fromLTRB(12, 20, 12, 4),
+                        child: Row(
+                          children: [
+                            if (marcatore['dove'] == 'casa') ...[
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    iniziata
+                                        ? IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () {
+                                              rimuoviMarcatore(widget.casa,
+                                                  marcatore['nome']!);
+                                            },
+                                          )
+                                        : const SizedBox(width: 1),
+                                    Expanded(
+                                      child: Text(
+                                        marcatore['nome']!,
+                                        style: const TextStyle(fontSize: 18),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                        );
-                      },
-                    ),
+                              ),
+                              const Icon(Icons.sports_soccer),
+                              const Expanded(child: Text('')),
+                            ] else ...[
+                              const Expanded(child: Text('')),
+                              const Icon(Icons.sports_soccer),
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '  ${marcatore['nome']!}',
+                                        style: const TextStyle(fontSize: 18),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    iniziata
+                                        ? IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () {
+                                              rimuoviMarcatore(widget.fuori,
+                                                  marcatore['nome']!);
+                                            },
+                                          )
+                                        : const SizedBox(width: 1),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: marcatori
-                          .where((element) => element['dove'] == 'fuori')
-                          .length,
-                      itemBuilder: (context, index) {
-                        final marcatore = marcatori
-                            .where((element) => element['dove'] == 'fuori')
-                            .elementAt(index);
-                        return ListTile(
-                            title: Text(marcatore['nome']!),
-                            trailing: iniziata
-                                ? IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () {
-                                      rimuoviMarcatore(
-                                          widget.fuori, marcatore['nome']!);
-                                    },
-                                  )
-                                : const SizedBox(
-                                    width: 1,
-                                  ));
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
