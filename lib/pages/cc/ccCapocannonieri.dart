@@ -31,17 +31,24 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
         for (var marcatore in marcatoriList) {
           String nome = marcatore['nome'];
           String dove = marcatore['dove'];
+          String cosa = marcatore['cosa'];
           String squadra = '';
-          if (dove == 'casa') {
+          if (dove == 'casa' && cosa == 'gol') {
             squadra = doc['casa'];
-          } else if (dove == 'fuori') {
-            squadra = doc['fuori'];
-          }
-          if (marcatori.containsKey(nome)) {
+            if (marcatori.containsKey(nome)) {
             marcatori[nome] = marcatori[nome]! + 1;
           } else {
             marcatori[nome] = 1;
             squadre[nome] = squadra;
+          }
+          } else if (dove == 'fuori' && cosa == 'gol') {
+            squadra = doc['fuori'];
+            if (marcatori.containsKey(nome)) {
+            marcatori[nome] = marcatori[nome]! + 1;
+          } else {
+            marcatori[nome] = 1;
+            squadre[nome] = squadra;
+          }
           }
         }
       }

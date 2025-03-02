@@ -101,7 +101,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   Future<void> _saveMatch() async {
     for (int turno = 0; turno < turni.length; turno++) {
       final Partita p = turni[turno];
-      final String newDocId = '${p.casa} VS ${p.fuori}';
+      final String newDocId = 'o$turno';
 
       if (p.casa == null || p.fuori == null) {
         print('Errore: Casa o Fuori è null');

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovaPartitaGironi.dart';
 import 'ccNuovaPartitaOttavi.dart';
 import 'ccModificaPartita.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
@@ -163,281 +164,28 @@ class _CCCalendarioState extends State<CCCalendario> {
     }
   }
 
-  Future<void> _terminaOttavi() async {
+  Future<void> _pulisci(String sezione) async {
     final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('ccPartiteOttavi').get();
+        await FirebaseFirestore.instance.collection('ccPartite$sezione').get();
 
-    final partite = querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
-
-    for (var partita in partite) {
-      if (partita['finita'] != true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Tutte le partite devono essere terminate')),
-        );
-        return;
-      }
-    }
-
-    final List<String> vincitori = [];
-    final List<String> perdenti = [];
-
-    for (var partita in partite) {
-      int golCasa = 0;
-      int golFuori = 0;
-      List<Map<String, dynamic>> marcatori =
-          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
-      for (var marcatore in marcatori) {
-        if (marcatore['dove'] == 'casa') {
-          golCasa++;
-        } else if (marcatore['dove'] == 'fuori') {
-          golFuori++;
-        }
-      }
-
-      if (golCasa > golFuori) {
-        vincitori.add(partita['casa']);
-        perdenti.add(partita['fuori']);
-      } else {
-        vincitori.add(partita['fuori']);
-        perdenti.add(partita['casa']);
-      }
-    }
-
-    for (int i = 0; i < vincitori.length; i += 2) {
-      final vPartita1 = vincitori[i];
-      final vPartita2 = vincitori[i + 1];
-
-      final pPartita1 = perdenti[i];
-      final pPartita2 = perdenti[i + 1];
-
+    for (var doc in querySnapshot.docs) {
       await FirebaseFirestore.instance
-          .collection('ccPartiteQuarti')
-          .doc('$vPartita1 VS $vPartita2')
-          .set({
-        'casa': vPartita1,
-        'fuori': vPartita2,
+          .collection('ccPartite$sezione')
+          .doc(doc.id)
+          .update({
+        'casa': '',
+        'fuori': '',
         'orario': '',
         'campo': '',
         'arbitro': '',
-        'data': '26/04/2025',
+        'data': sezione=='Finali' ? '27/04/2025' : '26/04/2025',
         'iniziata': false,
         'finita': false,
         'marcatori': [],
-        'tipo': 'quarti',
-        'codice': 'q${i ~/ 2}'
-      });
-
-      await FirebaseFirestore.instance
-          .collection('ccPartiteQuarti')
-          .doc('$pPartita1 VS $pPartita2')
-          .set({
-        'casa': pPartita1,
-        'fuori': pPartita2,
-        'orario': '',
-        'campo': '',
-        'arbitro': '',
-        'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
-        'marcatori': [],
-        'tipo': 'quarti',
-        'codice': 'q${i ~/ 2 + 4}'
+        'tipo': '${sezione[0].toLowerCase()}${sezione.substring(1)}',
+        'codice': doc.id,
       });
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Partite dei quarti create con successo')),
-    );
-  }
-
-  Future<void> _terminaQuarti() async {
-    final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('ccPartiteQuarti').get();
-
-    final partite = querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
-
-    partite.sort((a, b) => a['codice'].compareTo(b['codice']));
-
-    for (var partita in partite) {
-      if (partita['finita'] != true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Tutte le partite devono essere terminate')),
-        );
-        return;
-      }
-    }
-
-    final List<String> vincitori = [];
-    final List<String> perdenti = [];
-
-    for (var partita in partite) {
-      int golCasa = 0;
-      int golFuori = 0;
-      List<Map<String, dynamic>> marcatori =
-          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
-      for (var marcatore in marcatori) {
-        if (marcatore['dove'] == 'casa') {
-          golCasa++;
-        } else if (marcatore['dove'] == 'fuori') {
-          golFuori++;
-        }
-      }
-
-      if (golCasa > golFuori) {
-        vincitori.add(partita['casa']);
-        perdenti.add(partita['fuori']);
-      } else {
-        vincitori.add(partita['fuori']);
-        perdenti.add(partita['casa']);
-      }
-    }
-
-    for (int i = 0; i < vincitori.length; i += 2) {
-      final vPartita1 = vincitori[i];
-      final vPartita2 = vincitori[i + 1];
-
-      final pPartita1 = perdenti[i];
-      final pPartita2 = perdenti[i + 1];
-
-      await FirebaseFirestore.instance
-          .collection('ccPartiteSemifinali')
-          .doc('$vPartita1 VS $vPartita2')
-          .set({
-        'casa': vPartita1,
-        'fuori': vPartita2,
-        'orario': '',
-        'campo': '',
-        'arbitro': '',
-        'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
-        'marcatori': [],
-        'tipo': 'semifinali',
-        'codice': 's${i ~/ 2}'
-      });
-
-      await FirebaseFirestore.instance
-          .collection('ccPartiteSemifinali')
-          .doc('$pPartita1 VS $pPartita2')
-          .set({
-        'casa': pPartita1,
-        'fuori': pPartita2,
-        'orario': '',
-        'campo': '',
-        'arbitro': '',
-        'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
-        'marcatori': [],
-        'tipo': 'semifinali',
-        'codice': 's${i ~/ 2 + 4}'
-      });
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Partite delle semifinali create con successo')),
-    );
-  }
-
-  Future<void> _terminaSemifinali() async {
-    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteSemifinali')
-        .get();
-
-    final partite = querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
-
-    partite.sort((a, b) => a['codice'].compareTo(b['codice']));
-
-    for (var partita in partite) {
-      if (partita['finita'] != true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Tutte le partite devono essere terminate')),
-        );
-        return;
-      }
-    }
-
-    final List<String> vincitori = [];
-    final List<String> perdenti = [];
-
-    for (var partita in partite) {
-      int golCasa = 0;
-      int golFuori = 0;
-      List<Map<String, dynamic>> marcatori =
-          List<Map<String, dynamic>>.from(partita['marcatori'] ?? []);
-      for (var marcatore in marcatori) {
-        if (marcatore['dove'] == 'casa') {
-          golCasa++;
-        } else if (marcatore['dove'] == 'fuori') {
-          golFuori++;
-        }
-      }
-
-      if (golCasa > golFuori) {
-        vincitori.add(partita['casa']);
-        perdenti.add(partita['fuori']);
-      } else {
-        vincitori.add(partita['fuori']);
-        perdenti.add(partita['casa']);
-      }
-    }
-
-    for (int i = 0; i < vincitori.length; i += 2) {
-      final vPartita1 = vincitori[i];
-      final vPartita2 = vincitori[i + 1];
-
-      final pPartita1 = perdenti[i];
-      final pPartita2 = perdenti[i + 1];
-
-      await FirebaseFirestore.instance
-          .collection('ccPartiteFinali')
-          .doc('$vPartita1 VS $vPartita2')
-          .set({
-        'casa': vPartita1,
-        'fuori': vPartita2,
-        'orario': '',
-        'campo': '',
-        'arbitro': '',
-        'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
-        'marcatori': [],
-        'tipo': 'finali',
-        'codice': 'f${i ~/ 2}'
-      });
-
-      await FirebaseFirestore.instance
-          .collection('ccPartiteFinali')
-          .doc('$pPartita1 VS $pPartita2')
-          .set({
-        'casa': pPartita1,
-        'fuori': pPartita2,
-        'orario': '',
-        'campo': '',
-        'arbitro': '',
-        'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
-        'marcatori': [],
-        'tipo': 'finali',
-        'codice': 'f${i ~/ 2 + 4}'
-      });
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Partite delle semifinali create con successo')),
-    );
   }
 
   @override
@@ -445,7 +193,7 @@ class _CCCalendarioState extends State<CCCalendario> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -519,9 +267,7 @@ class _CCCalendarioState extends State<CCCalendario> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return SizedBox(
-                    height: MediaQuery.of(context)
-                        .size
-                        .height, // Occupa l'intera altezza
+                    height: MediaQuery.of(context).size.height,
                     child: const Center(child: CircularProgressIndicator()),
                   );
                 } else if (snapshot.hasError) {
@@ -544,25 +290,37 @@ class _CCCalendarioState extends State<CCCalendario> {
                   groupedPartite[girone]!.add(partita);
                 }
 
+                int counter=-1;
+
                 return Padding(
-                    padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
+                    padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ...groupedPartite.entries.map((entry) {
+                            counter++;
                             final codiceP = entry.key;
                             final partiteGirone = entry.value;
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (_selectedSegment == 'Ottavi' &&
+                                    codiceP == 'o0')
+                                  const Text(
+                                    '1° - 16° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 if (_selectedSegment == 'Quarti' &&
                                     codiceP == 'q0')
                                   const Text(
                                     '1° - 8° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -571,62 +329,119 @@ class _CCCalendarioState extends State<CCCalendario> {
                                   const Text(
                                     '9° - 16° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 if (_selectedSegment == 'Semifinali' &&
-                                    codiceP == 'q0')
+                                    codiceP == 's0')
                                   const Text(
                                     '1° - 4° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 if (_selectedSegment == 'Semifinali' &&
-                                    codiceP == 'q2')
+                                    codiceP == 's2')
                                   const Text(
                                     '5° - 8° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 if (_selectedSegment == 'Semifinali' &&
-                                    codiceP == 'q4')
+                                    codiceP == 's4')
                                   const Text(
                                     '9° - 12° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 if (_selectedSegment == 'Semifinali' &&
-                                    codiceP == 'q6')
+                                    codiceP == 's6')
                                   const Text(
                                     '13° - 16° posto',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                _selectedSegment != 'Gironi'
-                                    ? Text(
-                                        _selectedSegment == 'Ottavi'
-                                            ? 'Ottavo ${int.parse(codiceP.substring(1)) + 1}'
-                                            : _selectedSegment == 'Quarti'
-                                                ? 'Quarto ${int.parse(codiceP.substring(1)) + 1}'
-                                                : _selectedSegment ==
-                                                        'Semifinali'
-                                                    ? 'Semifinale ${int.parse(codiceP.substring(1)) + 1}'
-                                                    : 'Finale ${int.parse(codiceP.substring(1)) + 1}',
-                                        style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    : Container(),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f0')
+                                  const Text(
+                                    '1° - 2° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f1')
+                                  const Text(
+                                    '3° - 4° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f2')
+                                  const Text(
+                                    '5° - 6° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f3')
+                                  const Text(
+                                    '7° - 8° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f4')
+                                  const Text(
+                                    '9° - 10° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f5')
+                                  const Text(
+                                    '11° - 12° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f6')
+                                  const Text(
+                                    '13° - 14° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (_selectedSegment == 'Finali' &&
+                                    codiceP == 'f7')
+                                  const Text(
+                                    '15° - 16° posto',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                const SizedBox(height: 8),
                                 ...partiteGirone.map((partita) {
                                   final logoCasa =
                                       _squadreLoghi[partita['casa']] ?? '';
@@ -639,9 +454,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                                       List<Map<String, dynamic>>.from(
                                           partita['marcatori'] ?? []);
                                   for (var marcatore in marcatori) {
-                                    if (marcatore['dove'] == 'casa') {
+                                    if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'gol') {
                                       golCasa++;
-                                    } else if (marcatore['dove'] == 'fuori') {
+                                    } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'gol') {
                                       golFuori++;
                                     }
                                   }
@@ -655,17 +470,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                                     if (lastTurno != turno) {
                                       divider = true;
                                       lastTurno = turno;
-                                      turnoWidget = Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            0, 0, 0, 16),
-                                        child: Text(
-                                          'Turno $turno',
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      );
+                                      //turnoWidget = Padding(
+                                      //  padding: const EdgeInsets.fromLTRB(
+                                      //      0, 0, 0, 16),
+                                      //  child: Text(
+                                      //    'Turno $turno',
+                                      //    style: const TextStyle(
+                                      //      fontSize: 22,
+                                      //      fontWeight: FontWeight.bold,
+                                      //    ),
+                                      //  ),
+                                      //);
                                     }
                                   }
 
@@ -675,7 +490,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                       children: [
                                         turnoWidget,
                                         InkWell(
-                                            onTap: () {
+                                            onTap: partita['casa']!='' || partita['fuori']!='' ? () {
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
@@ -689,191 +504,140 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                     orario: partita['orario'],
                                                     campo: partita['campo'],
                                                     arbitro: partita['arbitro'],
-                                                    girone: partita['girone']?? '',
+                                                    girone:
+                                                        partita['girone'] ?? '',
                                                     iniziata:
                                                         partita['iniziata'],
                                                     finita: partita['finita'],
                                                     tipo: partita['tipo'],
+                                                    codice:
+                                                        partita['codice'] ?? '',
                                                   ),
                                                 ),
                                               );
-                                            },
+                                            } : null,
                                             child: Column(
                                               children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                                Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
-                                                    Column(
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                       children: [
-                                                        logoCasa.isNotEmpty
+                                                        Row(
+                                                          children: [
+                                                            logoCasa.isNotEmpty
                                                             ? Image.network(
                                                                 logoCasa,
-                                                                width: 70,
-                                                                height: 70,
+                                                                width: 40,
+                                                                height: 40,
                                                               )
-                                                            : const Icon(Icons
-                                                                .sports_soccer),
-                                                        const SizedBox(
-                                                            height: 6),
-                                                        Text(partita['casa'],
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        25)),
+                                                            : IconButton(
+                                                              icon: const FaIcon(FontAwesomeIcons.shieldHalved),
+                                                              onPressed: () {
+                                                              },
+                                                            ),
+                                                            const SizedBox(width: 6),
+                                                            partita['casa']!='' ? Text(partita['casa'], style: const TextStyle(fontSize: 20)) : const Text('Da definire', style: TextStyle(fontSize: 22)),
+                                                          ],
+                                                        ),
+                                                        partita['iniziata'] || partita['finita']
+                                                        ? Text('$golCasa', style: const TextStyle(fontSize: 24))
+                                                        : Row(
+                                                            children: [
+                                                              const Icon(Icons.access_time, size: 30),
+                                                              Text(partita['orario'] !='' ? '${partita['orario']}' : '', style: const TextStyle(fontSize:22)),
+                                                            ],
+                                                        ),
                                                       ],
                                                     ),
-                                                    const SizedBox(width: 4),
-                                                    partita['iniziata'] ||
-                                                            partita['finita']
-                                                        ? Text('$golCasa',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        34))
-                                                        : const Text(''),
-                                                    partita['iniziata'] ||
-                                                            partita['finita']
-                                                        ? const Text(':',
-                                                            style: TextStyle(
-                                                                fontSize: 30))
-                                                        : const Text('VS',
-                                                            style: TextStyle(
-                                                                fontSize: 22)),
-                                                    partita['iniziata'] ||
-                                                            partita['finita']
-                                                        ? Text('$golFuori',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        34))
-                                                        : const Text(''),
-                                                    const SizedBox(width: 4),
-                                                    Column(
+                                                    const SizedBox(height: 8),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                       children: [
-                                                        logoFuori.isNotEmpty
+                                                        Row(
+                                                          children: [
+                                                            logoFuori.isNotEmpty
                                                             ? Image.network(
                                                                 logoFuori,
-                                                                width: 70,
-                                                                height: 70,
+                                                                width: 40,
+                                                                height: 40,
                                                               )
-                                                            : const Icon(Icons
-                                                                .sports_soccer),
-                                                        const SizedBox(
-                                                            height: 6),
-                                                        Text(partita['fuori'],
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        25)),
+                                                            : IconButton(
+                                                              icon: const FaIcon(FontAwesomeIcons.shieldHalved),
+                                                              onPressed: () {
+                                                              },
+                                                            ),
+                                                            const SizedBox(width: 6),
+                                                            partita['fuori']!='' ? Text(partita['fuori'], style: const TextStyle(fontSize: 20)) : const Text('Da definire', style: TextStyle(fontSize: 22)),
+                                                          ]
+                                                        ),
+                                                        partita['iniziata'] || partita['finita']
+                                                        ? Text('$golFuori', style: const TextStyle(fontSize: 24))
+                                                        : Row(
+                                                            children: [
+                                                              const Icon(Icons.location_on_outlined, size: 30),
+                                                              Text(partita['campo'].length > 1 ? '${partita['campo']}' : '', style: const TextStyle(fontSize: 22)),
+                                                            ],
+                                                        ),
                                                       ],
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 15),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        const Icon(
-                                                            Icons.access_time,
-                                                            size: 30),
-                                                        Text(
-                                                            partita['orario'] !=
-                                                                    ''
-                                                                ? ' ${partita['orario']}'
-                                                                : '',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        22)),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(
-                                                            Icons
-                                                                .location_on_outlined,
-                                                            size: 30),
-                                                        Text(
-                                                            partita['campo']
-                                                                        .length >
-                                                                    1
-                                                                ? '${partita['campo']}'
-                                                                : '',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        22)),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.sports,
-                                                            size: 30),
-                                                        Text(
-                                                            partita['arbitro']
-                                                                        .length >
-                                                                    1
-                                                                ? ' ${partita['arbitro']}'
-                                                                : '',
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        22)),
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                                _selectedSegment == 'Gironi' &&
-                                                        !divider
-                                                    ? const SizedBox(height: 30)
-                                                    : const Divider(
-                                                        height: 50,
-                                                        thickness: 1)
+                                                //_selectedSegment == 'Gironi' &&
+                                                //        !divider
+                                                //    ? const SizedBox(height: 30)
+                                                //    : 
+                                                    //counter!=8 ? 
+                                                    const Divider(
+                                                        height: 30,
+                                                        thickness: 1) 
+                                                    //: Container()
                                               ],
                                             ))
                                       ]);
                                 }).toList(),
-                                const SizedBox(height: 8),
                               ],
                             );
                           }).toList(),
-                        ]));
+                          _selectedSegment == 'Ottavi'
+                          ? Center(child:ElevatedButton(
+                              onPressed: () {
+                                _pulisci('Ottavi');
+                              },
+                              child: const Text('Pulisci Ottavi'),
+                            ))
+                          : _selectedSegment == 'Quarti'
+                            ? Center(child:ElevatedButton(
+                                onPressed: () {
+                                  _pulisci('Quarti');
+                                },
+                                child: const Text('Pulisci Quarti'),
+                              ))
+                            : _selectedSegment == 'Semifinali'
+                                ? Center(child:ElevatedButton(
+                                    onPressed: () {
+                                      _pulisci('Semifinali');
+                                    },
+                                    child: const Text('Pulisci Semifinali'),
+                                  ))
+                            : Center(child:ElevatedButton(
+                                onPressed: () {
+                                  _pulisci('Finali');
+                                },
+                                child: const Text('Pulisci Finali'),
+                              )
+                            )
+                          ]
+                        )
+                      );
               },
             ),
-            _selectedSegment == 'Ottavi'
-                ? ElevatedButton(
-                    onPressed: () {
-                      _terminaOttavi();
-                    },
-                    child: const Text('Termina Ottavi'),
-                  )
-                : _selectedSegment == 'Quarti'
-                    ? ElevatedButton(
-                        onPressed: () {
-                          _terminaQuarti();
-                        },
-                        child: const Text('Termina Quarti'),
-                      )
-                    : _selectedSegment == 'Semifinali'
-                        ? ElevatedButton(
-                            onPressed: () {
-                              _terminaSemifinali();
-                            },
-                            child: const Text('Termina Semifinali'),
-                          )
-                        : Container()
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _selectedSegment == 'Gironi' || _selectedSegment == 'Ottavi' ? 
+      FloatingActionButton(
         onPressed: () {
           _selectedSegment == 'Gironi'
               ? Navigator.push(
@@ -891,7 +655,7 @@ class _CCCalendarioState extends State<CCCalendario> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         child: const Icon(Icons.add),
-      ),
+      ) : null
     );
   }
 }

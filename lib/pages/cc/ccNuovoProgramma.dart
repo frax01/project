@@ -294,13 +294,9 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                 decoration: const InputDecoration(labelText: 'Codice'),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _saveProgramma,
-                child: const Text('Salva'),
-              ),
-              if (widget.programmaId != null)
-                IconButton(
-                  icon: const Icon(Icons.delete),
+              Row(children: [
+                if (widget.programmaId != null)
+                Expanded(child: ElevatedButton(
                   onPressed: () async {
                     bool confirm = await showDialog(
                       context: context,
@@ -324,7 +320,16 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                       Navigator.pop(context);
                     }
                   },
-                ),
+                  child: const Text('Elimina'),
+                ),),
+                const SizedBox(width: 16),
+                Expanded(
+                  child:
+              ElevatedButton(
+                onPressed: _saveProgramma,
+                child: const Text('Salva'),
+              ),),
+            ],),
             ],
           ),
         ),
@@ -332,14 +337,3 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
     );
   }
 }
-
-//programma['categoria'] == 'pasto'
-                                      //    ? Colors.amber[100]
-                                      //    : programma['categoria'] == 'partita'
-                                      //        ? Colors.green[100]
-                                      //        : programma['categoria'] == 'show'
-                                      //            ? Colors.blue[100]
-                                      //            : programma['categoria'] == 'altro'
-                                      //                ? Colors.grey[100]
-                                      //                : 
-                                      //Colors.white,

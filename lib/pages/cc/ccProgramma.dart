@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovoProgramma.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class CCProgramma extends StatefulWidget {
   const CCProgramma({super.key});
@@ -17,7 +18,9 @@ class _CCProgrammaState extends State<CCProgramma> {
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('ccProgramma').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('ccProgramma')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -47,7 +50,8 @@ class _CCProgrammaState extends State<CCProgramma> {
                   itemCount: groupedProgrammi.keys.length,
                   itemBuilder: (context, index) {
                     String data = groupedProgrammi.keys.elementAt(index);
-                    List<QueryDocumentSnapshot> programmiPerData = groupedProgrammi[data]!;
+                    List<QueryDocumentSnapshot> programmiPerData =
+                        groupedProgrammi[data]!;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,76 +67,193 @@ class _CCProgrammaState extends State<CCProgramma> {
                           ),
                         ),
                         ...programmiPerData.map((programma) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CCNuovoProgramma(
-                                    programmaId: programma.id,
-                                    data: programma['data'],
-                                    orario: programma['orario'],
-                                    titolo: programma['titolo'],
-                                    squadre: programma['squadre'],
-                                    incarico: programma['incarico'],
-                                    altro: programma['altro'],
-                                    codice: programma['codice'],
-                                    categoria: programma['categoria'],
-                                  ),
+                          return Row(
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    Card(
+                                        margin: const EdgeInsets.fromLTRB(
+                                            12.0, 0, 0.0, 0.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15.0),
+                                        ),
+                                        elevation: 5,
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Center(
+                                              child: AutoSizeText(
+                                                programma['orario'],
+                                                style: const TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                maxLines: 1,
+                                                minFontSize: 10,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ))),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                    Card(
+                                        margin: const EdgeInsets.fromLTRB(
+                                            12.0, 0, 0.0, 0.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15.0),
+                                        ),
+                                        elevation: 5,
+                                        //child: Padding(
+                                          //padding: const EdgeInsets.all(16.0),
+                                          child: IconButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CCNuovoProgramma(
+                                                      programmaId: programma.id,
+                                                      data: programma['data'],
+                                                      orario:
+                                                          programma['orario'],
+                                                      titolo:
+                                                          programma['titolo'],
+                                                      squadre:
+                                                          programma['squadre'],
+                                                      incarico:
+                                                          programma['incarico'],
+                                                      altro: programma['altro'],
+                                                      codice:
+                                                          programma['codice'],
+                                                      categoria: programma[
+                                                          'categoria'],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(Icons.edit, size: 20)),
+                                        )//)
+                                  ],
                                 ),
-                              );
-                            },
-                            child: AbsorbPointer(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
-                                child: Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0),
-                                  ),
-                                  elevation: 5,
-                                  child: Container(
-                                    decoration: BoxDecoration(
+                              ),
+                              Expanded(
+                                flex: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      12.0, 0, 12.0, 12.0),
+                                  child: Card(
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15.0),
                                     ),
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.all(16.0),
-                                      title: Column(
-                                        children: [
-                                          Text(programma['titolo'], style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 3),
-                                          programma['squadre'].isNotEmpty
-                                              ? Text((programma['squadre'] as List<dynamic>).join(', '), style: const TextStyle(fontSize: 18))
-                                              : Container(),
-                                        ],
+                                    elevation: 5,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(15.0),
                                       ),
-                                      subtitle: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                      child: ExpansionTile(
+                                        title: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              programma['titolo'],
+                                              style: const TextStyle(
+                                                fontSize: 21,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            programma['squadre'].isNotEmpty
+                                                ? Text(
+                                                    (programma['squadre']
+                                                            as List<dynamic>)
+                                                        .join(', '),
+                                                    style: const TextStyle(
+                                                        fontSize: 18),
+                                                  )
+                                                : Container(),
+                                          ],
+                                        ),
                                         children: [
-                                          programma['incarico'].isNotEmpty
-                                              ? const Column(children: [SizedBox(height: 8), Text("Incarico", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold))])
-                                              : Container(),
-                                          programma['incarico'].isNotEmpty
-                                              ? Text((programma['incarico'] as List<dynamic>).join(', '), style: const TextStyle(fontSize: 18))
-                                              : Container(),
-                                          programma['altro'] != ''
-                                              ? const Column(children: [SizedBox(height: 8), Text("Info", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold))])
-                                              : Container(),
-                                          programma['altro'] != ''
-                                              ? Text(programma['altro'], style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic))
-                                              : Container(),
-                                        ],
-                                      ),
-                                      leading: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(programma['orario'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                          Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                programma['incarico'].isNotEmpty
+                                                    ? const Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          SizedBox(height: 8),
+                                                          Text(
+                                                            "Incarico",
+                                                            style: TextStyle(
+                                                              fontSize: 21,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Container(),
+                                                programma['incarico'].isNotEmpty
+                                                    ? Text(
+                                                        (programma['incarico']
+                                                                as List<
+                                                                    dynamic>)
+                                                            .join(', '),
+                                                        style: const TextStyle(
+                                                            fontSize: 18),
+                                                      )
+                                                    : Container(),
+                                                programma['altro'] != ''
+                                                    ? const Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          SizedBox(height: 8),
+                                                          Text(
+                                                            "Info",
+                                                            style: TextStyle(
+                                                              fontSize: 21,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : Container(),
+                                                programma['altro'] != ''
+                                                    ? Text(
+                                                        programma['altro'],
+                                                        style: const TextStyle(
+                                                          fontSize: 18,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                        ),
+                                                      )
+                                                    : Container(),
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
+                              
+                            ],
                           );
                         }).toList(),
                       ],
