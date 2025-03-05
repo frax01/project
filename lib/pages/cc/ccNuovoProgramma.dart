@@ -169,6 +169,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                 value: _dataController.text.isEmpty ? null : _dataController.text,
                 decoration: const InputDecoration(labelText: 'Data'),
                 items: const [
+                  DropdownMenuItem(value: '23/04/2025', child: Text('23/04/2025')),
                   DropdownMenuItem(value: '24/04/2025', child: Text('24/04/2025')),
                   DropdownMenuItem(value: '25/04/2025', child: Text('25/04/2025')),
                   DropdownMenuItem(value: '26/04/2025', child: Text('26/04/2025')),

@@ -116,70 +116,99 @@ class _CCHomePageState extends State<CCHomePage> {
       appBar: AppBar(
         title: const Text("Champions Club"),
         automaticallyImplyLeading: false,
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => CcAggiungiSquadre()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.people),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.group_work),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ccCreazioneGironi()));
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.class_),
+            onPressed: () async {
+                await _showConfirmDialog();
               },
-            );
-          },
-        ),
+          ),
+        ],
+        //leading: Builder(
+        //  builder: (BuildContext context) {
+        //    return IconButton(
+        //      icon: const Icon(Icons.menu),
+        //      onPressed: () {
+        //        Scaffold.of(context).openDrawer();
+        //      },
+        //    );
+        //  },
+        //),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 25, 84, 132),
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 25, 84, 132),
-              ),
-              child: Image.asset(
-                'images/logo_champions_bianco.png',
-                width: 24,
-                height: 24,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('Aggiungi squadre'),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CcAggiungiSquadre()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Iscrivi giocatori'),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.group_work),
-              title: const Text('Creazione gironi'),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ccCreazioneGironi()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.class_rounded),
-              title: const Text('Torna al Club'),
-              onTap: () async {
-                await _showConfirmDialog();
-              },
-            ),
-          ],
-        ),
-      ),
+      //drawer: Drawer(
+      //  child: ListView(
+      //    padding: EdgeInsets.zero,
+      //    children: <Widget>[
+      //      DrawerHeader(
+      //        decoration: const BoxDecoration(
+      //          color: Color.fromARGB(255, 25, 84, 132),
+      //        ),
+      //        child: Image.asset(
+      //          'images/logo_champions_bianco.png',
+      //          width: 24,
+      //          height: 24,
+      //        ),
+      //      ),
+      //      ListTile(
+      //        leading: const Icon(Icons.add),
+      //        title: const Text('Aggiungi squadre'),
+      //        onTap: () {
+      //          Navigator.of(context).push(MaterialPageRoute(
+      //              builder: (context) => CcAggiungiSquadre()));
+      //        },
+      //      ),
+      //      ListTile(
+      //        leading: const Icon(Icons.people),
+      //        title: const Text('Iscrivi giocatori'),
+      //        onTap: () {
+      //          Navigator.of(context).push(MaterialPageRoute(
+      //              builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
+      //        },
+      //      ),
+      //      ListTile(
+      //        leading: const Icon(Icons.group_work),
+      //        title: const Text('Creazione gironi'),
+      //        onTap: () {
+      //          Navigator.of(context).push(MaterialPageRoute(
+      //              builder: (context) => ccCreazioneGironi()));
+      //        },
+      //      ),
+      //      ListTile(
+      //        leading: const Icon(Icons.class_rounded),
+      //        title: const Text('Torna al Club'),
+      //        onTap: () async {
+      //          await _showConfirmDialog();
+      //        },
+      //      ),
+      //    ],
+      //  ),
+      //),
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
             Animation<double> secondaryAnimation) {

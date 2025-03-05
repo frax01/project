@@ -272,16 +272,19 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'gol'});
         golCasa++;
       } else if (squadra == widget.fuori && cosa == 'gol') {
-        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'gol'});
+        marcatori
+            .insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'gol'});
         golFuori++;
       } else if (squadra == widget.casa && cosa == 'amm') {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'amm'});
       } else if (squadra == widget.fuori && cosa == 'amm') {
-        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
+        marcatori
+            .insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
       } else if (squadra == widget.casa && cosa == 'esp') {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'esp'});
       } else if (squadra == widget.fuori && cosa == 'esp') {
-        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'esp'});
+        marcatori
+            .insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'esp'});
       }
     });
 
@@ -579,112 +582,117 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     if (golCasa > golFuori) {
       vincitore = widget.casa;
       perdente = widget.fuori;
-    } else {
+    } else if (golCasa < golFuori) {
       vincitore = widget.fuori;
       perdente = widget.casa;
     }
 
-    String newCodiceVincente = '';
-    String newCodicePerdente = '';
+    if (golCasa != golFuori) {
+      String newCodiceVincente = '';
+      String newCodicePerdente = '';
 
-    if (tipo == 'Ottavi') {
-      tipo = 'Quarti';
-      if (codice == 'o0' || codice == 'o1') {
-        newCodiceVincente = 'q0';
-        newCodicePerdente = 'q4';
-      } else if (codice == 'o2' || codice == 'o3') {
-        newCodiceVincente = 'q1';
-        newCodicePerdente = 'q5';
-      } else if (codice == 'o4' || codice == 'o5') {
-        newCodiceVincente = 'q2';
-        newCodicePerdente = 'q6';
-      } else if (codice == 'o6' || codice == 'o7') {
-        newCodiceVincente = 'q3';
-        newCodicePerdente = 'q7';
+      if (tipo == 'Ottavi') {
+        tipo = 'Quarti';
+        if (codice == 'o0' || codice == 'o1') {
+          newCodiceVincente = 'q0';
+          newCodicePerdente = 'q4';
+        } else if (codice == 'o2' || codice == 'o3') {
+          newCodiceVincente = 'q1';
+          newCodicePerdente = 'q5';
+        } else if (codice == 'o4' || codice == 'o5') {
+          newCodiceVincente = 'q2';
+          newCodicePerdente = 'q6';
+        } else if (codice == 'o6' || codice == 'o7') {
+          newCodiceVincente = 'q3';
+          newCodicePerdente = 'q7';
+        }
+      } else if (tipo == 'Quarti') {
+        tipo = 'Semifinali';
+        if (codice == 'q0' || codice == 'q1') {
+          newCodiceVincente = 's0';
+          newCodicePerdente = 's2';
+        } else if (codice == 'q2' || codice == 'q3') {
+          newCodiceVincente = 's1';
+          newCodicePerdente = 's3';
+        } else if (codice == 'q4' || codice == 'q5') {
+          newCodiceVincente = 's4';
+          newCodicePerdente = 's6';
+        } else if (codice == 'q6' || codice == 'q7') {
+          newCodiceVincente = 's5';
+          newCodicePerdente = 's7';
+        }
+      } else if (tipo == 'Semifinali') {
+        tipo = 'Finali';
+        if (codice == 's0' || codice == 's1') {
+          newCodiceVincente = 'f0';
+          newCodicePerdente = 'f1';
+        } else if (codice == 's2' || codice == 's3') {
+          newCodiceVincente = 'f2';
+          newCodicePerdente = 'f3';
+        } else if (codice == 's4' || codice == 's5') {
+          newCodiceVincente = 'f4';
+          newCodicePerdente = 'f5';
+        } else if (codice == 's6' || codice == 's7') {
+          newCodiceVincente = 'f6';
+          newCodicePerdente = 'f7';
+        }
+      } else {
+        tipo = '';
+        newCodiceVincente = '';
+        newCodicePerdente = '';
       }
-    } else if (tipo == 'Quarti') {
-      tipo = 'Semifinali';
-      if (codice == 'q0' || codice == 'q1') {
-        newCodiceVincente = 's0';
-        newCodicePerdente = 's2';
-      } else if (codice == 'q2' || codice == 'q3') {
-        newCodiceVincente = 's1';
-        newCodicePerdente = 's3';
-      } else if (codice == 'q4' || codice == 'q5') {
-        newCodiceVincente = 's4';
-        newCodicePerdente = 's6';
-      } else if (codice == 'q6' || codice == 'q7') {
-        newCodiceVincente = 's5';
-        newCodicePerdente = 's7';
-      }
-    } else if (tipo == 'Semifinali') {
-      tipo = 'Finali';
-      if (codice == 's0' || codice == 's1') {
-        newCodiceVincente = 'f0';
-        newCodicePerdente = 'f1';
-      } else if (codice == 's2' || codice == 's3') {
-        newCodiceVincente = 'f2';
-        newCodicePerdente = 'f3';
-      } else if (codice == 's4' || codice == 's5') {
-        newCodiceVincente = 'f4';
-        newCodicePerdente = 'f5';
-      } else if (codice == 's6' || codice == 's7') {
-        newCodiceVincente = 'f6';
-        newCodicePerdente = 'f7';
-      }
-    } else {
-      tipo = '';
-      newCodiceVincente = '';
-      newCodicePerdente = '';
-    }
 
-    print("tipo: $tipo");
-    print("codice: $codice");
-
-    //  vincitore
-    DocumentSnapshot docSnapshotVincente = await FirebaseFirestore.instance
-        .collection('ccPartite$tipo')
-        .doc(newCodiceVincente)
-        .get();
-    Map<String, dynamic> dataVincente =
-        docSnapshotVincente.data() as Map<String, dynamic>;
-    if (dataVincente['casa'] == '') {
-      await FirebaseFirestore.instance
+      //  vincitore
+      DocumentSnapshot docSnapshotVincente = await FirebaseFirestore.instance
           .collection('ccPartite$tipo')
           .doc(newCodiceVincente)
-          .update({
-        'casa': vincitore,
-      });
-    } else {
-      await FirebaseFirestore.instance
-          .collection('ccPartite$tipo')
-          .doc(newCodiceVincente)
-          .update({
-        'fuori': vincitore,
-      });
-    }
+          .get();
+      Map<String, dynamic> dataVincente =
+          docSnapshotVincente.data() as Map<String, dynamic>;
+      if (dataVincente['casa'] == '') {
+        await FirebaseFirestore.instance
+            .collection('ccPartite$tipo')
+            .doc(newCodiceVincente)
+            .update({
+          'casa': vincitore,
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('ccPartite$tipo')
+            .doc(newCodiceVincente)
+            .update({
+          'fuori': vincitore,
+        });
+      }
 
-    //  perdente
-    DocumentSnapshot docSnapshotPerdente = await FirebaseFirestore.instance
-        .collection('ccPartite$tipo')
-        .doc(newCodicePerdente)
-        .get();
-    Map<String, dynamic> dataPerdente =
-        docSnapshotPerdente.data() as Map<String, dynamic>;
-    if (dataPerdente['casa'] == '') {
-      await FirebaseFirestore.instance
+      //  perdente
+      DocumentSnapshot docSnapshotPerdente = await FirebaseFirestore.instance
           .collection('ccPartite$tipo')
           .doc(newCodicePerdente)
-          .update({
-        'casa': perdente,
-      });
+          .get();
+      Map<String, dynamic> dataPerdente =
+          docSnapshotPerdente.data() as Map<String, dynamic>;
+      if (dataPerdente['casa'] == '') {
+        await FirebaseFirestore.instance
+            .collection('ccPartite$tipo')
+            .doc(newCodicePerdente)
+            .update({
+          'casa': perdente,
+        });
+      } else {
+        await FirebaseFirestore.instance
+            .collection('ccPartite$tipo')
+            .doc(newCodicePerdente)
+            .update({
+          'fuori': perdente,
+        });
+      }
     } else {
-      await FirebaseFirestore.instance
-          .collection('ccPartite$tipo')
-          .doc(newCodicePerdente)
-          .update({
-        'fuori': perdente,
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La partita non può finire in parità'),
+        ),
+      );
     }
   }
 
@@ -713,42 +721,42 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
             int golFuori = 0;
             List<Map<String, String>> marcatori = [];
             for (var marcatore in marcatoriFirestore) {
-              if (marcatore['dove'] == 'casa' && marcatore['cosa']=='gol') {
+              if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'gol') {
                 golCasa++;
-              } else if (marcatore['dove'] == 'fuori' && marcatore['cosa']=='gol') {
+              } else if (marcatore['dove'] == 'fuori' &&
+                  marcatore['cosa'] == 'gol') {
                 golFuori++;
               }
               marcatori.insert(0, {
                 'nome': marcatore['nome'],
                 'dove': marcatore['dove'],
-                'cosa' : marcatore['cosa']
+                'cosa': marcatore['cosa']
               });
             }
 
             Widget yellowCardIcon() {
-  return Container(
-    width: 24,
-    height: 32,
-    decoration: BoxDecoration(
-      color: Colors.yellow,
-      borderRadius: BorderRadius.circular(2),
-      border: Border.all(color: Colors.black, width: 1),
-    ),
-  );
-}
+              return Container(
+                width: 24,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.yellow,
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+              );
+            }
 
-Widget redCardIcon() {
-  return Container(
-    width: 24,
-    height: 32,
-    decoration: BoxDecoration(
-      color: Colors.red,
-      borderRadius: BorderRadius.circular(2),
-      border: Border.all(color: Colors.black, width: 1),
-    ),
-  );
-}
-
+            Widget redCardIcon() {
+              return Container(
+                width: 24,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+              );
+            }
 
             return Column(
               children: [
@@ -970,74 +978,75 @@ Widget redCardIcon() {
                                 ),
                               ],
                             ),
-                            Column(children: [
-                            FutureBuilder<List<String>>(
-                              future: getGiocatori(widget.fuori),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) return Container();
-                                return DropdownButton<String>(
-                                  hint: const Text('Marcatore'),
-                                  items: snapshot.data!
-                                      .map((giocatore) =>
-                                          DropdownMenuItem<String>(
-                                            value: giocatore,
-                                            child: Text(giocatore),
-                                          ))
-                                      .toList(),
-                                  onChanged: (giocatore) {
-                                    if (giocatore != null) {
-                                      aggiungiMarcatore(
-                                          widget.fuori, giocatore, 'gol');
-                                    }
+                            Column(
+                              children: [
+                                FutureBuilder<List<String>>(
+                                  future: getGiocatori(widget.fuori),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) return Container();
+                                    return DropdownButton<String>(
+                                      hint: const Text('Marcatore'),
+                                      items: snapshot.data!
+                                          .map((giocatore) =>
+                                              DropdownMenuItem<String>(
+                                                value: giocatore,
+                                                child: Text(giocatore),
+                                              ))
+                                          .toList(),
+                                      onChanged: (giocatore) {
+                                        if (giocatore != null) {
+                                          aggiungiMarcatore(
+                                              widget.fuori, giocatore, 'gol');
+                                        }
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                            ),
-                            FutureBuilder<List<String>>(
-                              future: getGiocatori(widget.fuori),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) return Container();
-                                return DropdownButton<String>(
-                                  hint: const Text('Ammonizione'),
-                                  items: snapshot.data!
-                                      .map((giocatore) =>
-                                          DropdownMenuItem<String>(
-                                            value: giocatore,
-                                            child: Text(giocatore),
-                                          ))
-                                      .toList(),
-                                  onChanged: (giocatore) {
-                                    if (giocatore != null) {
-                                      aggiungiMarcatore(
-                                          widget.fuori, giocatore, 'amm');
-                                    }
+                                ),
+                                FutureBuilder<List<String>>(
+                                  future: getGiocatori(widget.fuori),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) return Container();
+                                    return DropdownButton<String>(
+                                      hint: const Text('Ammonizione'),
+                                      items: snapshot.data!
+                                          .map((giocatore) =>
+                                              DropdownMenuItem<String>(
+                                                value: giocatore,
+                                                child: Text(giocatore),
+                                              ))
+                                          .toList(),
+                                      onChanged: (giocatore) {
+                                        if (giocatore != null) {
+                                          aggiungiMarcatore(
+                                              widget.fuori, giocatore, 'amm');
+                                        }
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                            ),
-                            FutureBuilder<List<String>>(
-                              future: getGiocatori(widget.fuori),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) return Container();
-                                return DropdownButton<String>(
-                                  hint: const Text('Espulsione'),
-                                  items: snapshot.data!
-                                      .map((giocatore) =>
-                                          DropdownMenuItem<String>(
-                                            value: giocatore,
-                                            child: Text(giocatore),
-                                          ))
-                                      .toList(),
-                                  onChanged: (giocatore) {
-                                    if (giocatore != null) {
-                                      aggiungiMarcatore(
-                                          widget.fuori, giocatore, 'esp');
-                                    }
+                                ),
+                                FutureBuilder<List<String>>(
+                                  future: getGiocatori(widget.fuori),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) return Container();
+                                    return DropdownButton<String>(
+                                      hint: const Text('Espulsione'),
+                                      items: snapshot.data!
+                                          .map((giocatore) =>
+                                              DropdownMenuItem<String>(
+                                                value: giocatore,
+                                                child: Text(giocatore),
+                                              ))
+                                          .toList(),
+                                      onChanged: (giocatore) {
+                                        if (giocatore != null) {
+                                          aggiungiMarcatore(
+                                              widget.fuori, giocatore, 'esp');
+                                        }
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                            ),
-                            ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -1046,10 +1055,16 @@ Widget redCardIcon() {
                 const SizedBox(height: 16),
                 !iniziata && !finita
                     ? Container()
-                    : const Center(
-                        child: Text("Cronaca",
-                            style: TextStyle(
-                                fontSize: 24, fontStyle: FontStyle.italic))),
+                    : Center(
+                        child: marcatori.isNotEmpty
+                            ? const Text("Cronaca",
+                                style: TextStyle(
+                                    fontSize: 24, fontStyle: FontStyle.italic))
+                            : const Center(
+                                child: Text('Partita terminata',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontStyle: FontStyle.italic)))),
                 const SizedBox(height: 4),
                 Expanded(
                   child: ListView.builder(
@@ -1089,39 +1104,49 @@ Widget redCardIcon() {
                                   ],
                                 ),
                               ),
-                              marcatore['cosa']=='amm' ? Container(
-    width: 20,
-    height: 25,
-    decoration: BoxDecoration(
-      color: Colors.yellow,
-      borderRadius: BorderRadius.circular(2),
-    ),
-  ) : marcatore['cosa']=='esp' ? Container(
-    width: 20,
-    height: 25,
-    decoration: BoxDecoration(
-      color: Colors.red,
-      borderRadius: BorderRadius.circular(2),
-    ),
-  ) : const Icon(Icons.sports_soccer),
+                              marcatore['cosa'] == 'amm'
+                                  ? Container(
+                                      width: 20,
+                                      height: 25,
+                                      decoration: BoxDecoration(
+                                        color: Colors.yellow,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    )
+                                  : marcatore['cosa'] == 'esp'
+                                      ? Container(
+                                          width: 20,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                          ),
+                                        )
+                                      : const Icon(Icons.sports_soccer),
                               const Expanded(child: Text('')),
                             ] else ...[
                               const Expanded(child: Text('')),
-                              marcatore['cosa']=='amm' ? Container(
-    width: 20,
-    height: 25,
-    decoration: BoxDecoration(
-      color: Colors.yellow,
-      borderRadius: BorderRadius.circular(2),
-    ),
-  ) : marcatore['cosa']=='esp' ? Container(
-    width: 20,
-    height: 25,
-    decoration: BoxDecoration(
-      color: Colors.red,
-      borderRadius: BorderRadius.circular(2),
-    ),
-  ) : const Icon(Icons.sports_soccer),
+                              marcatore['cosa'] == 'amm'
+                                  ? Container(
+                                      width: 20,
+                                      height: 25,
+                                      decoration: BoxDecoration(
+                                        color: Colors.yellow,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    )
+                                  : marcatore['cosa'] == 'esp'
+                                      ? Container(
+                                          width: 20,
+                                          height: 25,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                          ),
+                                        )
+                                      : const Icon(Icons.sports_soccer),
                               Expanded(
                                 child: Row(
                                   mainAxisAlignment:
@@ -1154,7 +1179,7 @@ Widget redCardIcon() {
                       );
                     },
                   ),
-                ),
+                )
               ],
             );
           },

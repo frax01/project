@@ -2,43 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovoProgramma.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:intl/intl.dart';
-import 'ccProgrammaCompleto.dart';
 
-class CCProgramma extends StatefulWidget {
-  const CCProgramma({super.key});
+class CCProgrammaCompleto extends StatefulWidget {
+  const CCProgrammaCompleto({super.key});
 
   @override
-  State<CCProgramma> createState() => _CCProgrammaState();
+  State<CCProgrammaCompleto> createState() => _CCProgrammaCompletoState();
 }
 
-class _CCProgrammaState extends State<CCProgramma> {
+class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            children: [
-              Center(
-                child: Image.asset(
-                  'images/champions.jpg',
-                  fit: BoxFit.contain,
-                ),
-              ),
-              Positioned(
-                left: 25.0,
-                top: 40.0,
-                child: Image.asset(
-                  'images/logo_champions_bianco.png',
-                  width: 150,
-                  height: 150,
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+      appBar: AppBar(
+        title: const Text('Programma completo'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('ccProgramma')
                   .snapshots(),
@@ -59,38 +38,14 @@ class _CCProgrammaState extends State<CCProgramma> {
                 });
 
                 Map<String, List<QueryDocumentSnapshot>> groupedProgrammi = {};
-                DateTime now = DateTime.now().add(const Duration(hours: 1));
-                QueryDocumentSnapshot? lastBeforeNow;
-
                 for (var programma in programmi) {
                   String data = programma['data'];
-                  DateTime programmaDate = DateFormat('dd/MM/yyyy').parse(data);
-                  DateTime programmaTime =
-                      DateFormat('HH:mm').parse(programma['orario']);
-                  DateTime programmaDateTime = DateTime(
-                    programmaDate.year,
-                    programmaDate.month,
-                    programmaDate.day,
-                    programmaTime.hour,
-                    programmaTime.minute,
-                  );
-
-                  if (programmaDateTime.isAfter(now)) {
-                    if (lastBeforeNow != null) {
-                      if (!groupedProgrammi.containsKey(data)) {
-                        groupedProgrammi[data] = [];
-                      }
-                      groupedProgrammi[data]!.add(lastBeforeNow);
-                      lastBeforeNow = null;
-                    }
-                    if (!groupedProgrammi.containsKey(data)) {
-                      groupedProgrammi[data] = [];
-                    }
-                    groupedProgrammi[data]!.add(programma);
-                  } else {
-                    lastBeforeNow = programma;
+                  if (!groupedProgrammi.containsKey(data)) {
+                    groupedProgrammi[data] = [];
                   }
+                  groupedProgrammi[data]!.add(programma);
                 }
+
 
                 return ListView.builder(
                   itemCount: groupedProgrammi.keys.length,
@@ -103,51 +58,23 @@ class _CCProgrammaState extends State<CCProgramma> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                            padding: const EdgeInsets.fromLTRB(16.0, 12, 16, 6),
-                            child: index == 0
-                                ? Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                        Text(
-                                          data == '23/04/2025'
-                                              ? 'Mercoledì 23'
-                                              : data == '24/04/2025'
-                                                  ? 'Giovedì 24'
-                                                  : data == '25/04/2025'
-                                                      ? 'Venerdì 25'
-                                                      : data == '26/04/2025'
-                                                          ? 'Sabato 26'
-                                                          : 'Domenica 27',
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                            onPressed: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        CCProgrammaCompleto())),
-                                            child: const Text(
-                                                "Programma completo"))
-                                      ])
-                                : Text(
-                                    data == '23/04/2025'
-                                        ? 'Giovedì 23'
-                                        : data == '24/04/2025'
-                                            ? 'Giovedì 24'
-                                            : data == '25/04/2025'
-                                                ? 'Venerdì 25'
-                                                : data == '26/04/2025'
-                                                    ? 'Sabato 26'
-                                                    : 'Domenica 27',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )),
+                          padding: const EdgeInsets.fromLTRB(16.0, 12, 16, 6),
+                          child: Text(
+                            data == '23/04/2025'
+                            ? 'Mercoledì 23'
+                            : data == '24/04/2025'
+                                ? 'Giovedì 24'
+                                : data == '25/04/2025'
+                                    ? 'Venerdì 25'
+                                    : data == '26/04/2025'
+                                        ? 'Sabato 26'
+                                        : 'Domenica 27',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ),
                         ...programmiPerData.map((programma) {
                           return Card(
                             margin:
@@ -337,21 +264,6 @@ class _CCProgrammaState extends State<CCProgramma> {
                 );
               },
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CCNuovoProgramma()),
-          );
-        },
-        shape: const CircleBorder(),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

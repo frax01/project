@@ -143,21 +143,19 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
                             ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 8.0),
+              padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ListTile(
-                    title: Text(
-                      marcatore.key,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    subtitle: Text(
-                      squadre[marcatore.key] ?? '',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  )
+                  Text(
+                    marcatore.key,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  Text(
+                    squadre[marcatore.key] ?? '',
+                    style: const TextStyle(fontSize: 18),
+                  ),
                 ],
               ),
             ),

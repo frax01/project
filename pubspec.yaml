@@ -71,6 +71,7 @@ dependencies:
   package_info_plus: ^8.1.1
   device_info_plus: ^10.1.2
   flutter_background_service: ^5.1.0
+  lottie: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -102,6 +103,7 @@ flutter:
     - images/
     - android/app/src/main/res/drawable/tiberlogo.png
     - images/clubLogo.png
+    - assets/animations/stars.json
           
 
   # To add assets to your application, add an assets section, like this:
