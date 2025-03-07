@@ -155,12 +155,11 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                                                   orario: programma['orario'],
                                                   titolo: programma['titolo'],
                                                   squadre: programma['squadre'],
-                                                  incarico:
-                                                      programma['incarico'],
+                                                  codiceSquadre: programma['codiceSquadre'],
+                                                  incarico: programma['incarico'],
+                                                  codiceIncarico: programma['codiceIncarico'],
                                                   altro: programma['altro'],
-                                                  codice: programma['codice'],
-                                                  categoria:
-                                                      programma['categoria'],
+                                                  categoria: programma['categoria'],
                                                 ),
                                               ),
                                             );

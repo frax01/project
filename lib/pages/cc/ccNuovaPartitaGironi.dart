@@ -17,6 +17,7 @@ class Partita {
   String? orario;
   String? campo;
   String? arbitro;
+  String? refertista;
   String? oldDocId;
   List<Map<String, dynamic>>? marcatori;
 
@@ -27,7 +28,8 @@ class Partita {
       this.campo,
       this.arbitro,
       this.oldDocId,
-      this.marcatori});
+      this.marcatori,
+      this.refertista});
 
   factory Partita.fromMap(Map<String, dynamic> data) {
     return Partita(
@@ -36,6 +38,7 @@ class Partita {
       orario: data['orario'],
       campo: data['campo'],
       arbitro: data['arbitro'],
+      refertista: data['refertista'],
       oldDocId: '${data['casa']} VS ${data['fuori']}',
       marcatori: data['marcatori'] != null
           ? List<Map<String, dynamic>>.from(data['marcatori'])
@@ -121,6 +124,9 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
               .delete();
         }
 
+        print("elem: ${p.casa} VS ${p.fuori}");
+        print("sele: $_selectedSegment");
+
         await FirebaseFirestore.instance
             .collection('ccPartiteGironi')
             .doc('${p.casa} VS ${p.fuori}')
@@ -131,6 +137,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           'orario': p.orario ?? '',
           'campo': p.campo ?? '',
           'arbitro': p.arbitro ?? '',
+          'refertista': p.refertista ?? '',
           'turno': (turno + 1).toString(),
           'data': '24/04/2025',
           'iniziata': false,
@@ -351,7 +358,12 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                   decoration: getInputDecoration('Campo'),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
                               Expanded(
                                 child: TextFormField(
                                   textCapitalization:
@@ -365,7 +377,20 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                   decoration: getInputDecoration('Arbitro'),
                                 ),
                               ),
-                            ],
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  textCapitalization: TextCapitalization.sentences,
+                                  initialValue: turni[turno][partita].refertista,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      turni[turno][partita].refertista = value;
+                                    });
+                                  },
+                                  decoration: getInputDecoration('Refertista'),
+                                ),
+                              ),
+                            ]
                           ),
                           const SizedBox(height: 30),
                         ],

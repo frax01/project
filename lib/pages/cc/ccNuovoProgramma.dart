@@ -9,9 +9,10 @@ class CCNuovoProgramma extends StatefulWidget {
   final String? orario;
   final String? titolo;
   final List<dynamic>? squadre;
+  final List<dynamic>? codiceSquadre;
   final List<dynamic>? incarico;
+  final List<dynamic>? codiceIncarico;
   final String? altro;
-  final String? codice;
   final String? categoria;
 
   const CCNuovoProgramma({
@@ -21,9 +22,10 @@ class CCNuovoProgramma extends StatefulWidget {
     this.orario,
     this.titolo,
     this.squadre,
+    this.codiceSquadre,
     this.incarico,
+    this.codiceIncarico,
     this.altro,
-    this.codice,
     this.categoria,
   });
 
@@ -41,9 +43,13 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   final _categoriaController = TextEditingController();
 
   List<dynamic> _selectedSquadre = [];
+  List<dynamic> _selectedCodiceSquadre = [];
   List<dynamic> _selectedIncarico = [];
+  List<dynamic> _selectedCodiceIncarico = [];
   List<String> _squadreOptions = [];
+  List<String> _squadreCodiceOptions = [];
   List<String> _incaricoOptions = [];
+  List<String> _incaricoCodiceOptions = [];
 
   @override
   void initState() {
@@ -52,25 +58,66 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
     if (widget.orario != null) _orarioController.text = widget.orario!;
     if (widget.titolo != null) _titoloController.text = widget.titolo!;
     if (widget.squadre != null) _selectedSquadre = widget.squadre!;
+    if (widget.codiceSquadre != null) _selectedCodiceSquadre = widget.codiceSquadre!;
     if (widget.incarico != null) _selectedIncarico = widget.incarico!;
+    if (widget.codiceIncarico != null) _selectedCodiceIncarico = widget.codiceIncarico!;
     if (widget.altro != null) _altroController.text = widget.altro!;
-    if (widget.codice != null) _codiceController.text = widget.codice!;
     if (widget.categoria != null) _categoriaController.text = widget.categoria!;
     _loadSquadreOptions();
     _loadIncaricoOptions();
+    _loadSquadreIncaricoCodiceOptions();
+  }
+
+  Future<void> _loadSquadreIncaricoCodiceOptions() async {
+    final collections = [
+      //'ccPartiteGironi',
+      'ccPartiteOttavi',
+      'ccPartiteQuarti',
+      'ccPartiteSemifinali',
+      'ccPartiteFinali'
+    ];
+
+    for (var collection in collections) {
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection(collection).get();
+      for (var doc in querySnapshot.docs) {
+        String codice = '';
+        if (doc['tipo'] == 'girone') {
+          codice = '${doc['tipo']} ${doc['turno']}';
+        } else {
+          codice = '${doc['tipo']} ${doc['codice']}';
+        }
+        setState(() {
+          if (!_squadreCodiceOptions.contains(codice)) {
+            _squadreCodiceOptions.add(codice);
+          }
+          if (!_incaricoCodiceOptions.contains(codice)) {
+            _incaricoCodiceOptions.add(codice);
+          }
+        });
+      }
+    }
   }
 
   Future<void> _loadSquadreOptions() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('ccIscrizioniSquadre').get();
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('ccIscrizioniSquadre')
+        .get();
     setState(() {
-      _squadreOptions = querySnapshot.docs.map((doc) => doc['nomeSquadra'] as String).toList();
+      _squadreOptions = querySnapshot.docs
+          .map((doc) => doc['nomeSquadra'] as String)
+          .toList();
     });
   }
 
   Future<void> _loadIncaricoOptions() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('ccIscrizioniSquadre').get();
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('ccIscrizioniSquadre')
+        .get();
     setState(() {
-      _incaricoOptions = querySnapshot.docs.map((doc) => doc['nomeSquadra'] as String).toList();
+      _incaricoOptions = querySnapshot.docs
+          .map((doc) => doc['nomeSquadra'] as String)
+          .toList();
     });
   }
 
@@ -91,7 +138,6 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
       final orario = _orarioController.text;
       final titolo = _titoloController.text;
       final altro = _altroController.text;
-      final codice = _codiceController.text;
       final categoria = _categoriaController.text;
 
       final programma = {
@@ -99,16 +145,22 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
         'orario': orario,
         'titolo': titolo,
         'squadre': _selectedSquadre,
+        'codiceSquadre': _selectedCodiceSquadre,
         'incarico': _selectedIncarico,
+        'codiceIncarico': _selectedCodiceIncarico,
         'altro': altro,
-        'codice': codice,
         'categoria': categoria,
       };
 
       if (widget.programmaId == null) {
-        await FirebaseFirestore.instance.collection('ccProgramma').add(programma);
+        await FirebaseFirestore.instance
+            .collection('ccProgramma')
+            .add(programma);
       } else {
-        await FirebaseFirestore.instance.collection('ccProgramma').doc(widget.programmaId).update(programma);
+        await FirebaseFirestore.instance
+            .collection('ccProgramma')
+            .doc(widget.programmaId)
+            .update(programma);
       }
 
       Navigator.pop(context);
@@ -155,186 +207,246 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nuovo Programma'),
-      ),
-      body: SingleChildScrollView(
-            child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              DropdownButtonFormField<String>(
-                value: _dataController.text.isEmpty ? null : _dataController.text,
-                decoration: const InputDecoration(labelText: 'Data'),
-                items: const [
-                  DropdownMenuItem(value: '23/04/2025', child: Text('23/04/2025')),
-                  DropdownMenuItem(value: '24/04/2025', child: Text('24/04/2025')),
-                  DropdownMenuItem(value: '25/04/2025', child: Text('25/04/2025')),
-                  DropdownMenuItem(value: '26/04/2025', child: Text('26/04/2025')),
-                  DropdownMenuItem(value: '27/04/2025', child: Text('27/04/2025')),
-                ],
-                onChanged: (value) {
-                  _dataController.text = value!;
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'La data è obbligatoria';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () async {
-                  final String? orario = await _selectTime();
-                  if (orario != null) {
-                    setState(() {
-                      _orarioController.text = orario;
-                    });
-                  }
-                },
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    controller: _orarioController,
-                    textCapitalization: TextCapitalization.sentences,
+        appBar: AppBar(
+          title: const Text('Nuovo Programma'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: _dataController.text.isEmpty
+                        ? null
+                        : _dataController.text,
+                    decoration: const InputDecoration(labelText: 'Data'),
+                    items: const [
+                      DropdownMenuItem(
+                          value: '23/04/2025', child: Text('23/04/2025')),
+                      DropdownMenuItem(
+                          value: '24/04/2025', child: Text('24/04/2025')),
+                      DropdownMenuItem(
+                          value: '25/04/2025', child: Text('25/04/2025')),
+                      DropdownMenuItem(
+                          value: '26/04/2025', child: Text('26/04/2025')),
+                      DropdownMenuItem(
+                          value: '27/04/2025', child: Text('27/04/2025')),
+                    ],
                     onChanged: (value) {
-                      setState(() {
-                        _orarioController.text = value;
-                      });
+                      _dataController.text = value!;
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'L\'orario è obbligatorio';
+                        return 'La data è obbligatoria';
                       }
                       return null;
                     },
-                    decoration: getInputDecoration('Orario'),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _titoloController,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Titolo'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Il titolo è obbligatorio';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              MultiSelectDialogField(
-                title: const Text('Squadre'),
-                selectedColor: Theme.of(context).primaryColor,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                items: _squadreOptions
-                    .map((option) => MultiSelectItem<String>(option, option))
-                    .toList(),
-                buttonText: const Text('Squadre'),
-                confirmText: const Text('Ok'),
-                cancelText: const Text('Annulla'),
-                initialValue: _selectedSquadre,
-                onConfirm: (value) {
-                  setState(() {
-                    _selectedSquadre = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              MultiSelectDialogField(
-                title: const Text('Incarico'),
-                selectedColor: Theme.of(context).primaryColor,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                items: _incaricoOptions
-                    .map((option) => MultiSelectItem<String>(option, option))
-                    .toList(),
-                buttonText: const Text('Incarico'),
-                confirmText: const Text('Ok'),
-                cancelText: const Text('Annulla'),
-                initialValue: _selectedIncarico,
-                onConfirm: (value) {
-                  setState(() {
-                    _selectedIncarico = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _altroController,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Altro'),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _categoriaController.text.isEmpty ? null : _categoriaController.text,
-                decoration: const InputDecoration(labelText: 'Categoria'),
-                items: const [
-                  DropdownMenuItem(value: 'pasto', child: Text('Pasto')),
-                  DropdownMenuItem(value: 'partita', child: Text('Partita')),
-                  DropdownMenuItem(value: 'show', child: Text('Show')),
-                  DropdownMenuItem(value: 'altro', child: Text('Altro')),
-                ],
-                onChanged: (value) {
-                  _categoriaController.text = value!;
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'La categoria è obbligatoria';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _codiceController,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Codice'),
-              ),
-              const SizedBox(height: 16),
-              Row(children: [
-                if (widget.programmaId != null)
-                Expanded(child: ElevatedButton(
-                  onPressed: () async {
-                    bool confirm = await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Conferma eliminazione'),
-                        content: const Text('Sei sicuro di voler eliminare questo programma?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('No'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Sì'),
-                          ),
-                        ],
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () async {
+                      final String? orario = await _selectTime();
+                      if (orario != null) {
+                        setState(() {
+                          _orarioController.text = orario;
+                        });
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: _orarioController,
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (value) {
+                          setState(() {
+                            _orarioController.text = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'L\'orario è obbligatorio';
+                          }
+                          return null;
+                        },
+                        decoration: getInputDecoration('Orario'),
                       ),
-                    );
-                    if (confirm) {
-                      await FirebaseFirestore.instance.collection('ccProgramma').doc(widget.programmaId).delete();
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Elimina'),
-                ),),
-                const SizedBox(width: 16),
-                Expanded(
-                  child:
-              ElevatedButton(
-                onPressed: _saveProgramma,
-                child: const Text('Salva'),
-              ),),
-            ],),
-            ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _titoloController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(labelText: 'Titolo'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Il titolo è obbligatorio';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  MultiSelectDialogField(
+                    title: const Text('Squadre'),
+                    selectedColor: Theme.of(context).primaryColor,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    items: _squadreOptions
+                        .map(
+                            (option) => MultiSelectItem<String>(option, option))
+                        .toList(),
+                    buttonText: const Text('Squadre'),
+                    confirmText: const Text('Ok'),
+                    cancelText: const Text('Annulla'),
+                    initialValue: _selectedSquadre,
+                    onConfirm: (value) {
+                      setState(() {
+                        _selectedSquadre = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  MultiSelectDialogField(
+                    title: const Text('Codice squadre'),
+                    selectedColor: Theme.of(context).primaryColor,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    items: _squadreCodiceOptions
+                        .map(
+                            (option) => MultiSelectItem<String>(option, option))
+                        .toList(),
+                    buttonText: const Text('Codice squadre'),
+                    confirmText: const Text('Ok'),
+                    cancelText: const Text('Annulla'),
+                    initialValue: _selectedCodiceSquadre,
+                    onConfirm: (value) {
+                      setState(() {
+                        _selectedCodiceSquadre = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  MultiSelectDialogField(
+                    title: const Text('Incarico'),
+                    selectedColor: Theme.of(context).primaryColor,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    items: _incaricoOptions
+                        .map(
+                            (option) => MultiSelectItem<String>(option, option))
+                        .toList(),
+                    buttonText: const Text('Incarico'),
+                    confirmText: const Text('Ok'),
+                    cancelText: const Text('Annulla'),
+                    initialValue: _selectedIncarico,
+                    onConfirm: (value) {
+                      setState(() {
+                        _selectedIncarico = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  MultiSelectDialogField(
+                    title: const Text('Codice incarico'),
+                    selectedColor: Theme.of(context).primaryColor,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    items: _incaricoCodiceOptions
+                        .map(
+                            (option) => MultiSelectItem<String>(option, option))
+                        .toList(),
+                    buttonText: const Text('Codice incarico'),
+                    confirmText: const Text('Ok'),
+                    cancelText: const Text('Annulla'),
+                    initialValue: _selectedCodiceIncarico,
+                    onConfirm: (value) {
+                      setState(() {
+                        _selectedCodiceIncarico = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _altroController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(labelText: 'Altro'),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _categoriaController.text.isEmpty
+                        ? null
+                        : _categoriaController.text,
+                    decoration: const InputDecoration(labelText: 'Categoria'),
+                    items: const [
+                      DropdownMenuItem(value: 'pasto', child: Text('Pasto')),
+                      DropdownMenuItem(
+                          value: 'partita', child: Text('Partita')),
+                      DropdownMenuItem(value: 'show', child: Text('Show')),
+                      DropdownMenuItem(value: 'altro', child: Text('Altro')),
+                    ],
+                    onChanged: (value) {
+                      _categoriaController.text = value!;
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'La categoria è obbligatoria';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      if (widget.programmaId != null)
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              bool confirm = await showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Conferma eliminazione'),
+                                  content: const Text(
+                                      'Sei sicuro di voler eliminare questo programma?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: const Text('No'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      child: const Text('Sì'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm) {
+                                await FirebaseFirestore.instance
+                                    .collection('ccProgramma')
+                                    .doc(widget.programmaId)
+                                    .delete();
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text('Elimina'),
+                          ),
+                        ),
+                        Expanded(
+                          child:Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: _saveProgramma,
+                                  child: const Text('Salva'),
+                                ),
+                              )
+                            ],
+                          )
+                        )
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),)
-    );
+        ));
   }
 }

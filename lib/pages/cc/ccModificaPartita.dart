@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CCModificaPartita extends StatefulWidget {
   final String casa;
@@ -41,8 +42,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   int golCasa = 0;
   int golFuori = 0;
   List<Map<String, String>> marcatori = [];
+  int golRigoreCasa = 0;
+  int golRigoreFuori = 0;
+  List<String> rigoriCasa = [];
+  List<String> rigoriFuori = [];
   bool iniziata = false;
   bool finita = false;
+  bool boolRigori = false;
 
   Future<void> _updateGironi() async {
     DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
@@ -93,6 +99,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         .collection('ccGironi')
         .doc(widget.girone)
         .update(gironeData);
+
+    Navigator.pop(context);
   }
 
   Future<void> _updateGironiReverse() async {
@@ -204,6 +212,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
       iniziata = docSnapshot['iniziata'];
       finita = docSnapshot['finita'];
+
+      if (widget.tipo != 'girone') {
+        boolRigori = docSnapshot['boolRigori'];
+        rigoriCasa = List.from(docSnapshot['rigoriCasa'] ?? []);
+        rigoriFuori = List.from(docSnapshot['rigoriFuori'] ?? []);
+      }
     });
   }
 
@@ -557,17 +571,15 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   }
 
   Future<void> updatePartite(
-      String tipo, String codice, List<Map<String, dynamic>> marcatori) async {
-    await FirebaseFirestore.instance
-        .collection('ccPartite$tipo')
-        .doc(codice)
-        .update({
-      'iniziata': false,
-      'finita': true,
-    });
-
+      String tipo,
+      String codice,
+      List<Map<String, dynamic>> marcatori,
+      List<dynamic> rigoriCasa,
+      List<dynamic> rigoriFuori) async {
     int golCasa = 0;
     int golFuori = 0;
+    int golRigoreCasa = 0;
+    int golRigoreFuori = 0;
     String vincitore = '';
     String perdente = '';
 
@@ -579,15 +591,38 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
       }
     }
 
-    if (golCasa > golFuori) {
-      vincitore = widget.casa;
-      perdente = widget.fuori;
-    } else if (golCasa < golFuori) {
-      vincitore = widget.fuori;
-      perdente = widget.casa;
+    if (boolRigori) {
+      for (var rigCasa in rigoriCasa) {
+        if (rigCasa == 'segnato') {
+          golRigoreCasa++;
+        }
+      }
+      for (var rigFuori in rigoriFuori) {
+        if (rigFuori == 'segnato') {
+          golRigoreFuori++;
+        }
+      }
     }
 
-    if (golCasa != golFuori) {
+    if (golCasa != golFuori || golRigoreFuori != golRigoreCasa) {
+      iniziata = false;
+      finita = true;
+      await FirebaseFirestore.instance
+          .collection('ccPartite$tipo')
+          .doc(codice)
+          .update({
+        'iniziata': false,
+        'finita': true,
+      });
+
+      if (golCasa > golFuori || golRigoreCasa > golRigoreFuori) {
+        vincitore = widget.casa;
+        perdente = widget.fuori;
+      } else if (golCasa < golFuori || golRigoreCasa < golRigoreFuori) {
+        vincitore = widget.fuori;
+        perdente = widget.casa;
+      }
+
       String newCodiceVincente = '';
       String newCodicePerdente = '';
 
@@ -696,6 +731,80 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     }
   }
 
+  void _showRigoreDialog(
+      BuildContext context, String squadra, int index, String tipo) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Segnato'),
+              onTap: () async {
+                if (squadra == 'casa') {
+                  rigoriCasa[index] = 'segnato';
+                } else {
+                  rigoriFuori[index] = 'segnato';
+                }
+                await FirebaseFirestore.instance
+                    .collection(
+                        'ccPartite${tipo[0].toUpperCase()}${tipo.substring(1)}')
+                    .doc(widget.codice)
+                    .update({
+                  'rigoriCasa': rigoriCasa,
+                  'rigoriFuori': rigoriFuori,
+                });
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Sbagliato'),
+              onTap: () async {
+                if (squadra == 'casa') {
+                  rigoriCasa[index] = 'sbagliato';
+                } else {
+                  rigoriFuori[index] = 'sbagliato';
+                }
+                await FirebaseFirestore.instance
+                    .collection(
+                        'ccPartite${tipo[0].toUpperCase()}${tipo.substring(1)}')
+                    .doc(widget.codice)
+                    .update({
+                  'rigoriCasa': rigoriCasa,
+                  'rigoriFuori': rigoriFuori,
+                });
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Non tirato'),
+              onTap: () async {
+                if (squadra == 'casa') {
+                  rigoriCasa[index] = 'non tirato';
+                } else {
+                  rigoriFuori[index] = 'non tirato';
+                }
+                await FirebaseFirestore.instance
+                    .collection(
+                        'ccPartite${tipo[0].toUpperCase()}${tipo.substring(1)}')
+                    .doc(widget.codice)
+                    .update({
+                  'rigoriCasa': rigoriCasa,
+                  'rigoriFuori': rigoriFuori,
+                });
+                setState(() {});
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -716,9 +825,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
             var data = snapshot.data!.data() as Map<String, dynamic>;
             var marcatoriFirestore = data['marcatori'] ?? [];
+            var rigoriCasaFirestore = data['rigoriCasa'] ?? [];
+            var rigoriFuoriFirestore = data['rigoriFuori'] ?? [];
 
             int golCasa = 0;
             int golFuori = 0;
+            int golRigoreCasa = 0;
+            int golRigoreFuori = 0;
             List<Map<String, String>> marcatori = [];
             for (var marcatore in marcatoriFirestore) {
               if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'gol') {
@@ -732,6 +845,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                 'dove': marcatore['dove'],
                 'cosa': marcatore['cosa']
               });
+            }
+
+            for (var rigCasa in rigoriCasaFirestore) {
+              if (rigCasa == 'segnato') {
+                golRigoreCasa++;
+              }
+            }
+            for (var rigFuori in rigoriFuoriFirestore) {
+              if (rigFuori == 'segnato') {
+                golRigoreFuori++;
+              }
             }
 
             Widget yellowCardIcon() {
@@ -761,40 +885,63 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
             return Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Image.network(widget.logocasa, width: 90, height: 90),
-                          const SizedBox(height: 8),
-                          Text(widget.casa,
-                              style: const TextStyle(fontSize: 22)),
-                        ],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$golCasa',
-                        style: const TextStyle(fontSize: 34),
-                      ),
-                      const Text(':',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 22)),
-                      Text('$golFuori', style: const TextStyle(fontSize: 34)),
-                      const SizedBox(width: 4),
-                      Column(
-                        children: [
-                          Image.network(widget.logofuori,
-                              width: 90, height: 90),
-                          const SizedBox(height: 8),
-                          Text(widget.fuori,
-                              style: const TextStyle(fontSize: 22)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                          Column(
+                            children: [
+                              widget.logocasa.isNotEmpty ?
+                              Image.network(widget.logocasa, width: 90, height: 90)
+                              : IconButton(icon: const FaIcon(FontAwesomeIcons.shieldHalved), onPressed: () {},),
+                              const SizedBox(height: 8),
+                              Text(widget.casa,
+                                  style: const TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                          const SizedBox(width: 4),
+                          Column(children: [
+                            Row(children: [
+                              Text(
+                                '$golCasa',
+                                style: const TextStyle(fontSize: 34),
+                              ),
+                              const Text(' : ',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22)),
+                              Text('$golFuori',
+                                  style: const TextStyle(fontSize: 34)),
+                            ]),
+                            boolRigori
+                                ? Row(
+                                    children: [
+                                      Text(
+                                        '($golRigoreCasa)',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                      const Text(' dcr ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14)),
+                                      Text('($golRigoreFuori)',
+                                          style: const TextStyle(fontSize: 18)),
+                                    ],
+                                  )
+                                : Container()
+                          ]),
+                          const SizedBox(width: 4),
+                          Column(
+                            children: [
+                              widget.logofuori.isNotEmpty ?
+                              Image.network(widget.logofuori, width: 90, height: 90)
+                              : IconButton(icon: const FaIcon(FontAwesomeIcons.shieldHalved), onPressed: () {},),
+                              const SizedBox(height: 8),
+                              Text(widget.fuori,
+                                  style: const TextStyle(fontSize: 22)),
+                            ],
+                          ),
+                        ])),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
@@ -848,15 +995,73 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                               ),
                             )
                           : Container(),
-                      const SizedBox(width: 24),
+                      const SizedBox(width: 10),
+                      golFuori == golCasa && widget.tipo != 'girone' && iniziata
+                          ? ElevatedButton(
+                              onPressed: !boolRigori
+                                  ? () {
+                                      setState(() {
+                                        boolRigori = true;
+                                        for (int i = 0; i < 5; i++) {
+                                          rigoriCasa.add('non tirato');
+                                        }
+                                        for (int i = 0; i < 5; i++) {
+                                          rigoriFuori.add('non tirato');
+                                        }
+                                        FirebaseFirestore.instance
+                                            .collection(
+                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                            .doc(widget.codice)
+                                            .update({
+                                          'boolRigori': true,
+                                          'rigoriCasa': rigoriCasa,
+                                          'rigoriFuori': rigoriFuori,
+                                        });
+                                      });
+                                    }
+                                  : () {
+                                      setState(() {
+                                        boolRigori = false;
+                                        rigoriCasa = [];
+                                        rigoriFuori = [];
+                                        FirebaseFirestore.instance
+                                            .collection(
+                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                            .doc(widget.codice)
+                                            .update({
+                                          'boolRigori': false,
+                                          'rigoriCasa': [],
+                                          'rigoriFuori': [],
+                                        });
+                                      });
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: boolRigori && iniziata
+                                    ? const Color.fromARGB(255, 150, 9, 9)
+                                    : const Color.fromARGB(255, 25, 84, 132),
+                              ),
+                              child: const Text("R"),
+                            )
+                          : Container(),
+                      const SizedBox(width: 10),
                       widget.casa != '' && widget.fuori != ''
                           ? Expanded(
                               child: ElevatedButton(
                                 onPressed: iniziata
                                     ? () {
                                         setState(() {
-                                          iniziata = false;
-                                          finita = true;
+                                          golFuori != golCasa &&
+                                                  widget.tipo != 'girone'
+                                              ? iniziata = false
+                                              : null;
+                                          golFuori != golCasa &&
+                                                  widget.tipo != 'girone'
+                                              ? finita = true
+                                              : null;
+                                          golFuori != golCasa &&
+                                                  widget.tipo != 'girone'
+                                              ? boolRigori = false
+                                              : null;
                                           widget.tipo == 'girone'
                                               ? FirebaseFirestore.instance
                                                   .collection('ccPartiteGironi')
@@ -867,23 +1072,33 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                   'finita': true,
                                                 })
                                               : widget.tipo == 'ottavi'
-                                                  ? updatePartite('Ottavi',
-                                                      widget.codice, marcatori)
+                                                  ? updatePartite(
+                                                      'Ottavi',
+                                                      widget.codice,
+                                                      marcatori,
+                                                      rigoriCasa,
+                                                      rigoriFuori)
                                                   : widget.tipo == 'quarti'
                                                       ? updatePartite(
                                                           'Quarti',
                                                           widget.codice,
-                                                          marcatori)
+                                                          marcatori,
+                                                          rigoriCasa,
+                                                          rigoriFuori)
                                                       : widget.tipo ==
                                                               'semifinali'
                                                           ? updatePartite(
                                                               'Semifinali',
                                                               widget.codice,
-                                                              marcatori)
+                                                              marcatori,
+                                                              rigoriCasa,
+                                                              rigoriFuori)
                                                           : updatePartite(
                                                               'Finali',
                                                               widget.codice,
-                                                              marcatori);
+                                                              marcatori,
+                                                              rigoriCasa,
+                                                              rigoriFuori);
                                         });
                                         widget.tipo == 'girone'
                                             ? _updateGironi()
@@ -1065,6 +1280,109 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontStyle: FontStyle.italic)))),
+                boolRigori
+                    ? Column(
+                        children: [
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 0.1,
+                                  runSpacing: 0.1,
+                                  children:
+                                      List.generate(rigoriCasa.length, (index) {
+                                    Color color;
+                                    if (rigoriCasa[index] == 'segnato') {
+                                      color = Colors.green;
+                                    } else if (rigoriCasa[index] ==
+                                        'sbagliato') {
+                                      color = Colors.red;
+                                    } else {
+                                      color = Colors.grey;
+                                    }
+                                    return IconButton(
+                                        icon: Icon(Icons.circle, color: color),
+                                        onPressed: iniziata
+                                            ? () {
+                                                _showRigoreDialog(context,
+                                                    'casa', index, widget.tipo);
+                                              }
+                                            : null);
+                                  }),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 0.1,
+                                  runSpacing: 0.1,
+                                  children: List.generate(rigoriFuori.length,
+                                      (index) {
+                                    Color color;
+                                    if (rigoriFuori[index] == 'segnato') {
+                                      color = Colors.green;
+                                    } else if (rigoriFuori[index] ==
+                                        'sbagliato') {
+                                      color = Colors.red;
+                                    } else {
+                                      color = Colors.grey;
+                                    }
+                                    return IconButton(
+                                      icon: Icon(Icons.circle, color: color),
+                                      onPressed: iniziata ? () {
+                                        _showRigoreDialog(context, 'fuori',
+                                            index, widget.tipo);
+                                      } : null
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                          iniziata ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () async {
+                                  rigoriCasa.add('non tirato');
+                                  rigoriFuori.add('non tirato');
+                                  await FirebaseFirestore.instance
+                                      .collection(
+                                          'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                      .doc(widget.codice)
+                                      .update({
+                                    'rigoriCasa': rigoriCasa,
+                                    'rigoriFuori': rigoriFuori,
+                                  });
+                                  setState(() {});
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: rigoriCasa.length > 5
+                                    ? () async {
+                                        rigoriCasa.removeLast();
+                                        rigoriFuori.removeLast();
+                                        await FirebaseFirestore.instance
+                                            .collection(
+                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                            .doc(widget.codice)
+                                            .update({
+                                          'rigoriCasa': rigoriCasa,
+                                          'rigoriFuori': rigoriFuori,
+                                        });
+                                        setState(() {});
+                                      }
+                                    : null,
+                              ),
+                            ],
+                          ) : Container()
+                        ],
+                      )
+                    : Container(),
                 const SizedBox(height: 4),
                 Expanded(
                   child: ListView.builder(

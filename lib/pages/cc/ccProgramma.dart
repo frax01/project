@@ -13,6 +13,40 @@ class CCProgramma extends StatefulWidget {
 }
 
 class _CCProgrammaState extends State<CCProgramma> {
+  Future<List<String>> _getNomiSquadre(List<String> codiciSquadre) async {
+    List<String> nomiSquadre = [];
+    for (String codice in codiciSquadre) {
+      List<String> parts = codice.split(' ');
+      String tipoS = parts[0];
+      String codiceS = parts[1];
+      if (tipoS == 'girone') {
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('ccPartiteGironi')
+            .where('turno', isEqualTo: codiceS)
+            .get();
+        if (querySnapshot.docs.isNotEmpty) {
+          for (var doc in querySnapshot.docs) {
+            nomiSquadre.add(doc['casa']);
+            nomiSquadre.add(doc['fuori']);
+          }
+        }
+      } else {
+        tipoS = tipoS[0].toUpperCase() + tipoS.substring(1);
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('ccPartite$tipoS')
+            .where('codice', isEqualTo: codiceS)
+            .get();
+        if (querySnapshot.docs.isNotEmpty) {
+          for (var doc in querySnapshot.docs) {
+            if (doc['casa'] != '') nomiSquadre.add(doc['casa']);
+            if (doc['fuori'] != '') nomiSquadre.add(doc['fuori']);
+          }
+        }
+      }
+    }
+    return nomiSquadre;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +93,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                 });
 
                 Map<String, List<QueryDocumentSnapshot>> groupedProgrammi = {};
-                DateTime now = DateTime.now().add(const Duration(hours: 1));
+                DateTime now = DateTime.now();//.add(const Duration(hours: 1));
                 QueryDocumentSnapshot? lastBeforeNow;
 
                 for (var programma in programmi) {
@@ -228,10 +262,13 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                   orario: programma['orario'],
                                                   titolo: programma['titolo'],
                                                   squadre: programma['squadre'],
+                                                  codiceSquadre: programma[
+                                                      'codiceSquadre'],
                                                   incarico:
                                                       programma['incarico'],
+                                                  codiceIncarico: programma[
+                                                      'codiceIncarico'],
                                                   altro: programma['altro'],
-                                                  codice: programma['codice'],
                                                   categoria:
                                                       programma['categoria'],
                                                 ),
@@ -243,7 +280,11 @@ class _CCProgrammaState extends State<CCProgramma> {
                                     ]),
                                 children: [
                                   programma['squadre'].isNotEmpty ||
+                                          programma['codiceSquadre']
+                                              .isNotEmpty ||
                                           programma['incarico'].isNotEmpty ||
+                                          programma['codiceIncarico']
+                                              .isNotEmpty ||
                                           programma['altro'] != ''
                                       ? Padding(
                                           padding: const EdgeInsets.fromLTRB(
@@ -252,60 +293,73 @@ class _CCProgrammaState extends State<CCProgramma> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              programma['squadre'].isNotEmpty
-                                                  ? Text(
-                                                      (programma['squadre']
-                                                              as List<dynamic>)
-                                                          .join(', '),
-                                                      style: const TextStyle(
-                                                          fontSize: 18),
+                                              programma['squadre'].isNotEmpty ||
+                                                      programma['codiceSquadre']
+                                                          .isNotEmpty
+                                                  ? FutureBuilder<List<String>>(
+                                                      future: _getNomiSquadre(List<
+                                                              String>.from(
+                                                          programma[
+                                                              'codiceSquadre'])),
+                                                      builder:
+                                                          (context, snapshot) {
+                                                        if (snapshot
+                                                                .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return const CircularProgressIndicator();
+                                                        } else if (snapshot
+                                                            .hasError) {
+                                                          return Text(
+                                                              'Errore: ${snapshot.error}');
+                                                        } else {
+                                                          List<String> squadre =
+                                                              List<String>.from(
+                                                                  programma[
+                                                                      'squadre']);
+                                                          if (snapshot
+                                                                  .hasData &&
+                                                              snapshot.data!
+                                                                  .isNotEmpty) {
+                                                            squadre.addAll(
+                                                                snapshot.data!);
+                                                          }
+                                                          return Text(
+                                                            squadre.join(', '),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        18),
+                                                          );
+                                                        }
+                                                      },
                                                     )
                                                   : Container(),
-                                              programma['incarico'].isNotEmpty
-                                                  ? const Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        SizedBox(height: 8),
-                                                        Text(
-                                                          "Incarico",
-                                                          style: TextStyle(
-                                                            fontSize: 19,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  : Container(),
-                                              programma['incarico'].isNotEmpty
-                                                  ? Text(
-                                                      (programma['incarico']
-                                                              as List<dynamic>)
-                                                          .join(', '),
-                                                      style: const TextStyle(
-                                                          fontSize: 18),
-                                                    )
-                                                  : Container(),
-                                              programma['altro'] != ''
-                                                  ? const Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        SizedBox(height: 8),
-                                                        Text(
-                                                          "Info",
-                                                          style: TextStyle(
-                                                            fontSize: 19,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  : Container(),
+                                              programma['incarico'].isNotEmpty || programma['codiceIncarico'].isNotEmpty
+                                              ? FutureBuilder<List<String>>(
+                                                  future: _getNomiSquadre(List<String>.from(programma['codiceIncarico'])),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                                      return const CircularProgressIndicator();
+                                                    } else if (snapshot.hasError) {
+                                                      return Text('Errore: ${snapshot.error}');
+                                                    } else {
+                                                      List<String> squadre = List<String>.from(programma['incarico']);
+                                                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                                                        squadre.addAll(snapshot.data!);
+                                                      }
+                                                      return Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          const SizedBox(height: 8),
+                                                          const Text("Incarico", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold,),),
+                                                          Text(squadre.join(', '), style: const TextStyle(fontSize: 18),)
+                                                        ]
+                                                      );
+                                                    }
+                                                  },
+                                                )
+                                              : Container(),
                                               programma['altro'] != ''
                                                   ? Text(
                                                       programma['altro'],

@@ -352,8 +352,10 @@ class _CCCalendarioState extends State<CCCalendario> {
                                             },
                                             style: ElevatedButton.styleFrom(
                                               side: _selectedGirone == elem
-                                                  ? const BorderSide(color: Colors.black)
-                                                  : const BorderSide(color: Colors.white),
+                                                  ? const BorderSide(
+                                                      color: Colors.black)
+                                                  : const BorderSide(
+                                                      color: Colors.white),
                                               backgroundColor: Colors.white,
                                               foregroundColor: Colors.black,
                                             ),
@@ -522,6 +524,27 @@ class _CCCalendarioState extends State<CCCalendario> {
                                       }
                                     }
 
+                                    int golRigoriCasa = 0;
+                                    int golRigoriFuori = 0;
+                                    if (partita['tipo'] != 'girone' && partita['boolRigori']==true) {
+                                      List<String> rigoriCasa =
+                                          List<String>.from(
+                                              partita['rigoriCasa'] ?? []);
+                                      List<String> rigoriFuori =
+                                          List<String>.from(
+                                              partita['rigoriFuori'] ?? []);
+                                      for (var rigore in rigoriCasa) {
+                                        if (rigore == 'segnato') {
+                                          golRigoriCasa++;
+                                        }
+                                      }
+                                      for (var rigore in rigoriFuori) {
+                                        if (rigore == 'segnato') {
+                                          golRigoriFuori++;
+                                        }
+                                      }
+                                    }
+
                                     String turno = '';
                                     Widget turnoWidget = Container();
                                     divider = false;
@@ -551,7 +574,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                         children: [
                                           turnoWidget,
                                           InkWell(
-                                              onTap: partita['casa'] != '' ||
+                                              onTap: partita['casa'] != '' &&
                                                       partita['fuori'] != ''
                                                   ? () {
                                                       Navigator.push(
@@ -636,13 +659,13 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                               22)),
                                                             ],
                                                           ),
-                                                          partita['iniziata'] ||
-                                                                  partita[
-                                                                      'finita']
-                                                              ? Text('$golCasa',
-                                                                  style: const TextStyle(
-                                                                      fontSize:
-                                                                          24))
+                                                          partita['iniziata'] || partita['finita']
+                                                              ? Row(
+                                                                children: [
+                                                                  Text('$golCasa', style: const TextStyle(fontSize: 24)),
+                                                                  partita['tipo']!='girone' && partita['boolRigori'] ? Text(' ($golRigoriCasa)', style: const TextStyle(fontSize: 16)) : Container()
+                                                                ],
+                                                              )
                                                               : Row(
                                                                   children: [
                                                                     const Icon(
@@ -698,14 +721,13 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                         fontSize:
                                                                             22)),
                                                           ]),
-                                                          partita['iniziata'] ||
-                                                                  partita[
-                                                                      'finita']
-                                                              ? Text(
-                                                                  '$golFuori',
-                                                                  style: const TextStyle(
-                                                                      fontSize:
-                                                                          24))
+                                                          partita['iniziata'] || partita['finita']
+                                                              ? Row(
+                                                                children: [
+                                                                  Text('$golFuori', style: const TextStyle(fontSize: 24)),
+                                                                  partita['tipo']!='girone' && partita['boolRigori'] ? Text(' ($golRigoriFuori)', style: const TextStyle(fontSize: 16)) : Container()
+                                                                ]
+                                                              )
                                                               : Row(
                                                                   children: [
                                                                     const Icon(
@@ -767,13 +789,16 @@ class _CCCalendarioState extends State<CCCalendario> {
                                             child: const Text(
                                                 'Pulisci Semifinali'),
                                           ))
-                                        : Center(
-                                            child: ElevatedButton(
-                                            onPressed: () {
-                                              _pulisci('Finali');
-                                            },
-                                            child: const Text('Pulisci Finali'),
-                                          ))
+                                        : _selectedSegment == 'Finali'
+                                            ? Center(
+                                                child: ElevatedButton(
+                                                onPressed: () {
+                                                  _pulisci('Finali');
+                                                },
+                                                child: const Text(
+                                                    'Pulisci Finali'),
+                                              ))
+                                            : Container()
                           ]));
                 },
               ),
@@ -781,8 +806,9 @@ class _CCCalendarioState extends State<CCCalendario> {
           ),
         ),
         floatingActionButton:
-            _selectedSegment == 'Gironi' || _selectedSegment == 'Ottavi'
-                ? FloatingActionButton(
+            //_selectedSegment == 'Gironi' || _selectedSegment == 'Ottavi'
+            //    ? 
+                FloatingActionButton(
                     onPressed: () {
                       _selectedSegment == 'Gironi'
                           ? Navigator.push(
@@ -795,14 +821,14 @@ class _CCCalendarioState extends State<CCCalendario> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      const CCnuovaPartitaOttavi()),
+                                      CCnuovaPartitaOttavi(tipo: _selectedSegment)),
                             );
                     },
                     shape: const CircleBorder(),
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                     child: const Icon(Icons.add),
-                  )
-                : null);
+                  ));
+                //: null);
   }
 }

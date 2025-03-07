@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class CCnuovaPartitaOttavi extends StatefulWidget {
+  final String tipo;
+
   const CCnuovaPartitaOttavi({
     super.key,
+    required this.tipo,
   });
 
   @override
@@ -17,8 +20,16 @@ class Partita {
   String? orario;
   String? campo;
   String? arbitro;
+  String? refertista;
   String? oldDocId;
   List<Map<String, dynamic>>? marcatori;
+  List<dynamic>? rigoriCasa;
+  List<dynamic>? rigoriFuori;
+  bool? finita;
+  bool? iniziata;
+  bool? boolRigori;
+  String? tipo;
+  String? codice;
 
   Partita(
       {this.casa,
@@ -26,8 +37,15 @@ class Partita {
       this.orario,
       this.campo,
       this.arbitro,
+      this.refertista,
       this.oldDocId,
-      this.marcatori});
+      this.marcatori,
+      this.rigoriCasa,
+      this.rigoriFuori,
+      this.finita,
+      this.iniziata,
+      this.boolRigori,
+      this.codice});
 
   factory Partita.fromMap(Map<String, dynamic> data) {
     return Partita(
@@ -36,10 +54,21 @@ class Partita {
       orario: data['orario'],
       campo: data['campo'],
       arbitro: data['arbitro'],
+      refertista: data['refertista'],
       oldDocId: '${data['casa']} VS ${data['fuori']}',
       marcatori: data['marcatori'] != null
           ? List<Map<String, dynamic>>.from(data['marcatori'])
           : null,
+      rigoriCasa: data['rigoriCasa'] != null
+          ? List<dynamic>.from(data['rigoriCasa'])
+          : null,
+      rigoriFuori: data['rigoriFuori'] != null
+          ? List<dynamic>.from(data['rigoriFuori'])
+          : null,
+      finita: data['finita'],
+      iniziata: data['iniziata'],
+      boolRigori: data['boolRigori'],
+      codice: data['codice'],
     );
   }
 }
@@ -62,9 +91,8 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     turni = List.generate(8, (_) => Partita());
     _timeControllers = List.generate(8, (_) => TextEditingController());
     _campiControllers = List.generate(8, (_) => TextEditingController());
-    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('ccOttavi')
-        .get();
+    final QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('ccOttavi').get();
     setState(() {
       squadre = [''];
       for (var doc in querySnapshot.docs) {
@@ -74,7 +102,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     });
 
     final QuerySnapshot partitaSnapshot = await FirebaseFirestore.instance
-        .collection('ccPartiteOttavi')
+        .collection('ccPartite${widget.tipo}')
         .get();
     for (int turno = 0; turno < turni.length; turno++) {
       if (turno >= partitaSnapshot.docs.length) {
@@ -101,7 +129,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   Future<void> _saveMatch() async {
     for (int turno = 0; turno < turni.length; turno++) {
       final Partita p = turni[turno];
-      final String newDocId = 'o$turno';
+      final String newDocId = '${p.codice![0]}$turno';
 
       if (p.casa == null || p.fuori == null) {
         print('Errore: Casa o Fuori è null');
@@ -110,13 +138,13 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
 
       if (p.oldDocId != null && p.oldDocId != newDocId) {
         await FirebaseFirestore.instance
-            .collection('ccPartiteOttavi')
+            .collection('ccPartite${widget.tipo}')
             .doc(p.oldDocId)
             .delete();
       }
 
       await FirebaseFirestore.instance
-          .collection('ccPartiteOttavi')
+          .collection('ccPartite${widget.tipo}')
           .doc(newDocId)
           .set({
         'casa': p.casa,
@@ -124,12 +152,16 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
         'orario': p.orario ?? '',
         'campo': p.campo ?? '',
         'arbitro': p.arbitro ?? '',
+        'refertista': p.refertista ?? '',
         'data': '26/04/2025',
-        'iniziata': false,
-        'finita': false,
+        'iniziata': p.iniziata ?? false,
+        'finita': p.finita ?? false,
         'marcatori': p.marcatori ?? [],
-        'tipo': 'ottavi',
-        'codice': 'o$turno'
+        'tipo': '${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}',
+        'codice': '${p.codice![0]}$turno',
+        'rigoriCasa': p.rigoriCasa ?? [],
+        'rigoriFuori': p.rigoriFuori ?? [],
+        'boolRigori': p.boolRigori ?? false,
       });
       p.oldDocId = newDocId;
     }
@@ -183,7 +215,8 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Partite ottavi'),
+        title: Text(
+            'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             color: Color.fromARGB(255, 25, 84, 132),
@@ -215,7 +248,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       for (int turno = 0; turno < turni.length; turno++) ...[
-                        Text("Ottavo ${turno + 1}",
+                        Text("${widget.tipo} ${turno + 1}",
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
@@ -236,12 +269,12 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     turni[turno].casa = newValue;
                                   });
                                 },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Obbligatorio';
-                                  }
-                                  return null;
-                                },
+                                //validator: (value) {
+                                //  if (value == null || value.isEmpty) {
+                                //    return 'Obbligatorio';
+                                //  }
+                                //  return null;
+                                //},
                                 decoration: getInputDecoration('Casa'),
                               ),
                             ),
@@ -260,12 +293,12 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     turni[turno].fuori = newValue;
                                   });
                                 },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Obbligatorio';
-                                  }
-                                  return null;
-                                },
+                                //validator: (value) {
+                                //  if (value == null || value.isEmpty) {
+                                //    return 'Obbligatorio';
+                                //  }
+                                //  return null;
+                                //},
                                 decoration: getInputDecoration('Fuori'),
                               ),
                             ),
@@ -278,8 +311,8 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () async {
-                                  final String? orario = await _selectTime(
-                                      turni[turno]);
+                                  final String? orario =
+                                      await _selectTime(turni[turno]);
                                   if (orario != null) {
                                     setState(() {
                                       _timeControllers[turno].text = orario;
@@ -320,22 +353,40 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                 decoration: getInputDecoration('Campo'),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                initialValue: turni[turno].arbitro,
-                                onChanged: (value) {
-                                  setState(() {
-                                    turni[turno].arbitro = value;
-                                  });
-                                },
-                                decoration: getInputDecoration('Arbitro'),
-                              ),
-                            ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  initialValue: turni[turno].arbitro,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      turni[turno].arbitro = value;
+                                    });
+                                  },
+                                  decoration: getInputDecoration('Arbitro'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  initialValue: turni[turno].refertista,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      turni[turno].refertista = value;
+                                    });
+                                  },
+                                  decoration: getInputDecoration('Refertista'),
+                                ),
+                              ),
+                            ]),
                         const SizedBox(height: 30),
                       ],
                       Center(
