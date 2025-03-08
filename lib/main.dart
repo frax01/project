@@ -23,7 +23,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -48,10 +47,12 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
   String cc = prefs.getString('cc') ?? '';
+  String ccRole = prefs.getString('ccRole') ?? '';
 
   runApp(MyApp(
     club: club,
     cc: cc,
+    ccRole: ccRole,
   ));
 }
 
@@ -63,16 +64,19 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.club,
     required this.cc,
+    required this.ccRole,
   });
 
   final String club;
   final String cc;
+  final String ccRole;
   Widget startWidget = Container();
 
   Future<void> fetchPage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String club = prefs.getString('club') ?? '';
     String cc = prefs.getString('cc') ?? '';
+    String ccRole = prefs.getString('ccRole') ?? '';
 
     if (prefs.getString('email') != null &&
         prefs.getString('email')!.isNotEmpty) {
@@ -88,7 +92,8 @@ class MyApp extends StatelessWidget {
       String id = value.id;
 
       cc == 'yes'
-          ? startWidget = CCHomePage(selectedIndex: 0, club: club)
+          ? startWidget =
+              CCHomePage(selectedIndex: 0, club: club, ccRole: ccRole)
           : startWidget = ClubPage(
               classes: classes,
               club: club,
@@ -151,7 +156,11 @@ class MyApp extends StatelessWidget {
       home: startWidget,
       initialRoute: '/home',
       routes: {
-        '/home': (context) => HomePageStart(club: club, cc: cc),
+        '/home': (context) => HomePageStart(
+              club: club,
+              cc: cc,
+              ccRole: ccRole,
+            ),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
         '/waiting': (context) => const Waiting(),
@@ -162,10 +171,12 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePageStart extends StatefulWidget {
-  const HomePageStart({super.key, required this.club, required this.cc});
+  const HomePageStart(
+      {super.key, required this.club, required this.cc, required this.ccRole});
 
   final String club;
   final String cc;
+  final String ccRole;
 
   @override
   _HomePageStartState createState() => _HomePageStartState();
@@ -181,6 +192,7 @@ class _HomePageStartState extends State<HomePageStart> {
   bool status = false;
   String id = '';
   String club = '';
+  String ccRole = '';
   String role = '';
   List token = [];
 
@@ -193,9 +205,14 @@ class _HomePageStartState extends State<HomePageStart> {
 
   RemoteMessage? initialMessage;
 
-  Widget buildClubPage(String club, int selectedIndex) {
-    if (widget.cc == 'yes') {
-      return CCHomePage(selectedIndex: 0, club: club);
+  Widget buildClubPage(String club, int selectedIndex, String ccRole) {
+
+    if (widget.cc == 'yes') { //devo avere il logout e non il pulsante per tornare al club se ci vado da utente esterno
+      return CCHomePage(
+        selectedIndex: 0,
+        club: widget.club,
+        ccRole: widget.ccRole,
+      );
     } else {
       return ClubPage(
           club: club,
@@ -241,6 +258,7 @@ class _HomePageStartState extends State<HomePageStart> {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       club = prefs.getString('club') ?? '';
+      ccRole = prefs.getString('ccRole') ?? '';
 
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? getToken = await messaging.getToken();
@@ -334,8 +352,10 @@ class _HomePageStartState extends State<HomePageStart> {
                   role: message.data['role'],
                   classes: classes)));
     } else if (message.data['category'] == 'birthday') {
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => buildClubPage(club, 1)));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => buildClubPage(club, 1, ccRole)));
     } else if (message.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(message.data['focusedDay']);
@@ -388,7 +408,7 @@ class _HomePageStartState extends State<HomePageStart> {
                   role: initialMessage?.data['role'],
                   classes: classes)));
     } else if (initialMessage?.data['category'] == 'birthday') {
-      return buildClubPage(club, 1);
+      return buildClubPage(club, 1, ccRole);
     } else if (initialMessage?.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(initialMessage?.data['focusedDay']);
@@ -404,9 +424,9 @@ class _HomePageStartState extends State<HomePageStart> {
                     role: role,
                     classes: classes,
                   )));
-      return buildClubPage(club, 1);
+      return buildClubPage(club, 1, ccRole);
     }
-    return buildClubPage(club, 0);
+    return buildClubPage(club, 0, ccRole);
   }
 
   @override
@@ -443,7 +463,9 @@ class _HomePageStartState extends State<HomePageStart> {
           );
         } else {
           email = snapshot.data ?? '';
-          if (email == '') {
+          if (email == '' && widget.cc == 'yes') {
+            return buildClubPage(club, 0, ccRole);
+          } else if (email == '') {
             return const Login();
           } else {
             return FutureBuilder<void>(
@@ -485,7 +507,7 @@ class _HomePageStartState extends State<HomePageStart> {
                     ),
                   );
                 } else if (terminated == false) {
-                  return buildClubPage(club, 0);
+                  return buildClubPage(club, 0, ccRole);
                 } else {
                   return handleMessageFromTerminatedState();
                 }

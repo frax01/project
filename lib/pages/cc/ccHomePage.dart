@@ -10,16 +10,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
 import 'ccCreazioneGironi.dart';
+import 'package:club/pages/main/login.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage({
     super.key,
     this.selectedIndex = 0,
     this.club,
+    this.ccRole,
   });
 
   final int selectedIndex;
   final String? club;
+  final String? ccRole;
 
   @override
   State<CCHomePage> createState() => _CCHomePageState();
@@ -38,7 +41,7 @@ class _CCHomePageState extends State<CCHomePage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: const CCProgramma(),
+        child: CCProgramma(ccRole: widget.ccRole ?? ''),
       ),
       PopScope(
         onPopInvoked: (_) {
@@ -50,7 +53,7 @@ class _CCHomePageState extends State<CCHomePage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: const CCCalendario(),
+        child: CCCalendario(ccRole: widget.ccRole ?? ''),
       ),
       PopScope(
         onPopInvoked: (_) {
@@ -95,16 +98,17 @@ class _CCHomePageState extends State<CCHomePage> {
   Future<void> _updateClub() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('cc', 'no');
-    restartApp(context, prefs.getString('club') ?? '', prefs.getString('cc') ?? '');
+    restartApp(context, prefs.getString('club') ?? '', prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '');
   }
 
-  void restartApp(BuildContext context, String club, String cc) {
+  void restartApp(BuildContext context, String club, String cc, String ccRole) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
                 club: club,
                 cc: cc,
+                ccRole: ccRole,
               )),
       (Route<dynamic> route) => false,
     );
@@ -117,33 +121,42 @@ class _CCHomePageState extends State<CCHomePage> {
         title: const Text("Champions Club"),
         automaticallyImplyLeading: false,
         actions: [
-          IconButton(
+          widget.ccRole=='staff' ? IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => CcAggiungiSquadre()));
             },
-          ),
-          IconButton(
+          ) : Container(),
+          widget.ccRole=='staff' || widget.ccRole=='tutor' ? IconButton(
             icon: const Icon(Icons.people),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
+                    builder: (context) => CcIscriviSquadre(club: widget.club?? '', ccRole: widget.ccRole?? '')));
             },
-          ),
-          IconButton(
+          ) : Container(),
+          widget.ccRole=='staff' ? IconButton(
             icon: const Icon(Icons.group_work),
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => ccCreazioneGironi()));
             },
-          ),
-          IconButton(
+          ) : Container(),
+          widget.club!='' ? IconButton(
             icon: const Icon(Icons.class_),
             onPressed: () async {
                 await _showConfirmDialog();
               },
-          ),
+          ) 
+          : IconButton(
+            icon: const Icon(Icons.class_),
+            onPressed: () async {
+              final SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('cc', 'no');
+                Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => const Login()));
+                },
+          )
         ],
         //leading: Builder(
         //  builder: (BuildContext context) {

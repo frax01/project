@@ -192,13 +192,16 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  void restartApp(BuildContext context, String club) {
+  void restartApp(BuildContext context, String club) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String ccRole = prefs.getString('ccRole') ?? '';
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
                 club: club,
                 cc: 'no',
+                ccRole: ccRole,
               )),
       (Route<dynamic> route) => false,
     );

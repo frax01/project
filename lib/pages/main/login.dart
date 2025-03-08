@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
 import 'package:flutter/gestures.dart';
+import 'package:club/pages/club/accessoCC.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -373,6 +374,38 @@ class _LoginState extends State<Login> {
                             ),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const AccessoCC(email: ''))),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(255, 25, 84, 132),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'images/logo_champions_bianco.png',
+                                      width: 30,
+                                      height: 30,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      'Champions Club 2025',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                  ]
+                                )
+                              )
+                            )
+                          ],
+                        )
                       ),
                       const SizedBox(height: 10),
                       TextButton(

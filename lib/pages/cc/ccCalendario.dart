@@ -8,7 +8,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
     super.key,
+    required this.ccRole,
   });
+
+  final String ccRole;
 
   @override
   State<CCCalendario> createState() => _CCCalendarioState();
@@ -607,6 +610,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                             codice: partita[
                                                                     'codice'] ??
                                                                 '',
+                                                            ccRole: widget.ccRole,
                                                           ),
                                                         ),
                                                       );
@@ -764,7 +768,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                 ],
                               );
                             }).toList(),
-                            _selectedSegment == 'Ottavi'
+                            _selectedSegment == 'Ottavi' && widget.ccRole=='staff'
                                 ? Center(
                                     child: ElevatedButton(
                                     onPressed: () {
@@ -772,7 +776,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                     },
                                     child: const Text('Pulisci Ottavi'),
                                   ))
-                                : _selectedSegment == 'Quarti'
+                                : _selectedSegment == 'Quarti' && widget.ccRole=='staff'
                                     ? Center(
                                         child: ElevatedButton(
                                         onPressed: () {
@@ -780,7 +784,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                         },
                                         child: const Text('Pulisci Quarti'),
                                       ))
-                                    : _selectedSegment == 'Semifinali'
+                                    : _selectedSegment == 'Semifinali' && widget.ccRole=='staff'
                                         ? Center(
                                             child: ElevatedButton(
                                             onPressed: () {
@@ -789,7 +793,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                             child: const Text(
                                                 'Pulisci Semifinali'),
                                           ))
-                                        : _selectedSegment == 'Finali'
+                                        : _selectedSegment == 'Finali' && widget.ccRole=='staff'
                                             ? Center(
                                                 child: ElevatedButton(
                                                 onPressed: () {
@@ -808,7 +812,7 @@ class _CCCalendarioState extends State<CCCalendario> {
         floatingActionButton:
             //_selectedSegment == 'Gironi' || _selectedSegment == 'Ottavi'
             //    ? 
-                FloatingActionButton(
+                widget.ccRole=='staff' ? FloatingActionButton(
                     onPressed: () {
                       _selectedSegment == 'Gironi'
                           ? Navigator.push(
@@ -828,7 +832,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                     child: const Icon(Icons.add),
-                  ));
+                  ): null);
                 //: null);
   }
 }

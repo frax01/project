@@ -17,6 +17,7 @@ class CCModificaPartita extends StatefulWidget {
   final bool finita;
   final String tipo;
   final String codice;
+  final String ccRole;
 
   CCModificaPartita({
     required this.casa,
@@ -32,6 +33,7 @@ class CCModificaPartita extends StatefulWidget {
     required this.finita,
     required this.tipo,
     required this.codice,
+    required this.ccRole,
   });
 
   @override
@@ -160,7 +162,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         .doc(squadra)
         .get();
     List<dynamic> giocatori = snapshot['giocatori'];
-    return giocatori.map((giocatore) => giocatore['nome'].toString()).toList();
+    return giocatori
+        .map((giocatore) => '${giocatore['maglia']} ${giocatore['nome']}')
+        .toList();
   }
 
   @override
@@ -891,9 +895,14 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         children: [
                           Column(
                             children: [
-                              widget.logocasa.isNotEmpty ?
-                              Image.network(widget.logocasa, width: 90, height: 90)
-                              : IconButton(icon: const FaIcon(FontAwesomeIcons.shieldHalved), onPressed: () {},),
+                              widget.logocasa.isNotEmpty
+                                  ? Image.network(widget.logocasa,
+                                      width: 90, height: 90)
+                                  : IconButton(
+                                      icon: const FaIcon(
+                                          FontAwesomeIcons.shieldHalved),
+                                      onPressed: () {},
+                                    ),
                               const SizedBox(height: 8),
                               Text(widget.casa,
                                   style: const TextStyle(fontSize: 22)),
@@ -933,9 +942,14 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           const SizedBox(width: 4),
                           Column(
                             children: [
-                              widget.logofuori.isNotEmpty ?
-                              Image.network(widget.logofuori, width: 90, height: 90)
-                              : IconButton(icon: const FaIcon(FontAwesomeIcons.shieldHalved), onPressed: () {},),
+                              widget.logofuori.isNotEmpty
+                                  ? Image.network(widget.logofuori,
+                                      width: 90, height: 90)
+                                  : IconButton(
+                                      icon: const FaIcon(
+                                          FontAwesomeIcons.shieldHalved),
+                                      onPressed: () {},
+                                    ),
                               const SizedBox(height: 8),
                               Text(widget.fuori,
                                   style: const TextStyle(fontSize: 22)),
@@ -943,181 +957,198 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           ),
                         ])),
                 const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      widget.casa != '' && widget.fuori != ''
-                          ? Expanded(
-                              child: ElevatedButton(
-                                onPressed: !iniziata
-                                    ? () {
-                                        setState(() {
-                                          iniziata = true;
-                                          if (finita &&
-                                              widget.tipo == 'girone') {
-                                            _updateGironiReverse();
+                widget.ccRole == 'staff'
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            widget.casa != '' && widget.fuori != ''
+                                ? Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: !iniziata
+                                          ? () {
+                                              setState(() {
+                                                iniziata = true;
+                                                if (finita &&
+                                                    widget.tipo == 'girone') {
+                                                  _updateGironiReverse();
+                                                }
+                                                finita = false;
+                                                widget.tipo == 'girone'
+                                                    ? FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteGironi')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': true,
+                                                        'finita': false,
+                                                      })
+                                                    : widget.tipo == 'ottavi'
+                                                        ? removePartite(
+                                                            'Ottavi',
+                                                            widget.codice)
+                                                        : widget.tipo ==
+                                                                'quarti'
+                                                            ? removePartite(
+                                                                'Quarti',
+                                                                widget.codice)
+                                                            : widget.tipo ==
+                                                                    'semifinali'
+                                                                ? removePartite(
+                                                                    'Semifinali',
+                                                                    widget
+                                                                        .codice)
+                                                                : removePartite(
+                                                                    'Finali',
+                                                                    widget
+                                                                        .codice);
+                                              });
+                                            }
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: iniziata
+                                            ? Colors.grey
+                                            : const Color.fromARGB(
+                                                255, 16, 108, 47),
+                                      ),
+                                      child: const Text("Inizio partita"),
+                                    ),
+                                  )
+                                : Container(),
+                            const SizedBox(width: 10),
+                            golFuori == golCasa &&
+                                    widget.tipo != 'girone' &&
+                                    iniziata
+                                ? ElevatedButton(
+                                    onPressed: !boolRigori
+                                        ? () {
+                                            setState(() {
+                                              boolRigori = true;
+                                              for (int i = 0; i < 5; i++) {
+                                                rigoriCasa.add('non tirato');
+                                              }
+                                              for (int i = 0; i < 5; i++) {
+                                                rigoriFuori.add('non tirato');
+                                              }
+                                              FirebaseFirestore.instance
+                                                  .collection(
+                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                                  .doc(widget.codice)
+                                                  .update({
+                                                'boolRigori': true,
+                                                'rigoriCasa': rigoriCasa,
+                                                'rigoriFuori': rigoriFuori,
+                                              });
+                                            });
                                           }
-                                          finita = false;
-                                          widget.tipo == 'girone'
-                                              ? FirebaseFirestore.instance
-                                                  .collection('ccPartiteGironi')
-                                                  .doc(
-                                                      '${widget.casa} VS ${widget.fuori}')
+                                        : () {
+                                            setState(() {
+                                              boolRigori = false;
+                                              rigoriCasa = [];
+                                              rigoriFuori = [];
+                                              FirebaseFirestore.instance
+                                                  .collection(
+                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                                  .doc(widget.codice)
                                                   .update({
-                                                  'iniziata': true,
-                                                  'finita': false,
-                                                })
-                                              : widget.tipo == 'ottavi'
-                                                  ? removePartite(
-                                                      'Ottavi', widget.codice)
-                                                  : widget.tipo == 'quarti'
-                                                      ? removePartite('Quarti',
-                                                          widget.codice)
-                                                      : widget.tipo ==
-                                                              'semifinali'
-                                                          ? removePartite(
-                                                              'Semifinali',
-                                                              widget.codice)
-                                                          : removePartite(
-                                                              'Finali',
-                                                              widget.codice);
-                                        });
-                                      }
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: iniziata
-                                      ? Colors.grey
-                                      : const Color.fromARGB(255, 16, 108, 47),
-                                ),
-                                child: const Text("Inizio partita"),
-                              ),
-                            )
-                          : Container(),
-                      const SizedBox(width: 10),
-                      golFuori == golCasa && widget.tipo != 'girone' && iniziata
-                          ? ElevatedButton(
-                              onPressed: !boolRigori
-                                  ? () {
-                                      setState(() {
-                                        boolRigori = true;
-                                        for (int i = 0; i < 5; i++) {
-                                          rigoriCasa.add('non tirato');
-                                        }
-                                        for (int i = 0; i < 5; i++) {
-                                          rigoriFuori.add('non tirato');
-                                        }
-                                        FirebaseFirestore.instance
-                                            .collection(
-                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                            .doc(widget.codice)
-                                            .update({
-                                          'boolRigori': true,
-                                          'rigoriCasa': rigoriCasa,
-                                          'rigoriFuori': rigoriFuori,
-                                        });
-                                      });
-                                    }
-                                  : () {
-                                      setState(() {
-                                        boolRigori = false;
-                                        rigoriCasa = [];
-                                        rigoriFuori = [];
-                                        FirebaseFirestore.instance
-                                            .collection(
-                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                            .doc(widget.codice)
-                                            .update({
-                                          'boolRigori': false,
-                                          'rigoriCasa': [],
-                                          'rigoriFuori': [],
-                                        });
-                                      });
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: boolRigori && iniziata
-                                    ? const Color.fromARGB(255, 150, 9, 9)
-                                    : const Color.fromARGB(255, 25, 84, 132),
-                              ),
-                              child: const Text("R"),
-                            )
-                          : Container(),
-                      const SizedBox(width: 10),
-                      widget.casa != '' && widget.fuori != ''
-                          ? Expanded(
-                              child: ElevatedButton(
-                                onPressed: iniziata
-                                    ? () {
-                                        setState(() {
-                                          golFuori != golCasa &&
-                                                  widget.tipo != 'girone'
-                                              ? iniziata = false
-                                              : null;
-                                          golFuori != golCasa &&
-                                                  widget.tipo != 'girone'
-                                              ? finita = true
-                                              : null;
-                                          golFuori != golCasa &&
-                                                  widget.tipo != 'girone'
-                                              ? boolRigori = false
-                                              : null;
-                                          widget.tipo == 'girone'
-                                              ? FirebaseFirestore.instance
-                                                  .collection('ccPartiteGironi')
-                                                  .doc(
-                                                      '${widget.casa} VS ${widget.fuori}')
-                                                  .update({
-                                                  'iniziata': false,
-                                                  'finita': true,
-                                                })
-                                              : widget.tipo == 'ottavi'
-                                                  ? updatePartite(
-                                                      'Ottavi',
-                                                      widget.codice,
-                                                      marcatori,
-                                                      rigoriCasa,
-                                                      rigoriFuori)
-                                                  : widget.tipo == 'quarti'
-                                                      ? updatePartite(
-                                                          'Quarti',
-                                                          widget.codice,
-                                                          marcatori,
-                                                          rigoriCasa,
-                                                          rigoriFuori)
-                                                      : widget.tipo ==
-                                                              'semifinali'
-                                                          ? updatePartite(
-                                                              'Semifinali',
-                                                              widget.codice,
-                                                              marcatori,
-                                                              rigoriCasa,
-                                                              rigoriFuori)
-                                                          : updatePartite(
-                                                              'Finali',
-                                                              widget.codice,
-                                                              marcatori,
-                                                              rigoriCasa,
-                                                              rigoriFuori);
-                                        });
-                                        widget.tipo == 'girone'
-                                            ? _updateGironi()
-                                            : null;
-                                      }
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: !iniziata
-                                      ? Colors.grey
-                                      : const Color.fromARGB(255, 150, 9, 9),
-                                ),
-                                child: const Text("Fine partita"),
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  ),
-                ),
-                iniziata
+                                                'boolRigori': false,
+                                                'rigoriCasa': [],
+                                                'rigoriFuori': [],
+                                              });
+                                            });
+                                          },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: boolRigori && iniziata
+                                          ? const Color.fromARGB(255, 150, 9, 9)
+                                          : const Color.fromARGB(
+                                              255, 25, 84, 132),
+                                    ),
+                                    child: const Text("R"),
+                                  )
+                                : Container(),
+                            const SizedBox(width: 10),
+                            widget.casa != '' && widget.fuori != ''
+                                ? Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: iniziata
+                                          ? () {
+                                              setState(() {
+                                                golFuori != golCasa &&
+                                                        widget.tipo != 'girone'
+                                                    ? iniziata = false
+                                                    : null;
+                                                golFuori != golCasa &&
+                                                        widget.tipo != 'girone'
+                                                    ? finita = true
+                                                    : null;
+                                                golFuori != golCasa &&
+                                                        widget.tipo != 'girone'
+                                                    ? boolRigori = false
+                                                    : null;
+                                                widget.tipo == 'girone'
+                                                    ? FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartiteGironi')
+                                                        .doc(
+                                                            '${widget.casa} VS ${widget.fuori}')
+                                                        .update({
+                                                        'iniziata': false,
+                                                        'finita': true,
+                                                      })
+                                                    : widget.tipo == 'ottavi'
+                                                        ? updatePartite(
+                                                            'Ottavi',
+                                                            widget.codice,
+                                                            marcatori,
+                                                            rigoriCasa,
+                                                            rigoriFuori)
+                                                        : widget.tipo ==
+                                                                'quarti'
+                                                            ? updatePartite(
+                                                                'Quarti',
+                                                                widget.codice,
+                                                                marcatori,
+                                                                rigoriCasa,
+                                                                rigoriFuori)
+                                                            : widget.tipo ==
+                                                                    'semifinali'
+                                                                ? updatePartite(
+                                                                    'Semifinali',
+                                                                    widget
+                                                                        .codice,
+                                                                    marcatori,
+                                                                    rigoriCasa,
+                                                                    rigoriFuori)
+                                                                : updatePartite(
+                                                                    'Finali',
+                                                                    widget
+                                                                        .codice,
+                                                                    marcatori,
+                                                                    rigoriCasa,
+                                                                    rigoriFuori);
+                                              });
+                                              widget.tipo == 'girone'
+                                                  ? _updateGironi()
+                                                  : null;
+                                            }
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: !iniziata
+                                            ? Colors.grey
+                                            : const Color.fromARGB(
+                                                255, 150, 9, 9),
+                                      ),
+                                      child: const Text("Fine partita"),
+                                    ),
+                                  )
+                                : Container(),
+                          ],
+                        ),
+                      )
+                    : Container(),
+                iniziata && widget.ccRole=='staff'
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
                         child: Row(
@@ -1261,13 +1292,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                     );
                                   },
                                 ),
+                                const SizedBox(height: 16),
                               ],
                             ),
                           ],
                         ),
                       )
                     : Container(),
-                const SizedBox(height: 16),
                 !iniziata && !finita
                     ? Container()
                     : Center(
@@ -1304,7 +1335,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                     }
                                     return IconButton(
                                         icon: Icon(Icons.circle, color: color),
-                                        onPressed: iniziata
+                                        onPressed: iniziata && widget.ccRole=='staff'
                                             ? () {
                                                 _showRigoreDialog(context,
                                                     'casa', index, widget.tipo);
@@ -1330,42 +1361,30 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                       color = Colors.grey;
                                     }
                                     return IconButton(
-                                      icon: Icon(Icons.circle, color: color),
-                                      onPressed: iniziata ? () {
-                                        _showRigoreDialog(context, 'fuori',
-                                            index, widget.tipo);
-                                      } : null
-                                    );
+                                        icon: Icon(Icons.circle, color: color),
+                                        onPressed: iniziata && widget.ccRole=='staff'
+                                            ? () {
+                                                _showRigoreDialog(
+                                                    context,
+                                                    'fuori',
+                                                    index,
+                                                    widget.tipo);
+                                              }
+                                            : null);
                                   }),
                                 ),
                               ),
                             ],
                           ),
-                          iniziata ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () async {
-                                  rigoriCasa.add('non tirato');
-                                  rigoriFuori.add('non tirato');
-                                  await FirebaseFirestore.instance
-                                      .collection(
-                                          'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                      .doc(widget.codice)
-                                      .update({
-                                    'rigoriCasa': rigoriCasa,
-                                    'rigoriFuori': rigoriFuori,
-                                  });
-                                  setState(() {});
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.remove),
-                                onPressed: rigoriCasa.length > 5
-                                    ? () async {
-                                        rigoriCasa.removeLast();
-                                        rigoriFuori.removeLast();
+                          iniziata
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () async {
+                                        rigoriCasa.add('non tirato');
+                                        rigoriFuori.add('non tirato');
                                         await FirebaseFirestore.instance
                                             .collection(
                                                 'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
@@ -1375,11 +1394,29 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                           'rigoriFuori': rigoriFuori,
                                         });
                                         setState(() {});
-                                      }
-                                    : null,
-                              ),
-                            ],
-                          ) : Container()
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed: rigoriCasa.length > 5
+                                          ? () async {
+                                              rigoriCasa.removeLast();
+                                              rigoriFuori.removeLast();
+                                              await FirebaseFirestore.instance
+                                                  .collection(
+                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                                  .doc(widget.codice)
+                                                  .update({
+                                                'rigoriCasa': rigoriCasa,
+                                                'rigoriFuori': rigoriFuori,
+                                              });
+                                              setState(() {});
+                                            }
+                                          : null,
+                                    ),
+                                  ],
+                                )
+                              : Container()
                         ],
                       )
                     : Container(),

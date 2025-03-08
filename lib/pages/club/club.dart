@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:club/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'accessoCC.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -187,7 +188,7 @@ class _ClubPageState extends State<ClubPage> {
     ];
   }
 
-  Future<void> _showConfirmDialog() async {
+  Future<void> _showConfirmDialog(String ccRole) async {
     final bool confirm = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -214,23 +215,27 @@ class _ClubPageState extends State<ClubPage> {
         ) ??
         false;
     if (confirm) {
-      _updateCC();
+      _updateCC(ccRole);
     }
   }
 
-  Future<void> _updateCC() async {
+  Future<void> _updateCC(String ccRole) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-    restartApp(context, prefs.getString('club')?? '', prefs.getString('cc')?? '');
+    await prefs.setString('cc',
+        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+    await prefs.setString('ccRole', ccRole);
+    restartApp(context, prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '');
   }
 
-  void restartApp(BuildContext context, String club, String cc) {
+  void restartApp(BuildContext context, String club, String cc, String ccRole) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
                 club: club,
                 cc: cc,
+                ccRole: ccRole,
               )),
       (Route<dynamic> route) => false,
     );
@@ -273,13 +278,29 @@ class _ClubPageState extends State<ClubPage> {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.emoji_events),
-                  onPressed: () async {
-                    await _showConfirmDialog();
-                    //Navigator.of(context).push(MaterialPageRoute(
-                    //    builder: (context) => CCHomePage()));
-                  },
-                ),
+                    icon: const Icon(Icons.emoji_events),
+                    onPressed: () async {
+                      //Navigator.of(context).push(MaterialPageRoute(
+                      //    builder: (context) => CCHomePage()));
+                      final querySnapshot = await FirebaseFirestore.instance
+                          .collection('user')
+                          .where('email', isEqualTo: widget.email)
+                          .get();
+
+                      if (querySnapshot.docs.isNotEmpty) {
+                        for (var doc in querySnapshot.docs) {
+                          if (doc.data()['ccRole'] == null ||
+                              doc.data()['ccRole'] == '' || doc.data()['ccRole'] == 'user') {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => AccessoCC(
+                                      email: widget.email,
+                                    )));
+                          } else {
+                            await _showConfirmDialog(doc.data()['ccRole']);
+                          }
+                        }
+                      }
+                    }),
               ]),
           body: PageTransitionSwitcher(
             transitionBuilder: (Widget child, Animation<double> animation,

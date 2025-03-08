@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import 'ccProgrammaCompleto.dart';
 
 class CCProgramma extends StatefulWidget {
-  const CCProgramma({super.key});
+  const CCProgramma({super.key, required this.ccRole});
+
+  final String ccRole;
 
   @override
   State<CCProgramma> createState() => _CCProgrammaState();
@@ -163,7 +165,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                 context,
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                        CCProgrammaCompleto())),
+                                                        CCProgrammaCompleto(ccRole: widget.ccRole))),
                                             child: const Text(
                                                 "Programma completo"))
                                       ])
@@ -250,7 +252,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                           maxLines: 1,
                                         ),
                                       ),
-                                      IconButton(
+                                      widget.ccRole=='staff' ? IconButton(
                                           onPressed: () {
                                             Navigator.push(
                                               context,
@@ -276,7 +278,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                             );
                                           },
                                           icon:
-                                              const Icon(Icons.edit, size: 20)),
+                                              const Icon(Icons.edit, size: 20)) : Container(),
                                     ]),
                                 children: [
                                   programma['squadre'].isNotEmpty ||
@@ -361,7 +363,12 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                 )
                                               : Container(),
                                               programma['altro'] != ''
-                                                  ? Text(
+                                                  ? Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          const SizedBox(height: 8),
+                                                          const Text("Info", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold,),),
+                                                          Text(
                                                       programma['altro'],
                                                       style: const TextStyle(
                                                         fontSize: 18,
@@ -369,6 +376,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                             FontStyle.italic,
                                                       ),
                                                     )
+                                                        ])
                                                   : Container(),
                                             ],
                                           ),
@@ -394,7 +402,7 @@ class _CCProgrammaState extends State<CCProgramma> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: widget.ccRole=='staff' ? FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
@@ -405,7 +413,7 @@ class _CCProgrammaState extends State<CCProgramma> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         child: const Icon(Icons.add),
-      ),
+      ) : null,
     );
   }
 }

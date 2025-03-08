@@ -124,9 +124,6 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
               .delete();
         }
 
-        print("elem: ${p.casa} VS ${p.fuori}");
-        print("sele: $_selectedSegment");
-
         await FirebaseFirestore.instance
             .collection('ccPartiteGironi')
             .doc('${p.casa} VS ${p.fuori}')
