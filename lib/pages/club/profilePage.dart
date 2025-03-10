@@ -202,6 +202,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 club: club,
                 cc: 'no',
                 ccRole: ccRole,
+                nome: '${widget.name} ${widget.surname}',
               )),
       (Route<dynamic> route) => false,
     );

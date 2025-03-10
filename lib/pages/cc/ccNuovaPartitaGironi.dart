@@ -49,6 +49,7 @@ class Partita {
 
 class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
   List<String> squadre = [];
+  List<String> staff = [];
   List<String> gironi = [];
   late String _selectedSegment;
   late Future<void> _futureGironi;
@@ -64,6 +65,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
 
   Future<void> _getSquadre() async {
     squadre = [''];
+    staff = [''];
     turni = List.generate(3, (_) => List.generate(2, (_) => Partita()));
     _timeControllers = List.generate(
         3, (_) => List.generate(2, (_) => TextEditingController()));
@@ -73,11 +75,20 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
         .collection('ccGironi')
         .doc(_selectedSegment)
         .get();
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').get();
+
     setState(() {
       squadre = [''];
       if (docSnapshot.exists) {
         List<dynamic> squadreList = docSnapshot['squadre'];
         squadre.addAll(squadreList.cast<String>());
+      }
+
+      if(snapshot.docs.isNotEmpty){
+        for (var doc in snapshot.docs) {
+          staff.add(doc['nome']);
+        }
       }
     });
 
@@ -359,36 +370,58 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                           ),
                           const SizedBox(height: 8),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  initialValue: turni[turno][partita].arbitro,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      turni[turno][partita].arbitro = value;
-                                    });
-                                  },
-                                  decoration: getInputDecoration('Arbitro'),
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: turni[turno][partita].arbitro,
+                                    items: staff.map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        turni[turno][partita].arbitro =
+                                            newValue;
+                                      });
+                                    },
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Obbligatorio';
+                                      }
+                                      return null;
+                                    },
+                                    decoration: getInputDecoration('Arbitro'),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextFormField(
-                                  textCapitalization: TextCapitalization.sentences,
-                                  initialValue: turni[turno][partita].refertista,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      turni[turno][partita].refertista = value;
-                                    });
-                                  },
-                                  decoration: getInputDecoration('Refertista'),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: turni[turno][partita].refertista,
+                                    items: staff.map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        turni[turno][partita].refertista =
+                                            newValue;
+                                      });
+                                    },
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Obbligatorio';
+                                      }
+                                      return null;
+                                    },
+                                    decoration: getInputDecoration('Refertista'),
+                                  ),
                                 ),
-                              ),
-                            ]
-                          ),
+                              ]),
                           const SizedBox(height: 30),
                         ],
                       ],

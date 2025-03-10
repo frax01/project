@@ -52,85 +52,92 @@ class _CCProgrammaState extends State<CCProgramma> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            children: [
-              Center(
-                child: Image.asset(
-                  'images/champions.jpg',
-                  fit: BoxFit.contain,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Stack(
+              children: [
+                Center(
+                  child: Image.asset(
+                    'images/champions.jpg',
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              Positioned(
-                left: 25.0,
-                top: 40.0,
-                child: Image.asset(
-                  'images/logo_champions_bianco.png',
-                  width: 150,
-                  height: 150,
+                Positioned(
+                  left: 25.0,
+                  top: 40.0,
+                  child: Image.asset(
+                    'images/logo_champions_bianco.png',
+                    width: 150,
+                    height: 150,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('ccProgramma')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Errore: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('Nessun programma trovato'));
-                }
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('ccProgramma')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SliverFillRemaining(
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(child: Text('Errore: ${snapshot.error}')),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return SliverFillRemaining(
+                  child: const Center(child: Text('Nessun programma trovato')),
+                );
+              }
 
-                final programmi = snapshot.data!.docs;
-                programmi.sort((a, b) {
-                  int dateComparison = a['data'].compareTo(b['data']);
-                  if (dateComparison != 0) return dateComparison;
-                  return a['orario'].compareTo(b['orario']);
-                });
+              final programmi = snapshot.data!.docs;
+              programmi.sort((a, b) {
+                int dateComparison = a['data'].compareTo(b['data']);
+                if (dateComparison != 0) return dateComparison;
+                return a['orario'].compareTo(b['orario']);
+              });
 
-                Map<String, List<QueryDocumentSnapshot>> groupedProgrammi = {};
-                DateTime now = DateTime.now();//.add(const Duration(hours: 1));
-                QueryDocumentSnapshot? lastBeforeNow;
+              Map<String, List<QueryDocumentSnapshot>> groupedProgrammi = {};
+              DateTime now = DateTime.now(); //.add(const Duration(hours: 1));
+              QueryDocumentSnapshot? lastBeforeNow;
 
-                for (var programma in programmi) {
-                  String data = programma['data'];
-                  DateTime programmaDate = DateFormat('dd/MM/yyyy').parse(data);
-                  DateTime programmaTime =
-                      DateFormat('HH:mm').parse(programma['orario']);
-                  DateTime programmaDateTime = DateTime(
-                    programmaDate.year,
-                    programmaDate.month,
-                    programmaDate.day,
-                    programmaTime.hour,
-                    programmaTime.minute,
-                  );
+              for (var programma in programmi) {
+                String data = programma['data'];
+                DateTime programmaDate = DateFormat('dd/MM/yyyy').parse(data);
+                DateTime programmaTime =
+                    DateFormat('HH:mm').parse(programma['orario']);
+                DateTime programmaDateTime = DateTime(
+                  programmaDate.year,
+                  programmaDate.month,
+                  programmaDate.day,
+                  programmaTime.hour,
+                  programmaTime.minute,
+                );
 
-                  if (programmaDateTime.isAfter(now)) {
-                    if (lastBeforeNow != null) {
-                      if (!groupedProgrammi.containsKey(data)) {
-                        groupedProgrammi[data] = [];
-                      }
-                      groupedProgrammi[data]!.add(lastBeforeNow);
-                      lastBeforeNow = null;
-                    }
+                if (programmaDateTime.isAfter(now)) {
+                  if (lastBeforeNow != null) {
                     if (!groupedProgrammi.containsKey(data)) {
                       groupedProgrammi[data] = [];
                     }
-                    groupedProgrammi[data]!.add(programma);
-                  } else {
-                    lastBeforeNow = programma;
+                    groupedProgrammi[data]!.add(lastBeforeNow);
+                    lastBeforeNow = null;
                   }
+                  if (!groupedProgrammi.containsKey(data)) {
+                    groupedProgrammi[data] = [];
+                  }
+                  groupedProgrammi[data]!.add(programma);
+                } else {
+                  lastBeforeNow = programma;
                 }
+              }
 
-                return ListView.builder(
-                  itemCount: groupedProgrammi.keys.length,
-                  itemBuilder: (context, index) {
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
                     String data = groupedProgrammi.keys.elementAt(index);
                     List<QueryDocumentSnapshot> programmiPerData =
                         groupedProgrammi[data]!;
@@ -139,51 +146,59 @@ class _CCProgrammaState extends State<CCProgramma> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                            padding: const EdgeInsets.fromLTRB(16.0, 12, 16, 6),
-                            child: index == 0
-                                ? Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                        Text(
-                                          data == '23/04/2025'
-                                              ? 'Mercoledì 23'
-                                              : data == '24/04/2025'
-                                                  ? 'Giovedì 24'
-                                                  : data == '25/04/2025'
-                                                      ? 'Venerdì 25'
-                                                      : data == '26/04/2025'
-                                                          ? 'Sabato 26'
-                                                          : 'Domenica 27',
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                            onPressed: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        CCProgrammaCompleto(ccRole: widget.ccRole))),
-                                            child: const Text(
-                                                "Programma completo"))
-                                      ])
-                                : Text(
-                                    data == '23/04/2025'
-                                        ? 'Giovedì 23'
-                                        : data == '24/04/2025'
-                                            ? 'Giovedì 24'
-                                            : data == '25/04/2025'
-                                                ? 'Venerdì 25'
-                                                : data == '26/04/2025'
-                                                    ? 'Sabato 26'
-                                                    : 'Domenica 27',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                          padding: const EdgeInsets.fromLTRB(16.0, 12, 16, 6),
+                          child: index == 0
+                              ? Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      data == '23/04/2025'
+                                          ? 'Mercoledì 23'
+                                          : data == '24/04/2025'
+                                              ? 'Giovedì 24'
+                                              : data == '25/04/2025'
+                                                  ? 'Venerdì 25'
+                                                  : data == '26/04/2025'
+                                                      ? 'Sabato 26'
+                                                      : 'Domenica 27',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  )),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CCProgrammaCompleto(
+                                                  ccRole: widget.ccRole),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Programma completo",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  data == '23/04/2025'
+                                      ? 'Giovedì 23'
+                                      : data == '24/04/2025'
+                                          ? 'Giovedì 24'
+                                          : data == '25/04/2025'
+                                              ? 'Venerdì 25'
+                                              : data == '26/04/2025'
+                                                  ? 'Sabato 26'
+                                                  : 'Domenica 27',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
                         ...programmiPerData.map((programma) {
                           return Card(
                             margin:
@@ -201,85 +216,98 @@ class _CCProgrammaState extends State<CCProgramma> {
                                 collapsedIconColor: Colors.black,
                                 iconColor: Colors.black,
                                 title: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      if (programma['categoria'] == 'pasto')
-                                        Row(children: [
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (programma['categoria'] == 'pasto')
+                                      Row(
+                                        children: [
                                           Image.asset(
                                             'images/spaghetti.png',
-                                            width: 30,
-                                            height: 30,
+                                            width: 25,
+                                            height: 25,
                                           ),
                                           const SizedBox(width: 8),
-                                        ]),
-                                      if (programma['categoria'] == 'partita')
-                                        Row(children: [
+                                        ],
+                                      ),
+                                    if (programma['categoria'] == 'partita')
+                                      Row(
+                                        children: [
                                           Image.asset(
                                             'images/calcio.png',
-                                            width: 30,
-                                            height: 30,
+                                            width: 25,
+                                            height: 25,
                                           ),
                                           const SizedBox(width: 8),
-                                        ]),
-                                      if (programma['categoria'] == 'show')
-                                        Row(children: [
+                                        ],
+                                      ),
+                                    if (programma['categoria'] == 'show')
+                                      Row(
+                                        children: [
                                           Image.asset(
                                             'images/show.png',
-                                            width: 30,
-                                            height: 30,
+                                            width: 25,
+                                            height: 25,
                                           ),
                                           const SizedBox(width: 8),
-                                        ]),
-                                      if (programma['categoria'] == 'altro')
-                                        Row(children: [
+                                        ],
+                                      ),
+                                    if (programma['categoria'] == 'altro')
+                                      Row(
+                                        children: [
                                           Image.asset(
                                             'images/fuoco.png',
-                                            width: 30,
-                                            height: 30,
+                                            width: 25,
+                                            height: 25,
                                           ),
                                           const SizedBox(width: 8),
-                                        ]),
-                                      Expanded(
-                                        child: AutoSizeText(
-                                          '${programma['orario']} ${programma['titolo']}',
-                                          style: const TextStyle(
-                                            fontSize: 19,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          minFontSize: 19,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
+                                        ],
                                       ),
-                                      widget.ccRole=='staff' ? IconButton(
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    CCNuovoProgramma(
-                                                  programmaId: programma.id,
-                                                  data: programma['data'],
-                                                  orario: programma['orario'],
-                                                  titolo: programma['titolo'],
-                                                  squadre: programma['squadre'],
-                                                  codiceSquadre: programma[
-                                                      'codiceSquadre'],
-                                                  incarico:
-                                                      programma['incarico'],
-                                                  codiceIncarico: programma[
-                                                      'codiceIncarico'],
-                                                  altro: programma['altro'],
-                                                  categoria:
-                                                      programma['categoria'],
+                                    Expanded(
+                                      child: AutoSizeText(
+                                        '${programma['orario']} ${programma['titolo']}',
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        minFontSize: 17,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    widget.ccRole == 'staff'
+                                        ? IconButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      CCNuovoProgramma(
+                                                    programmaId: programma.id,
+                                                    data: programma['data'],
+                                                    orario: programma['orario'],
+                                                    titolo: programma['titolo'],
+                                                    squadre:
+                                                        programma['squadre'],
+                                                    codiceSquadre: programma[
+                                                        'codiceSquadre'],
+                                                    incarico:
+                                                        programma['incarico'],
+                                                    codiceIncarico: programma[
+                                                        'codiceIncarico'],
+                                                    altro: programma['altro'],
+                                                    categoria:
+                                                        programma['categoria'],
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                          },
-                                          icon:
-                                              const Icon(Icons.edit, size: 20)) : Container(),
-                                    ]),
+                                              );
+                                            },
+                                            icon: const Icon(Icons.edit,
+                                                size: 20),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
                                 children: [
                                   programma['squadre'].isNotEmpty ||
                                           programma['codiceSquadre']
@@ -309,7 +337,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                 .connectionState ==
                                                             ConnectionState
                                                                 .waiting) {
-                                                          return const CircularProgressIndicator();
+                                                          return const Center(child:CircularProgressIndicator());
                                                         } else if (snapshot
                                                             .hasError) {
                                                           return Text(
@@ -331,52 +359,103 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                             style:
                                                                 const TextStyle(
                                                                     fontSize:
-                                                                        18),
+                                                                        15),
                                                           );
                                                         }
                                                       },
                                                     )
                                                   : Container(),
-                                              programma['incarico'].isNotEmpty || programma['codiceIncarico'].isNotEmpty
-                                              ? FutureBuilder<List<String>>(
-                                                  future: _getNomiSquadre(List<String>.from(programma['codiceIncarico'])),
-                                                  builder: (context, snapshot) {
-                                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                                      return const CircularProgressIndicator();
-                                                    } else if (snapshot.hasError) {
-                                                      return Text('Errore: ${snapshot.error}');
-                                                    } else {
-                                                      List<String> squadre = List<String>.from(programma['incarico']);
-                                                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                                                        squadre.addAll(snapshot.data!);
-                                                      }
-                                                      return Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          const SizedBox(height: 8),
-                                                          const Text("Incarico", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold,),),
-                                                          Text(squadre.join(', '), style: const TextStyle(fontSize: 18),)
-                                                        ]
-                                                      );
-                                                    }
-                                                  },
-                                                )
-                                              : Container(),
+                                              programma['incarico']
+                                                          .isNotEmpty ||
+                                                      programma[
+                                                              'codiceIncarico']
+                                                          .isNotEmpty
+                                                  ? FutureBuilder<List<String>>(
+                                                      future: _getNomiSquadre(List<
+                                                              String>.from(
+                                                          programma[
+                                                              'codiceIncarico'])),
+                                                      builder:
+                                                          (context, snapshot) {
+                                                        if (snapshot
+                                                                .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return const Center(child: CircularProgressIndicator());
+                                                        } else if (snapshot
+                                                            .hasError) {
+                                                          return Text(
+                                                              'Errore: ${snapshot.error}');
+                                                        } else {
+                                                          List<String> squadre =
+                                                              List<String>.from(
+                                                                  programma[
+                                                                      'incarico']);
+                                                          if (snapshot
+                                                                  .hasData &&
+                                                              snapshot.data!
+                                                                  .isNotEmpty) {
+                                                            squadre.addAll(
+                                                                snapshot.data!);
+                                                          }
+                                                          return Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const SizedBox(
+                                                                  height: 8),
+                                                              const Text(
+                                                                "Incarico",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 17,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                squadre
+                                                                    .join(', '),
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            15),
+                                                              )
+                                                            ],
+                                                          );
+                                                        }
+                                                      },
+                                                    )
+                                                  : Container(),
                                               programma['altro'] != ''
                                                   ? Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          const SizedBox(height: 8),
-                                                          const Text("Info", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold,),),
-                                                          Text(
-                                                      programma['altro'],
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontStyle:
-                                                            FontStyle.italic,
-                                                      ),
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        const SizedBox(
+                                                            height: 8),
+                                                        const Text(
+                                                          "Info",
+                                                          style: TextStyle(
+                                                            fontSize: 17,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          programma['altro'],
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 15,
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                          ),
+                                                        )
+                                                      ],
                                                     )
-                                                        ])
                                                   : Container(),
                                             ],
                                           ),
@@ -387,7 +466,8 @@ class _CCProgrammaState extends State<CCProgramma> {
                                           child: Text("Nessuna informazione",
                                               style: TextStyle(
                                                   fontSize: 18,
-                                                  fontStyle: FontStyle.italic)))
+                                                  fontStyle:
+                                                      FontStyle.italic))),
                                 ],
                               ),
                             ),
@@ -396,24 +476,28 @@ class _CCProgrammaState extends State<CCProgramma> {
                       ],
                     );
                   },
-                );
-              },
-            ),
+                  childCount: groupedProgrammi.keys.length,
+                ),
+              );
+            },
           ),
         ],
       ),
-      floatingActionButton: widget.ccRole=='staff' ? FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CCNuovoProgramma()),
-          );
-        },
-        shape: const CircleBorder(),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        child: const Icon(Icons.add),
-      ) : null,
+      floatingActionButton: widget.ccRole == 'staff'
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CCNuovoProgramma()),
+                );
+              },
+              shape: const CircleBorder(),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

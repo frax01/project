@@ -75,6 +75,7 @@ class Partita {
 
 class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   List<String> squadre = [];
+  List<String> staff = [];
   List<String> gironi = [];
   late Future<void> _futureGironi;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -88,16 +89,25 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
 
   Future<void> _getSquadre() async {
     squadre = [''];
+    staff = [''];
     turni = List.generate(8, (_) => Partita());
     _timeControllers = List.generate(8, (_) => TextEditingController());
     _campiControllers = List.generate(8, (_) => TextEditingController());
-    final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('ccOttavi').get();
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('ccOttavi').get();
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').get();
+    
     setState(() {
       squadre = [''];
       for (var doc in querySnapshot.docs) {
         String squadra = doc['squadra'];
         squadre.add(squadra);
+      }
+
+      if(snapshot.docs.isNotEmpty){
+        for (var doc in snapshot.docs) {
+          staff.add(doc['nome']);
+        }
       }
     });
 
@@ -269,12 +279,6 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     turni[turno].casa = newValue;
                                   });
                                 },
-                                //validator: (value) {
-                                //  if (value == null || value.isEmpty) {
-                                //    return 'Obbligatorio';
-                                //  }
-                                //  return null;
-                                //},
                                 decoration: getInputDecoration('Casa'),
                               ),
                             ),
@@ -293,12 +297,6 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     turni[turno].fuori = newValue;
                                   });
                                 },
-                                //validator: (value) {
-                                //  if (value == null || value.isEmpty) {
-                                //    return 'Obbligatorio';
-                                //  }
-                                //  return null;
-                                //},
                                 decoration: getInputDecoration('Fuori'),
                               ),
                             ),
@@ -360,28 +358,50 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: TextFormField(
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  initialValue: turni[turno].arbitro,
-                                  onChanged: (value) {
+                                child: DropdownButtonFormField<String>(
+                                  value: turni[turno].arbitro,
+                                  items: staff.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (newValue) {
                                     setState(() {
-                                      turni[turno].arbitro = value;
+                                      turni[turno].arbitro =
+                                          newValue;
                                     });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Obbligatorio';
+                                    }
+                                    return null;
                                   },
                                   decoration: getInputDecoration('Arbitro'),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: TextFormField(
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  initialValue: turni[turno].refertista,
-                                  onChanged: (value) {
+                                child: DropdownButtonFormField<String>(
+                                  value: turni[turno].refertista,
+                                  items: staff.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (newValue) {
                                     setState(() {
-                                      turni[turno].refertista = value;
+                                      turni[turno].refertista =
+                                          newValue;
                                     });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Obbligatorio';
+                                    }
+                                    return null;
                                   },
                                   decoration: getInputDecoration('Refertista'),
                                 ),

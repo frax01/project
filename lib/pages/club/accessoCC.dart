@@ -19,11 +19,12 @@ class _AccessoCCState extends State<AccessoCC> {
   final userPasswordController = TextEditingController();
   final tutorPasswordController = TextEditingController();
   final staffPasswordController = TextEditingController();
+  final staffDataController = TextEditingController();
   final String userPassword = 'utenteCC';
   final String tutorPassword = 'tutorCC';
   final String staffPassword = 'staffCC';
 
-  void restartApp(BuildContext context, String club, String cc, String ccRole) {
+  void restartApp(BuildContext context, String club, String cc, String ccRole, String nome) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -31,6 +32,7 @@ class _AccessoCCState extends State<AccessoCC> {
                 club: club,
                 cc: cc,
                 ccRole: ccRole,
+                nome: nome
               )),
       (Route<dynamic> route) => false,
     );
@@ -52,21 +54,60 @@ class _AccessoCCState extends State<AccessoCC> {
     }
   }
 
-  void _checkPassword(String role, String? newclub) async {
+  void _checkPasswordStaff(
+      String role, String? newclub, String nome, String mood) async {
+    String enteredPassword = staffPasswordController.text;
+    if (mood == 'login') {
+      //QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').where('nome', isEqualTo: nome).get();
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('ccStaff')
+          .doc(nome)
+          .get();
+      if (snapshot.exists) {
+        if (enteredPassword == staffPassword) {
+          _updateUser('staff');
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cc',
+              'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+          await prefs.setString('ccRole', 'staff');
+          await prefs.setString('nome', nome);
+          restartApp(context, prefs.getString('club') ?? '',
+              prefs.getString('cc') ?? '', 'staff', nome);
+        } else {
+          _showErrorDialog();
+        }
+      } else {
+        _showErrorNomeDialog();
+      }
+    } else {
+      if (enteredPassword == staffPassword) {
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance
+            .collection('ccStaff')
+            .doc(nome)
+            .get();
+
+        if (snapshot.exists) {
+          _showErrorNomeEsistenteDialog();
+        } else {
+          await FirebaseFirestore.instance.collection('ccStaff').doc(nome).set({
+            'nome': nome,
+          });
+          _updateUser('staff');
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cc',
+              'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+          await prefs.setString('ccRole', 'staff');
+          restartApp(context, prefs.getString('club') ?? '',
+              prefs.getString('cc') ?? '', 'staff', nome);
+        }
+      } else {
+        _showErrorDialog();
+      }
+    }
+  }
+
+  void _checkPasswordTutor(String role, String? newclub) async {
     String enteredPassword;
-    //if (role == 'user') {
-    //  enteredPassword = userPasswordController.text;
-    //  if (enteredPassword == userPassword) {
-    //    _updateUser('user');
-    //    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    //    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-    //    await prefs.setString('ccRole', 'user');
-    //    restartApp(context, prefs.getString('club') ?? '', prefs.getString('cc') ?? '', 'user');
-    //  } else {
-    //    _showErrorDialog();
-    //  }
-    //} else
-    if (role == 'tutor') {
       print('newclub: $newclub');
       enteredPassword = tutorPasswordController.text;
       if (enteredPassword == tutorPassword) {
@@ -75,25 +116,14 @@ class _AccessoCCState extends State<AccessoCC> {
         await prefs.setString('cc',
             'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
         await prefs.setString('ccRole', 'tutor');
-        restartApp(context, newclub!='' ? newclub ?? '' : prefs.getString('club') ?? '',
-            prefs.getString('cc') ?? '', 'tutor');
+        restartApp(
+            context,
+            newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
+            prefs.getString('cc') ?? '',
+            'tutor', '');
       } else {
         _showErrorDialog();
       }
-    } else if (role == 'staff') {
-      enteredPassword = staffPasswordController.text;
-      if (enteredPassword == staffPassword) {
-        _updateUser('staff');
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cc',
-            'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-        await prefs.setString('ccRole', 'staff');
-        restartApp(context, prefs.getString('club') ?? '',
-            prefs.getString('cc') ?? '', 'staff');
-      } else {
-        _showErrorDialog();
-      }
-    }
   }
 
   void _showErrorDialog() {
@@ -102,6 +132,42 @@ class _AccessoCCState extends State<AccessoCC> {
       builder: (context) => AlertDialog(
         title: const Text('Errore'),
         content: const Text('Password errata. Riprova.'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorNomeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Errore'),
+        content: const Text('Nome errato. Riprova.'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorNomeEsistenteDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Errore'),
+        content: const Text('Nome già inserito. Riprova.'),
         actions: <Widget>[
           TextButton(
             child: const Text('OK'),
@@ -123,7 +189,8 @@ class _AccessoCCState extends State<AccessoCC> {
   List<dynamic> clubs = [''];
 
   Future<void> _retrieveClubs() async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccSquadre').get();
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccSquadre').get();
     if (snapshot.docs.isNotEmpty) {
       for (var doc in snapshot.docs) {
         clubs.add(doc['club']);
@@ -162,7 +229,7 @@ class _AccessoCCState extends State<AccessoCC> {
                         'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
                     await prefs.setString('ccRole', 'user');
                     restartApp(context, prefs.getString('club') ?? '',
-                        prefs.getString('cc') ?? '', 'user');
+                        prefs.getString('cc') ?? '', 'user', '');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: showUserPasswordField
@@ -223,25 +290,41 @@ class _AccessoCCState extends State<AccessoCC> {
             if (showTutorPasswordField)
               Column(
                 children: [
+                  const SizedBox(height: 15),
                   if (oldclub == '')
-                    Row(children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Expanded(
-                        child: DropdownButton<String>(
-                          value: clubs.isEmpty ? null : newclub,
-                          hint: const Text('Seleziona club'),
-                          items: clubs.map((dynamic value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (newValue) {
-                            setState(() {
-                              newclub = newValue!;
-                            });
-                          },
-                        ),
-                      )
+                        //child: Center(
+                        child: DropdownButtonFormField<String>(
+                            value: clubs.isEmpty ? null : newclub,
+                            hint: const Text('Seleziona club'),
+                            items: clubs.map((dynamic value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                newclub = newValue!;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'Club',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black54),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black54),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Color.fromARGB(255, 25, 84, 132)),
+                              ),
+                            )),
+                      ) //)
                     ]),
                   const SizedBox(height: 15),
                   TextField(
@@ -254,7 +337,7 @@ class _AccessoCCState extends State<AccessoCC> {
                   Row(children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPassword('tutor', newclub),
+                        onPressed: () => _checkPasswordTutor('tutor', newclub),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 25, 84, 132),
@@ -288,6 +371,36 @@ class _AccessoCCState extends State<AccessoCC> {
               Column(
                 children: [
                   const SizedBox(height: 15),
+                  Row(children: [
+                    Expanded(
+                      child: TextFormField(
+                        textCapitalization: TextCapitalization.sentences,
+                        controller: staffDataController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci nome e cognome';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Nome e cognome',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black54),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black54),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Color.fromARGB(255, 25, 84, 132)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 15),
                   TextField(
                     controller: staffPasswordController,
                     decoration:
@@ -298,12 +411,25 @@ class _AccessoCCState extends State<AccessoCC> {
                   Row(children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPassword('staff', ''),
+                        onPressed: () => _checkPasswordStaff(
+                            'staff', '', staffDataController.text, 'login'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 25, 84, 132),
                         ),
-                        child: const Text('Entra'),
+                        child: const Text('Login'),
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _checkPasswordStaff('staff', '',
+                            staffDataController.text, 'registrati'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 25, 84, 132),
+                        ),
+                        child: const Text('Registrati'),
                       ),
                     )
                   ]),
@@ -312,20 +438,6 @@ class _AccessoCCState extends State<AccessoCC> {
           ],
         ),
       )),
-    );
-  }
-}
-
-class CCHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('CC Home Page'),
-      ),
-      body: Center(
-        child: Text('Benvenuto nella CC Home Page!'),
-      ),
     );
   }
 }

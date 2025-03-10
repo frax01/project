@@ -48,11 +48,13 @@ void main() async {
   String club = prefs.getString('club') ?? '';
   String cc = prefs.getString('cc') ?? '';
   String ccRole = prefs.getString('ccRole') ?? '';
+  String nome = prefs.getString('nome') ?? '';
 
   runApp(MyApp(
     club: club,
     cc: cc,
     ccRole: ccRole,
+    nome: nome
   ));
 }
 
@@ -65,11 +67,13 @@ class MyApp extends StatelessWidget {
     required this.club,
     required this.cc,
     required this.ccRole,
+    required this.nome
   });
 
   final String club;
   final String cc;
   final String ccRole;
+  final String nome;
   Widget startWidget = Container();
 
   Future<void> fetchPage() async {
@@ -93,7 +97,7 @@ class MyApp extends StatelessWidget {
 
       cc == 'yes'
           ? startWidget =
-              CCHomePage(selectedIndex: 0, club: club, ccRole: ccRole)
+              CCHomePage(selectedIndex: 0, club: club, ccRole: ccRole, user: true, nome: '$name $surname', email: email)
           : startWidget = ClubPage(
               classes: classes,
               club: club,
@@ -119,8 +123,10 @@ class MyApp extends StatelessWidget {
     ThemeData darkTheme;
 
     if (cc == 'yes') {
-      lightTheme = lightColorSchemeCC;
-      darkTheme = darkColorSchemeCC;
+      //lightTheme = lightColorSchemeCC;
+      //darkTheme = darkColorSchemeCC;
+      lightTheme = lightColorSchemeDelta;
+      darkTheme = darkColorSchemeDelta;
     } else {
       switch (club) {
         case 'Tiber Club':
@@ -160,6 +166,7 @@ class MyApp extends StatelessWidget {
               club: club,
               cc: cc,
               ccRole: ccRole,
+              nome: nome
             ),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
@@ -172,11 +179,12 @@ class MyApp extends StatelessWidget {
 
 class HomePageStart extends StatefulWidget {
   const HomePageStart(
-      {super.key, required this.club, required this.cc, required this.ccRole});
+      {super.key, required this.club, required this.cc, required this.ccRole, required this.nome});
 
   final String club;
   final String cc;
   final String ccRole;
+  final String nome;
 
   @override
   _HomePageStartState createState() => _HomePageStartState();
@@ -205,13 +213,16 @@ class _HomePageStartState extends State<HomePageStart> {
 
   RemoteMessage? initialMessage;
 
-  Widget buildClubPage(String club, int selectedIndex, String ccRole) {
+  Widget buildClubPage(String club, int selectedIndex, String ccRole, bool user) {
 
     if (widget.cc == 'yes') { //devo avere il logout e non il pulsante per tornare al club se ci vado da utente esterno
       return CCHomePage(
         selectedIndex: 0,
         club: widget.club,
         ccRole: widget.ccRole,
+        user: user,
+        nome: widget.nome,
+        email: email,
       );
     } else {
       return ClubPage(
@@ -355,7 +366,7 @@ class _HomePageStartState extends State<HomePageStart> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => buildClubPage(club, 1, ccRole)));
+              builder: (context) => buildClubPage(club, 1, ccRole, true)));
     } else if (message.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(message.data['focusedDay']);
@@ -408,7 +419,7 @@ class _HomePageStartState extends State<HomePageStart> {
                   role: initialMessage?.data['role'],
                   classes: classes)));
     } else if (initialMessage?.data['category'] == 'birthday') {
-      return buildClubPage(club, 1, ccRole);
+      return buildClubPage(club, 1, ccRole, true);
     } else if (initialMessage?.data['category'] == 'evento') {
       DateTime focusedDay;
       focusedDay = DateTime.parse(initialMessage?.data['focusedDay']);
@@ -424,9 +435,9 @@ class _HomePageStartState extends State<HomePageStart> {
                     role: role,
                     classes: classes,
                   )));
-      return buildClubPage(club, 1, ccRole);
+      return buildClubPage(club, 1, ccRole, true);
     }
-    return buildClubPage(club, 0, ccRole);
+    return buildClubPage(club, 0, ccRole, true);
   }
 
   @override
@@ -464,7 +475,7 @@ class _HomePageStartState extends State<HomePageStart> {
         } else {
           email = snapshot.data ?? '';
           if (email == '' && widget.cc == 'yes') {
-            return buildClubPage(club, 0, ccRole);
+            return buildClubPage(club, 0, ccRole, false);
           } else if (email == '') {
             return const Login();
           } else {
@@ -507,7 +518,7 @@ class _HomePageStartState extends State<HomePageStart> {
                     ),
                   );
                 } else if (terminated == false) {
-                  return buildClubPage(club, 0, ccRole);
+                  return buildClubPage(club, 0, ccRole, true);
                 } else {
                   return handleMessageFromTerminatedState();
                 }

@@ -233,10 +233,10 @@ class _ClubPageState extends State<ClubPage> {
       context,
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
-                club: club,
-                cc: cc,
-                ccRole: ccRole,
-              )),
+              club: club,
+              cc: cc,
+              ccRole: ccRole,
+              nome: '${widget.name} ${widget.surname}',)),
       (Route<dynamic> route) => false,
     );
   }
@@ -280,8 +280,6 @@ class _ClubPageState extends State<ClubPage> {
                 IconButton(
                     icon: const Icon(Icons.emoji_events),
                     onPressed: () async {
-                      //Navigator.of(context).push(MaterialPageRoute(
-                      //    builder: (context) => CCHomePage()));
                       final querySnapshot = await FirebaseFirestore.instance
                           .collection('user')
                           .where('email', isEqualTo: widget.email)
@@ -290,7 +288,8 @@ class _ClubPageState extends State<ClubPage> {
                       if (querySnapshot.docs.isNotEmpty) {
                         for (var doc in querySnapshot.docs) {
                           if (doc.data()['ccRole'] == null ||
-                              doc.data()['ccRole'] == '' || doc.data()['ccRole'] == 'user') {
+                              doc.data()['ccRole'] == '' ||
+                              doc.data()['ccRole'] == 'user') {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => AccessoCC(
                                       email: widget.email,

@@ -83,11 +83,11 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
         ),
       ),
       const Padding(
-        padding: EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+        padding: EdgeInsets.fromLTRB(2.0, 8.0, 4.0, 8.0),
         child: Text(
           'Nome',
           textAlign: TextAlign.left,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       const Padding(
@@ -95,7 +95,7 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
         child: Text(
           'Goal',
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
     ];
@@ -139,7 +139,7 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
                               '${index + 1}',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
             ),
             Padding(
@@ -150,11 +150,11 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
                   Text(
                     marcatore.key,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 20),
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
                     squadre[marcatore.key] ?? '',
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),
@@ -165,7 +165,7 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
                 marcatore.value.toString(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 24.0),
+                    fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
           ];

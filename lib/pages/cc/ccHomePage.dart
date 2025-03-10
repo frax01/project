@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'ccCapocannonieri.dart';
@@ -13,16 +14,22 @@ import 'ccCreazioneGironi.dart';
 import 'package:club/pages/main/login.dart';
 
 class CCHomePage extends StatefulWidget {
-  const CCHomePage({
-    super.key,
-    this.selectedIndex = 0,
-    this.club,
-    this.ccRole,
-  });
+  const CCHomePage(
+      {super.key,
+      this.selectedIndex = 0,
+      this.club,
+      this.ccRole,
+      required this.email,
+      required this.user,
+      required this.nome});
 
   final int selectedIndex;
   final String? club;
   final String? ccRole;
+  final bool user;
+  final String email;
+  final String
+      nome; //se il nome è vuoto prenderlo dalla tabella user (nome+cognome) solo se ccRole==staff
 
   @override
   State<CCHomePage> createState() => _CCHomePageState();
@@ -35,6 +42,9 @@ class _CCHomePageState extends State<CCHomePage> {
   @override
   void initState() {
     super.initState();
+
+    print("nome: ${widget.nome}");
+    print("email: ${widget.email}");
 
     _ccWidgetOptions = <Widget>[
       PopScope(
@@ -53,7 +63,7 @@ class _CCHomePageState extends State<CCHomePage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: CCCalendario(ccRole: widget.ccRole ?? ''),
+        child: CCCalendario(ccRole: widget.ccRole ?? '', nome: widget.nome), //se widget.nome in calendario è vuoto allora niente, altrimenti si vedono le partite
       ),
       PopScope(
         onPopInvoked: (_) {
@@ -98,7 +108,8 @@ class _CCHomePageState extends State<CCHomePage> {
   Future<void> _updateClub() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('cc', 'no');
-    restartApp(context, prefs.getString('club') ?? '', prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '');
+    restartApp(context, prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '');
   }
 
   void restartApp(BuildContext context, String club, String cc, String ccRole) {
@@ -109,6 +120,7 @@ class _CCHomePageState extends State<CCHomePage> {
                 club: club,
                 cc: cc,
                 ccRole: ccRole,
+                nome: widget.nome,
               )),
       (Route<dynamic> route) => false,
     );
@@ -121,42 +133,52 @@ class _CCHomePageState extends State<CCHomePage> {
         title: const Text("Champions Club"),
         automaticallyImplyLeading: false,
         actions: [
-          widget.ccRole=='staff' ? IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CcAggiungiSquadre()));
-            },
-          ) : Container(),
-          widget.ccRole=='staff' || widget.ccRole=='tutor' ? IconButton(
-            icon: const Icon(Icons.people),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CcIscriviSquadre(club: widget.club?? '', ccRole: widget.ccRole?? '')));
-            },
-          ) : Container(),
-          widget.ccRole=='staff' ? IconButton(
-            icon: const Icon(Icons.group_work),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ccCreazioneGironi()));
-            },
-          ) : Container(),
-          widget.club!='' ? IconButton(
-            icon: const Icon(Icons.class_),
-            onPressed: () async {
-                await _showConfirmDialog();
-              },
-          ) 
-          : IconButton(
-            icon: const Icon(Icons.class_),
-            onPressed: () async {
-              final SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setString('cc', 'no');
-                Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (context) => const Login()));
-                },
-          )
+          widget.ccRole == 'staff'
+              ? IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => CcAggiungiSquadre()));
+                  },
+                )
+              : Container(),
+          widget.ccRole == 'staff' || widget.ccRole == 'tutor'
+              ? IconButton(
+                  icon: const Icon(Icons.people),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => CcIscriviSquadre(
+                            club: widget.club ?? '',
+                            ccRole: widget.ccRole ?? '')));
+                  },
+                )
+              : Container(),
+          widget.ccRole == 'staff'
+              ? IconButton(
+                  icon: const Icon(Icons.group_work),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ccCreazioneGironi()));
+                  },
+                )
+              : Container(),
+          widget.user == true
+              ? IconButton(
+                  icon: const Icon(Icons.class_),
+                  onPressed: () async {
+                    await _showConfirmDialog();
+                  },
+                )
+              : IconButton(
+                  icon: const Icon(Icons.class_),
+                  onPressed: () async {
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.setString('cc', 'no');
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => const Login()));
+                  },
+                )
         ],
         //leading: Builder(
         //  builder: (BuildContext context) {
@@ -170,7 +192,7 @@ class _CCHomePageState extends State<CCHomePage> {
         //),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 25, 84, 132),
+            color: Color(0xFF00296B), //Color.fromARGB(255, 25, 84, 132),
           ),
         ),
       ),
