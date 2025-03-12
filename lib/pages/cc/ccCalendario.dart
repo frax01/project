@@ -4,6 +4,7 @@ import 'ccNuovaPartitaGironi.dart';
 import 'ccNuovaPartitaOttavi.dart';
 import 'ccModificaPartita.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
@@ -50,6 +51,9 @@ class _CCCalendarioState extends State<CCCalendario> {
   }
 
   Future<void> _loadSquadre() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("nome: ${prefs.getString('nome')}");
+
     QuerySnapshot snapshot =
         await FirebaseFirestore.instance.collection('ccSquadre').get();
 
@@ -212,387 +216,464 @@ class _CCCalendarioState extends State<CCCalendario> {
   Widget _widgetText(String codiceP, String arbitro, String refertista) {
     if (_selectedSegment == 'Gironi') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-          child: Row(
-            children: [
-              Text(
-                'Girone $_selectedGirone',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+          child: Row(children: [
+            Text(
+              'Girone $_selectedGirone',
+              style: const TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Ottavi') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '1° - 16° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '1° - 16° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Quarti' && (codiceP == 'q0' || codiceP == 'q1' || codiceP == 'q2' || codiceP == 'q3')) {
+    if (_selectedSegment == 'Quarti' &&
+        (codiceP == 'q0' ||
+            codiceP == 'q1' ||
+            codiceP == 'q2' ||
+            codiceP == 'q3')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '1° - 8° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '1° - 8° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Quarti' && (codiceP == 'q4' || codiceP == 'q5' || codiceP == 'q6' || codiceP == 'q7')) {
+    if (_selectedSegment == 'Quarti' &&
+        (codiceP == 'q4' ||
+            codiceP == 'q5' ||
+            codiceP == 'q6' ||
+            codiceP == 'q7')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '9° - 16° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '9° - 16° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Semifinali' && (codiceP == 's0' || codiceP == 's1')) {
+    if (_selectedSegment == 'Semifinali' &&
+        (codiceP == 's0' || codiceP == 's1')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '1° - 4° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '1° - 4° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Semifinali' && (codiceP == 's2' || codiceP == 's3')) {
+    if (_selectedSegment == 'Semifinali' &&
+        (codiceP == 's2' || codiceP == 's3')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '5° - 8° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '5° - 8° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Semifinali' && (codiceP == 's4' || codiceP == 's5')) {
+    if (_selectedSegment == 'Semifinali' &&
+        (codiceP == 's4' || codiceP == 's5')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '9° - 12° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '9° - 12° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
-    if (_selectedSegment == 'Semifinali' && (codiceP == 's6' || codiceP == 's7')) {
+    if (_selectedSegment == 'Semifinali' &&
+        (codiceP == 's6' || codiceP == 's7')) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '13° - 16° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '13° - 16° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f0') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '1° - 2° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '1° - 2° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f1') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '3° - 4° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '3° - 4° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f2') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '5° - 6° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '5° - 6° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f3') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '7° - 8° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '7° - 8° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f4') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '9° - 10° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '9° - 10° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f5') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '11° - 12° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '11° - 12° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f6') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '13° - 14° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '13° - 14° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : const Color.fromARGB(255, 17, 83, 19),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     if (_selectedSegment == 'Finali' && codiceP == 'f7') {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
-          child: Row(
-            children: [
-              const Text(
-                '15° - 16° posto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
+          padding: const EdgeInsets.fromLTRB(12, 6, 0, 0),
+          child: Row(children: [
+            const Text(
+              '15° - 16° posto',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
-              const SizedBox(width: 16),
-              widget.ccRole=='staff' && (widget.nome==arbitro || widget.nome==refertista) ? 
-              Expanded(
-                child: Divider(
-                  color: (widget.nome==arbitro && widget.nome==refertista) ? const Color.fromARGB(255, 58, 57, 57) : widget.nome==arbitro ? const Color.fromARGB(255, 178, 28, 28) : const Color.fromARGB(255, 17, 83, 19),
-                  thickness: 5,
-                ),
-              ) : Container()
-            ]
-          )
-      );
+            ),
+            const SizedBox(width: 16),
+            widget.ccRole == 'staff' &&
+                    (widget.nome == arbitro || widget.nome == refertista)
+                ? Expanded(
+                    child: Divider(
+                      color:
+                          (widget.nome == arbitro && widget.nome == refertista)
+                              ? const Color.fromARGB(255, 58, 57, 57)
+                              : widget.nome == arbitro
+                                  ? const Color.fromARGB(255, 178, 28, 28)
+                                  : widget.nome == refertista ? const Color.fromARGB(255, 17, 83, 19)
+                                  : const Color.fromARGB(255, 255, 255, 255),
+                      thickness: 5,
+                    ),
+                  )
+                : Container()
+          ]));
     }
     return Container();
   }
@@ -605,94 +686,106 @@ class _CCCalendarioState extends State<CCCalendario> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SegmentedButton<String>(
-                      selectedIcon: const Icon(Icons.check),
-                      segments: const <ButtonSegment<String>>[
-                        ButtonSegment<String>(
-                          value: 'Gironi',
-                          label:
-                              Text('Gir', style: TextStyle(fontSize: 10)),
-                        ),
-                        ButtonSegment<String>(
-                          value: 'Ottavi',
-                          label:
-                              Text('Ott', style: TextStyle(fontSize: 10)),
-                        ),
-                        ButtonSegment<String>(
-                          value: 'Quarti',
-                          label:
-                              Text('Qua', style: TextStyle(fontSize: 10)),
-                        ),
-                        ButtonSegment<String>(
-                          value: 'Semifinali',
-                          label:
-                              Text('Sem', style: TextStyle(fontSize: 10)),
-                        ),
-                        ButtonSegment<String>(
-                          value: 'Finali',
-                          label:
-                              Text('Fin', style: TextStyle(fontSize: 10)),
-                        ),
-                      ],
-                      selected: <String>{_selectedSegment},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        setState(() {
-                          _selectedSegment = newSelection.first;
-                          _streamPartite = _getPartite();
-                        });
-                      },
-                    ),
-                    widget.ccRole=='staff' ? 
-                    const Column(
-                      children: [
-                        SizedBox(height: 10,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SegmentedButton<String>(
+                        selectedIcon: const Icon(Icons.check),
+                        segments: const <ButtonSegment<String>>[
+                          ButtonSegment<String>(
+                            value: 'Gironi',
+                            label: Text('Gir', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Ottavi',
+                            label: Text('Ott', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Quarti',
+                            label: Text('Qua', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Semifinali',
+                            label: Text('Sem', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Finali',
+                            label: Text('Fin', style: TextStyle(fontSize: 10)),
+                          ),
+                        ],
+                        selected: <String>{_selectedSegment},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          setState(() {
+                            _selectedSegment = newSelection.first;
+                            _streamPartite = _getPartite();
+                          });
+                        },
+                      ),
+                      widget.ccRole == 'staff'
+                          ? const Column(
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                                  radius: 7,
+                                SizedBox(
+                                  height: 10,
                                 ),
-                                SizedBox(width: 6,),
-                                Text('Arbitro', style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-                              ]
-                            ),
-                            SizedBox(width: 16,),
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Color.fromARGB(255, 17, 83, 19),
-                                  radius: 7,
-                                ),
-                                SizedBox(width: 6,),
-                                Text('Refertista', style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-                              ]
-                            ),
-                            SizedBox(width: 16,),
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Color.fromARGB(255, 58, 57, 57),
-                                  radius: 7,
-                                ),
-                                SizedBox(width: 6,),
-                                Text('Entrambi', style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-                              ]
-                            ),
-                          ]
-                        ),
-                        SizedBox(height: 2),
-                      ],
-                    )  : Container()
-                      ],
-                    )
-          ),
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(children: [
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              Color.fromARGB(255, 178, 28, 28),
+                                          radius: 7,
+                                        ),
+                                        SizedBox(
+                                          width: 6,
+                                        ),
+                                        Text('Arbitro',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontStyle: FontStyle.italic)),
+                                      ]),
+                                      SizedBox(
+                                        width: 16,
+                                      ),
+                                      Row(children: [
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              Color.fromARGB(255, 17, 83, 19),
+                                          radius: 7,
+                                        ),
+                                        SizedBox(
+                                          width: 6,
+                                        ),
+                                        Text('Refertista',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontStyle: FontStyle.italic)),
+                                      ]),
+                                      SizedBox(
+                                        width: 16,
+                                      ),
+                                      Row(children: [
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              Color.fromARGB(255, 58, 57, 57),
+                                          radius: 7,
+                                        ),
+                                        SizedBox(
+                                          width: 6,
+                                        ),
+                                        Text('Entrambi',
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontStyle: FontStyle.italic)),
+                                      ]),
+                                    ]),
+                                //SizedBox(height: 10),
+                              ],
+                            )
+                          : Container()
+                    ],
+                  )),
               StreamBuilder<List<Map<String, dynamic>>>(
                 stream: _streamPartite,
                 builder: (context, snapshot) {
@@ -719,7 +812,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                   }
 
                   return Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 15),
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 15),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -792,7 +885,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                             fuori: partita[
                                                                 'fuori'],
                                                             logocasa: logoCasa,
-                                                            logofuori: logoCasa,
+                                                            logofuori: logoFuori,
                                                             data: '25/04/2025',
                                                             orario: partita[
                                                                 'orario'],
@@ -836,8 +929,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
                                                                     .spaceBetween,
-                                                            crossAxisAlignment: CrossAxisAlignment
-                                                                .start,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             children: [
                                                               Row(
                                                                 mainAxisAlignment:
@@ -939,12 +1033,16 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                               ),
                                                               const SizedBox(
                                                                   height: 8),
-                                                              _widgetText(codiceP, partita['arbitro'], partita['refertista'])
+                                                              _widgetText(
+                                                                  codiceP,
+                                                                  partita[
+                                                                      'arbitro'],
+                                                                  partita[
+                                                                      'refertista'])
                                                             ],
                                                           ),
                                                         ],
-                                                      )))
-                                              )
+                                                      ))))
                                         ]);
                                   }).toList(),
                                 ],
@@ -995,123 +1093,135 @@ class _CCCalendarioState extends State<CCCalendario> {
             ],
           ),
         ),
-        floatingActionButton: 
-        Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          if (_selectedSegment == 'Gironi') ...[
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _selectedGirone == 'A' ? Colors.black : Colors.transparent,
-                  width: 1.5,
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (_selectedSegment == 'Gironi') ...[
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedGirone == 'A'
+                        ? Colors.black
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: FloatingActionButton(
+                  heroTag: 'gironeA',
+                  onPressed: () {
+                    setState(() {
+                      _selectedGirone = 'A';
+                      _streamPartite = _getPartite();
+                    });
+                  },
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  child: const Text('A', style: TextStyle(fontSize: 14)),
                 ),
               ),
-              child: FloatingActionButton(
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedGirone == 'B'
+                        ? Colors.black
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: FloatingActionButton(
+                  heroTag: 'gironeB',
+                  onPressed: () {
+                    setState(() {
+                      _selectedGirone = 'B';
+                      _streamPartite = _getPartite();
+                    });
+                  },
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  child: const Text('B', style: TextStyle(fontSize: 14)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedGirone == 'C'
+                        ? Colors.black
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: FloatingActionButton(
+                  heroTag: 'gironeC',
+                  onPressed: () {
+                    setState(() {
+                      _selectedGirone = 'C';
+                      _streamPartite = _getPartite();
+                    });
+                  },
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  child: const Text('C', style: TextStyle(fontSize: 14)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedGirone == 'D'
+                        ? Colors.black
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: FloatingActionButton(
+                  heroTag: 'gironeD',
+                  onPressed: () {
+                    setState(() {
+                      _selectedGirone = 'D';
+                      _streamPartite = _getPartite();
+                    });
+                  },
+                  shape: const CircleBorder(),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  child: const Text('D', style: TextStyle(fontSize: 14)),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            if (widget.ccRole == 'staff')
+              FloatingActionButton(
+                heroTag: 'addButton',
                 onPressed: () {
-                  setState(() {
-                    _selectedGirone = 'A';
-                    _streamPartite = _getPartite();
-                  });
+                  _selectedSegment == 'Gironi'
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const CCnuovaPartitaGironi()),
+                        )
+                      : Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  CCnuovaPartitaOttavi(tipo: _selectedSegment)),
+                        );
                 },
                 shape: const CircleBorder(),
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
-                child: const Text('A', style: TextStyle(fontSize: 14)),
+                child: const Icon(Icons.add),
               ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _selectedGirone == 'B' ? Colors.black : Colors.transparent,
-                  width: 1.5,
-                ),
-              ),
-              child: FloatingActionButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedGirone = 'B';
-                    _streamPartite = _getPartite();
-                  });
-                },
-                shape: const CircleBorder(),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                child: const Text('B', style: TextStyle(fontSize: 14)),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _selectedGirone == 'C' ? Colors.black : Colors.transparent,
-                  width: 1.5,
-                ),
-              ),
-              child: FloatingActionButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedGirone = 'C';
-                    _streamPartite = _getPartite();
-                  });
-                },
-                shape: const CircleBorder(),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                child: const Text('C', style: TextStyle(fontSize: 14)),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _selectedGirone == 'D' ? Colors.black : Colors.transparent,
-                  width: 1.5,
-                ),
-              ),
-              child: FloatingActionButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedGirone = 'D';
-                    _streamPartite = _getPartite();
-                  });
-                },
-                shape: const CircleBorder(),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                child: const Text('D', style: TextStyle(fontSize: 14)),
-              ),
-            ),
-            const SizedBox(width: 8),
           ],
-          if(widget.ccRole == 'staff')
-      FloatingActionButton(
-            onPressed: () {
-              _selectedSegment == 'Gironi'
-                  ? Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const CCnuovaPartitaGironi()),
-                    )
-                  : Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              CCnuovaPartitaOttavi(tipo: _selectedSegment)),
-                    );
-            },
-            shape: const CircleBorder(),
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            child: const Icon(Icons.add),
-          ),
-        ],
-      )
-    );
+        ));
   }
 }

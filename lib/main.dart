@@ -22,9 +22,11 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
+import 'package:flutter/rendering.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //debugPaintSizeEnabled = true;
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

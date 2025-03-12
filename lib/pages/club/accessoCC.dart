@@ -54,8 +54,7 @@ class _AccessoCCState extends State<AccessoCC> {
     }
   }
 
-  void _checkPasswordStaff(
-      String role, String? newclub, String nome, String mood) async {
+  void _checkPasswordStaff(String role, String? newclub, String nome, String mood) async {
     String enteredPassword = staffPasswordController.text;
     if (mood == 'login') {
       //QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').where('nome', isEqualTo: nome).get();
@@ -97,6 +96,7 @@ class _AccessoCCState extends State<AccessoCC> {
           await prefs.setString('cc',
               'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
           await prefs.setString('ccRole', 'staff');
+          await prefs.setString('nome', nome);
           restartApp(context, prefs.getString('club') ?? '',
               prefs.getString('cc') ?? '', 'staff', nome);
         }

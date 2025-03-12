@@ -97,12 +97,18 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
           (gironeData['punti'][widget.fuori] ?? 0) + 1;
     }
 
+    FirebaseFirestore.instance
+        .collection('ccPartiteGironi')
+        .doc('${widget.casa} VS ${widget.fuori}')
+        .update({
+      'iniziata': false,
+      'finita': true,
+    });
+
     await FirebaseFirestore.instance
         .collection('ccGironi')
         .doc(widget.girone)
         .update(gironeData);
-
-    Navigator.pop(context);
   }
 
   Future<void> _updateGironiReverse() async {
@@ -809,6 +815,23 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     );
   }
 
+  InputDecoration getInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Color.fromARGB(255, 25, 84, 132)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -860,30 +883,6 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
               if (rigFuori == 'segnato') {
                 golRigoreFuori++;
               }
-            }
-
-            Widget yellowCardIcon() {
-              return Container(
-                width: 24,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.yellow,
-                  borderRadius: BorderRadius.circular(2),
-                  border: Border.all(color: Colors.black, width: 1),
-                ),
-              );
-            }
-
-            Widget redCardIcon() {
-              return Container(
-                width: 24,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(2),
-                  border: Border.all(color: Colors.black, width: 1),
-                ),
-              );
             }
 
             return Column(
@@ -1088,15 +1087,20 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                     ? boolRigori = false
                                                     : null;
                                                 widget.tipo == 'girone'
-                                                    ? FirebaseFirestore.instance
-                                                        .collection(
-                                                            'ccPartiteGironi')
-                                                        .doc(
-                                                            '${widget.casa} VS ${widget.fuori}')
-                                                        .update({
-                                                        'iniziata': false,
-                                                        'finita': true,
-                                                      })
+                                                    ? () {
+                                                        _updateGironi();
+                                                        finita = true;
+                                                        iniziata = false;
+                                                      }()
+                                                    //FirebaseFirestore.instance
+                                                    //  .collection(
+                                                    //      'ccPartiteGironi')
+                                                    //  .doc(
+                                                    //      '${widget.casa} VS ${widget.fuori}')
+                                                    //  .update({
+                                                    //  'iniziata': false,
+                                                    //  'finita': true,
+                                                    //})
                                                     : widget.tipo == 'ottavi'
                                                         ? updatePartite(
                                                             'Ottavi',
@@ -1129,9 +1133,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                                     rigoriCasa,
                                                                     rigoriFuori);
                                               });
-                                              widget.tipo == 'girone'
-                                                  ? _updateGironi()
-                                                  : null;
+                                              //widget.tipo == 'girone'
+                                              //    ? _updateGironi()
+                                              //    : null;
                                             }
                                           : null,
                                       style: ElevatedButton.styleFrom(
@@ -1148,278 +1152,534 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         ),
                       )
                     : Container(),
-                iniziata && widget.ccRole=='staff'
+                iniziata && widget.ccRole == 'staff'
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              children: [
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.casa),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Marcatore'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.casa, giocatore, 'gol');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.casa),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Ammonizione'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.casa, giocatore, 'amm');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.casa),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Espulsione'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.casa, giocatore, 'esp');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 12),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.casa),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Marcatore'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.casa,
+                                                  giocatore, 'gol');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.casa),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Ammonizione'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.casa,
+                                                  giocatore, 'amm');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.casa),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Espulsione'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.casa,
+                                                  giocatore, 'esp');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 6),
+                                ],
+                              ),
                             ),
-                            Column(
-                              children: [
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.fuori),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Marcatore'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.fuori, giocatore, 'gol');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.fuori),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Ammonizione'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.fuori, giocatore, 'amm');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                                FutureBuilder<List<String>>(
-                                  future: getGiocatori(widget.fuori),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) return Container();
-                                    return DropdownButton<String>(
-                                      hint: const Text('Espulsione'),
-                                      items: snapshot.data!
-                                          .map((giocatore) =>
-                                              DropdownMenuItem<String>(
-                                                value: giocatore,
-                                                child: Text(giocatore),
-                                              ))
-                                          .toList(),
-                                      onChanged: (giocatore) {
-                                        if (giocatore != null) {
-                                          aggiungiMarcatore(
-                                              widget.fuori, giocatore, 'esp');
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                              ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 12),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.fuori),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Marcatore'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.fuori,
+                                                  giocatore, 'gol');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.fuori),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Ammonizione'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.fuori,
+                                                  giocatore, 'amm');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  FutureBuilder<List<String>>(
+                                    future: getGiocatori(widget.fuori),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) return Container();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                        ),
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                          underline: const SizedBox.shrink(),
+                                          hint: const Text('Espulsione'),
+                                          items: snapshot.data!
+                                              .map((giocatore) =>
+                                                  DropdownMenuItem<String>(
+                                                    value: giocatore,
+                                                    child: Text('· $giocatore'),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (giocatore) {
+                                            if (giocatore != null) {
+                                              aggiungiMarcatore(widget.fuori,
+                                                  giocatore, 'esp');
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 6),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       )
                     : Container(),
                 !iniziata && !finita
-                    ? Container()
+                    ? const Center(
+                        child: Column(children: [
+                        SizedBox(height: 8),
+                        Text('Partita da giocare',
+                            style: TextStyle(
+                                fontSize: 22, fontStyle: FontStyle.italic))
+                      ]))
                     : Center(
-                        child: marcatori.isNotEmpty
-                            ? const Text("Cronaca",
-                                style: TextStyle(
-                                    fontSize: 24, fontStyle: FontStyle.italic))
-                            : const Center(
-                                child: Text('Partita terminata',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontStyle: FontStyle.italic)))),
+                        child: Column(children: [
+                          widget.ccRole == 'staff'
+                              ? const SizedBox(height: 10)
+                              : Container(),
+                          !finita
+                              ? const Text("Partita in corso",
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontStyle: FontStyle.italic))
+                              : const Center(
+                                  child: Text('Partita terminata',
+                                      style: TextStyle(
+                                          fontSize: 22,
+                                          fontStyle: FontStyle.italic)))
+                        ]),
+                      ),
+
                 boolRigori
                     ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 0.1,
-                                  runSpacing: 0.1,
-                                  children:
-                                      List.generate(rigoriCasa.length, (index) {
-                                    Color color;
-                                    if (rigoriCasa[index] == 'segnato') {
-                                      color = Colors.green;
-                                    } else if (rigoriCasa[index] ==
-                                        'sbagliato') {
-                                      color = Colors.red;
-                                    } else {
-                                      color = Colors.grey;
-                                    }
-                                    return IconButton(
-                                        icon: Icon(Icons.circle, color: color),
-                                        onPressed: iniziata && widget.ccRole=='staff'
-                                            ? () {
-                                                _showRigoreDialog(context,
-                                                    'casa', index, widget.tipo);
-                                              }
-                                            : null);
-                                  }),
-                                ),
+                          const SizedBox(height: 10),
+                            Text(widget.casa, style: const TextStyle(fontSize: 18)),
+                            Container(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                              margin: const EdgeInsets.fromLTRB(24, 6, 24, 6),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.black54, width: 1.0),
+                                borderRadius: BorderRadius.circular(4.0),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 0.1,
-                                  runSpacing: 0.1,
-                                  children: List.generate(rigoriFuori.length,
-                                      (index) {
-                                    Color color;
-                                    if (rigoriFuori[index] == 'segnato') {
-                                      color = Colors.green;
-                                    } else if (rigoriFuori[index] ==
-                                        'sbagliato') {
-                                      color = Colors.red;
-                                    } else {
-                                      color = Colors.grey;
-                                    }
-                                    return IconButton(
-                                        icon: Icon(Icons.circle, color: color),
-                                        onPressed: iniziata && widget.ccRole=='staff'
-                                            ? () {
-                                                _showRigoreDialog(
-                                                    context,
-                                                    'fuori',
-                                                    index,
-                                                    widget.tipo);
-                                              }
-                                            : null);
-                                  }),
-                                ),
+                              child: Wrap(
+                                alignment: WrapAlignment.start,
+                                spacing: 10.0,
+                                runSpacing: 10.0,
+                                children: [
+                                  for (int index = 0;
+                                      index < rigoriCasa.length;
+                                      index++)
+                                    GestureDetector(
+                                        onTap: () async {
+                                          if (iniziata &&
+                                              widget.ccRole == 'staff') {
+                                            _showRigoreDialog(context, 'casa',
+                                                index, widget.tipo);
+                                          }
+                                        },
+                                        child: Column(children: [
+                                          Text('${index + 1}'),
+                                          CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor:
+                                                rigoriCasa[index] == 'segnato'
+                                                    ? Colors.green
+                                                    : rigoriCasa[index] ==
+                                                            'sbagliato'
+                                                        ? Colors.red
+                                                        : Colors.grey,
+                                          ),
+                                        ])),
+                                ],
                               ),
-                            ],
-                          ),
-                          iniziata
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: () async {
-                                        rigoriCasa.add('non tirato');
-                                        rigoriFuori.add('non tirato');
-                                        await FirebaseFirestore.instance
-                                            .collection(
-                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                            .doc(widget.codice)
-                                            .update({
-                                          'rigoriCasa': rigoriCasa,
-                                          'rigoriFuori': rigoriFuori,
-                                        });
-                                        setState(() {});
+                            ),
+                            const SizedBox(height: 12),
+                            Text(widget.fuori, style: const TextStyle(fontSize: 18)),
+                            Container(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                              margin: const EdgeInsets.fromLTRB(24, 6, 24, 6),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.black54, width: 1.0),
+                                borderRadius: BorderRadius.circular(4.0),
+                              ),
+                              child: Wrap(
+                                alignment: WrapAlignment.start,
+                                spacing: 10.0,
+                                runSpacing: 10.0,
+                                children: [
+                                  for (int index = 0;
+                                      index < rigoriFuori.length;
+                                      index++)
+                                    GestureDetector(
+                                      onTap: () async {
+                                        if (iniziata &&
+                                            widget.ccRole == 'staff') {
+                                          _showRigoreDialog(context, 'fuori',
+                                              index, widget.tipo);
+                                        }
                                       },
+                                      child: Column(
+                                        children: [
+                                          Text('${index + 1}'),
+                                          CircleAvatar(
+                                        radius: 10,
+                                        backgroundColor: rigoriFuori[index] ==
+                                                'segnato'
+                                            ? Colors.green
+                                            : rigoriFuori[index] == 'sbagliato'
+                                                ? Colors.red
+                                                : Colors.grey,
+                                      ),
+                                        ]
+                                      )
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: rigoriCasa.length > 5
-                                          ? () async {
-                                              rigoriCasa.removeLast();
-                                              rigoriFuori.removeLast();
-                                              await FirebaseFirestore.instance
-                                                  .collection(
-                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                                  .doc(widget.codice)
-                                                  .update({
-                                                'rigoriCasa': rigoriCasa,
-                                                'rigoriFuori': rigoriFuori,
-                                              });
-                                              setState(() {});
-                                            }
-                                          : null,
-                                    ),
-                                  ],
-                                )
-                              : Container()
+                                ],
+                              ),
+                            ),
+
+                            iniziata && widget.ccRole == 'staff'
+                    ? Row(
+                        //mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Expanded(child: IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () async {
+                              rigoriCasa.add('non tirato');
+                              rigoriFuori.add('non tirato');
+                              await FirebaseFirestore.instance
+                                  .collection(
+                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                  .doc(widget.codice)
+                                  .update({
+                                'rigoriCasa': rigoriCasa,
+                                'rigoriFuori': rigoriFuori,
+                              });
+                              setState(() {});
+                            },
+                          ),),
+                          Expanded(child: IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: rigoriCasa.length > 5
+                                ? () async {
+                                    rigoriCasa.removeLast();
+                                    rigoriFuori.removeLast();
+                                    await FirebaseFirestore.instance
+                                        .collection(
+                                            'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                        .doc(widget.codice)
+                                        .update({
+                                      'rigoriCasa': rigoriCasa,
+                                      'rigoriFuori': rigoriFuori,
+                                    });
+                                    setState(() {});
+                                  }
+                                : null,
+                          ),)
                         ],
                       )
                     : Container(),
+
+                          ])
+                    : Container(),
+
+                
+
+                //////////
+                //Column(
+                //    children: [
+                //      const SizedBox(height: 16),
+                //      Row(
+                //        children: [
+                //          Expanded(
+                //            child:
+                //                Row(
+                //                  mainAxisAlignment: MainAxisAlignment.center,
+                //                  children: [
+                //              ...List.generate(rigoriCasa.length, (index) {
+                //                Color color;
+                //                if (rigoriCasa[index] == 'segnato') {
+                //                  color = Colors.green;
+                //                } else if (rigoriCasa[index] ==
+                //                    'sbagliato') {
+                //                  color = Colors.red;
+                //                } else {
+                //                  color = Colors.grey;
+                //                }
+                //                return Row(children: [
+                //                  const SizedBox(width: 10),
+                //                  GestureDetector(
+                //                    onTap: () async {
+                //                      if (iniziata &&
+                //                          widget.ccRole == 'staff') {
+                //                        _showRigoreDialog(context, 'casa',
+                //                            index, widget.tipo);
+                //                      }
+                //                    },
+                //                    child: CircleAvatar(
+                //                      radius: 10,
+                //                      backgroundColor: color,
+                //                      //child: Text((index + 1).toString(),
+                //                      //    style:
+                //                      //        const TextStyle(fontSize: 12)),
+                //                    ),
+                //                  )
+                //                ]);
+                //              }),
+                //            ]),
+                //          ),
+                //          //const SizedBox(width: 12),
+                //          Expanded(
+                //            child:
+                //                Row(
+                //                 mainAxisAlignment: MainAxisAlignment.center,
+                //                  children: [
+                //              ...List.generate(rigoriFuori.length, (index) {
+                //                Color color;
+                //                if (rigoriFuori[index] == 'segnato') {
+                //                  color = Colors.green;
+                //                } else if (rigoriFuori[index] ==
+                //                    'sbagliato') {
+                //                  color = Colors.red;
+                //                } else {
+                //                  color = Colors.grey;
+                //                }
+                //                return Row(children: [
+                //                  const SizedBox(width: 10),
+                //                  GestureDetector(
+                //                    onTap: () async {
+                //                      if (iniziata &&
+                //                          widget.ccRole == 'staff') {
+                //                        _showRigoreDialog(context, 'fuori',
+                //                            index, widget.tipo);
+                //                      }
+                //                    },
+                //                    child: CircleAvatar(
+                //                      radius: 10,
+                //                      backgroundColor: color,
+                //                    ),
+                //                  )
+                //                ]);
+                //              }),
+                //            ]),
+                //          ),
+                //        ],
+                //      ),
+//
+                //      //qui
+                //      const SizedBox(height: 16),
+                //      iniziata
+                //          ? Row(
+                //              mainAxisAlignment: MainAxisAlignment.center,
+                //              children: [
+                //                IconButton(
+                //                  icon: const Icon(Icons.add),
+                //                  onPressed: () async {
+                //                    rigoriCasa.add('non tirato');
+                //                    rigoriFuori.add('non tirato');
+                //                    await FirebaseFirestore.instance
+                //                        .collection(
+                //                            'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                //                        .doc(widget.codice)
+                //                        .update({
+                //                      'rigoriCasa': rigoriCasa,
+                //                      'rigoriFuori': rigoriFuori,
+                //                    });
+                //                    setState(() {});
+                //                  },
+                //                ),
+                //                IconButton(
+                //                  icon: const Icon(Icons.remove),
+                //                  onPressed: rigoriCasa.length > 5
+                //                      ? () async {
+                //                          rigoriCasa.removeLast();
+                //                          rigoriFuori.removeLast();
+                //                          await FirebaseFirestore.instance
+                //                              .collection(
+                //                                  'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                //                              .doc(widget.codice)
+                //                              .update({
+                //                            'rigoriCasa': rigoriCasa,
+                //                            'rigoriFuori': rigoriFuori,
+                //                          });
+                //                          setState(() {});
+                //                        }
+                //                      : null,
+                //                ),
+                //              ],
+                //            )
+                //          : Container()
+                //    ],
+                //  ),
+                //: Container(),
                 const SizedBox(height: 4),
                 Expanded(
                   child: ListView.builder(
@@ -1428,107 +1688,152 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                       final marcatore = marcatori[index];
                       return Padding(
                         padding: iniziata
-                            ? const EdgeInsets.fromLTRB(2, 16, 2, 4)
-                            : const EdgeInsets.fromLTRB(12, 20, 12, 4),
-                        child: Row(
+                            ? const EdgeInsets.fromLTRB(2, 0, 2, 0)
+                            : const EdgeInsets.fromLTRB(6, 0, 6, 0),
+                        child: Column(
                           children: [
-                            if (marcatore['dove'] == 'casa') ...[
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    iniziata
-                                        ? IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () {
-                                              rimuoviMarcatore(widget.casa,
-                                                  marcatore['nome']!);
-                                            },
-                                          )
-                                        : const SizedBox(width: 1),
-                                    Expanded(
-                                      child: Text(
-                                        marcatore['nome']!,
-                                        style: const TextStyle(fontSize: 18),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              marcatore['cosa'] == 'amm'
-                                  ? Container(
-                                      width: 20,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    )
-                                  : marcatore['cosa'] == 'esp'
-                                      ? Container(
-                                          width: 20,
-                                          height: 25,
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(2),
-                                          ),
-                                        )
-                                      : const Icon(Icons.sports_soccer),
-                              const Expanded(child: Text('')),
-                            ] else ...[
-                              const Expanded(child: Text('')),
-                              marcatore['cosa'] == 'amm'
-                                  ? Container(
-                                      width: 20,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    )
-                                  : marcatore['cosa'] == 'esp'
-                                      ? Container(
-                                          width: 20,
-                                          height: 25,
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(2),
-                                          ),
-                                        )
-                                      : const Icon(Icons.sports_soccer),
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '  ${marcatore['nome']!}',
-                                        style: const TextStyle(fontSize: 18),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    iniziata
-                                        ? IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () {
-                                              rimuoviMarcatore(widget.fuori,
-                                                  marcatore['nome']!);
-                                            },
-                                          )
-                                        : const SizedBox(width: 1),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            marcatore['dove'] == 'casa'
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      iniziata && !boolRigori
+                                          ? IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () {
+                                                rimuoviMarcatore(widget.casa,
+                                                    marcatore['nome']!);
+                                              },
+                                            )
+                                          : const SizedBox(width: 20),
+                                      marcatore['cosa'] == 'amm'
+                                          ? Row(children: [
+                                              Container(
+                                                width: 18,
+                                                height: 23,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow,
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                            ])
+                                          : marcatore['cosa'] == 'esp'
+                                              ? Row(children: [
+                                                  Container(
+                                                    width: 18,
+                                                    height: 23,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                ])
+                                              : const Icon(Icons.sports_soccer),
+                                      const SizedBox(width: 8),
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              marcatore['nome']!,
+                                              style:
+                                                  const TextStyle(fontSize: 18),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            Text(
+                                              marcatore['cosa'] == 'gol'
+                                                  ? 'Gol'
+                                                  : marcatore['cosa'] == 'amm'
+                                                      ? 'Ammonizione'
+                                                      : 'Espulsione',
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ])
+                                    ],
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '  ${marcatore['nome']!}',
+                                              style:
+                                                  const TextStyle(fontSize: 18),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            Text(
+                                              marcatore['cosa'] == 'gol'
+                                                  ? 'Gol'
+                                                  : marcatore['cosa'] == 'amm'
+                                                      ? 'Ammonizione'
+                                                      : 'Espulsione',
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ]),
+                                      const SizedBox(width: 8),
+                                      marcatore['cosa'] == 'amm'
+                                          ? Row(children: [
+                                              const SizedBox(width: 4),
+                                              Container(
+                                                width: 18,
+                                                height: 23,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.yellow,
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                ),
+                                              ),
+                                            ])
+                                          : marcatore['cosa'] == 'esp'
+                                              ? Row(children: [
+                                                  const SizedBox(width: 4),
+                                                  Container(
+                                                    width: 18,
+                                                    height: 23,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
+                                                    ),
+                                                  ),
+                                                ])
+                                              : const Icon(Icons.sports_soccer),
+                                      iniziata && !boolRigori
+                                          ? IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () {
+                                                rimuoviMarcatore(widget.fuori,
+                                                    marcatore['nome']!);
+                                              },
+                                            )
+                                          : const SizedBox(width: 20),
+                                    ],
+                                  ),
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(10, 7, 10, 7),
+                              child: Divider(
+                                  thickness: 0.75, color: Colors.black54),
+                            ),
                           ],
                         ),
                       );
