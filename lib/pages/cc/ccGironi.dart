@@ -94,7 +94,7 @@ class _CCGironiState extends State<CCGironi> {
                           return Card(
                             margin: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                             shadowColor: Colors.black54,
-                            elevation: 15,
+                            elevation: 7,
                             child: Column(
                               children: [
                                 Row(

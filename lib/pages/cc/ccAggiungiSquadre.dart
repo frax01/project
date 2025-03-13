@@ -12,7 +12,7 @@ class CcAggiungiSquadre extends StatefulWidget {
 class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  String placeHolder = 'Logo squadra';
+  String placeHolder = 'Aggiungi logo';
   PlatformFile? file;
 
   Future<String?> _uploadFileToFirebase(PlatformFile file) async {
@@ -66,10 +66,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (isAddingClub ||
-                  (!isEdit &&
-                      squadra == null &&
-                      isAddingClub))
+              if (isAddingClub || (!isEdit && squadra == null && isAddingClub))
                 TextField(
                   controller: clubController,
                   decoration: const InputDecoration(labelText: 'Nome Club'),
@@ -79,7 +76,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   children: [
                     TextField(
                       controller: squadraController,
-                      decoration: const InputDecoration(labelText: 'Nome Squadra'),
+                      decoration:
+                          const InputDecoration(labelText: 'Nome Squadra'),
                     ),
                     const SizedBox(height: 15),
                     FormField<PlatformFile>(
@@ -102,7 +100,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                                 elevation: 5,
                               ),
                               onPressed: () async {
-                                FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles();
                                 if (result != null) {
                                   setState(() {
                                     file = result.files.first;
@@ -112,7 +111,9 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                                 }
                               },
                               child: Text(
-                                logoUrl=='' || logoUrl==null ? placeHolder : 'Cambia logo',
+                                logoUrl == '' || logoUrl == null
+                                    ? placeHolder
+                                    : 'Cambia logo',
                                 style: const TextStyle(fontSize: 16.0),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -121,7 +122,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                             if (formFieldState.hasError)
                               Text(
                                 formFieldState.errorText!,
-                                style: TextStyle(color: Theme.of(context).primaryColor),
+                                style: TextStyle(
+                                    color: Theme.of(context).primaryColor),
                               ),
                           ],
                         );
@@ -141,7 +143,9 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                 final String newClubName = clubController.text;
                 final String squadraName = squadraController.text;
 
-                if (isAddingClub && newClubName.isNotEmpty && isEditingClub == false) {
+                if (isAddingClub &&
+                    newClubName.isNotEmpty &&
+                    isEditingClub == false) {
                   final DocumentReference docRef =
                       _firestore.collection('ccSquadre').doc(newClubName);
                   final DocumentSnapshot docSnapshot = await docRef.get();
@@ -164,24 +168,31 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   if (docSnapshot.exists) {
                     List<Map<String, dynamic>> squadre =
                         List<Map<String, dynamic>>.from(docSnapshot['squadre']);
-                    bool squadraExists = squadre.any((s) => s['squadra'] == squadraName && s['squadra'] != squadra?['squadra']);
+                    bool squadraExists = squadre.any((s) =>
+                        s['squadra'] == squadraName &&
+                        s['squadra'] != squadra?['squadra']);
                     if (squadraExists) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('La squadra esiste già')),
                       );
                     } else {
                       if (isEdit && squadra != null) {
-                        int index = squadre.indexWhere((s) => s['squadra'] == squadra['squadra']);
+                        int index = squadre.indexWhere(
+                            (s) => s['squadra'] == squadra['squadra']);
                         if (index != -1) {
                           squadre[index] = {
                             'squadra': squadraName,
-                            'logo': file != null ? await _uploadFileToFirebase(file!) : '',
+                            'logo': file != null
+                                ? await _uploadFileToFirebase(file!)
+                                : '',
                           };
                         }
                       } else {
                         squadre.add({
                           'squadra': squadraName,
-                          'logo': file != null ? await _uploadFileToFirebase(file!) : '',
+                          'logo': file != null
+                              ? await _uploadFileToFirebase(file!)
+                              : '',
                         });
                       }
                       await docRef.update({'squadre': squadre});
@@ -197,7 +208,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
 
                   if (oldDocSnapshot.exists && club != newClubName) {
                     List<Map<String, dynamic>> squadre =
-                        List<Map<String, dynamic>>.from(oldDocSnapshot['squadre']);
+                        List<Map<String, dynamic>>.from(
+                            oldDocSnapshot['squadre']);
                     final DocumentReference newDocRef =
                         _firestore.collection('ccSquadre').doc(newClubName);
                     await newDocRef.set({
@@ -207,7 +219,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                     await oldDocRef.delete();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Il club non esiste o è lo stesso')),
+                      const SnackBar(
+                          content: Text('Il club non esiste o è lo stesso')),
                     );
                   }
                 }
@@ -222,7 +235,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
     );
   }
 
-  void _showDeleteDialog({required String club, Map<String, dynamic>? squadra}) {
+  void _showDeleteDialog(
+      {required String club, Map<String, dynamic>? squadra}) {
     showDialog(
       context: context,
       builder: (context) {
@@ -242,8 +256,11 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   final DocumentSnapshot docSnapshot = await docRef.get();
 
                   if (docSnapshot.exists) {
-                    List<Map<String, dynamic>> squadre = List<Map<String, dynamic>>.from(docSnapshot['squadre']);
-                    squadre.removeWhere((s) => s['squadra'] == squadra['squadra'] && s['logo'] == squadra['logo']);
+                    List<Map<String, dynamic>> squadre =
+                        List<Map<String, dynamic>>.from(docSnapshot['squadre']);
+                    squadre.removeWhere((s) =>
+                        s['squadra'] == squadra['squadra'] &&
+                        s['logo'] == squadra['logo']);
                     await docRef.update({'squadre': squadre});
                   }
                 } else {
@@ -264,10 +281,10 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestione Squadre'),
+        title: const Text('Gestione squadre'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 25, 84, 132),
+            color: Color(0xFF00296B),
           ),
         ),
       ),
@@ -288,74 +305,94 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
               final squadre = List<Map<String, dynamic>>.from(club['squadre']);
 
               return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ExpansionTile(
-                  shape: Border.all(color: Colors.transparent),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(clubName),
-                      Row(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    elevation: 5,
+                    child: ExpansionTile(
+                      shape: Border.all(color: Colors.transparent),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              isEdit: true,
-                              isAddingClub: true,
-                              isEditingClub: true,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(clubName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const Text("Club"),
+                            ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _showDeleteDialog(club: clubName),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              isEdit: false,
-                              isAddingClub: false,
-                            ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _showAddEditDialog(
+                                  club: clubName,
+                                  isEdit: true,
+                                  isAddingClub: true,
+                                  isEditingClub: true,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () =>
+                                    _showDeleteDialog(club: clubName),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () => _showAddEditDialog(
+                                  club: clubName,
+                                  isEdit: false,
+                                  isAddingClub: false,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  children: squadre.map((squadra) {
-                    return ListTile(
-                      title: Text(squadra['squadra']?? ''),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _showAddEditDialog(
-                              club: clubName,
-                              squadra: squadra,
-                              isEdit: true,
-                              isAddingClub: false,
+                      children: squadre.map((squadra) {
+                        return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(children: [
+                           const Divider(height: 8, thickness: 0.75, color: Colors.black54),
+                          ListTile(
+                            leading: squadra['logo'] != null && squadra['logo'] != ''
+                                ? Image.network(squadra['logo'], width: 40, height: 40,)
+                                : const Icon(Icons.sports_soccer),
+                            title: Text(squadra['squadra'] ?? ''),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _showAddEditDialog(
+                                    club: clubName,
+                                    squadra: squadra,
+                                    isEdit: true,
+                                    isAddingClub: false,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _showDeleteDialog(
+                                    club: clubName,
+                                    squadra: squadra,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _showDeleteDialog(
-                              club: clubName,
-                              squadra: squadra,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
+                        ]));
+                      }).toList(),
+                    ),
+                  ));
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditDialog(isEdit: false, isAddingClub: true),
+        shape: const CircleBorder(),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         child: const Icon(Icons.add),
       ),
     );

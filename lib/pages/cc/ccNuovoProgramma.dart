@@ -208,7 +208,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Nuovo Programma'),
+          title: const Text('Nuovo programma'),
         ),
         body: SingleChildScrollView(
           child: Padding(
@@ -221,7 +221,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                     value: _dataController.text.isEmpty
                         ? null
                         : _dataController.text,
-                    decoration: const InputDecoration(labelText: 'Data'),
+                    decoration: getInputDecoration('Data'),
                     items: const [
                       DropdownMenuItem(
                           value: '23/04/2025', child: Text('23/04/2025')),
@@ -277,13 +277,13 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                   TextFormField(
                     controller: _titoloController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(labelText: 'Titolo'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Il titolo è obbligatorio';
                       }
                       return null;
                     },
+                    decoration: getInputDecoration('Titolo'),
                   ),
                   const SizedBox(height: 16),
                   MultiSelectDialogField(
@@ -361,18 +361,18 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                       });
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   TextFormField(
                     controller: _altroController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(labelText: 'Altro'),
+                    decoration: getInputDecoration('Altro'),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _categoriaController.text.isEmpty
                         ? null
                         : _categoriaController.text,
-                    decoration: const InputDecoration(labelText: 'Categoria'),
+                    decoration: getInputDecoration('Categoria'),
                     items: const [
                       DropdownMenuItem(value: 'pasto', child: Text('Pasto')),
                       DropdownMenuItem(
@@ -395,7 +395,10 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                     children: [
                       if (widget.programmaId != null)
                         Expanded(
-                          child: ElevatedButton(
+                          child: Row(
+                            children: [
+                              Expanded(child:
+                              ElevatedButton(
                             onPressed: () async {
                               bool confirm = await showDialog(
                                 context: context,
@@ -426,20 +429,15 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                               }
                             },
                             child: const Text('Elimina'),
-                          ),
+                          ),),
+                          const SizedBox(width: 12),
+                          ])
                         ),
                         Expanded(
-                          child:Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: _saveProgramma,
-                                  child: const Text('Salva'),
-                                ),
-                              )
-                            ],
-                          )
+                          child: ElevatedButton(
+                            onPressed: _saveProgramma,
+                            child: const Text('Salva'),
+                          ),
                         )
                     ],
                   ),

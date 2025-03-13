@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
+import 'package:flutter/widgets.dart';
 import 'ccCapocannonieri.dart';
 import 'ccCalendario.dart';
 import 'ccGironi.dart';
@@ -11,6 +12,7 @@ import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
 import 'ccCreazioneGironi.dart';
 import 'package:club/pages/main/login.dart';
+import 'ccCreazioneCase.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage(
@@ -62,7 +64,10 @@ class _CCHomePageState extends State<CCHomePage> {
         onPopInvoked: (_) {
           SystemNavigator.pop();
         },
-        child: CCCalendario(ccRole: widget.ccRole ?? '', nome: widget.nome), //se widget.nome in calendario è vuoto allora niente, altrimenti si vedono le partite
+        child: CCCalendario(
+            ccRole: widget.ccRole ?? '',
+            nome: widget
+                .nome), //se widget.nome in calendario è vuoto allora niente, altrimenti si vedono le partite
       ),
       PopScope(
         onPopInvoked: (_) {
@@ -73,34 +78,68 @@ class _CCHomePageState extends State<CCHomePage> {
     ];
   }
 
-  Future<void> _showConfirmDialog() async {
-    final bool confirm = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Conferma'),
-              content: const Text('Sei sicuro di voler passare al Club?'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Annulla'),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                ),
-                TextButton(
-                  child: const Text('Conferma'),
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
-    if (confirm) {
-      _updateClub();
+  Future<void> _showConfirmDialog(bool user) async {
+    if (user) {
+      final bool confirm = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Conferma'),
+                content: const Text('Sei sicuro di voler passare al Club?'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Annulla'),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Conferma'),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+      if (confirm) {
+        _updateClub();
+      }
+    } else {
+      final bool confirm = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Conferma'),
+                content: const Text('Sei sicuro di uscire?'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Annulla'),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Conferma'),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+      if (confirm) {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cc', 'no');
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const Login()));
+      }
     }
   }
 
@@ -131,118 +170,93 @@ class _CCHomePageState extends State<CCHomePage> {
       appBar: AppBar(
         title: const Text("Champions Club"),
         automaticallyImplyLeading: false,
-        actions: [
-          widget.ccRole == 'staff'
-              ? IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => CcAggiungiSquadre()));
-                  },
-                )
-              : Container(),
-          widget.ccRole == 'staff' || widget.ccRole == 'tutor'
-              ? IconButton(
-                  icon: const Icon(Icons.people),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => CcIscriviSquadre(
-                            club: widget.club ?? '',
-                            ccRole: widget.ccRole ?? '')));
-                  },
-                )
-              : Container(),
-          widget.ccRole == 'staff'
-              ? IconButton(
-                  icon: const Icon(Icons.group_work),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ccCreazioneGironi()));
-                  },
-                )
-              : Container(),
-          widget.user == true
-              ? IconButton(
-                  icon: const Icon(Icons.class_),
-                  onPressed: () async {
-                    await _showConfirmDialog();
-                  },
-                )
-              : IconButton(
-                  icon: const Icon(Icons.class_),
-                  onPressed: () async {
-                    final SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    await prefs.setString('cc', 'no');
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => const Login()));
-                  },
-                )
-        ],
-        //leading: Builder(
-        //  builder: (BuildContext context) {
-        //    return IconButton(
-        //      icon: const Icon(Icons.menu),
-        //      onPressed: () {
-        //        Scaffold.of(context).openDrawer();
-        //      },
-        //    );
-        //  },
-        //),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF00296B), //Color.fromARGB(255, 25, 84, 132),
+            color: Color(0xFF00296B),
           ),
         ),
       ),
-      //drawer: Drawer(
-      //  child: ListView(
-      //    padding: EdgeInsets.zero,
-      //    children: <Widget>[
-      //      DrawerHeader(
-      //        decoration: const BoxDecoration(
-      //          color: Color.fromARGB(255, 25, 84, 132),
-      //        ),
-      //        child: Image.asset(
-      //          'images/logo_champions_bianco.png',
-      //          width: 24,
-      //          height: 24,
-      //        ),
-      //      ),
-      //      ListTile(
-      //        leading: const Icon(Icons.add),
-      //        title: const Text('Aggiungi squadre'),
-      //        onTap: () {
-      //          Navigator.of(context).push(MaterialPageRoute(
-      //              builder: (context) => CcAggiungiSquadre()));
-      //        },
-      //      ),
-      //      ListTile(
-      //        leading: const Icon(Icons.people),
-      //        title: const Text('Iscrivi giocatori'),
-      //        onTap: () {
-      //          Navigator.of(context).push(MaterialPageRoute(
-      //              builder: (context) => CcIscriviSquadre(club: widget.club?? '')));
-      //        },
-      //      ),
-      //      ListTile(
-      //        leading: const Icon(Icons.group_work),
-      //        title: const Text('Creazione gironi'),
-      //        onTap: () {
-      //          Navigator.of(context).push(MaterialPageRoute(
-      //              builder: (context) => ccCreazioneGironi()));
-      //        },
-      //      ),
-      //      ListTile(
-      //        leading: const Icon(Icons.class_rounded),
-      //        title: const Text('Torna al Club'),
-      //        onTap: () async {
-      //          await _showConfirmDialog();
-      //        },
-      //      ),
-      //    ],
-      //  ),
-      //),
+      drawer: Drawer(
+        shape: const RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.only(bottomLeft: Radius.zero, topRight: Radius.zero),
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFF00296B),
+              ),
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+              child: Image.asset(
+                'images/logo_champions_bianco.png',
+                width: 24,
+                height: 24,
+              ),
+            ),
+            widget.ccRole == 'staff'
+                ? ListTile(
+                    leading: const Icon(Icons.settings),
+                    title: const Text('Gestione squadre'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => CcAggiungiSquadre()));
+                    },
+                  )
+                : Container(),
+            widget.ccRole == 'staff'
+                ? ListTile(
+                    leading: const Icon(Icons.table_chart_outlined),
+                    title: const Text('Gestione gironi'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ccCreazioneGironi()));
+                    },
+                  )
+                : Container(),
+            widget.ccRole == 'staff'
+                ? ListTile(
+                    leading: const Icon(Icons.home),
+                    title: const Text('Gestione case'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => CcCreazioneCase()));
+                    },
+                  )
+                : Container(),
+            widget.ccRole == 'staff' || widget.ccRole == 'tutor'
+                ? ListTile(
+                    leading: const Icon(Icons.edit),
+                    title: const Text('Iscrivi giocatori'),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => CcIscriviSquadre(
+                              club: widget.club ?? '',
+                              ccRole: widget.ccRole ?? '')));
+                    },
+                  )
+                : Container(),
+            ListTile(
+              leading: const Icon(Icons.logout_outlined),
+              title: Text(widget.user == true ? 'Torna al Club' : 'Esci'),
+              onTap: () async {
+                await _showConfirmDialog(widget.user);
+              },
+            )
+          ],
+        ),
+      ),
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
             Animation<double> secondaryAnimation) {
@@ -262,10 +276,10 @@ class _CCHomePageState extends State<CCHomePage> {
             _selectedIndex = index;
           });
         },
-        selectedItemColor: const Color.fromARGB(255, 25, 84, 132),
+        selectedItemColor: const Color(0xFF00296B),
         unselectedItemColor: Colors.black54,
         selectedIconTheme:
-            const IconThemeData(color: Color.fromARGB(255, 25, 84, 132)),
+            const IconThemeData(color: Color(0xFF00296B),),
         unselectedIconTheme: const IconThemeData(color: Colors.black54),
         items: const [
           BottomNavigationBarItem(

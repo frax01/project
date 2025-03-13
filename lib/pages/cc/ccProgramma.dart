@@ -81,16 +81,16 @@ class _CCProgrammaState extends State<CCProgramma> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return SliverFillRemaining(
-                  child: const Center(child: CircularProgressIndicator()),
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
                 );
               } else if (snapshot.hasError) {
                 return SliverFillRemaining(
                   child: Center(child: Text('Errore: ${snapshot.error}')),
                 );
               } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return SliverFillRemaining(
-                  child: const Center(child: Text('Nessun programma trovato')),
+                return const SliverFillRemaining(
+                  child: Center(child: Text('Nessun programma trovato')),
                 );
               }
 
@@ -465,7 +465,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                                               16.0, 0, 16.0, 8.0),
                                           child: Text("Nessuna informazione",
                                               style: TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 16,
                                                   fontStyle:
                                                       FontStyle.italic))),
                                 ],

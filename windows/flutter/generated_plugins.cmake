@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_storage
   maps_launcher
   permission_handler_windows
+  printing
   share_plus
   url_launcher_windows
 )
