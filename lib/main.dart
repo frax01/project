@@ -272,6 +272,11 @@ class _HomePageStartState extends State<HomePageStart> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       club = prefs.getString('club') ?? '';
       ccRole = prefs.getString('ccRole') ?? '';
+      String nome = prefs.getString('nome') ?? '';
+
+      print("club: $club");
+      print("ccRole: $ccRole");
+      print("nome: $nome");
 
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? getToken = await messaging.getToken();

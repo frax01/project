@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class CcAggiungiSquadre extends StatefulWidget {
   @override
@@ -41,6 +42,19 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
       );
       return null;
     }
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   void _showAddEditDialog({
@@ -88,6 +102,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                         return null;
                       },
                       builder: (formFieldState) {
+                        placeHolder = 'Aggiungi logo';
+                        file = null;
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -134,12 +150,14 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
             ],
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annulla'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
+                _showLoadingDialog();
+
                 final String newClubName = clubController.text;
                 final String squadraName = squadraController.text;
 
@@ -226,6 +244,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                 }
 
                 Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
               child: Text(isEdit ? 'Modifica' : 'Salva'),
             ),
@@ -242,14 +261,15 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Conferma Eliminazione'),
-          content: Text('Sei sicuro di voler eliminare ${squadra ?? club}?'),
+          content: const Text('Sei sicuro di voler eliminare?'),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annulla'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
+                _showLoadingDialog();
                 if (squadra != null) {
                   final DocumentReference docRef =
                       _firestore.collection('ccSquadre').doc(club);
@@ -267,6 +287,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                   await _firestore.collection('ccSquadre').doc(club).delete();
                 }
 
+                Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
               child: const Text('Elimina'),
@@ -313,12 +334,17 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(clubName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              const Text("Club"),
-                            ],
+                          Expanded(
+                            child: AutoSizeText(
+                              clubName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              minFontSize: 18,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
                           Row(
                             children: [
@@ -352,35 +378,51 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                         return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(children: [
-                           const Divider(height: 8, thickness: 0.75, color: Colors.black54),
-                          ListTile(
-                            leading: squadra['logo'] != null && squadra['logo'] != ''
-                                ? Image.network(squadra['logo'], width: 40, height: 40,)
-                                : const Icon(Icons.sports_soccer),
-                            title: Text(squadra['squadra'] ?? ''),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => _showAddEditDialog(
-                                    club: clubName,
-                                    squadra: squadra,
-                                    isEdit: true,
-                                    isAddingClub: false,
+                              const Divider(
+                                  height: 8,
+                                  thickness: 0.75,
+                                  color: Colors.black54),
+                              ListTile(
+                                leading: squadra['logo'] != null &&
+                                        squadra['logo'] != ''
+                                    ? Image.network(
+                                        squadra['logo'],
+                                        width: 40,
+                                        height: 40,
+                                      )
+                                    : const Icon(Icons.sports_soccer),
+                                title: AutoSizeText(
+                                  squadra['squadra'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                   ),
+                                  minFontSize: 16,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ), //Text(squadra['squadra'] ?? ''),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _showAddEditDialog(
+                                        club: clubName,
+                                        squadra: squadra,
+                                        isEdit: true,
+                                        isAddingClub: false,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => _showDeleteDialog(
+                                        club: clubName,
+                                        squadra: squadra,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () => _showDeleteDialog(
-                                    club: clubName,
-                                    squadra: squadra,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ]));
+                              ),
+                            ]));
                       }).toList(),
                     ),
                   ));

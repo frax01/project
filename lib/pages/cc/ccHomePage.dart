@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
-import 'package:flutter/widgets.dart';
 import 'ccCapocannonieri.dart';
 import 'ccCalendario.dart';
 import 'ccGironi.dart';
@@ -11,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
 import 'ccCreazioneGironi.dart';
-import 'package:club/pages/main/login.dart';
 import 'ccCreazioneCase.dart';
 
 class CCHomePage extends StatefulWidget {
@@ -137,20 +135,15 @@ class _CCHomePageState extends State<CCHomePage> {
       if (confirm) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('cc', 'no');
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const Login()));
+        //Navigator.pushReplacement(
+        //    context, MaterialPageRoute(builder: (context) => const Login()));
+        restartApp(context, prefs.getString('club') ?? '',
+                        prefs.getString('cc') ?? '', 'user', '');
       }
     }
   }
 
-  Future<void> _updateClub() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cc', 'no');
-    restartApp(context, prefs.getString('club') ?? '',
-        prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '');
-  }
-
-  void restartApp(BuildContext context, String club, String cc, String ccRole) {
+  void restartApp(BuildContext context, String club, String cc, String ccRole, String nome) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -158,10 +151,17 @@ class _CCHomePageState extends State<CCHomePage> {
                 club: club,
                 cc: cc,
                 ccRole: ccRole,
-                nome: widget.nome,
+                nome: nome
               )),
       (Route<dynamic> route) => false,
     );
+  }
+
+  Future<void> _updateClub() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'no');
+    restartApp(context, prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '', '');
   }
 
   @override

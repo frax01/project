@@ -122,7 +122,21 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
     await _getSquadre();
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
   Future<void> _saveMatch() async {
+    _showLoadingDialog();
     for (int turno = 0; turno < turni.length; turno++) {
       for (int partita = 0; partita < turni[turno].length; partita++) {
         final Partita p = turni[turno][partita];
@@ -156,6 +170,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
         p.oldDocId = newDocId;
       }
     }
+    Navigator.of(context).pop();
     Navigator.of(context).pop();
   }
 
@@ -207,11 +222,6 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Partite girone'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 25, 84, 132),
-          ),
-        ),
       ),
       body: FutureBuilder<void>(
         future: _futureGironi,
@@ -387,12 +397,6 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                             newValue;
                                       });
                                     },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Obbligatorio';
-                                      }
-                                      return null;
-                                    },
                                     decoration: getInputDecoration('Arbitro'),
                                   ),
                                 ),
@@ -411,12 +415,6 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                         turni[turno][partita].refertista =
                                             newValue;
                                       });
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Obbligatorio';
-                                      }
-                                      return null;
                                     },
                                     decoration: getInputDecoration('Refertista'),
                                   ),

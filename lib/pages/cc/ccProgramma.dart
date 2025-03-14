@@ -152,8 +152,9 @@ class _CCProgrammaState extends State<CCProgramma> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      data == '23/04/2025'
+                                    Expanded(child:
+                                    AutoSizeText(
+                                        data == '23/04/2025'
                                           ? 'Mercoledì 23'
                                           : data == '24/04/2025'
                                               ? 'Giovedì 24'
@@ -162,11 +163,16 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                   : data == '26/04/2025'
                                                       ? 'Sabato 26'
                                                       : 'Domenica 27',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                                        style: const TextStyle(
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        minFontSize: 19,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
                                     ),
+                                    const SizedBox(width: 6),
                                     ElevatedButton(
                                       onPressed: () => Navigator.push(
                                         context,
@@ -183,21 +189,25 @@ class _CCProgrammaState extends State<CCProgramma> {
                                     ),
                                   ],
                                 )
-                              : Text(
-                                  data == '23/04/2025'
-                                      ? 'Giovedì 23'
-                                      : data == '24/04/2025'
-                                          ? 'Giovedì 24'
-                                          : data == '25/04/2025'
-                                              ? 'Venerdì 25'
-                                              : data == '26/04/2025'
-                                                  ? 'Sabato 26'
-                                                  : 'Domenica 27',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                              :
+                              AutoSizeText(
+                                 data == '23/04/2025'
+                                   ? 'Mercoledì 23'
+                                   : data == '24/04/2025'
+                                       ? 'Giovedì 24'
+                                       : data == '25/04/2025'
+                                           ? 'Venerdì 25'
+                                           : data == '26/04/2025'
+                                               ? 'Sabato 26'
+                                               : 'Domenica 27',
+                                 style: const TextStyle(
+                                   fontSize: 19,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                                 minFontSize: 19,
+                                 overflow: TextOverflow.ellipsis,
+                                 maxLines: 1,
+                              ),
                         ),
                         ...programmiPerData.map((programma) {
                           return Card(

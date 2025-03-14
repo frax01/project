@@ -104,7 +104,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                                         ? 'Sabato 26'
                                         : 'Domenica 27',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 19,
                           fontWeight: FontWeight.bold,
                         ),
                       )),

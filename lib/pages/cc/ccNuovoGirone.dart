@@ -37,6 +37,36 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
     return {for (var squadra in squadre) squadra: 0};
   }
 
+  InputDecoration getInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Color.fromARGB(255, 25, 84, 132)),
+      ),
+    );
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +153,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              decoration: InputDecoration(labelText: 'Squadra ${index + 1}'),
+                              decoration: getInputDecoration('Squadra ${index + 1}'),
                               items: squadreDisponibili
                                   .where((squadra) => !squadreSelezionate.contains(squadra) || squadreSelezionate[index] == squadra)
                                   .map((squadra) {
@@ -146,6 +176,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                   }),
                   ElevatedButton(
                     onPressed: () {
+                      _showLoadingDialog();
                       if (_formKey.currentState!.validate()) {
                         final Map<String, int> mappa = _initializeMap(squadreSelezionate);
                         FirebaseFirestore.instance.collection('ccGironi').doc(_nomeGironeController.text).set({
@@ -159,6 +190,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                         });
                         Navigator.of(context).pop();
                       }
+                      Navigator.of(context).pop();
                     },
                     child: const Text('Crea'),
                   ),

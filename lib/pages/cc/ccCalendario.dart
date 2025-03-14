@@ -5,6 +5,7 @@ import 'ccNuovaPartitaOttavi.dart';
 import 'ccModificaPartita.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
@@ -189,7 +190,22 @@ class _CCCalendarioState extends State<CCCalendario> {
     }
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
   Future<void> _pulisci(String sezione) async {
+    _showLoadingDialog();
+
     final QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('ccPartite$sezione').get();
 
@@ -211,9 +227,12 @@ class _CCCalendarioState extends State<CCCalendario> {
         'codice': doc.id,
       });
     }
+
+    Navigator.of(context).pop();
   }
 
-  Widget _widgetText(String codiceP, String arbitro, String refertista, bool iniziata, bool finita) {
+  Widget _widgetText(String codiceP, String arbitro, String refertista,
+      bool iniziata, bool finita) {
     if (_selectedSegment == 'Gironi') {
       return Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
@@ -225,18 +244,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -265,18 +283,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -309,18 +326,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -353,18 +369,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -394,18 +409,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -435,18 +449,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -476,18 +489,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -517,18 +529,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -557,18 +568,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -597,18 +607,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -637,18 +646,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -677,18 +685,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -717,18 +724,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -757,18 +763,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -797,18 +802,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -837,18 +841,17 @@ class _CCCalendarioState extends State<CCCalendario> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            iniziata && !finita? 
-            const Row(
-              children: [
-                SizedBox(width: 16),
-                CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 178, 28, 28),
-                  radius: 7,
-                ),
-                SizedBox(width: 4),
-                Text("Live")
-              ]
-            ) : Container(),
+            iniziata && !finita
+                ? const Row(children: [
+                    SizedBox(width: 16),
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 178, 28, 28),
+                      radius: 7,
+                    ),
+                    SizedBox(width: 4),
+                    Text("Live")
+                  ])
+                : Container(),
             const SizedBox(width: 16),
             widget.ccRole == 'staff' &&
                     (widget.nome == arbitro || widget.nome == refertista)
@@ -1075,7 +1078,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                             fuori: partita[
                                                                 'fuori'],
                                                             logocasa: logoCasa,
-                                                            logofuori: logoFuori,
+                                                            logofuori:
+                                                                logoFuori,
                                                             data: '25/04/2025',
                                                             orario: partita[
                                                                 'orario'],
@@ -1140,8 +1144,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                             )
                                                                           : IconButton(
                                                                               icon: const FaIcon(FontAwesomeIcons.shieldHalved),
-                                                                              onPressed: () {},
-                                                                            ),
+                                                                              onPressed: () {}),
                                                                       const SizedBox(
                                                                           width:
                                                                               6),
@@ -1149,8 +1152,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                               ''
                                                                           ? Text(
                                                                               partita['casa'],
-                                                                              style: const TextStyle(fontSize: 18))
-                                                                          : const Text('Da definire', style: TextStyle(fontSize: 18)),
+                                                                              style: const TextStyle(fontSize: 17))
+                                                                          : const Text('Da definire', style: TextStyle(fontSize: 17)),
                                                                     ],
                                                                   ),
                                                                   partita['iniziata'] ||
@@ -1167,8 +1170,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                         )
                                                                       : Row(
                                                                           children: [
-                                                                            partita['orario'] == '' ? const Icon(Icons.access_time,
-                                                                                size: 22) : Container(),
+                                                                            partita['orario'] == ''
+                                                                                ? const Icon(Icons.access_time, size: 22)
+                                                                                : Container(),
                                                                             Text(partita['orario'] != '' ? '${partita['orario']}' : '',
                                                                                 style: const TextStyle(fontSize: 18)),
                                                                           ],
@@ -1213,8 +1217,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                             ])
                                                                       : Row(
                                                                           children: [
-                                                                            partita['campo']=='' ? const Icon(Icons.location_on_outlined,
-                                                                                size: 22) : Container(),
+                                                                            partita['campo'] == ''
+                                                                                ? const Icon(Icons.location_on_outlined, size: 22)
+                                                                                : Container(),
                                                                             Text(partita['campo'].length > 1 ? '${partita['campo']}' : '',
                                                                                 style: const TextStyle(fontSize: 18)),
                                                                           ],
@@ -1228,7 +1233,11 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                   partita[
                                                                       'arbitro'],
                                                                   partita[
-                                                                      'refertista'], partita['iniziata'], partita['finita'])
+                                                                      'refertista'],
+                                                                  partita[
+                                                                      'iniziata'],
+                                                                  partita[
+                                                                      'finita'])
                                                             ],
                                                           ),
                                                         ],
@@ -1240,42 +1249,54 @@ class _CCCalendarioState extends State<CCCalendario> {
                             }).toList(),
                             _selectedSegment == 'Ottavi' &&
                                     widget.ccRole == 'staff'
-                                ? Center(
-                                    child: ElevatedButton(
-                                    onPressed: () {
-                                      _pulisci('Ottavi');
-                                    },
-                                    child: const Text('Pulisci Ottavi'),
-                                  ))
+                                ? Column(children: [
+                                    const SizedBox(height: 10),
+                                    Center(
+                                        child: ElevatedButton(
+                                      onPressed: () {
+                                        _pulisci('Ottavi');
+                                      },
+                                      child: const Text('Pulisci Ottavi'),
+                                    ))
+                                  ])
                                 : _selectedSegment == 'Quarti' &&
                                         widget.ccRole == 'staff'
-                                    ? Center(
-                                        child: ElevatedButton(
-                                        onPressed: () {
-                                          _pulisci('Quarti');
-                                        },
-                                        child: const Text('Pulisci Quarti'),
-                                      ))
+                                    ? Column(children: [
+                                        const SizedBox(height: 10),
+                                        Center(
+                                            child: ElevatedButton(
+                                          onPressed: () {
+                                            _pulisci('Quarti');
+                                          },
+                                          child: const Text('Pulisci Quarti'),
+                                        ))
+                                      ])
                                     : _selectedSegment == 'Semifinali' &&
                                             widget.ccRole == 'staff'
-                                        ? Center(
-                                            child: ElevatedButton(
-                                            onPressed: () {
-                                              _pulisci('Semifinali');
-                                            },
-                                            child: const Text(
-                                                'Pulisci Semifinali'),
-                                          ))
+                                        ? Column(children: [
+                                            const SizedBox(height: 10),
+                                            Center(
+                                                child: ElevatedButton(
+                                              onPressed: () {
+                                                _pulisci('Semifinali');
+                                              },
+                                              child: const Text(
+                                                  'Pulisci Semifinali'),
+                                            ))
+                                          ])
                                         : _selectedSegment == 'Finali' &&
                                                 widget.ccRole == 'staff'
-                                            ? Center(
-                                                child: ElevatedButton(
-                                                onPressed: () {
-                                                  _pulisci('Finali');
-                                                },
-                                                child: const Text(
-                                                    'Pulisci Finali'),
-                                              ))
+                                            ? Column(children: [
+                                                const SizedBox(height: 10),
+                                                Center(
+                                                    child: ElevatedButton(
+                                                  onPressed: () {
+                                                    _pulisci('Finali');
+                                                  },
+                                                  child: const Text(
+                                                      'Pulisci Finali'),
+                                                ))
+                                              ])
                                             : Container()
                           ]));
                 },

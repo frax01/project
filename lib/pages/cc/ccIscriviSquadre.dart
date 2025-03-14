@@ -93,7 +93,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
           if (ccCaseMap.containsKey(club)) {
             ccCaseMap[club]!.add(numero);
           } else {
-            ccCaseMap[club] = [numero];
+            ccCaseMap[club] = ['', numero];
           }
         }
       }
@@ -151,10 +151,10 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
             .collection('ccIscrizioniSquadre')
             .where('nomeSquadra', isEqualTo: elem)
             .get();
-            String search = '';
+        String search = '';
         if (value.docs.isNotEmpty) {
-          for(var doc in value.docs){
-              search = doc['club'];
+          for (var doc in value.docs) {
+            search = doc['club'];
           }
         }
         clubs[elem] = search;
@@ -189,13 +189,18 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   }
 
   void _saveSquadra(String squadra) async {
+    _showLoadingDialog();
+
     List<Map<String, String>> giocatoriData = [];
     for (int i = 0; i < giocatori[squadra]!.length; i++) {
-      giocatoriData.add({
-        'nome': giocatori[squadra]![i],
-        'maglia': magliaControllers[squadra]![i].text,
-        'appartamento': appartamentoControllers[squadra]![i].text,
-      });
+      //giocatoriData.add({
+      //  'nome': giocatori[squadra]![i],
+      //  'maglia': magliaControllers[squadra]![i].text,
+      //  'appartamento': appartamentoControllers[squadra]![i].text,
+      //});
+
+      List<dynamic> persone = [];
+      String posti = '';
 
       String nuovoAppartamento = appartamentoControllers[squadra]![i].text;
 
@@ -230,11 +235,11 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
         DocumentSnapshot docSnapshot = await docRef.get();
 
-        List<dynamic> persone = [];
-        String posti = '';
+        persone = [];
+        posti = '';
         if (docSnapshot.exists) {
           persone = docSnapshot['persone'];
-          posti = docSnapshot['posti'];
+          posti = docSnapshot['posti'].toString();
         }
 
         // Controlla se la persona è già presente nella lista
@@ -254,11 +259,41 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
           });
         }
 
-        await docRef.set({
-          'numero': nuovoAppartamento,
-          'club': widget.club,
-          'persone': persone,
-          'posti': posti,
+        if (persone.length<=int.parse(posti)) {
+          await docRef.set({
+            'numero': nuovoAppartamento,
+            'club': widget.club,
+            'persone': persone,
+            'posti': posti,
+          });
+        } else {
+          List<dynamic> iscritti = [];
+          for (int i=0; i<int.parse(posti); i++) {
+            iscritti.add(persone[i]);
+          }
+          await docRef.set({
+              'numero': nuovoAppartamento,
+              'club': widget.club,
+              'persone': iscritti,
+              'posti': posti,
+            });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Numero massimo di $posti posti raggiunto')),
+          );
+        }
+      }
+
+      if(persone.length<=int.parse(posti)) {
+        giocatoriData.add({
+          'nome': giocatori[squadra]![i],
+          'maglia': magliaControllers[squadra]![i].text,
+          'appartamento': appartamentoControllers[squadra]![i].text,
+        });
+      } else {
+        giocatoriData.add({
+          'nome': giocatori[squadra]![i],
+          'maglia': magliaControllers[squadra]![i].text,
+          'appartamento': '',
         });
       }
     }
@@ -275,6 +310,28 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     setState(() {
       hasChanges[squadra] = false;
     });
+
+    Navigator.of(context).pop();
+
+    Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => CcIscriviSquadre(club: widget.club, ccRole: widget.ccRole),
+    ),
+  );
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   Map<String, List<TextEditingController>> magliaControllers = {};
@@ -287,7 +344,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Iscrivi Squadre'),
+        title: const Text('Iscrivi giocatori'),
         actions: [
           IconButton(
             icon: Icon(Icons.picture_as_pdf),
@@ -359,299 +416,203 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                         ),
                         shape: Border.all(color: Colors.transparent),
                         children: [
-                          Form(
-                            key: _formKey,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: giocatori[squadra]!.length,
-                              itemBuilder: (context, i) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 4),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Center(
-                                        child: Text(
-                                          '${i + 1}',
-                                          style: const TextStyle(fontSize: 22),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: TextFormField(
-                                                    textCapitalization:
-                                                        TextCapitalization
-                                                            .sentences,
-                                                    controller:
-                                                        giocatoriControllers[
-                                                            squadra]![i],
-                                                    onChanged: (value) {
-                                                      giocatori[squadra]![i] =
-                                                          value;
-                                                      setState(() {
-                                                        hasChanges[squadra] =
-                                                            true;
-                                                      });
-                                                    },
-                                                    validator: (value) {
-                                                      if (value == null ||
-                                                          value.isEmpty) {
-                                                        return 'Inserisci il giocatore';
-                                                      }
-                                                      return null;
-                                                    },
-                                                    decoration:
-                                                        const InputDecoration(
-                                                      labelText:
-                                                          'Nome e cognome',
-                                                      filled: true,
-                                                      fillColor: Colors.white,
-                                                      border:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Colors.black54),
-                                                      ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Colors.black54),
-                                                      ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Color.fromARGB(
-                                                                    255,
-                                                                    25,
-                                                                    84,
-                                                                    132)),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: TextFormField(
-                                                    controller:
-                                                        magliaControllers[
-                                                            squadra]![i],
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        hasChanges[squadra] =
-                                                            true;
-                                                      });
-                                                    },
-                                                    validator: (value) {
-                                                      if (value != null &&
-                                                          value.isNotEmpty) {
-                                                        final int? number =
-                                                            int.tryParse(value);
-                                                        if (number == null ||
-                                                            number < 0 ||
-                                                            number > 99) {
-                                                          return 'Numero non valido';
-                                                        }
-                                                      }
-                                                      return null;
-                                                    },
-                                                    decoration:
-                                                        const InputDecoration(
-                                                      labelText: 'N° maglia',
-                                                      filled: true,
-                                                      fillColor: Colors.white,
-                                                      border:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Colors.black54),
-                                                      ),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Colors.black54),
-                                                      ),
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                        borderSide: BorderSide(
-                                                            color:
-                                                                Color.fromARGB(
-                                                                    255,
-                                                                    25,
-                                                                    84,
-                                                                    132)),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: widget.ccRole ==
-                                                          'tutor'
-                                                      ? DropdownButtonFormField<
-                                                          String>(
-                                                          value: appartamentoControllers[
-                                                                          squadra]![
-                                                                      i]
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? appartamentoControllers[
-                                                                      squadra]![i]
-                                                                  .text
-                                                              : null,
-                                                          items: ccCaseList.map(
-                                                              (String
-                                                                  caseItem) {
-                                                            return DropdownMenuItem<
-                                                                String>(
-                                                              value: caseItem,
-                                                              child: Text(
-                                                                  caseItem),
-                                                            );
-                                                          }).toList(),
-                                                          onChanged: (value) {
-                                                            setState(() {
-                                                              appartamentoControllers[
-                                                                      squadra]![i]
-                                                                  .text = value!;
-                                                              hasChanges[
-                                                                      squadra] =
-                                                                  true;
-                                                            });
-                                                          },
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            labelText:
-                                                                'N° appartamento',
-                                                            filled: true,
-                                                            fillColor:
-                                                                Colors.white,
-                                                            border:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                            ),
-                                                            enabledBorder:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                            ),
-                                                            focusedBorder:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          25,
-                                                                          84,
-                                                                          132)),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : DropdownButtonFormField<
-                                                          String>(
-                                                          value: appartamentoControllers[
-                                                                          squadra]![
-                                                                      i]
-                                                                  .text
-                                                                  .isNotEmpty
-                                                              ? appartamentoControllers[
-                                                                      squadra]![i]
-                                                                  .text
-                                                              : null,
-                                                          items: ccCaseMap[
-                                                                      squadraMap] !=
-                                                                  null
-                                                              ? ccCaseMap[
-                                                                      squadraMap]!
-                                                                  .map((String
-                                                                      caseItem) {
-                                                                  return DropdownMenuItem<
-                                                                      String>(
-                                                                    value:
-                                                                        caseItem,
-                                                                    child: Text(
-                                                                        caseItem),
-                                                                  );
-                                                                }).toList()
-                                                              : [],
-                                                          onChanged: (value) {
-                                                            setState(() {
-                                                              appartamentoControllers[
-                                                                      squadra]![i]
-                                                                  .text = value!;
-                                                              hasChanges[
-                                                                      squadra] =
-                                                                  true;
-                                                            });
-                                                          },
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            labelText:
-                                                                'N° appartamento',
-                                                            filled: true,
-                                                            fillColor:
-                                                                Colors.white,
-                                                            border:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                            ),
-                                                            enabledBorder:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                            ),
-                                                            focusedBorder:
-                                                                OutlineInputBorder(
-                                                              borderSide: BorderSide(
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          25,
-                                                                          84,
-                                                                          132)),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Center(
-                                        child: IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () =>
-                                              _removeGiocatore(squadra, i),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
+  Form(
+    key: _formKey,
+    child: Column(
+      children: [
+        for (int i = 0; i < giocatori[squadra]!.length; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: Text(
+                    '${i + 1}',
+                    style: const TextStyle(fontSize: 22),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              textCapitalization: TextCapitalization.sentences,
+                              controller: giocatoriControllers[squadra]![i],
+                              onChanged: (value) {
+                                giocatori[squadra]![i] = value;
+                                setState(() {
+                                  hasChanges[squadra] = true;
+                                });
                               },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Inserisci il giocatore';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                labelText: 'Nome e cognome',
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black54),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black54),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Color.fromARGB(255, 25, 84, 132)),
+                                ),
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: magliaControllers[squadra]![i],
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                setState(() {
+                                  hasChanges[squadra] = true;
+                                });
+                              },
+                              validator: (value) {
+                                if (value != null && value.isNotEmpty) {
+                                  final int? number = int.tryParse(value);
+                                  if (number == null || number < 0 || number > 99) {
+                                    return 'Numero non valido';
+                                  }
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                labelText: 'N° maglia',
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black54),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black54),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Color.fromARGB(255, 25, 84, 132)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: widget.ccRole == 'tutor'
+                                ? DropdownButtonFormField<String>(
+                                    value: appartamentoControllers[squadra]![i]
+                                            .text
+                                            .isNotEmpty
+                                        ? appartamentoControllers[squadra]![i]
+                                            .text
+                                        : null,
+                                    items: ccCaseList.map((String caseItem) {
+                                      return DropdownMenuItem<String>(
+                                        value: caseItem,
+                                        child: Text(caseItem),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        appartamentoControllers[squadra]![i]
+                                            .text = value!;
+                                        hasChanges[squadra] = true;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      labelText: 'N° appartamento',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.black54),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.black54),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Color.fromARGB(
+                                                255, 25, 84, 132)),
+                                      ),
+                                    ),
+                                  )
+                                : DropdownButtonFormField<String>(
+                                    value: appartamentoControllers[squadra]![i]
+                                            .text
+                                            .isNotEmpty
+                                        ? appartamentoControllers[squadra]![i]
+                                            .text
+                                        : null,
+                                    items: ccCaseMap[squadraMap] != null
+                                        ? ccCaseMap[squadraMap]!
+                                            .map((String caseItem) {
+                                            return DropdownMenuItem<String>(
+                                              value: caseItem,
+                                              child: Text(caseItem),
+                                            );
+                                          }).toList()
+                                        : [],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        appartamentoControllers[squadra]![i]
+                                            .text = value!;
+                                        hasChanges[squadra] = true;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      labelText: 'N° appartamento',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.black54),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.black54),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Color.fromARGB(
+                                                255, 25, 84, 132)),
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Center(
+                  child: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _removeGiocatore(squadra, i),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

@@ -136,7 +136,21 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     await _getSquadre();
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
   Future<void> _saveMatch() async {
+    _showLoadingDialog();
     for (int turno = 0; turno < turni.length; turno++) {
       final Partita p = turni[turno];
       final String newDocId = '${p.codice![0]}$turno';
@@ -175,6 +189,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
       });
       p.oldDocId = newDocId;
     }
+    Navigator.of(context).pop();
     Navigator.of(context).pop();
   }
 
@@ -227,11 +242,6 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
       appBar: AppBar(
         title: Text(
             'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 25, 84, 132),
-          ),
-        ),
       ),
       body: FutureBuilder<void>(
         future: _futureGironi,

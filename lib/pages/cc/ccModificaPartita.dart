@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class CCModificaPartita extends StatefulWidget {
   final String casa;
@@ -888,11 +889,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
             return SingleChildScrollView(child: Column(
               children: [
                 Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
+                          Expanded(child:Column(
                             children: [
                               widget.logocasa.isNotEmpty
                                   ? Image.network(widget.logocasa,
@@ -903,10 +904,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                       onPressed: () {},
                                     ),
                               const SizedBox(height: 8),
-                              Text(widget.casa,
-                                  style: const TextStyle(fontSize: 22)),
+                              AutoSizeText(
+                                widget.casa,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                                minFontSize: 20,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ],
-                          ),
+                          ),),
                           const SizedBox(width: 4),
                           Column(children: [
                             Row(children: [
@@ -939,7 +947,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 : Container()
                           ]),
                           const SizedBox(width: 4),
-                          Column(
+                          Expanded(child: Column(
                             children: [
                               widget.logofuori.isNotEmpty
                                   ? Image.network(widget.logofuori,
@@ -950,10 +958,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                       onPressed: () {},
                                     ),
                               const SizedBox(height: 8),
-                              Text(widget.fuori,
-                                  style: const TextStyle(fontSize: 22)),
+                              AutoSizeText(
+                                widget.fuori,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                                minFontSize: 20,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ],
-                          ),
+                          ),)
                         ])),
                 const SizedBox(height: 16),
                 widget.ccRole == 'staff'
@@ -1012,7 +1027,15 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                             : const Color.fromARGB(
                                                 255, 16, 108, 47),
                                       ),
-                                      child: const Text("Inizio partita"),
+                                      child: const AutoSizeText(
+                                        'Inizio partita',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                        minFontSize: 16,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
                                     ),
                                   )
                                 : Container(),
@@ -1078,10 +1101,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: !iniziata
                                             ? Colors.grey
-                                            : const Color.fromARGB(
-                                                255, 150, 9, 9),
+                                            : const Color(0xFF00296B),
                                       ),
-                                      child: const Text("Fine partita"),
+                                      child: const AutoSizeText(
+                                        'Fine partita',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                        minFontSize: 16,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
                                     ),
                                   )
                                 : Container(),
@@ -1140,7 +1170,15 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                           : const Color.fromARGB(
                                               255, 25, 84, 132),
                                     ),
-                                    child: Text(boolRigori && iniziata ? "Cancella rigori" : "Crea rigori"),
+                                    child: AutoSizeText(
+                                        boolRigori && iniziata ? "Cancella rigori" : "Crea rigori",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                        minFontSize: 16,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
                                   ))
                                 : Container(),
                           ]
@@ -1387,7 +1425,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         SizedBox(height: 8),
                         Text('Partita da giocare',
                             style: TextStyle(
-                                fontSize: 22, fontStyle: FontStyle.italic))
+                                fontSize: 21, fontStyle: FontStyle.italic))
                       ]))
                     : Center(
                         child: Column(children: [
@@ -1397,12 +1435,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           !finita
                               ? const Text("Partita in corso",
                                   style: TextStyle(
-                                      fontSize: 22,
+                                      fontSize: 21,
                                       fontStyle: FontStyle.italic))
                               : const Center(
                                   child: Text('Partita terminata',
                                       style: TextStyle(
-                                          fontSize: 22,
+                                          fontSize: 21,
                                           fontStyle: FontStyle.italic)))
                         ]),
                       ),
@@ -1607,15 +1645,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                 ])
                                               : const Icon(Icons.sports_soccer),
                                       const SizedBox(width: 8),
-                                      Column(
+                                      Expanded(child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(
+                                            AutoSizeText(
                                               marcatore['nome']!,
-                                              style: const TextStyle(fontSize: 18),
-                                              maxLines: 1,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                              ),
+                                              minFontSize: 18,
                                               overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
                                             ),
                                             Text(
                                               marcatore['cosa'] == 'gol'
@@ -1628,21 +1668,23 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
                                             ),
-                                          ])
+                                          ]))
                                     ],
                                   )
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Column(
+                                      Expanded(child:Column(
                                           crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              '  ${marcatore['nome']!}',
-                                              style: const TextStyle(fontSize: 18),
-                                              maxLines: 1,
+                                            AutoSizeText(
+                                              ' ${marcatore['nome']!}',
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                              ),
+                                              minFontSize: 18,
                                               overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
                                             ),
                                             Text(
                                               marcatore['cosa'] == 'gol'
@@ -1655,7 +1697,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
                                             ),
-                                          ]),
+                                          ]),),
                                       const SizedBox(width: 8),
                                       marcatore['cosa'] == 'amm'
                                           ? Row(children: [

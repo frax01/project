@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class CCCapocannonieri extends StatefulWidget {
   const CCCapocannonieri({super.key});
@@ -147,10 +148,15 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  AutoSizeText(
                     marcatore.key,
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    minFontSize: 16,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                   Text(
                     squadre[marcatore.key] ?? '',

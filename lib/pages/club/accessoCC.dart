@@ -70,6 +70,7 @@ class _AccessoCCState extends State<AccessoCC> {
               'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
           await prefs.setString('ccRole', 'staff');
           await prefs.setString('nome', nome);
+          await prefs.setString('club', newclub ?? '');
           restartApp(context, prefs.getString('club') ?? '',
               prefs.getString('cc') ?? '', 'staff', nome);
         } else {
@@ -97,6 +98,7 @@ class _AccessoCCState extends State<AccessoCC> {
               'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
           await prefs.setString('ccRole', 'staff');
           await prefs.setString('nome', nome);
+          await prefs.setString('club', newclub ?? '');
           restartApp(context, prefs.getString('club') ?? '',
               prefs.getString('cc') ?? '', 'staff', nome);
         }
@@ -116,6 +118,7 @@ class _AccessoCCState extends State<AccessoCC> {
         await prefs.setString('cc',
             'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
         await prefs.setString('ccRole', 'tutor');
+        await prefs.setString('club', newclub ?? '');
         restartApp(
             context,
             newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
@@ -180,6 +183,23 @@ class _AccessoCCState extends State<AccessoCC> {
     );
   }
 
+  InputDecoration getInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black54),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Color.fromARGB(255, 25, 84, 132)),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -207,6 +227,7 @@ class _AccessoCCState extends State<AccessoCC> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Champions Club'),
+        backgroundColor: const Color(0xFF00296B),
       ),
       body: Center(
           child: Padding(
@@ -233,38 +254,13 @@ class _AccessoCCState extends State<AccessoCC> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: showUserPasswordField
-                        ? const Color.fromARGB(255, 25, 84, 132)
-                        : null,
+                        ? const Color.fromARGB(255, 39, 132, 207)
+                        : const Color(0xFF00296B),
                   ),
                   child: const Text('Entra come utente'),
                 ),
               )
             ]),
-            //if (showUserPasswordField)
-            //  Column(
-            //    children: [
-            //      const SizedBox(height: 15),
-            //      TextField(
-            //        controller: userPasswordController,
-            //        decoration:
-            //            const InputDecoration(labelText: 'Password Utente'),
-            //        obscureText: true,
-            //      ),
-            //      const SizedBox(height: 15),
-            //      Row(children: [
-            //        Expanded(
-            //          child: ElevatedButton(
-            //            onPressed: () => _checkPassword('user'),
-            //            style: ElevatedButton.styleFrom(
-            //              backgroundColor:
-            //                  const Color.fromARGB(255, 25, 84, 132),
-            //            ),
-            //            child: const Text('Entra'),
-            //          ),
-            //        )
-            //      ]),
-            //    ],
-            //  ),
             Row(children: [
               Expanded(
                 child: ElevatedButton(
@@ -280,8 +276,8 @@ class _AccessoCCState extends State<AccessoCC> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: showTutorPasswordField
-                        ? const Color.fromARGB(255, 25, 84, 132)
-                        : null,
+                        ? const Color.fromARGB(255, 39, 132, 207)
+                        : const Color(0xFF00296B),
                   ),
                   child: const Text('Entra come tutor'),
                 ),
@@ -321,7 +317,7 @@ class _AccessoCCState extends State<AccessoCC> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                    color: Color.fromARGB(255, 25, 84, 132)),
+                                    color: Color.fromARGB(255, 39, 132, 207)),
                               ),
                             )),
                       ) //)
@@ -329,8 +325,7 @@ class _AccessoCCState extends State<AccessoCC> {
                   const SizedBox(height: 15),
                   TextField(
                     controller: tutorPasswordController,
-                    decoration:
-                        const InputDecoration(labelText: 'Password Tutor'),
+                    decoration: getInputDecoration('Password tutor'),
                     obscureText: true,
                   ),
                   const SizedBox(height: 15),
@@ -340,7 +335,7 @@ class _AccessoCCState extends State<AccessoCC> {
                         onPressed: () => _checkPasswordTutor('tutor', newclub),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 25, 84, 132),
+                              const Color.fromARGB(255, 39, 132, 207),
                         ),
                         child: const Text('Entra'),
                       ),
@@ -360,8 +355,8 @@ class _AccessoCCState extends State<AccessoCC> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: showStaffPasswordField
-                        ? const Color.fromARGB(255, 25, 84, 132)
-                        : null,
+                        ? const Color.fromARGB(255, 39, 132, 207)
+                        : const Color(0xFF00296B),
                   ),
                   child: const Text('Entra come staff'),
                 ),
@@ -394,7 +389,7 @@ class _AccessoCCState extends State<AccessoCC> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
-                                color: Color.fromARGB(255, 25, 84, 132)),
+                                color: Color.fromARGB(255, 39, 132, 207)),
                           ),
                         ),
                       ),
@@ -403,8 +398,7 @@ class _AccessoCCState extends State<AccessoCC> {
                   const SizedBox(height: 15),
                   TextField(
                     controller: staffPasswordController,
-                    decoration:
-                        const InputDecoration(labelText: 'Password Staff'),
+                    decoration: getInputDecoration('Password staff'),
                     obscureText: true,
                   ),
                   const SizedBox(height: 15),
@@ -415,7 +409,7 @@ class _AccessoCCState extends State<AccessoCC> {
                             'staff', '', staffDataController.text, 'login'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 25, 84, 132),
+                              const Color.fromARGB(255, 39, 132, 207),
                         ),
                         child: const Text('Login'),
                       ),
@@ -427,7 +421,7 @@ class _AccessoCCState extends State<AccessoCC> {
                             staffDataController.text, 'registrati'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 25, 84, 132),
+                              const Color.fromARGB(255, 39, 132, 207),
                         ),
                         child: const Text('Registrati'),
                       ),

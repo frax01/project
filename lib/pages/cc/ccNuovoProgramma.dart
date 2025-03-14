@@ -132,7 +132,21 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
     super.dispose();
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
   Future<void> _saveProgramma() async {
+    _showLoadingDialog();
     if (_formKey.currentState!.validate()) {
       final data = _dataController.text;
       final orario = _orarioController.text;
@@ -165,6 +179,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
 
       Navigator.pop(context);
     }
+    Navigator.of(context).pop();
   }
 
   Future<String?> _selectTime() async {
@@ -217,6 +232,18 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
               key: _formKey,
               child: Column(
                 children: [
+                  TextFormField(
+                    controller: _titoloController,
+                    textCapitalization: TextCapitalization.sentences,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Il titolo è obbligatorio';
+                      }
+                      return null;
+                    },
+                    decoration: getInputDecoration('Titolo'),
+                  ),
+                  const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _dataController.text.isEmpty
                         ? null
@@ -272,18 +299,6 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                         decoration: getInputDecoration('Orario'),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _titoloController,
-                    textCapitalization: TextCapitalization.sentences,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Il titolo è obbligatorio';
-                      }
-                      return null;
-                    },
-                    decoration: getInputDecoration('Titolo'),
                   ),
                   const SizedBox(height: 16),
                   MultiSelectDialogField(
@@ -407,12 +422,12 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                                   content: const Text(
                                       'Sei sicuro di voler eliminare questo programma?'),
                                   actions: [
-                                    TextButton(
+                                    ElevatedButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(false),
                                       child: const Text('No'),
                                     ),
-                                    TextButton(
+                                    ElevatedButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(true),
                                       child: const Text('Sì'),
@@ -421,11 +436,13 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                                 ),
                               );
                               if (confirm) {
+                                _showLoadingDialog();
                                 await FirebaseFirestore.instance
                                     .collection('ccProgramma')
                                     .doc(widget.programmaId)
                                     .delete();
                                 Navigator.pop(context);
+                                Navigator.of(context).pop();
                               }
                             },
                             child: const Text('Elimina'),
