@@ -229,7 +229,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Errore: ${snapshot.error}'));
+            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 20),));
           } else if (squadre.isEmpty) {
             return const Center(
               child: Text(
@@ -264,7 +264,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                           });
                         },
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
                       for (int turno = 0; turno < turni.length; turno++) ...[
                         Text("Turno ${turno + 1}",
                             style: const TextStyle(
@@ -361,7 +361,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].campo,
+                                  value: turni[turno][partita].campo?.isNotEmpty == true ? turni[turno][partita].campo : null,
                                   items: campi.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -384,7 +384,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               children: [
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita].arbitro,
+                                    value: turni[turno][partita].arbitro?.isNotEmpty == true ? turni[turno][partita].arbitro : null,
                                     items: staff.map((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
@@ -403,7 +403,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita].refertista,
+                                    value: turni[turno][partita].refertista?.isNotEmpty == true ? turni[turno][partita].refertista : null,
                                     items: staff.map((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,

@@ -16,7 +16,7 @@ class CCHomePage extends StatefulWidget {
   const CCHomePage(
       {super.key,
       this.selectedIndex = 0,
-      this.club,
+      required this.club,
       this.ccRole,
       required this.email,
       required this.user,
@@ -27,8 +27,7 @@ class CCHomePage extends StatefulWidget {
   final String? ccRole;
   final bool user;
   final String email;
-  final String
-      nome; //se il nome è vuoto prenderlo dalla tabella user (nome+cognome) solo se ccRole==staff
+  final String nome; //se il nome è vuoto prenderlo dalla tabella user (nome+cognome) solo se ccRole==staff
 
   @override
   State<CCHomePage> createState() => _CCHomePageState();
@@ -44,6 +43,7 @@ class _CCHomePageState extends State<CCHomePage> {
 
     print("nome: ${widget.nome}");
     print("email: ${widget.email}");
+    print("club: ${widget.club}");
 
     _ccWidgetOptions = <Widget>[
       PopScope(
@@ -170,7 +170,8 @@ class _CCHomePageState extends State<CCHomePage> {
       appBar: AppBar(
         title: const Text("Champions Club"),
         automaticallyImplyLeading: false,
-        leading: Builder(
+        leading: widget.ccRole == 'staff'
+          ? Builder(
           builder: (BuildContext context) {
             return IconButton(
               icon: const Icon(Icons.menu),
@@ -179,14 +180,30 @@ class _CCHomePageState extends State<CCHomePage> {
               },
             );
           },
-        ),
+        ) : null,
+        actions: [
+          widget.ccRole=='tutor' ? IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () async {
+            Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => CcIscriviSquadre(
+                              club: widget.club ?? '',
+                              ccRole: widget.ccRole ?? '')));
+          }) : Container(),
+
+          widget.ccRole!='staff' ? IconButton(
+          icon: const Icon(Icons.logout_outlined),
+          onPressed: () async {
+            await _showConfirmDialog(widget.user);
+          }) : Container(),
+        ],
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             color: Color(0xFF00296B),
           ),
         ),
       ),
-      drawer: Drawer(
+      drawer: widget.ccRole=='staff' ? Drawer(
         shape: const RoundedRectangleBorder(
           borderRadius:
               BorderRadius.only(bottomLeft: Radius.zero, topRight: Radius.zero),
@@ -256,7 +273,7 @@ class _CCHomePageState extends State<CCHomePage> {
             )
           ],
         ),
-      ),
+      ) : null,
       body: PageTransitionSwitcher(
         transitionBuilder: (Widget child, Animation<double> animation,
             Animation<double> secondaryAnimation) {

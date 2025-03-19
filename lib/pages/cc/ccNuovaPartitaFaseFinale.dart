@@ -346,7 +346,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].campo,
+                                value: turni[turno].campo?.isNotEmpty == true ? turni[turno].campo : null,
                                 items: campi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -369,7 +369,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno].arbitro,
+                                  value: turni[turno].arbitro?.isNotEmpty == true ? turni[turno].arbitro : null,
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -382,19 +382,13 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                           newValue;
                                     });
                                   },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Obbligatorio';
-                                    }
-                                    return null;
-                                  },
                                   decoration: getInputDecoration('Arbitro'),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno].refertista,
+                                  value: turni[turno].refertista?.isNotEmpty == true ? turni[turno].refertista : null,
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -406,12 +400,6 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                       turni[turno].refertista =
                                           newValue;
                                     });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Obbligatorio';
-                                    }
-                                    return null;
                                   },
                                   decoration: getInputDecoration('Refertista'),
                                 ),

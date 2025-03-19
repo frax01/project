@@ -47,7 +47,7 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Nessun girone presente'));
+            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 20),));
           }
           return Padding(
               padding: const EdgeInsets.all(8.0),
@@ -110,7 +110,7 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Conferma Eliminazione'),
+        title: const Text('Conferma eliminazione'),
         content: const Text('Sei sicuro di voler eliminare questo girone?'),
         actions: [
           ElevatedButton(
@@ -118,9 +118,19 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
             child: const Text('Annulla'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               _showLoadingDialog();
-              _firestore.collection('ccGironi').doc(docId).delete();
+
+              QuerySnapshot querySnapshot = await _firestore
+                  .collection('ccPartiteGironi')
+                  .where('girone', isEqualTo: docId)
+                  .get();
+
+              for (var doc in querySnapshot.docs) {
+                await doc.reference.delete();
+              }
+
+              await _firestore.collection('ccGironi').doc(docId).delete();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },

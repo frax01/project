@@ -13,11 +13,25 @@ class _CCGironiState extends State<CCGironi> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Map<String, Map<String, Map<String, int>>> scontriDirettiCache = {};
   late Future<void> _scontriDirettiFuture;
+  Map<String, String> logo = {};
 
   @override
   void initState() {
     super.initState();
+    _loadLogo();
     _scontriDirettiFuture = _loadScontriDiretti();
+  }
+
+  Future<void> _loadLogo() async {
+    final querySnapshot = await _firestore.collection('ccSquadre').get();
+    for (var doc in querySnapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final squadre = List<Map<String, dynamic>>.from(data['squadre']);
+      for (var squadra in squadre) {
+        logo[squadra['squadra']] = squadra['logo'];
+      }
+    }
+    setState(() {});
   }
 
   Future<void> _loadScontriDiretti() async {
@@ -84,7 +98,8 @@ class _CCGironiState extends State<CCGironi> {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.data!.docs.isEmpty) {
                       return const Center(
-                          child: Text('Nessun girone presente'));
+                          child: Text('Nessun girone presente',
+                              style: TextStyle(fontSize: 20)));
                     }
                     return SingleChildScrollView(
                       child: Column(
@@ -198,6 +213,8 @@ class _CCGironiState extends State<CCGironi> {
         Map<String, int>.from(doc['goalSubiti']);
     final Map<String, int> diffReti = Map<String, int>.from(doc['diffReti']);
     final Map<String, int> punti = Map<String, int>.from(doc['punti']);
+    final Map<String, int> cartGialli =
+        Map<String, int>.from(doc['cartGialli']);
 
     // Crea una lista di squadre con i loro dati
     List<Map<String, dynamic>> squadreData = partite.keys.map((squadra) {
@@ -208,6 +225,7 @@ class _CCGironiState extends State<CCGironi> {
         'goalSubiti': goalSubiti[squadra],
         'diffReti': diffReti[squadra],
         'punti': punti[squadra],
+        'cartGialli': cartGialli[squadra],
       };
     }).toList();
 
@@ -224,7 +242,10 @@ class _CCGironiState extends State<CCGironi> {
       int diffRetiComparison = b['diffReti'].compareTo(a['diffReti']);
       if (diffRetiComparison != 0) return diffRetiComparison;
 
-      return b['goalFatti'].compareTo(a['goalFatti']);
+      int goalComparison = b['goalFatti'].compareTo(a['goalFatti']);
+      if (goalComparison != 0) return goalComparison;
+
+      return a['cartGialli'].compareTo(b['cartGialli']);
     });
 
     return squadreData;
@@ -250,29 +271,13 @@ class _CCGironiState extends State<CCGironi> {
           DataCell(
             Row(
               children: [
-                index == 0
-                    ? const FaIcon(
-                        FontAwesomeIcons.medal,
-                        color: Colors.amber,
-                        size: 22,
+                logo[squadreData[index]['squadra']] != ''
+                    ? Image.network(
+                        logo[squadreData[index]['squadra']]!,
+                        width: 25,
+                        height: 25,
                       )
-                    : index == 1
-                        ? const FaIcon(
-                            FontAwesomeIcons.medal,
-                            color: Colors.grey,
-                            size: 22,
-                          )
-                        : index == 2
-                            ? const FaIcon(
-                                FontAwesomeIcons.medal,
-                                color: Colors.brown,
-                                size: 22,
-                              )
-                            : const FaIcon(
-                                FontAwesomeIcons.medal,
-                                color: Colors.black,
-                                size: 22,
-                              ),
+                    : const FaIcon(FontAwesomeIcons.shieldHalved),
                 Text(
                   '  ${squadreData[index]['squadra']}',
                   textAlign: TextAlign.right,
@@ -322,28 +327,5 @@ class _CCGironiState extends State<CCGironi> {
         ],
       );
     }).toList();
-  }
-
-  void _confirmDelete(BuildContext context, String docId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Conferma Eliminazione'),
-        content: const Text('Sei sicuro di voler eliminare questo girone?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annulla'),
-          ),
-          TextButton(
-            onPressed: () {
-              _firestore.collection('ccGironi').doc(docId).delete();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Elimina'),
-          ),
-        ],
-      ),
-    );
   }
 }

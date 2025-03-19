@@ -20,20 +20,16 @@ class _AccessoCCState extends State<AccessoCC> {
   final tutorPasswordController = TextEditingController();
   final staffPasswordController = TextEditingController();
   final staffDataController = TextEditingController();
-  final String userPassword = 'utenteCC';
-  final String tutorPassword = 'tutorCC';
-  final String staffPassword = 'staffCC';
+  String tutorPassword = '';
+  String staffPassword = '';
 
-  void restartApp(BuildContext context, String club, String cc, String ccRole, String nome) {
+  void restartApp(BuildContext context, String club, String cc, String ccRole,
+      String nome) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-          builder: (BuildContext context) => MyApp(
-                club: club,
-                cc: cc,
-                ccRole: ccRole,
-                nome: nome
-              )),
+          builder: (BuildContext context) =>
+              MyApp(club: club, cc: cc, ccRole: ccRole, nome: nome)),
       (Route<dynamic> route) => false,
     );
   }
@@ -54,7 +50,8 @@ class _AccessoCCState extends State<AccessoCC> {
     }
   }
 
-  void _checkPasswordStaff(String role, String? newclub, String nome, String mood) async {
+  void _checkPasswordStaff(
+      String role, String? newclub, String nome, String mood) async {
     String enteredPassword = staffPasswordController.text;
     if (mood == 'login') {
       //QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').where('nome', isEqualTo: nome).get();
@@ -110,23 +107,24 @@ class _AccessoCCState extends State<AccessoCC> {
 
   void _checkPasswordTutor(String role, String? newclub) async {
     String enteredPassword;
-      print('newclub: $newclub');
-      enteredPassword = tutorPasswordController.text;
-      if (enteredPassword == tutorPassword) {
-        _updateUser('tutor');
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cc',
-            'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-        await prefs.setString('ccRole', 'tutor');
-        await prefs.setString('club', newclub ?? '');
-        restartApp(
-            context,
-            newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
-            prefs.getString('cc') ?? '',
-            'tutor', '');
-      } else {
-        _showErrorDialog();
-      }
+    print('newclub: $newclub');
+    enteredPassword = tutorPasswordController.text;
+    if (enteredPassword == tutorPassword) {
+      _updateUser('tutor');
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cc',
+          'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+      await prefs.setString('ccRole', 'tutor');
+      await prefs.setString('club', newclub ?? '');
+      restartApp(
+          context,
+          newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
+          prefs.getString('cc') ?? '',
+          'tutor',
+          '');
+    } else {
+      _showErrorDialog();
+    }
   }
 
   void _showErrorDialog() {
@@ -204,6 +202,17 @@ class _AccessoCCState extends State<AccessoCC> {
   void initState() {
     super.initState();
     _retrieveClubs();
+    _retrievePw();
+  }
+
+  Future<void> _retrievePw() async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('ccPassword').doc('password').get();
+    if (snapshot.exists) {
+      setState(() {
+        staffPassword = snapshot['staffPw'];
+        tutorPassword = snapshot['tutorPw'];
+      });
+    }
   }
 
   List<dynamic> clubs = [''];

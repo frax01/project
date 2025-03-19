@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'verify.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -253,6 +254,8 @@ class _SignUpState extends State<SignUp> {
   bool _isObscureConfirm = false;
   bool _isLoading = false;
 
+  bool _isPrivacyAccepted = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -426,6 +429,33 @@ class _SignUpState extends State<SignUp> {
                               }
                               return null;
                             },
+                          ),
+                          const SizedBox(height: 20),
+                          CheckboxListTile(
+                            title: Row(
+                              children: [
+                                const Text('Accetto la '),
+                                GestureDetector(
+                                  onTap: () {
+                                    FlutterWebBrowser.openWebPage(url: 'https://www.iubenda.com/privacy-policy/69534588');
+                                  },
+                                  child: const Text(
+                                    'Privacy Policy',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            value: _isPrivacyAccepted,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _isPrivacyAccepted = value ?? false;
+                              });
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton(

@@ -44,6 +44,8 @@ class CCModificaPartita extends StatefulWidget {
 class _CCModificaPartitaState extends State<CCModificaPartita> {
   int golCasa = 0;
   int golFuori = 0;
+  int gialliCasa = 0;
+  int gialliFuori = 0;
   List<Map<String, String>> marcatori = [];
   int golRigoreCasa = 0;
   int golRigoreFuori = 0;
@@ -77,6 +79,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         (gironeData['goalSubiti'][widget.casa] ?? 0) + golFuori;
     gironeData['goalSubiti'][widget.fuori] =
         (gironeData['goalSubiti'][widget.fuori] ?? 0) + golCasa;
+
+    // Aggiorna cartellini gialli
+    gironeData['cartGialli'][widget.casa] =
+        (gironeData['cartGialli'][widget.casa] ?? 0) + gialliCasa;
+    gironeData['cartGialli'][widget.fuori] =
+        (gironeData['cartGialli'][widget.fuori] ?? 0) + gialliFuori;
 
     // Aggiorna differenza reti
     gironeData['diffReti'][widget.casa] =
@@ -137,6 +145,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     gironeData['goalSubiti'][widget.fuori] =
         (gironeData['goalSubiti'][widget.fuori] ?? 0) - golCasa;
 
+    // Aggiorna cartellini gialli
+    gironeData['cartGialli'][widget.casa] =
+        (gironeData['cartGialli'][widget.casa] ?? 0) - gialliCasa;
+    gironeData['cartGialli'][widget.fuori] =
+        (gironeData['cartGialli'][widget.fuori] ?? 0) - gialliFuori;
+
     // Aggiorna differenza reti
     gironeData['diffReti'][widget.casa] =
         (gironeData['diffReti'][widget.casa] ?? 0) - (golCasa - golFuori);
@@ -170,7 +184,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         .get();
     List<dynamic> giocatori = snapshot['giocatori'];
     return giocatori
-        .map((giocatore) => '${giocatore['maglia']} ${giocatore['nome']}')
+        .map((giocatore) => '${giocatore['maglia']!='' ? giocatore['maglia'] : '?'} ${giocatore['nome']}')
         .toList();
   }
 
@@ -213,12 +227,20 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
     setState(() {
       for (var marcatore in marcatoriFirestore) {
-        if (marcatore['dove'] == 'casa') {
+        if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'gol') {
           golCasa++;
-        } else if (marcatore['dove'] == 'fuori') {
+          print("goal casa: $golCasa");
+        } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'gol') {
           golFuori++;
+          print("goal fuori: $golFuori");
+        } else if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'amm') {
+          gialliCasa++;
+          print("gialli casa: $gialliCasa");
+        } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'amm') {
+          gialliFuori++;
+          print("gialli fuori: $gialliFuori");
         }
-        marcatori.add({'nome': marcatore['nome'], 'dove': marcatore['dove']});
+        marcatori.add({'nome': marcatore['nome'], 'dove': marcatore['dove'], 'cosa': marcatore['cosa']});
       }
 
       iniziata = docSnapshot['iniziata'];
@@ -302,9 +324,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         golFuori++;
       } else if (squadra == widget.casa && cosa == 'amm') {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'amm'});
+        gialliCasa++;
       } else if (squadra == widget.fuori && cosa == 'amm') {
-        marcatori
-            .insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
+        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
+        gialliFuori++;
       } else if (squadra == widget.casa && cosa == 'esp') {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'esp'});
       } else if (squadra == widget.fuori && cosa == 'esp') {
@@ -357,7 +380,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     }
   }
 
-  void rimuoviMarcatore(String squadra, String giocatore) async {
+  void rimuoviMarcatore(String squadra, String giocatore, String cosa) async {
     DocumentSnapshot docSnapshot;
     if (widget.tipo == 'girone') {
       docSnapshot = await FirebaseFirestore.instance
@@ -389,21 +412,25 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     List<dynamic> marcatoriFirestore = docSnapshot['marcatori'] ?? [];
 
     setState(() {
-      bool found = false;
       for (int i = 0; i < marcatori.length; i++) {
-        if (marcatori[i]['nome'] == giocatore &&
-            marcatori[i]['dove'] ==
-                (squadra == widget.casa ? 'casa' : 'fuori')) {
+        print("marc: ${marcatori[i]['cosa']}");
+        print("cosa: $cosa");
+        if (marcatori[i]['nome'] == giocatore && marcatori[i]['dove'] == (squadra == widget.casa ? 'casa' : 'fuori') && marcatori[i]['cosa'] == cosa) {
+          if (squadra == widget.casa && marcatori[i]['cosa'] == 'gol') {
+            golCasa--;
+            print("goal casa: $golCasa");
+          } else if(squadra == widget.fuori && marcatori[i]['cosa'] == 'gol') {
+            golFuori--;
+            print("goal fuori: $golFuori");
+          } else if (squadra == widget.casa && marcatori[i]['cosa'] == 'amm') {
+            gialliCasa--;
+            print("gialli casa: $gialliCasa");
+          } else if (squadra == widget.fuori && marcatori[i]['cosa'] == 'amm') {
+            gialliFuori--;
+            print("gialli fuori: $gialliFuori");
+          }
           marcatori.removeAt(i);
-          found = true;
           break;
-        }
-      }
-      if (found) {
-        if (squadra == widget.casa) {
-          golCasa--;
-        } else {
-          golFuori--;
         }
       }
     });
@@ -412,7 +439,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     for (int i = 0; i < marcatoriFirestore.length; i++) {
       if (marcatoriFirestore[i]['nome'] == giocatore &&
           marcatoriFirestore[i]['dove'] ==
-              (squadra == widget.casa ? 'casa' : 'fuori')) {
+              (squadra == widget.casa ? 'casa' : 'fuori') && marcatoriFirestore[i]['cosa'] == cosa) {
         marcatoriFirestore.removeAt(i);
         foundFirestore = true;
         break;
@@ -886,35 +913,38 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
               }
             }
 
-            return SingleChildScrollView(child: Column(
+            return SingleChildScrollView(
+                child: Column(
               children: [
                 Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(child:Column(
-                            children: [
-                              widget.logocasa.isNotEmpty
-                                  ? Image.network(widget.logocasa,
-                                      width: 90, height: 90)
-                                  : IconButton(
-                                      icon: const FaIcon(
-                                          FontAwesomeIcons.shieldHalved),
-                                      onPressed: () {},
-                                    ),
-                              const SizedBox(height: 8),
-                              AutoSizeText(
-                                widget.casa,
-                                style: const TextStyle(
-                                  fontSize: 20,
+                          Expanded(
+                            child: Column(
+                              children: [
+                                widget.logocasa.isNotEmpty
+                                    ? Image.network(widget.logocasa,
+                                        width: 90, height: 90)
+                                    : IconButton(
+                                        icon: const FaIcon(
+                                            FontAwesomeIcons.shieldHalved),
+                                        onPressed: () {},
+                                      ),
+                                const SizedBox(height: 8),
+                                AutoSizeText(
+                                  widget.casa,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                  minFontSize: 20,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                                minFontSize: 20,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),),
+                              ],
+                            ),
+                          ),
                           const SizedBox(width: 4),
                           Column(children: [
                             Row(children: [
@@ -947,33 +977,35 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 : Container()
                           ]),
                           const SizedBox(width: 4),
-                          Expanded(child: Column(
-                            children: [
-                              widget.logofuori.isNotEmpty
-                                  ? Image.network(widget.logofuori,
-                                      width: 90, height: 90)
-                                  : IconButton(
-                                      icon: const FaIcon(
-                                          FontAwesomeIcons.shieldHalved),
-                                      onPressed: () {},
-                                    ),
-                              const SizedBox(height: 8),
-                              AutoSizeText(
-                                widget.fuori,
-                                style: const TextStyle(
-                                  fontSize: 20,
+                          Expanded(
+                            child: Column(
+                              children: [
+                                widget.logofuori.isNotEmpty
+                                    ? Image.network(widget.logofuori,
+                                        width: 90, height: 90)
+                                    : IconButton(
+                                        icon: const FaIcon(
+                                            FontAwesomeIcons.shieldHalved),
+                                        onPressed: () {},
+                                      ),
+                                const SizedBox(height: 8),
+                                AutoSizeText(
+                                  widget.fuori,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                  ),
+                                  minFontSize: 20,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                                minFontSize: 20,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),)
+                              ],
+                            ),
+                          )
                         ])),
                 const SizedBox(height: 16),
                 widget.ccRole == 'staff'
                     ? Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -1119,74 +1151,74 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         ),
                       )
                     : Container(),
-                    Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
-                        child: Row(
-                          children: [
-                            golFuori == golCasa &&
-                                    widget.tipo != 'girone' &&
-                                    iniziata && widget.ccRole=='staff'
-                                ? Expanded(child: ElevatedButton(
-                                    onPressed: !boolRigori
-                                        ? () {
-                                            setState(() {
-                                              boolRigori = true;
-                                              for (int i = 0; i < 5; i++) {
-                                                rigoriCasa.add('non tirato');
-                                              }
-                                              for (int i = 0; i < 5; i++) {
-                                                rigoriFuori.add('non tirato');
-                                              }
-                                              FirebaseFirestore.instance
-                                                  .collection(
-                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                                  .doc(widget.codice)
-                                                  .update({
-                                                'boolRigori': true,
-                                                'rigoriCasa': rigoriCasa,
-                                                'rigoriFuori': rigoriFuori,
-                                              });
-                                            });
-                                          }
-                                        : () {
-                                            setState(() {
-                                              boolRigori = false;
-                                              rigoriCasa = [];
-                                              rigoriFuori = [];
-                                              FirebaseFirestore.instance
-                                                  .collection(
-                                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                                  .doc(widget.codice)
-                                                  .update({
-                                                'boolRigori': false,
-                                                'rigoriCasa': [],
-                                                'rigoriFuori': [],
-                                              });
-                                            });
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: boolRigori && iniziata
-                                          ? const Color.fromARGB(255, 150, 9, 9)
-                                          : const Color.fromARGB(
-                                              255, 25, 84, 132),
-                                    ),
-                                    child: AutoSizeText(
-                                        boolRigori && iniziata ? "Cancella rigori" : "Crea rigori",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                        ),
-                                        minFontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                  ))
-                                : Container(),
-                          ]
-                        )
-                    ),
-                iniziata && widget.ccRole == 'staff'
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(children: [
+                      golFuori == golCasa &&
+                              widget.tipo != 'girone' &&
+                              iniziata &&
+                              widget.ccRole == 'staff'
+                          ? Expanded(
+                              child: ElevatedButton(
+                              onPressed: !boolRigori
+                                  ? () {
+                                      setState(() {
+                                        boolRigori = true;
+                                        for (int i = 0; i < 5; i++) {
+                                          rigoriCasa.add('non tirato');
+                                        }
+                                        for (int i = 0; i < 5; i++) {
+                                          rigoriFuori.add('non tirato');
+                                        }
+                                        FirebaseFirestore.instance
+                                            .collection(
+                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                            .doc(widget.codice)
+                                            .update({
+                                          'boolRigori': true,
+                                          'rigoriCasa': rigoriCasa,
+                                          'rigoriFuori': rigoriFuori,
+                                        });
+                                      });
+                                    }
+                                  : () {
+                                      setState(() {
+                                        boolRigori = false;
+                                        rigoriCasa = [];
+                                        rigoriFuori = [];
+                                        FirebaseFirestore.instance
+                                            .collection(
+                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                            .doc(widget.codice)
+                                            .update({
+                                          'boolRigori': false,
+                                          'rigoriCasa': [],
+                                          'rigoriFuori': [],
+                                        });
+                                      });
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: boolRigori && iniziata
+                                    ? const Color.fromARGB(255, 150, 9, 9)
+                                    : const Color.fromARGB(255, 25, 84, 132),
+                              ),
+                              child: AutoSizeText(
+                                boolRigori && iniziata
+                                    ? "Cancella rigori"
+                                    : "Crea rigori",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                ),
+                                minFontSize: 16,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ))
+                          : Container(),
+                    ])),
+                iniziata && widget.ccRole == 'staff' && !boolRigori
                     ? Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1210,12 +1242,16 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Marcatore'),
+                                          hint: const Text(
+                                            'Marcatore',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore, maxLines: 1, overflow: TextOverflow.ellipsis),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1245,7 +1281,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Ammonizione'),
+                                          hint: const Text(
+                                            'Ammonizione',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
@@ -1280,7 +1320,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Espulsione'),
+                                          hint: const Text(
+                                            'Espulsione',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
@@ -1302,7 +1346,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 children: [
@@ -1323,12 +1367,16 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Marcatore'),
+                                          hint: const Text(
+                                            'Marcatore',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore, maxLines: 1, overflow: TextOverflow.ellipsis),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1358,7 +1406,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Ammonizione'),
+                                          hint: const Text(
+                                            'Ammonizione',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
@@ -1393,7 +1445,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         child: DropdownButton<String>(
                                           isExpanded: true,
                                           underline: const SizedBox.shrink(),
-                                          hint: const Text('Espulsione'),
+                                          hint: const Text(
+                                            'Espulsione',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                           items: snapshot.data!
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
@@ -1422,10 +1478,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                 !iniziata && !finita
                     ? const Center(
                         child: Column(children: [
-                        SizedBox(height: 8),
+                        SizedBox(height: 80),
                         Text('Partita da giocare',
                             style: TextStyle(
-                                fontSize: 21, fontStyle: FontStyle.italic))
+                                fontSize: 21, color: Colors.black54)),
                       ]))
                     : Center(
                         child: Column(children: [
@@ -1435,108 +1491,108 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           !finita
                               ? const Text("Partita in corso",
                                   style: TextStyle(
-                                      fontSize: 21,
-                                      fontStyle: FontStyle.italic))
+                                      fontSize: 21, color: Colors.black54))
                               : const Center(
                                   child: Text('Partita terminata',
                                       style: TextStyle(
-                                          fontSize: 21,
-                                          fontStyle: FontStyle.italic)))
+                                          fontSize: 21, color: Colors.black54)))
                         ]),
                       ),
-                      boolRigori
-                      ? Row(
-                        children: [
-                          Expanded(
+                boolRigori
+                    ? Row(children: [
+                        Expanded(
                             child: Container(
-                              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                              margin: const EdgeInsets.fromLTRB(16, 12, 6, 6),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.black54, width: 1.0),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              child: Center(child: Wrap(
-                                alignment: WrapAlignment.start,
-                                spacing: 10.0,
-                                runSpacing: 10.0,
-                                children: [
-                                  for (int index = 0;
-                                      index < rigoriCasa.length;
-                                      index++)
-                                    GestureDetector(
-                                        onTap: () async {
-                                          if (iniziata &&
-                                              widget.ccRole == 'staff') {
-                                            _showRigoreDialog(context, 'casa',
-                                                index, widget.tipo);
-                                          }
-                                        },
-                                        child: Column(children: [
-                                          Text('${index + 1}'),
-                                          CircleAvatar(
-                                            radius: 10,
-                                            backgroundColor:
-                                                rigoriCasa[index] == 'segnato'
-                                                    ? Colors.green
-                                                    : rigoriCasa[index] ==
-                                                            'sbagliato'
-                                                        ? Colors.red
-                                                        : Colors.grey,
-                                          ),
-                                        ])),
-                                ],
-                              ),),
-                            )
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                          margin: const EdgeInsets.fromLTRB(16, 12, 6, 6),
+                          decoration: BoxDecoration(
+                            border:
+                                Border.all(color: Colors.black54, width: 1.0),
+                            borderRadius: BorderRadius.circular(4.0),
                           ),
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                              margin: const EdgeInsets.fromLTRB(6, 12, 16, 6),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Colors.black54, width: 1.0),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              child: Center(child: Wrap(
-                                alignment: WrapAlignment.start,
-                                spacing: 10.0,
-                                runSpacing: 10.0,
-                                children: [
-                                  for (int index = 0;
-                                      index < rigoriFuori.length;
-                                      index++)
-                                    GestureDetector(
+                          child: Center(
+                            child: Wrap(
+                              alignment: WrapAlignment.start,
+                              spacing: 10.0,
+                              runSpacing: 10.0,
+                              children: [
+                                for (int index = 0;
+                                    index < rigoriCasa.length;
+                                    index++)
+                                  GestureDetector(
                                       onTap: () async {
                                         if (iniziata &&
                                             widget.ccRole == 'staff') {
-                                          _showRigoreDialog(context, 'fuori',
+                                          _showRigoreDialog(context, 'casa',
                                               index, widget.tipo);
                                         }
                                       },
-                                      child: Column(
-                                        children: [
-                                          Text('${index + 1}'),
-                                          CircleAvatar(
-                                        radius: 10,
-                                        backgroundColor: rigoriFuori[index] ==
-                                                'segnato'
-                                            ? Colors.green
-                                            : rigoriFuori[index] == 'sbagliato'
-                                                ? Colors.red
-                                                : Colors.grey,
-                                      ),
-                                        ]
-                                      )
-                                    ),
-                                ],
-                              ),)
-                            )
-                          )
-                        ]
-                      ) : Container(),
-                      iniziata && widget.ccRole == 'staff' && boolRigori
-                      ? Row(
+                                      child: Column(children: [
+                                        Text('${index + 1}'),
+                                        CircleAvatar(
+                                          radius: 10,
+                                          backgroundColor: rigoriCasa[index] ==
+                                                  'segnato'
+                                              ? Colors.green
+                                              : rigoriCasa[index] == 'sbagliato'
+                                                  ? Colors.red
+                                                  : Colors.grey,
+                                        ),
+                                      ])),
+                              ],
+                            ),
+                          ),
+                        )),
+                        Expanded(
+                            child: Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                                margin: const EdgeInsets.fromLTRB(6, 12, 16, 6),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.black54, width: 1.0),
+                                  borderRadius: BorderRadius.circular(4.0),
+                                ),
+                                child: Center(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.start,
+                                    spacing: 10.0,
+                                    runSpacing: 10.0,
+                                    children: [
+                                      for (int index = 0;
+                                          index < rigoriFuori.length;
+                                          index++)
+                                        GestureDetector(
+                                            onTap: () async {
+                                              if (iniziata &&
+                                                  widget.ccRole == 'staff') {
+                                                _showRigoreDialog(
+                                                    context,
+                                                    'fuori',
+                                                    index,
+                                                    widget.tipo);
+                                              }
+                                            },
+                                            child: Column(children: [
+                                              Text('${index + 1}'),
+                                              CircleAvatar(
+                                                radius: 10,
+                                                backgroundColor:
+                                                    rigoriFuori[index] ==
+                                                            'segnato'
+                                                        ? Colors.green
+                                                        : rigoriFuori[index] ==
+                                                                'sbagliato'
+                                                            ? Colors.red
+                                                            : Colors.grey,
+                                              ),
+                                            ])),
+                                    ],
+                                  ),
+                                )))
+                      ])
+                    : Container(),
+                iniziata && widget.ccRole == 'staff' && boolRigori
+                    ? Row(
                         children: [
                           const SizedBox(width: 16),
                           Expanded(
@@ -1545,7 +1601,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                               label: const Text('Rimuovi rigore'),
                               style: TextButton.styleFrom(
                                 elevation: 15,
-                                side: const BorderSide(color: Colors.black54, width: 1.0),
+                                side: const BorderSide(
+                                    color: Colors.black54, width: 1.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4.0),
                                 ),
@@ -1574,25 +1631,27 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                               label: const Text('Aggiungi rigore'),
                               style: TextButton.styleFrom(
                                 elevation: 15,
-                                side: const BorderSide(color: Colors.black54, width: 1.0),
+                                side: const BorderSide(
+                                    color: Colors.black54, width: 1.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4.0),
                                 ),
                               ),
-                            onPressed: () async {
-                              rigoriCasa.add('non tirato');
-                              rigoriFuori.add('non tirato');
-                              await FirebaseFirestore.instance
-                                  .collection(
-                                      'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                  .doc(widget.codice)
-                                  .update({
-                                'rigoriCasa': rigoriCasa,
-                                'rigoriFuori': rigoriFuori,
-                              });
-                              setState(() {});
-                            },
-                          ),),
+                              onPressed: () async {
+                                rigoriCasa.add('non tirato');
+                                rigoriFuori.add('non tirato');
+                                await FirebaseFirestore.instance
+                                    .collection(
+                                        'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                    .doc(widget.codice)
+                                    .update({
+                                  'rigoriCasa': rigoriCasa,
+                                  'rigoriFuori': rigoriFuori,
+                                });
+                                setState(() {});
+                              },
+                            ),
+                          ),
                           const SizedBox(width: 16),
                         ],
                       )
@@ -1615,7 +1674,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                           ? IconButton(
                                               icon: const Icon(Icons.delete),
                                               onPressed: () {
-                                                rimuoviMarcatore(widget.casa, marcatore['nome']!);
+                                                rimuoviMarcatore(widget.casa,
+                                                    marcatore['nome']!, marcatore['cosa']!);
                                               },
                                             )
                                           : const SizedBox(width: 20),
@@ -1627,6 +1687,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow,
                                                   borderRadius: BorderRadius.circular(2),
+                                                  border: Border.all(color: Colors.black54, width: 0.75),
                                                 ),
                                               ),
                                               const SizedBox(width: 4),
@@ -1639,15 +1700,18 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
                                                       borderRadius: BorderRadius.circular(2),
+                                                      border: Border.all(color: Colors.black54, width: 0.75),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 4),
                                                 ])
                                               : const Icon(Icons.sports_soccer),
                                       const SizedBox(width: 8),
-                                      Expanded(child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
+                                      Expanded(
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                             AutoSizeText(
                                               marcatore['nome']!,
                                               style: const TextStyle(
@@ -1663,7 +1727,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                   : marcatore['cosa'] == 'amm'
                                                       ? 'Ammonizione'
                                                       : 'Espulsione',
-                                              style: const TextStyle(fontSize: 14),
+                                              style:
+                                                  const TextStyle(fontSize: 14),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
@@ -1674,30 +1739,34 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Expanded(child:Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            AutoSizeText(
-                                              ' ${marcatore['nome']!}',
-                                              style: const TextStyle(
-                                                fontSize: 18,
+                                      Expanded(
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              AutoSizeText(
+                                                ' ${marcatore['nome']!}',
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                ),
+                                                minFontSize: 18,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                               ),
-                                              minFontSize: 18,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                            Text(
-                                              marcatore['cosa'] == 'gol'
-                                                  ? 'Gol'
-                                                  : marcatore['cosa'] == 'amm'
-                                                      ? 'Ammonizione'
-                                                      : 'Espulsione',
-                                              style: const TextStyle(fontSize: 14),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ]),),
+                                              Text(
+                                                marcatore['cosa'] == 'gol'
+                                                    ? 'Gol'
+                                                    : marcatore['cosa'] == 'amm'
+                                                        ? 'Ammonizione'
+                                                        : 'Espulsione',
+                                                style: const TextStyle(
+                                                    fontSize: 14),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ]),
+                                      ),
                                       const SizedBox(width: 8),
                                       marcatore['cosa'] == 'amm'
                                           ? Row(children: [
@@ -1707,7 +1776,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                 height: 23,
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow,
-                                                  borderRadius: BorderRadius.circular(2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                      border: Border.all(color: Colors.black54, width: 0.75),
                                                 ),
                                               ),
                                             ])
@@ -1719,7 +1790,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                     height: 23,
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
-                                                      borderRadius: BorderRadius.circular(2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
+                                                              border: Border.all(color: Colors.black54, width: 0.75),
                                                     ),
                                                   ),
                                                 ])
@@ -1728,7 +1802,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                           ? IconButton(
                                               icon: const Icon(Icons.delete),
                                               onPressed: () {
-                                                rimuoviMarcatore(widget.fuori, marcatore['nome']!);
+                                                rimuoviMarcatore(widget.fuori,
+                                                    marcatore['nome']!, marcatore['cosa']!);
                                               },
                                             )
                                           : const SizedBox(width: 20),
@@ -1736,7 +1811,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                   ),
                             const Padding(
                               padding: EdgeInsets.fromLTRB(10, 7, 10, 7),
-                              child: Divider(thickness: 0.75, color: Colors.black54),
+                              child: Divider(
+                                  thickness: 0.75, color: Colors.black54),
                             ),
                           ],
                         ),

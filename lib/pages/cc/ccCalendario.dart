@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovaPartitaGironi.dart';
-import 'ccNuovaPartitaOttavi.dart';
+import 'ccNuovaPartitaFaseFinale.dart';
 import 'ccModificaPartita.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 
 class CCCalendario extends StatefulWidget {
   const CCCalendario({
@@ -875,122 +874,119 @@ class _CCCalendarioState extends State<CCCalendario> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SegmentedButton<String>(
-                        selectedIcon: const Icon(Icons.check),
-                        segments: const <ButtonSegment<String>>[
-                          ButtonSegment<String>(
-                            value: 'Gironi',
-                            label: Text('Gir', style: TextStyle(fontSize: 10)),
-                          ),
-                          ButtonSegment<String>(
-                            value: 'Ottavi',
-                            label: Text('Ott', style: TextStyle(fontSize: 10)),
-                          ),
-                          ButtonSegment<String>(
-                            value: 'Quarti',
-                            label: Text('Qua', style: TextStyle(fontSize: 10)),
-                          ),
-                          ButtonSegment<String>(
-                            value: 'Semifinali',
-                            label: Text('Sem', style: TextStyle(fontSize: 10)),
-                          ),
-                          ButtonSegment<String>(
-                            value: 'Finali',
-                            label: Text('Fin', style: TextStyle(fontSize: 10)),
-                          ),
-                        ],
-                        selected: <String>{_selectedSegment},
-                        onSelectionChanged: (Set<String> newSelection) {
-                          setState(() {
-                            _selectedSegment = newSelection.first;
-                            _streamPartite = _getPartite();
-                          });
-                        },
+        body: Column(
+          children: [
+            const SizedBox(height: 10),
+            Wrap(
+              children: [
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  SegmentedButton<String>(
+                    selectedIcon: const Icon(Icons.check),
+                    segments: const <ButtonSegment<String>>[
+                      ButtonSegment<String>(
+                        value: 'Gironi',
+                        label: Text('Gir', style: TextStyle(fontSize: 10)),
                       ),
-                      widget.ccRole == 'staff'
-                          ? const Column(
-                              children: [
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Row(children: [
-                                        CircleAvatar(
-                                          backgroundColor:
-                                              Color.fromARGB(255, 178, 28, 28),
-                                          radius: 7,
-                                        ),
-                                        SizedBox(
-                                          width: 6,
-                                        ),
-                                        Text('Arbitro',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic)),
-                                      ]),
-                                      SizedBox(
-                                        width: 16,
-                                      ),
-                                      Row(children: [
-                                        CircleAvatar(
-                                          backgroundColor:
-                                              Color.fromARGB(255, 37, 201, 43),
-                                          radius: 7,
-                                        ),
-                                        SizedBox(
-                                          width: 6,
-                                        ),
-                                        Text('Refertista',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic)),
-                                      ]),
-                                      SizedBox(
-                                        width: 16,
-                                      ),
-                                      Row(children: [
-                                        CircleAvatar(
-                                          backgroundColor:
-                                              Color.fromARGB(255, 58, 57, 57),
-                                          radius: 7,
-                                        ),
-                                        SizedBox(
-                                          width: 6,
-                                        ),
-                                        Text('Entrambi',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic)),
-                                      ]),
-                                    ]),
-                              ],
-                            )
-                          : Container()
+                      ButtonSegment<String>(
+                        value: 'Ottavi',
+                        label: Text('Ott', style: TextStyle(fontSize: 10)),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Quarti',
+                        label: Text('Qua', style: TextStyle(fontSize: 10)),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Semifinali',
+                        label: Text('Sem', style: TextStyle(fontSize: 10)),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Finali',
+                        label: Text('Fin', style: TextStyle(fontSize: 10)),
+                      ),
                     ],
-                  )),
-              StreamBuilder<List<Map<String, dynamic>>>(
+                    selected: <String>{_selectedSegment},
+                    onSelectionChanged: (Set<String> newSelection) {
+                      setState(() {
+                        _selectedSegment = newSelection.first;
+                        _streamPartite = _getPartite();
+                      });
+                    },
+                  ),
+                ]),
+                widget.ccRole == 'staff'
+                    ? const Column(
+                        children: [
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(children: [
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        Color.fromARGB(255, 178, 28, 28),
+                                    radius: 7,
+                                  ),
+                                  SizedBox(
+                                    width: 6,
+                                  ),
+                                  Text('Arbitro',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontStyle: FontStyle.italic)),
+                                ]),
+                                SizedBox(
+                                  width: 16,
+                                ),
+                                Row(children: [
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        Color.fromARGB(255, 37, 201, 43),
+                                    radius: 7,
+                                  ),
+                                  SizedBox(
+                                    width: 6,
+                                  ),
+                                  Text('Refertista',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontStyle: FontStyle.italic)),
+                                ]),
+                                SizedBox(
+                                  width: 16,
+                                ),
+                                Row(children: [
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        Color.fromARGB(255, 58, 57, 57),
+                                    radius: 7,
+                                  ),
+                                  SizedBox(
+                                    width: 6,
+                                  ),
+                                  Text('Entrambi',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontStyle: FontStyle.italic)),
+                                ]),
+                              ]),
+                        ],
+                      )
+                    : Container(),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<List<Map<String, dynamic>>>(
                 stream: _streamPartite,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return SizedBox(
-                      height: MediaQuery.of(context).size.height,
-                      child: const Center(child: CircularProgressIndicator()),
-                    );
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Errore: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('Nessuna partita trovata'));
+                    return const Center(
+                      child: Text('Nessuna partita trovata', style: TextStyle(fontSize: 20)));
                   }
 
                   final partite = snapshot.data!;
@@ -1004,7 +1000,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                     groupedPartite[girone]!.add(partita);
                   }
 
-                  return Padding(
+                  return SingleChildScrollView(child: Padding(
                       padding: const EdgeInsets.fromLTRB(12, 10, 12, 15),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1298,11 +1294,10 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                 ))
                                               ])
                                             : Container()
-                          ]));
+                          ])));
                 },
-              ),
-            ],
-          ),
+            ))
+          ],
         ),
         floatingActionButton: Row(
           mainAxisAlignment: MainAxisAlignment.end,

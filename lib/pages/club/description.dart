@@ -308,7 +308,7 @@ class Tiber extends StatelessWidget {
                     onTap: () {
                       FlutterWebBrowser.openWebPage(
                           url:
-                              'https://www.iubenda.com/privacy-policy/49853451');
+                              'https://www.iubenda.com/privacy-policy/69534588');
                     },
                   ),
                 ]).toList(),
@@ -611,7 +611,7 @@ class _DeltaState extends State<Delta> {
                     onTap: () {
                       FlutterWebBrowser.openWebPage(
                           url:
-                              'https://www.iubenda.com/privacy-policy/49853451');
+                              'https://www.iubenda.com/privacy-policy/69534588');
                     },
                   ),
                 ]).toList(),

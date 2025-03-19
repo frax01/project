@@ -175,11 +175,11 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                     );
                   }),
                   ElevatedButton(
-                    onPressed: () {
-                      _showLoadingDialog();
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
+                        _showLoadingDialog();
                         final Map<String, int> mappa = _initializeMap(squadreSelezionate);
-                        FirebaseFirestore.instance.collection('ccGironi').doc(_nomeGironeController.text).set({
+                        await FirebaseFirestore.instance.collection('ccGironi').doc(_nomeGironeController.text).set({
                           'nome': _nomeGironeController.text,
                           'squadre': squadreSelezionate,
                           'punti' : mappa,
@@ -187,6 +187,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                           'goalSubiti': mappa,
                           'diffReti': mappa,
                           'partiteG': mappa,
+                          'cartGialli': mappa,
                         });
                         Navigator.of(context).pop();
                       }

@@ -48,29 +48,24 @@ void main() async {
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String club = prefs.getString('club') ?? '';
+  print("clubMain: $club");
   String cc = prefs.getString('cc') ?? '';
   String ccRole = prefs.getString('ccRole') ?? '';
   String nome = prefs.getString('nome') ?? '';
 
-  runApp(MyApp(
-    club: club,
-    cc: cc,
-    ccRole: ccRole,
-    nome: nome
-  ));
+  runApp(MyApp(club: club, cc: cc, ccRole: ccRole, nome: nome));
 }
 
 @pragma('vm:entry-point')
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {}
 
 class MyApp extends StatelessWidget {
-  MyApp({
-    super.key,
-    required this.club,
-    required this.cc,
-    required this.ccRole,
-    required this.nome
-  });
+  MyApp(
+      {super.key,
+      required this.club,
+      required this.cc,
+      required this.ccRole,
+      required this.nome});
 
   final String club;
   final String cc;
@@ -81,6 +76,7 @@ class MyApp extends StatelessWidget {
   Future<void> fetchPage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String club = prefs.getString('club') ?? '';
+    print("clubMain: $club");
     String cc = prefs.getString('cc') ?? '';
     String ccRole = prefs.getString('ccRole') ?? '';
 
@@ -98,8 +94,13 @@ class MyApp extends StatelessWidget {
       String id = value.id;
 
       cc == 'yes'
-          ? startWidget =
-              CCHomePage(selectedIndex: 0, club: club, ccRole: ccRole, user: true, nome: '$name $surname', email: email)
+          ? startWidget = CCHomePage(
+              selectedIndex: 0,
+              club: club,
+              ccRole: ccRole,
+              user: true,
+              nome: '$name $surname',
+              email: email)
           : startWidget = ClubPage(
               classes: classes,
               club: club,
@@ -164,12 +165,8 @@ class MyApp extends StatelessWidget {
       home: startWidget,
       initialRoute: '/home',
       routes: {
-        '/home': (context) => HomePageStart(
-              club: club,
-              cc: cc,
-              ccRole: ccRole,
-              nome: nome
-            ),
+        '/home': (context) =>
+            HomePageStart(club: club, cc: cc, ccRole: ccRole, nome: nome),
         '/login': (context) => const Login(),
         '/signup': (context) => const SignUp(),
         '/waiting': (context) => const Waiting(),
@@ -181,7 +178,11 @@ class MyApp extends StatelessWidget {
 
 class HomePageStart extends StatefulWidget {
   const HomePageStart(
-      {super.key, required this.club, required this.cc, required this.ccRole, required this.nome});
+      {super.key,
+      required this.club,
+      required this.cc,
+      required this.ccRole,
+      required this.nome});
 
   final String club;
   final String cc;
@@ -216,8 +217,10 @@ class _HomePageStartState extends State<HomePageStart> {
   RemoteMessage? initialMessage;
 
   Widget buildClubPage(String club, int selectedIndex, String ccRole, bool user) {
+    print("sono qui");
 
-    if (widget.cc == 'yes') { //devo avere il logout e non il pulsante per tornare al club se ci vado da utente esterno
+    if (widget.cc == 'yes') {
+      //devo avere il logout e non il pulsante per tornare al club se ci vado da utente esterno
       return CCHomePage(
         selectedIndex: 0,
         club: widget.club,
