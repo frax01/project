@@ -40,6 +40,51 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
 
     printUsersWithOldVersion();
+
+    printUserWithNotAccepetedPrivacy();
+  }
+
+  Future<void> printUserWithNotAccepetedPrivacy() async {
+    try {
+      CollectionReference users = FirebaseFirestore.instance.collection('user');
+      QuerySnapshot querySnapshot10 =
+          await users.where('privacy', isEqualTo: false).get();
+      if (querySnapshot10.docs.isNotEmpty) {
+        int count = 1;
+        print("Utenti con privacy non accettata Tiber Club:");
+        for (var doc in querySnapshot10.docs) {
+          if(doc['club'] == 'Tiber Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
+        }
+      } else {
+        print('Nessun utente trovato con privacy non accettata');
+      }
+
+      QuerySnapshot querySnapshot11 =
+          await users.where('privacy', isEqualTo: false).get();
+      if (querySnapshot11.docs.isNotEmpty) {
+        int count = 1;
+        print("");
+        print("Utenti con privacy non accettata Delta Club:");
+        for (var doc in querySnapshot11.docs) {
+          if(doc['club'] == 'Delta Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
+        }
+        print("");
+      } else {
+        print('Nessun utente trovato con privacy non accettata');
+      }
+    } catch (e) {
+      print('Errore durante la ricerca degli utenti: $e');
+    }
   }
 
   Future<void> printUsersWithOldVersion() async {
@@ -53,32 +98,70 @@ class _SettingsPageState extends State<SettingsPage> {
         versione = querySnapshot1.data()!['versione'];
       }
       CollectionReference users = FirebaseFirestore.instance.collection('user');
-      QuerySnapshot querySnapshot2 =
-          await users.where('versione', isNotEqualTo: versione).get();
-      if (querySnapshot2.docs.isNotEmpty) {
+      QuerySnapshot querySnapshot20 = await users.where('versione', isNotEqualTo: versione).get();
+      if (querySnapshot20.docs.isNotEmpty) {
         int count = 1;
-        print("Devono aggiornare:");
-        for (var doc in querySnapshot2.docs) {
-          String nome = doc['name'] ?? 'N/A';
-          String cognome = doc['surname'] ?? 'N/A';
-          print('$count. $nome $cognome');
-          count++;
+        print("Devono aggiornare Tiber Club:");
+        for (var doc in querySnapshot20.docs) {
+          if(doc['club'] == 'Tiber Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
         }
       } else {
         print('Nessun utente trovato con una versione diversa da $versione');
       }
 
-      QuerySnapshot querySnapshot3 =
-          await users.where('versione', isEqualTo: versione).get();
-      if (querySnapshot3.docs.isNotEmpty) {
+      QuerySnapshot querySnapshot21 = await users.where('versione', isNotEqualTo: versione).get();
+      if (querySnapshot21.docs.isNotEmpty) {
         int count = 1;
         print("");
-        print("Hanno aggiornato:");
-        for (var doc in querySnapshot3.docs) {
-          String nome = doc['name'] ?? 'N/A';
-          String cognome = doc['surname'] ?? 'N/A';
-          print('$count. $nome $cognome');
-          count++;
+        print("Devono aggiornare Delta Club:");
+        for (var doc in querySnapshot21.docs) {
+          if(doc['club'] == 'Delta Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
+        }
+      } else {
+        print('Nessun utente trovato con una versione diversa da $versione');
+      }
+
+      QuerySnapshot querySnapshot30 =
+          await users.where('versione', isEqualTo: versione).get();
+      if (querySnapshot30.docs.isNotEmpty) {
+        int count = 1;
+        print("");
+        print("Hanno aggiornato Tiber Club:");
+        for (var doc in querySnapshot30.docs) {
+          if(doc['club'] == 'Tiber Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
+        }
+      } else {
+        print('Nessun utente trovato con una versione uguale a $versione');
+      }
+
+      QuerySnapshot querySnapshot31 =
+          await users.where('versione', isEqualTo: versione).get();
+      if (querySnapshot31.docs.isNotEmpty) {
+        int count = 1;
+        print("");
+        print("Hanno aggiornato Delta Club:");
+        for (var doc in querySnapshot31.docs) {
+          if(doc['club'] == 'Delta Club') {
+            String nome = doc['name'] ?? 'N/A';
+            String cognome = doc['surname'] ?? 'N/A';
+            print('$count. $nome $cognome');
+            count++;
+          }
         }
       } else {
         print('Nessun utente trovato con una versione uguale a $versione');

@@ -1152,7 +1152,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                       )
                     : Container(),
                 Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     child: Row(children: [
                       golFuori == golCasa &&
                               widget.tipo != 'girone' &&
@@ -1478,7 +1478,6 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                 !iniziata && !finita
                     ? const Center(
                         child: Column(children: [
-                        SizedBox(height: 80),
                         Text('Partita da giocare',
                             style: TextStyle(
                                 fontSize: 21, color: Colors.black54)),

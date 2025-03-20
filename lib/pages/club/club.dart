@@ -130,9 +130,74 @@ class _ClubPageState extends State<ClubPage> {
     }
   }
 
+  Future<void> _fetchPrivacy() async {
+    DocumentSnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .doc(widget.id)
+        .get();
+
+    if (querySnapshot.exists) {
+      Map<String, dynamic> data = querySnapshot.data() as Map<String, dynamic>;
+      if(data['privacy'] == false) {
+        await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            barrierColor: const Color.fromARGB(255, 206, 203, 203),
+            builder: (BuildContext context) {
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return AlertDialog(
+                    title: const Center(
+                        child: Text('Privacy & Policy',
+                            style: TextStyle(fontSize: 24))),
+                    content: Row(
+                      children: [
+                        const Expanded(child: Text(
+                            'È necessario accettare le condizioni di Privacy & Policy',
+                            style: TextStyle(fontSize: 17)),),
+                        IconButton(
+                          icon: const Icon(Icons.open_in_new),
+                          onPressed: () {
+                            FlutterWebBrowser.openWebPage(url: 'https://www.iubenda.com/privacy-policy/69534588');
+                          },
+                        ),
+                      ]
+                    ),
+                    actions: <Widget>[
+                      Center(
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                            ElevatedButton(
+                              child: const Text('Accetto',
+                                  style: TextStyle(fontSize: 20)),
+                              onPressed: () {
+                                FirebaseFirestore.instance
+                                    .collection('user')
+                                    .doc(widget.id)
+                                    .update({'privacy': true});
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ]))
+                    ],
+                  );
+                },
+              );
+            },
+          ) ??
+          false;
+      }
+    } else {
+      print('Nessun documento trovato con questa email.');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _fetchPrivacy();
 
     _fetchVersion();
 
@@ -194,7 +259,7 @@ class _ClubPageState extends State<ClubPage> {
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Conferma'),
+              title: const Center(child: Text('Champions Club'),),
               content: const Text('Sei sicuro di voler passare alla CC?'),
               actions: <Widget>[
                 TextButton(
@@ -221,8 +286,7 @@ class _ClubPageState extends State<ClubPage> {
 
   Future<void> _updateCC(String ccRole) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cc',
-        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
     await prefs.setString('ccRole', ccRole);
     await prefs.setString('nome', '${widget.name} ${widget.surname}');
     restartApp(context, prefs.getString('club') ?? '',
@@ -234,10 +298,11 @@ class _ClubPageState extends State<ClubPage> {
       context,
       MaterialPageRoute(
           builder: (BuildContext context) => MyApp(
-              club: club,
-              cc: cc,
-              ccRole: ccRole,
-              nome: '${widget.name} ${widget.surname}',)),
+                club: club,
+                cc: cc,
+                ccRole: ccRole,
+                nome: '${widget.name} ${widget.surname}',
+              )),
       (Route<dynamic> route) => false,
     );
   }

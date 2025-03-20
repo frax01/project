@@ -90,7 +90,13 @@ class _SignUpState extends State<SignUp> {
   }
 
   _handleSignup() async {
-    if (_formKey.currentState!.validate()) {
+    if (_isPrivacyAccepted == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Devi accettare le condizioni di Privacy e Policy'),
+        ),
+      );
+    } else if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
@@ -101,6 +107,7 @@ class _SignUpState extends State<SignUp> {
         String password = _passwordController.text;
         String birthdate = _birthdateController.text;
         String club = _clubController.text;
+        bool privacy = _isPrivacyAccepted;
 
         final PackageInfo packageInfo = await PackageInfo.fromPlatform();
         String versione = packageInfo.version;
@@ -123,8 +130,8 @@ class _SignUpState extends State<SignUp> {
             status: '',
             token: tokenKey,
             created_time: DateTime.now(),
-            version: versione
-        );
+            version: versione,
+            privacy: privacy);
 
         await _saveUser(user);
 
@@ -248,6 +255,11 @@ class _SignUpState extends State<SignUp> {
         );
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   bool _isObscure = false;
@@ -430,34 +442,34 @@ class _SignUpState extends State<SignUp> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 20),
-                          CheckboxListTile(
-                            title: Row(
-                              children: [
-                                const Text('Accetto la '),
-                                GestureDetector(
-                                  onTap: () {
-                                    FlutterWebBrowser.openWebPage(url: 'https://www.iubenda.com/privacy-policy/69534588');
-                                  },
-                                  child: const Text(
-                                    'Privacy Policy',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            value: _isPrivacyAccepted,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                _isPrivacyAccepted = value ?? false;
-                              });
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Checkbox(
+                                value: _isPrivacyAccepted,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _isPrivacyAccepted = value ?? false;
+                                    print("Privacy: $_isPrivacyAccepted");
+                                  });
+                                },
+                              ),
+                              const Text(
+                                'Accetto le condizioni di Privacy e Policy',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  FlutterWebBrowser.openWebPage(
+                                      url:
+                                          'https://www.iubenda.com/privacy-policy/69534588');
+                                },
+                                icon: const Icon(Icons.open_in_new),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _handleSignup,
                             child: _isLoading

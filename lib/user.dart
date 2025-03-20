@@ -12,6 +12,7 @@ class ClubUser {
   final String token;
   final DateTime created_time;
   final String version;
+  final bool privacy;
 
   ClubUser(
       {required this.name,
@@ -26,5 +27,6 @@ class ClubUser {
       required this.status,
       required this.token,
       required this.created_time,
-      required this.version});
+      required this.version,
+      required this.privacy});
 }

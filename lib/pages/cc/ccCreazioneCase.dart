@@ -149,7 +149,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                   _showLoadingDialog();
 
                   final newNumero = _numeroController.text;
-                  final posti = _postiController.text;
+                  int posti = int.parse(_postiController.text);
                   final club = _selectedClub ?? '';
 
                   final docRef = FirebaseFirestore.instance
@@ -245,9 +245,12 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('$numero', style: pw.TextStyle(fontSize: 17, fontWeight: pw.FontWeight.bold)),
+                pw.Text('$numero',
+                    style: pw.TextStyle(
+                        fontSize: 17, fontWeight: pw.FontWeight.bold)),
                 ...persone.map((persona) {
-                  return pw.Text('${persona['nome']}', style: const pw.TextStyle(fontSize: 15));
+                  return pw.Text('${persona['nome']}',
+                      style: const pw.TextStyle(fontSize: 15));
                 }).toList(),
                 pw.SizedBox(height: 10),
               ],
@@ -261,9 +264,38 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     final file = File("${output.path}/stanzeCC2025.pdf");
     await file.writeAsBytes(await pdf.save());
 
-    await Printing.sharePdf(bytes: await pdf.save(), filename: 'stanzeCC2025.pdf');
+    await Printing.sharePdf(
+        bytes: await pdf.save(), filename: 'stanzeCC2025.pdf');
 
     Navigator.of(context).pop();
+  }
+
+  Future<void> _deleteDialog(String numero) async {
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina casa'),
+        content: const Text('Sei sicuro di voler eliminare la casa?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Si'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      _showLoadingDialog();
+      await FirebaseFirestore.instance
+          .collection('ccCase')
+          .doc(numero)
+          .delete();
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -307,6 +339,10 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text('Nessuna casa', style: TextStyle(fontSize: 20, color: Colors.black54),),
+              );
             }
 
             final cases = snapshot.data!.docs;
@@ -363,10 +399,14 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                               icon: const Icon(Icons.edit),
                               onPressed: () => _showDialog(
                                 numero: numero,
-                                posti: posti.toString(),
+                                posti: posti,
                                 club: club,
                                 isEditing: true,
                               ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _deleteDialog(numero),
                             ),
                           ]),
                       children: [

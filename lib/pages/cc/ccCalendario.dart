@@ -1200,8 +1200,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                         partita['fuori'] !=
                                                                                 ''
                                                                             ? Text(partita['fuori'],
-                                                                                style: const TextStyle(fontSize: 18))
-                                                                            : const Text('Da definire', style: TextStyle(fontSize: 18)),
+                                                                                style: const TextStyle(fontSize: 17))
+                                                                            : const Text('Da definire', style: TextStyle(fontSize: 17)),
                                                                       ]),
                                                                   partita['iniziata'] ||
                                                                           partita[
