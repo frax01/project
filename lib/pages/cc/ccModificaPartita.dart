@@ -229,16 +229,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
       for (var marcatore in marcatoriFirestore) {
         if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'gol') {
           golCasa++;
-          print("goal casa: $golCasa");
         } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'gol') {
           golFuori++;
-          print("goal fuori: $golFuori");
         } else if (marcatore['dove'] == 'casa' && marcatore['cosa'] == 'amm') {
           gialliCasa++;
-          print("gialli casa: $gialliCasa");
         } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'amm') {
           gialliFuori++;
-          print("gialli fuori: $gialliFuori");
         }
         marcatori.add({'nome': marcatore['nome'], 'dove': marcatore['dove'], 'cosa': marcatore['cosa']});
       }
@@ -413,21 +409,15 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
     setState(() {
       for (int i = 0; i < marcatori.length; i++) {
-        print("marc: ${marcatori[i]['cosa']}");
-        print("cosa: $cosa");
         if (marcatori[i]['nome'] == giocatore && marcatori[i]['dove'] == (squadra == widget.casa ? 'casa' : 'fuori') && marcatori[i]['cosa'] == cosa) {
           if (squadra == widget.casa && marcatori[i]['cosa'] == 'gol') {
             golCasa--;
-            print("goal casa: $golCasa");
           } else if(squadra == widget.fuori && marcatori[i]['cosa'] == 'gol') {
             golFuori--;
-            print("goal fuori: $golFuori");
           } else if (squadra == widget.casa && marcatori[i]['cosa'] == 'amm') {
             gialliCasa--;
-            print("gialli casa: $gialliCasa");
           } else if (squadra == widget.fuori && marcatori[i]['cosa'] == 'amm') {
             gialliFuori--;
-            print("gialli fuori: $gialliFuori");
           }
           marcatori.removeAt(i);
           break;

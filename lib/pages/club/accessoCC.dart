@@ -255,8 +255,7 @@ class _AccessoCCState extends State<AccessoCC> {
                     widget.email != '' ? _updateUser('user') : null;
                     final SharedPreferences prefs =
                         await SharedPreferences.getInstance();
-                    await prefs.setString('cc',
-                        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+                    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
                     await prefs.setString('ccRole', 'user');
                     restartApp(context, prefs.getString('club') ?? '',
                         prefs.getString('cc') ?? '', 'user', '');
@@ -328,7 +327,8 @@ class _AccessoCCState extends State<AccessoCC> {
                                 borderSide: BorderSide(
                                     color: Color.fromARGB(255, 39, 132, 207)),
                               ),
-                            )),
+                            )
+                          ),
                       ) //)
                     ]),
                   const SizedBox(height: 15),
@@ -341,7 +341,7 @@ class _AccessoCCState extends State<AccessoCC> {
                   Row(children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPasswordTutor('tutor', newclub),
+                        onPressed: () => _checkPasswordTutor('tutor', oldclub!='' ? oldclub : newclub),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 39, 132, 207),

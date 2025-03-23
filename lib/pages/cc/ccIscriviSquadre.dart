@@ -52,7 +52,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     }
 
     setState(() {
-      print("ragazzi: $ragazzi");
     });
   }
 
@@ -226,7 +225,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     _showLoadingDialog();
 
     List<Map<String, String>> giocatoriData = [];
-    print("giocatori: ${giocatori[squadra]}");
     for (int i = 0; i < giocatori[squadra]!.length; i++) {
       //giocatoriData.add({
       //  'nome': giocatori[squadra]![i],
@@ -307,87 +305,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
           'appartamento': '',
         });
       }
-
-      //DocumentSnapshot docSnapshot = await docRef.get();
-
-      //    persone = [];
-      //    posti = 0;
-      //    String clubValue = '';
-      //    if (docSnapshot.exists) {
-      //      //for (var elem in giocatori[squadra] ?? []) {
-      //      persone.add({
-      //        'squadra': squadra,
-      //        'nome': giocatori[squadra]![i],
-      //      });
-      //      //}
-      //      //persone = giocatori[squadra] ?? []; //docSnapshot['persone'];
-      //      posti = docSnapshot['posti'];
-      //      clubValue = docSnapshot['club'];
-      //    }
-//
-      //    // Controlla se la persona è già presente nella lista
-      //    bool found = false;
-      //    for (var persona in persone) {
-      //      if (persona == giocatori[squadra]![i]) {
-      //        found = true;
-      //        break;
-      //      }
-      //      //if (persona['nome'] == giocatori[squadra]![i]) {
-      //      //  persona['squadra'] = squadra;
-      //      //  found = true;
-      //      //  break;
-      //      //}
-      //    }
-//
-      //    if (!found) {
-      //      persone.add({
-      //        'squadra': squadra,
-      //        'nome': giocatori[squadra]![i],
-      //      });
-      //    }
-//
-      //    if (persone.length <= posti) {
-      //      await docRef.set({
-      //        'numero': nuovoAppartamento,
-      //        'club': widget.ccRole != 'staff' ? widget.club : clubValue,
-      //        'persone': persone,
-      //        'posti': posti,
-      //      });
-      //    } else {
-      //      List<dynamic> iscritti = [];
-      //      for (int i = 0; i < posti; i++) {
-      //        iscritti.add(persone[i]);
-      //      }
-      //      await docRef.set({
-      //        'numero': nuovoAppartamento,
-      //        'club': widget.ccRole != 'staff' ? widget.club : clubValue,
-      //        'persone': iscritti,
-      //        'posti': posti,
-      //      });
-      //      ScaffoldMessenger.of(context).showSnackBar(
-      //        SnackBar(content: Text('Numero massimo di $posti posti raggiunto')),
-      //      );
-      //    }
-      //  }
-
-      //print("posti: ${int.parse(posti)}");
-      //  print("persone: $persone");
-      //  print("posti: $posti");
-      //  if (persone.length <= posti) {
-      //    print("1");
-      //    giocatoriData.add({
-      //      'nome': giocatori[squadra]![i],
-      //      'maglia': magliaControllers[squadra]![i].text,
-      //      'appartamento': appartamentoControllers[squadra]![i].text,
-      //    });
-      //  } else {
-      //    print("2");
-      //    giocatoriData.add({
-      //      'nome': giocatori[squadra]![i],
-      //      'maglia': magliaControllers[squadra]![i].text,
-      //      'appartamento': '',
-      //    });
-      //  }
     }
 
     DocumentSnapshot docClub = await FirebaseFirestore.instance
@@ -510,10 +427,10 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
       appBar: AppBar(
         title: const Text('Iscrivi giocatori'),
         actions: [
-          IconButton(
+          widget.ccRole=='staff' ? IconButton(
             icon: const Icon(Icons.upload_file),
             onPressed: _importExcelFile,
-          ),
+          ) : Container()
         ],
       ),
       body: FutureBuilder(
@@ -537,13 +454,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                 itemBuilder: (context, index) {
                   String squadra = squadre[index];
                   String squadraMap = clubs[squadra]!;
-                  //print("squadra: $squadra");
-                  //print("squadre: $squadre");
-                  //print("clubs: $clubs");
-                  //print("squadraMap: $squadraMap");
-                  //print("ragazzi: $ragazzi");
-                  //print("squadraMap: $squadraMap");
-                  //print("ragazzi: ${ragazzi[squadraMap]}");
                   return Padding(
                       padding: const EdgeInsets.fromLTRB(12, 8, 0, 0),
                       child: ExpansionTile(

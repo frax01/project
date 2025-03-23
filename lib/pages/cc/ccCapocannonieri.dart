@@ -30,26 +30,26 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
       for (var doc in querySnapshot.docs) {
         List<dynamic> marcatoriList = doc['marcatori'] ?? [];
         for (var marcatore in marcatoriList) {
-          String nome = marcatore['nome'];
+          String nome = marcatore['nome'].split(" ").sublist(1).join(" ");
           String dove = marcatore['dove'];
           String cosa = marcatore['cosa'];
           String squadra = '';
           if (dove == 'casa' && cosa == 'gol') {
             squadra = doc['casa'];
             if (marcatori.containsKey(nome)) {
-            marcatori[nome] = marcatori[nome]! + 1;
-          } else {
-            marcatori[nome] = 1;
-            squadre[nome] = squadra;
-          }
+              marcatori[nome] = marcatori[nome]! + 1;
+            } else {
+              marcatori[nome] = 1;
+              squadre[nome] = squadra;
+            }
           } else if (dove == 'fuori' && cosa == 'gol') {
             squadra = doc['fuori'];
             if (marcatori.containsKey(nome)) {
-            marcatori[nome] = marcatori[nome]! + 1;
-          } else {
-            marcatori[nome] = 1;
-            squadre[nome] = squadra;
-          }
+              marcatori[nome] = marcatori[nome]! + 1;
+            } else {
+              marcatori[nome] = 1;
+              squadre[nome] = squadra;
+            }
           }
         }
       }
@@ -170,8 +170,8 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
               child: Text(
                 marcatore.value.toString(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
           ];
@@ -213,7 +213,8 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
           }
 
           final marcatori = snapshot.data!;
-          final List<MapEntry<String, int>> sortedMarcatori = marcatori.entries.toList()
+          final List<MapEntry<String, int>> sortedMarcatori = marcatori.entries
+              .toList()
             ..sort((a, b) => b.value.compareTo(a.value));
 
           return Padding(

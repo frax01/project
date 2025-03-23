@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:excel/excel.dart' as excel;
+import 'package:share_plus/share_plus.dart';
 
 class CcCreazioneCase extends StatefulWidget {
   @override
@@ -226,48 +226,83 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     );
   }
 
-  Future<void> _createPdf() async {
+  Future<void> _createExcel() async {
     _showLoadingDialog();
 
-    final pdf = pw.Document();
+    try {
+      // Crea un nuovo file Excel
+      var excelFile = excel.Excel.createExcel();
 
-    final QuerySnapshot result =
-        await FirebaseFirestore.instance.collection('ccCase').get();
-    final List<DocumentSnapshot> documents = result.docs;
+      // Ottieni i dati da Firestore
+      final QuerySnapshot result =
+          await FirebaseFirestore.instance.collection('ccCase').get();
+      final List<DocumentSnapshot> documents = result.docs;
 
-    pdf.addPage(
-      pw.MultiPage(
-        build: (context) => [
-          pw.Header(level: 0, child: pw.Text('Champions Club 2025')),
-          ...documents.map((doc) {
-            final numero = doc['numero'];
-            final persone = List<Map<String, dynamic>>.from(doc['persone']);
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('$numero',
-                    style: pw.TextStyle(
-                        fontSize: 17, fontWeight: pw.FontWeight.bold)),
-                ...persone.map((persona) {
-                  return pw.Text('${persona['nome']}',
-                      style: const pw.TextStyle(fontSize: 15));
-                }).toList(),
-                pw.SizedBox(height: 10),
-              ],
-            );
-          }).toList(),
-        ],
-      ),
-    );
+      // Raggruppa i dati per club
+      Map<String, List<Map<String, dynamic>>> clubData = {};
+      for (var doc in documents) {
+        final numero = doc['numero'];
+        final club = doc['club'];
+        final persone = List<Map<String, dynamic>>.from(doc['persone']);
 
-    final output = await getTemporaryDirectory();
-    final file = File("${output.path}/stanzeCC2025.pdf");
-    await file.writeAsBytes(await pdf.save());
+        for (var persona in persone) {
+          final nomeCompleto = persona['nome'];
 
-    await Printing.sharePdf(
-        bytes: await pdf.save(), filename: 'stanzeCC2025.pdf');
+          if (!clubData.containsKey(club)) {
+            clubData[club] = [];
+          }
 
-    Navigator.of(context).pop();
+          clubData[club]!.add({
+            'Cognome': nomeCompleto.split(' ').last,
+            'Nome': nomeCompleto.split(' ').first,
+            'Club': club,
+            'Appartamento': numero,
+          });
+        }
+      }
+
+      clubData.forEach((club, persone) {
+    var sheet = excelFile[club.isNotEmpty ? club : 'Senza Club'];
+
+
+    // Aggiungi l'intestazione manualmente
+    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =  excel.TextCellValue('Cognome');
+    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =  excel.TextCellValue('Nome');
+    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =  excel.TextCellValue('Club');
+    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =  excel.TextCellValue('Appartamento');
+
+    // Aggiungi i dati delle persone
+    for (int i = 0; i < persone.length; i++) {
+      var persona = persone[i];
+      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1)).value = excel.TextCellValue(persona['Cognome']);
+      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1)).value = excel.TextCellValue(persona['Nome']);
+      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1)).value = excel.TextCellValue(persona['Club']);
+      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1)).value = excel.TextCellValue(persona['Appartamento']);
+      }
+    });
+
+      // Salva il file Excel
+      final output = await getTemporaryDirectory();
+      final file = File("${output.path}/stanzeCC2025.xlsx");
+      await file.writeAsBytes(excelFile.encode()!);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File Excel creato e condiviso con successo!')),
+      );
+
+      Navigator.of(context).pop();
+
+      // Condividi il file Excel
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Ecco il file Excel delle stanze per il Champions Club 2025!',
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante la creazione del file Excel: $e')),
+      );
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> _deleteDialog(String numero) async {
@@ -305,13 +340,13 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
         title: const Text('Gestione case'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
+            icon: const Icon(Icons.file_download),
             onPressed: () async {
               bool? confirm = await showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Crea PDF'),
-                  content: const Text('Vuoi creare un PDF?'),
+                  title: const Text('Crea Excel'),
+                  content: const Text('Vuoi creare un file Excel?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
@@ -326,7 +361,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
               );
 
               if (confirm == true) {
-                await _createPdf();
+                await _createExcel();
               }
             },
           ),
@@ -449,7 +484,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
         shape: const CircleBorder(),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
