@@ -22,7 +22,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
-import 'package:flutter/rendering.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -216,7 +215,8 @@ class _HomePageStartState extends State<HomePageStart> {
 
   RemoteMessage? initialMessage;
 
-  Widget buildClubPage(String club, int selectedIndex, String ccRole, bool user) {
+  Widget buildClubPage(
+      String club, int selectedIndex, String ccRole, bool user) {
     print("sono qui");
 
     if (widget.cc == 'yes') {
@@ -336,6 +336,17 @@ class _HomePageStartState extends State<HomePageStart> {
     });
   }
 
+  void restartApp(BuildContext context, String club, String cc, String ccRole,
+      String nome) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (BuildContext context) =>
+              MyApp(club: club, cc: cc, ccRole: ccRole, nome: nome)),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   void handleMessageFromBackgroundAndForegroundState(
       RemoteMessage message) async {
     if (message.data['category'] == 'new_user') {
@@ -396,7 +407,10 @@ class _HomePageStartState extends State<HomePageStart> {
   }
 
   Widget handleMessageFromTerminatedState() {
-    if (initialMessage?.data['category'] == 'new_user') {
+    if (widget.cc == 'yes') {
+      
+    }
+    else if (initialMessage?.data['category'] == 'new_user') {
       Navigator.push(
           context,
           MaterialPageRoute(

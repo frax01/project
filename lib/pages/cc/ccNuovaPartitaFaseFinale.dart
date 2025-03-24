@@ -93,18 +93,25 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     turni = List.generate(8, (_) => Partita());
     _timeControllers = List.generate(8, (_) => TextEditingController());
     _campiControllers = List.generate(8, (_) => TextEditingController());
-    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('ccOttavi').get();
 
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').get();
-    
+    final QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('ccSquadre').get();
+
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccStaff').get();
+
     setState(() {
       squadre = [''];
-      for (var doc in querySnapshot.docs) {
-        String squadra = doc['squadra'];
-        squadre.add(squadra);
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          List<dynamic> squadreList = doc['squadre'];
+          for (var squadra in squadreList) {
+            squadre.add(squadra['squadra']);
+          }
+        }
       }
 
-      if(snapshot.docs.isNotEmpty){
+      if (snapshot.docs.isNotEmpty) {
         for (var doc in snapshot.docs) {
           staff.add(doc['nome']);
         }
@@ -128,11 +135,11 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   }
 
   Future<void> _getGironi() async {
-    final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('ccOttavi').get();
-    setState(() {
-      gironi = querySnapshot.docs.map((doc) => doc.id).toList();
-    });
+    //final QuerySnapshot querySnapshot =
+    //    await FirebaseFirestore.instance.collection('ccOttavi').get();
+    //setState(() {
+    //  gironi = querySnapshot.docs.map((doc) => doc.id).toList();
+    //});
     await _getSquadre();
   }
 
@@ -277,7 +284,9 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].casa?.isNotEmpty == true ? turni[turno].casa : null,
+                                value: turni[turno].casa?.isNotEmpty == true
+                                    ? turni[turno].casa
+                                    : null,
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -295,7 +304,9 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].fuori?.isNotEmpty == true ? turni[turno].fuori : null,
+                                value: turni[turno].fuori?.isNotEmpty == true
+                                    ? turni[turno].fuori
+                                    : null,
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -346,7 +357,9 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].campo?.isNotEmpty == true ? turni[turno].campo : null,
+                                value: turni[turno].campo?.isNotEmpty == true
+                                    ? turni[turno].campo
+                                    : null,
                                 items: campi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
@@ -369,7 +382,10 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno].arbitro?.isNotEmpty == true ? turni[turno].arbitro : null,
+                                  value:
+                                      turni[turno].arbitro?.isNotEmpty == true
+                                          ? turni[turno].arbitro
+                                          : null,
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -378,8 +394,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   }).toList(),
                                   onChanged: (newValue) {
                                     setState(() {
-                                      turni[turno].arbitro =
-                                          newValue;
+                                      turni[turno].arbitro = newValue;
                                     });
                                   },
                                   decoration: getInputDecoration('Arbitro'),
@@ -388,7 +403,10 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno].refertista?.isNotEmpty == true ? turni[turno].refertista : null,
+                                  value: turni[turno].refertista?.isNotEmpty ==
+                                          true
+                                      ? turni[turno].refertista
+                                      : null,
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -397,8 +415,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   }).toList(),
                                   onChanged: (newValue) {
                                     setState(() {
-                                      turni[turno].refertista =
-                                          newValue;
+                                      turni[turno].refertista = newValue;
                                     });
                                   },
                                   decoration: getInputDecoration('Refertista'),
