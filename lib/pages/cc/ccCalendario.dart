@@ -986,7 +986,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                     return Center(child: Text('Errore: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(
-                      child: Text('Nessuna partita trovata', style: TextStyle(fontSize: 20, color: Colors.black54)));
+                      child: Text('Nessuna partita trovata', style: TextStyle(fontSize: 19, color: Colors.black54)));
                   }
 
                   final partite = snapshot.data!;

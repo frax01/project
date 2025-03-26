@@ -261,7 +261,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
             return const Center(
               child: Text(
                 'Nessuna squadra',
-                style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                style: TextStyle(fontSize: 19, color: Colors.black54),
                 textAlign: TextAlign.center,
               ),
             );

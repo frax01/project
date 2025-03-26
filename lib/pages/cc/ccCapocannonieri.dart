@@ -209,7 +209,7 @@ class _CCCapocannonieriState extends State<CCCapocannonieri> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Errore: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Nessun marcatore trovato'));
+            return const Center(child: Text('Nessun marcatore trovato', style: TextStyle(fontSize: 19, color: Colors.black54)));
           }
 
           final marcatori = snapshot.data!;

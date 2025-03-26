@@ -442,11 +442,15 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
               return Center(child: Text('Errore: ${snapshot.error}'));
             } else if (squadre.isEmpty) {
               return Center(
-                child: Text(
-                  'Nessuna squadra iscritta per ${widget.club}',
-                  style: const TextStyle(fontSize: 20.0, color: Colors.black54),
+                child: widget.ccRole=='staff' ? const Text(
+                  'Nessuna squadra iscritta',
+                  style: TextStyle(fontSize: 19, color: Colors.black54),
                   textAlign: TextAlign.center,
-                ),
+                ) : Text(
+                  'Nessuna squadra iscritta per ${widget.club}',
+                  style: const TextStyle(fontSize: 19, color: Colors.black54),
+                  textAlign: TextAlign.center,
+                )
               );
             } else {
               return ListView.builder(

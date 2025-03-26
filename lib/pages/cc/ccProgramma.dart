@@ -90,7 +90,8 @@ class _CCProgrammaState extends State<CCProgramma> {
                 );
               } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SliverFillRemaining(
-                  child: Center(child: Text('Nessun programma trovato')),
+                  child: Center(child: Text('Nessun programma trovato',
+                  style: TextStyle(fontSize: 19, color: Colors.black54),))
                 );
               }
 

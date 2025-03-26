@@ -47,7 +47,7 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 20),));
+            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 19, color: Colors.black54),));
           }
           return Padding(
               padding: const EdgeInsets.all(8.0),

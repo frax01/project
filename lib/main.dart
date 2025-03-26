@@ -349,6 +349,10 @@ class _HomePageStartState extends State<HomePageStart> {
 
   void handleMessageFromBackgroundAndForegroundState(
       RemoteMessage message) async {
+    //if (widget.cc == 'yes') {
+    //  print("notifica dalla cc");
+    //  //restartApp(context, widget.club, widget.cc, widget.ccRole, widget.nome);
+    //} else 
     if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
@@ -408,9 +412,7 @@ class _HomePageStartState extends State<HomePageStart> {
 
   Widget handleMessageFromTerminatedState() {
     if (widget.cc == 'yes') {
-      
-    }
-    else if (initialMessage?.data['category'] == 'new_user') {
+    } else if (initialMessage?.data['category'] == 'new_user') {
       Navigator.push(
           context,
           MaterialPageRoute(

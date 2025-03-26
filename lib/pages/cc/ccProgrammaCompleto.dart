@@ -28,7 +28,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Errore: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('Nessun programma trovato'));
+            return const Center(child: Text('Nessun programma trovato', style: TextStyle(fontSize: 19, color: Colors.black54)));
           }
 
           final programmi = snapshot.data!.docs;

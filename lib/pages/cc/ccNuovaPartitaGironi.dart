@@ -229,12 +229,12 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 20),));
+            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 19, color: Colors.black54),));
           } else if (squadre.isEmpty) {
             return const Center(
               child: Text(
                 'Nessun girone',
-                style: TextStyle(fontSize: 20.0, color: Colors.black54),
+                style: TextStyle(fontSize: 19.0, color: Colors.black54),
                 textAlign: TextAlign.center,
               ),
             );

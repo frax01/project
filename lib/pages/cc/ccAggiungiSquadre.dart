@@ -287,7 +287,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.data!.docs.isEmpty) {
             return const Center(
-              child: Text('Nessun club presente'),
+              child: Text('Nessun club presente', style: TextStyle(fontSize: 19, color: Colors.black54)),
             );
           }
 

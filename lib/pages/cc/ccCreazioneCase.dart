@@ -376,7 +376,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.data!.docs.isEmpty) {
               return const Center(
-                child: Text('Nessuna casa', style: TextStyle(fontSize: 20, color: Colors.black54),),
+                child: Text('Nessuna casa', style: TextStyle(fontSize: 19, color: Colors.black54),),
               );
             }
 
