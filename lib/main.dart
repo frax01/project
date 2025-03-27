@@ -349,11 +349,11 @@ class _HomePageStartState extends State<HomePageStart> {
 
   void handleMessageFromBackgroundAndForegroundState(
       RemoteMessage message) async {
-    //if (widget.cc == 'yes') {
-    //  print("notifica dalla cc");
-    //  //restartApp(context, widget.club, widget.cc, widget.ccRole, widget.nome);
-    //} else 
-    if (message.data['category'] == 'new_user') {
+    if (widget.cc == 'yes') {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cc', 'no');
+      restartApp(context, widget.club, prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '', '');
+    } else if (message.data['category'] == 'new_user') {
       Navigator.push(
           context,
           MaterialPageRoute(

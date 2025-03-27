@@ -4,9 +4,10 @@ import 'package:club/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AccessoCC extends StatefulWidget {
-  const AccessoCC({super.key, required this.email});
+  const AccessoCC({super.key, required this.email, required this.club});
 
   final String email;
+  final String club;
 
   @override
   _AccessoCCState createState() => _AccessoCCState();
@@ -71,10 +72,20 @@ class _AccessoCCState extends State<AccessoCC> {
           restartApp(context, prefs.getString('club') ?? '',
               prefs.getString('cc') ?? '', 'staff', nome);
         } else {
-          _showErrorDialog();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Password errata'),
+            ),
+          );
+          return;
         }
       } else {
-        _showErrorNomeDialog();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nome utente errato'),
+          ),
+        );
+        return;
       }
     } else {
       if (enteredPassword == staffPassword) {
@@ -84,7 +95,12 @@ class _AccessoCCState extends State<AccessoCC> {
             .get();
 
         if (snapshot.exists) {
-          _showErrorNomeEsistenteDialog();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Esiste già un utente con questo nome'),
+            ),
+          );
+          return;
         } else {
           await FirebaseFirestore.instance.collection('ccStaff').doc(nome).set({
             'nome': nome,
@@ -100,7 +116,12 @@ class _AccessoCCState extends State<AccessoCC> {
               prefs.getString('cc') ?? '', 'staff', nome);
         }
       } else {
-        _showErrorDialog();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password errata'),
+          ),
+        );
+        return;
       }
     }
   }
@@ -109,6 +130,14 @@ class _AccessoCCState extends State<AccessoCC> {
     String enteredPassword;
     print('newclub: $newclub');
     enteredPassword = tutorPasswordController.text;
+    if (newclub == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inserisci il tuo club'),
+        ),
+      );
+      return;
+    }
     if (enteredPassword == tutorPassword) {
       _updateUser('tutor');
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -123,67 +152,29 @@ class _AccessoCCState extends State<AccessoCC> {
           'tutor',
           '');
     } else {
-      _showErrorDialog();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password errata'),
+        ),
+      );
+      return;
     }
   }
 
-  void _showErrorDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Errore'),
-        content: const Text('Password errata. Riprova.'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorNomeDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Errore'),
-        content: const Text('Nome errato. Riprova.'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorNomeEsistenteDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Errore'),
-        content: const Text('Nome già inserito. Riprova.'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  bool _isObscure = false;
 
   InputDecoration getInputDecoration(String label) {
     return InputDecoration(
       labelText: label,
+      floatingLabelStyle: const TextStyle(color: Colors.black),
+      suffixIcon: IconButton(
+        icon: Icon(_isObscure ? Icons.visibility : Icons.visibility_off),
+        onPressed: () {
+          setState(() {
+            _isObscure = !_isObscure;
+          });
+        },
+      ),
       filled: true,
       fillColor: Colors.white,
       border: const OutlineInputBorder(
@@ -206,7 +197,10 @@ class _AccessoCCState extends State<AccessoCC> {
   }
 
   Future<void> _retrievePw() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('ccPassword').doc('password').get();
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('ccPassword')
+        .doc('password')
+        .get();
     if (snapshot.exists) {
       setState(() {
         staffPassword = snapshot['staffPw'];
@@ -255,7 +249,8 @@ class _AccessoCCState extends State<AccessoCC> {
                     widget.email != '' ? _updateUser('user') : null;
                     final SharedPreferences prefs =
                         await SharedPreferences.getInstance();
-                    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+                    await prefs.setString('cc',
+                        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
                     await prefs.setString('ccRole', 'user');
                     restartApp(context, prefs.getString('club') ?? '',
                         prefs.getString('cc') ?? '', 'user', '');
@@ -315,6 +310,8 @@ class _AccessoCCState extends State<AccessoCC> {
                             },
                             decoration: const InputDecoration(
                               labelText: 'Club',
+                              floatingLabelStyle:
+                                  TextStyle(color: Colors.black),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
@@ -327,21 +324,24 @@ class _AccessoCCState extends State<AccessoCC> {
                                 borderSide: BorderSide(
                                     color: Color.fromARGB(255, 39, 132, 207)),
                               ),
-                            )
-                          ),
+                            )),
                       ) //)
                     ]),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: tutorPasswordController,
-                    decoration: getInputDecoration('Password tutor'),
-                    obscureText: true,
-                  ),
+                  Column(children: [
+                    if (oldclub == '') const SizedBox(height: 15),
+                    TextField(
+                      controller: tutorPasswordController,
+                      decoration: getInputDecoration('Password tutor'),
+                      obscureText: !_isObscure,
+                      cursorColor: Colors.black54,
+                    ),
+                  ]),
                   const SizedBox(height: 15),
                   Row(children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPasswordTutor('tutor', oldclub!='' ? oldclub : newclub),
+                        onPressed: () => _checkPasswordTutor(
+                            'tutor', oldclub != '' ? oldclub : newclub),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 39, 132, 207),
@@ -379,6 +379,7 @@ class _AccessoCCState extends State<AccessoCC> {
                     Expanded(
                       child: TextFormField(
                         textCapitalization: TextCapitalization.sentences,
+                        cursorColor: Colors.black54,
                         controller: staffDataController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -388,6 +389,7 @@ class _AccessoCCState extends State<AccessoCC> {
                         },
                         decoration: const InputDecoration(
                           labelText: 'Nome e cognome',
+                          floatingLabelStyle: TextStyle(color: Colors.black),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -406,16 +408,17 @@ class _AccessoCCState extends State<AccessoCC> {
                   ]),
                   const SizedBox(height: 15),
                   TextField(
+                    obscureText: !_isObscure,
                     controller: staffPasswordController,
                     decoration: getInputDecoration('Password staff'),
-                    obscureText: true,
+                    cursorColor: Colors.black54,
                   ),
                   const SizedBox(height: 15),
                   Row(children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPasswordStaff(
-                            'staff', '', staffDataController.text, 'login'),
+                        onPressed: () => _checkPasswordStaff('staff',
+                            widget.club, staffDataController.text, 'login'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 39, 132, 207),
@@ -426,8 +429,11 @@ class _AccessoCCState extends State<AccessoCC> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _checkPasswordStaff('staff', '',
-                            staffDataController.text, 'registrati'),
+                        onPressed: () => _checkPasswordStaff(
+                            'staff',
+                            widget.club,
+                            staffDataController.text,
+                            'registrati'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 39, 132, 207),

@@ -383,7 +383,7 @@ class _LoginState extends State<Login> {
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => const AccessoCC(email: ''))),
+                                builder: (context) => AccessoCC(email: '', club: club))),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF00296B),
                                 ),

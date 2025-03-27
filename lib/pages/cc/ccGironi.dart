@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../functions/notificationFunctions.dart';
 
 class CCGironi extends StatefulWidget {
   const CCGironi({super.key});
@@ -21,12 +20,6 @@ class _CCGironiState extends State<CCGironi> {
     super.initState();
     _loadLogo();
     _scontriDirettiFuture = _loadScontriDiretti();
-
-    //sendNotification(
-    //        ['dDKy5bLCQSedDXzof81P7v:APA91bGaB-zGb5fglsapxuA1fGEJjTofkcQQMDAuVuLrWX7ukWGGdiXzC8pgo9a8ikp-_PbYBl2JZqokvtdrxxnVEfI1GHUZK4ZgK3yA7dbdEY_uDZSypYA'], 'Nuovo programma!', 'title', 'new_event',
-    //        docId: 'doc.id',
-    //        selectedOption: '',
-    //        role: '');
   }
 
   Future<void> _loadLogo() async {

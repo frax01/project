@@ -334,6 +334,7 @@ class _ClubPageState extends State<ClubPage> {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => AccessoCC(
                                       email: widget.email,
+                                      club: widget.club
                                   )));
                       //    } else {
                       //      await _showConfirmDialog(doc.data()['ccRole']);
