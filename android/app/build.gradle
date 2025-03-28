@@ -32,7 +32,7 @@ if (flutterVersionName == null) {
 android {
     namespace "com.mycompany.dima"
 
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion "26.1.10909125"
 
     compileOptions {
@@ -101,7 +101,7 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-inappmessaging-display'
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
     implementation 'androidx.multidex:multidex:2.0.1'
 }
