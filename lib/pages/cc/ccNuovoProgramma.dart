@@ -85,7 +85,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
         if (doc['tipo'] == 'girone') {
           codice = '${doc['tipo']} ${doc['turno']}';
         } else {
-          codice = '${doc['tipo']} ${doc['codice']}';
+          codice = '${doc['tipo']} ${doc['codice'][0]}';
         }
         setState(() {
           if (!_squadreCodiceOptions.contains(codice)) {

@@ -1083,6 +1083,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                 'campo'],
                                                             arbitro: partita[
                                                                 'arbitro'],
+                                                            refertista: partita['refertista'], //passare anche il
+                                                            nome: widget.nome,
                                                             girone: partita[
                                                                     'girone'] ??
                                                                 '',
@@ -1244,7 +1246,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                               );
                             }).toList(),
                             _selectedSegment == 'Ottavi' &&
-                                    widget.ccRole == 'staff'
+                                    widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
                                 ? Column(children: [
                                     const SizedBox(height: 10),
                                     Center(
@@ -1256,7 +1258,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                     ))
                                   ])
                                 : _selectedSegment == 'Quarti' &&
-                                        widget.ccRole == 'staff'
+                                        widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
                                     ? Column(children: [
                                         const SizedBox(height: 10),
                                         Center(
@@ -1268,7 +1270,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                         ))
                                       ])
                                     : _selectedSegment == 'Semifinali' &&
-                                            widget.ccRole == 'staff'
+                                            widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
                                         ? Column(children: [
                                             const SizedBox(height: 10),
                                             Center(
@@ -1281,7 +1283,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                             ))
                                           ])
                                         : _selectedSegment == 'Finali' &&
-                                                widget.ccRole == 'staff'
+                                                widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
                                             ? Column(children: [
                                                 const SizedBox(height: 10),
                                                 Center(

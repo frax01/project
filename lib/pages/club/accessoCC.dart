@@ -62,7 +62,7 @@ class _AccessoCCState extends State<AccessoCC> {
           .get();
       if (snapshot.exists) {
         if (enteredPassword == staffPassword) {
-          _updateUser('staff');
+          await _updateUser('staff');
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('cc',
               'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
@@ -105,7 +105,7 @@ class _AccessoCCState extends State<AccessoCC> {
           await FirebaseFirestore.instance.collection('ccStaff').doc(nome).set({
             'nome': nome,
           });
-          _updateUser('staff');
+          await _updateUser('staff');
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('cc',
               'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
@@ -139,7 +139,7 @@ class _AccessoCCState extends State<AccessoCC> {
       return;
     }
     if (enteredPassword == tutorPassword) {
-      _updateUser('tutor');
+      await _updateUser('tutor');
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('cc',
           'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
@@ -159,6 +159,19 @@ class _AccessoCCState extends State<AccessoCC> {
       );
       return;
     }
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   bool _isObscure = false;

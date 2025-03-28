@@ -13,6 +13,8 @@ class CCModificaPartita extends StatefulWidget {
   final String orario;
   final String campo;
   final String arbitro;
+  final String refertista;
+  final String nome;
   final String girone;
   final bool iniziata;
   final bool finita;
@@ -29,6 +31,8 @@ class CCModificaPartita extends StatefulWidget {
     required this.orario,
     required this.campo,
     required this.arbitro,
+    required this.refertista,
+    required this.nome,
     required this.girone,
     required this.iniziata,
     required this.finita,
@@ -993,7 +997,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           )
                         ])),
                 const SizedBox(height: 16),
-                widget.ccRole == 'staff'
+                widget.ccRole == 'staff' && widget.nome==widget.refertista
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
@@ -1141,13 +1145,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         ),
                       )
                     : Container(),
-                Padding(
+                  Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     child: Row(children: [
                       golFuori == golCasa &&
                               widget.tipo != 'girone' &&
                               iniziata &&
-                              widget.ccRole == 'staff'
+                              widget.ccRole == 'staff' && widget.nome==widget.refertista
                           ? Expanded(
                               child: ElevatedButton(
                               onPressed: !boolRigori
@@ -1172,20 +1176,44 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                       });
                                     }
                                   : () {
-                                      setState(() {
-                                        boolRigori = false;
-                                        rigoriCasa = [];
-                                        rigoriFuori = [];
-                                        FirebaseFirestore.instance
-                                            .collection(
-                                                'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
-                                            .doc(widget.codice)
-                                            .update({
-                                          'boolRigori': false,
-                                          'rigoriCasa': [],
-                                          'rigoriFuori': [],
-                                        });
-                                      });
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text('Conferma'),
+                                            content: const Text(
+                                                'Sei sicuro di voler cancellare i rigori?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(); // Chiudi il dialog
+                                                },
+                                                child: const Text('Annulla'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(); // Chiudi il dialog
+                                                  setState(() {
+                                                    boolRigori = false;
+                                                    rigoriCasa = [];
+                                                    rigoriFuori = [];
+                                                    FirebaseFirestore.instance
+                                                        .collection(
+                                                            'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}')
+                                                        .doc(widget.codice)
+                                                        .update({
+                                                      'boolRigori': false,
+                                                      'rigoriCasa': [],
+                                                      'rigoriFuori': [],
+                                                    });
+                                                  });
+                                                },
+                                                child: const Text('Conferma'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: boolRigori && iniziata
@@ -1205,8 +1233,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                               ),
                             ))
                           : Container(),
-                    ])),
-                iniziata && widget.ccRole == 'staff' && !boolRigori
+                    ]
+                  )
+                  ),
+                iniziata && widget.ccRole == 'staff' && !boolRigori && widget.nome==widget.refertista
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
@@ -1510,7 +1540,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                   GestureDetector(
                                       onTap: () async {
                                         if (iniziata &&
-                                            widget.ccRole == 'staff') {
+                                            widget.ccRole == 'staff' && widget.nome==widget.refertista) {
                                           _showRigoreDialog(context, 'casa',
                                               index, widget.tipo);
                                         }
@@ -1553,7 +1583,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         GestureDetector(
                                             onTap: () async {
                                               if (iniziata &&
-                                                  widget.ccRole == 'staff') {
+                                                  widget.ccRole == 'staff' && widget.nome==widget.refertista) {
                                                 _showRigoreDialog(
                                                     context,
                                                     'fuori',
@@ -1580,7 +1610,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 )))
                       ])
                     : Container(),
-                iniziata && widget.ccRole == 'staff' && boolRigori
+                iniziata && widget.ccRole == 'staff' && boolRigori && widget.nome==widget.refertista
                     ? Row(
                         children: [
                           const SizedBox(width: 16),

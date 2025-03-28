@@ -223,6 +223,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   InputDecoration getInputDecoration(String label) {
     return InputDecoration(
       labelText: label,
+      labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
       filled: true,
       fillColor: Colors.white,
       border: const OutlineInputBorder(
@@ -248,7 +249,8 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'),
+          'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'
+        ),
       ),
       body: FutureBuilder<void>(
         future: _futureGironi,
