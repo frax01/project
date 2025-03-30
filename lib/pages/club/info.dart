@@ -34,6 +34,8 @@ class _InfoState extends State<Info> {
         ),
         body: widget.club == 'Tiber Club'
             ? Tiber(club: widget.club)
+            : widget.club == 'Rampa Club'
+            ? Rampa(club: widget.club, role: widget.role, isAdmin: widget.isAdmin)
             : Delta(club: widget.club, role: widget.role, isAdmin: widget.isAdmin));
   }
 }

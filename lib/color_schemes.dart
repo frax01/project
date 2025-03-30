@@ -396,8 +396,8 @@ var darkColorSchemeCC = FlexThemeData.dark(
 
 var lightColorSchemeRampa = FlexThemeData.light(
   colors: const FlexSchemeColor(
-    primary: Color.fromARGB(255, 132, 64, 18), 
-    secondary: Color.fromARGB(255, 132, 64, 18),
+    primary: Color.fromARGB(255, 215, 89, 5), 
+    secondary: Color.fromARGB(255, 215, 89, 5), 
   ),
   appBarStyle: FlexAppBarStyle.primary,
   appBarElevation: 4.0,
@@ -463,8 +463,8 @@ var lightColorSchemeRampa = FlexThemeData.light(
 
 var darkColorSchemeRampa = FlexThemeData.dark(
   colors: const FlexSchemeColor(
-    primary: Color.fromARGB(255, 132, 64, 18),
-    secondary: Color.fromARGB(255, 132, 64, 18),
+    primary: Color.fromARGB(255, 235, 135, 5),
+    secondary: Color.fromARGB(255, 235, 135, 5),
   ),
   appBarStyle: FlexAppBarStyle.material,
   appBarElevation: 4.0,

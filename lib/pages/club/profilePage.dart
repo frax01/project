@@ -376,7 +376,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ) ??
         false;
     if (confirm) {
-      _updateClub();
+      _updateClub(club);
     }
   }
 
@@ -391,9 +391,9 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  Future<void> _updateClub() async {
+  Future<void> _updateClub(String club) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String newClub = widget.club == 'Tiber Club' ? 'Delta Club' : 'Tiber Club';
+    final String newClub = club;
 
     await prefs.setString('club', newClub);
 
@@ -529,7 +529,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         : const SizedBox.shrink(),
                     widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Tiber Club'
                         ? ListTile(
-                            leading: const Icon(Icons.change_circle),
+                            leading: Image.asset(
+                              'images/tiberlogo.png',
+                              width: 30,
+                            ),
                             title: const Text('Sezione'),
                             trailing:
                                 const Icon(Icons.arrow_forward_ios, size: 20),
@@ -549,7 +552,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         : const SizedBox.shrink(),
                     widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Delta Club'
                         ? ListTile(
-                            leading: const Icon(Icons.change_circle),
+                            leading: Image.asset(
+                              'images/deltalogo.jpg',
+                              width: 30,
+                            ),
                             title: const Text('Sezione'),
                             trailing:
                                 const Icon(Icons.arrow_forward_ios, size: 20),
@@ -569,7 +575,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         : const SizedBox.shrink(),
                     widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Rampa Club'
                         ? ListTile(
-                            leading: const Icon(Icons.change_circle),
+                            leading: Image.asset(
+                              'images/rampalogo.jpg',
+                              width: 30,
+                            ),
                             title: const Text('Sezione'),
                             trailing:
                                 const Icon(Icons.arrow_forward_ios, size: 20),
