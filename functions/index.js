@@ -415,7 +415,7 @@ async function sendNotification(token, section, name, filter, id, focused) {
         selectedOption = '';
         category = section;
         notTitle = `Buon compleanno!`;
-        message = 'Festeggia al Tiber!';
+        message = 'Festeggia al Club!';
     } else {
         docId = id;
         selectedOption = '';
