@@ -196,6 +196,7 @@ class _SignUpState extends State<SignUp> {
 
     bool? isTiberClubChecked = _selectedClub == 'Tiber Club';
     bool? isDeltaClubChecked = _selectedClub == 'Delta Club';
+    bool? isRampaClubChecked = _selectedClub == 'Rampa Club';
 
     await showDialog<void>(
       context: context,
@@ -215,6 +216,7 @@ class _SignUpState extends State<SignUp> {
                       setState(() {
                         isTiberClubChecked = value ?? false;
                         isDeltaClubChecked = false;
+                        isRampaClubChecked = false;
                         _selectedClub = '';
                         if (isTiberClubChecked!) {
                           _selectedClub = 'Tiber Club';
@@ -230,9 +232,26 @@ class _SignUpState extends State<SignUp> {
                       setState(() {
                         isDeltaClubChecked = value ?? false;
                         isTiberClubChecked = false;
+                        isRampaClubChecked = false;
                         _selectedClub = '';
                         if (isDeltaClubChecked!) {
                           _selectedClub = 'Delta Club';
+                        }
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Rampa Club'),
+                    subtitle: const Text('Sesto SG'),
+                    value: isRampaClubChecked,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isRampaClubChecked = value ?? false;
+                        isTiberClubChecked = false;
+                        isDeltaClubChecked = false;
+                        _selectedClub = '';
+                        if (isRampaClubChecked!) {
+                          _selectedClub = 'Rampa Club';
                         }
                       });
                     },

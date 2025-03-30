@@ -76,7 +76,8 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
         .doc(_selectedSegment)
         .get();
 
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').get();
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccStaff').get();
 
     setState(() {
       squadre = [''];
@@ -85,7 +86,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
         squadre.addAll(squadreList.cast<String>());
       }
 
-      if(snapshot.docs.isNotEmpty){
+      if (snapshot.docs.isNotEmpty) {
         for (var doc in snapshot.docs) {
           staff.add(doc['nome']);
         }
@@ -147,27 +148,57 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
               .collection('ccPartiteGironi')
               .doc(p.oldDocId)
               .delete();
-        }
 
-        await FirebaseFirestore.instance
-            .collection('ccPartiteGironi')
-            .doc('${p.casa} VS ${p.fuori}')
-            .set({
-          'girone': _selectedSegment,
-          'casa': p.casa,
-          'fuori': p.fuori,
-          'orario': p.orario ?? '',
-          'campo': p.campo ?? '',
-          'arbitro': p.arbitro ?? '',
-          'refertista': p.refertista ?? '',
-          'turno': (turno + 1).toString(),
-          'data': '24/04/2025',
-          'iniziata': false,
-          'finita': false,
-          'marcatori': p.marcatori ?? [],
-          'tipo': 'girone',
-        });
-        p.oldDocId = newDocId;
+          await FirebaseFirestore.instance
+              .collection('ccPartiteGironi')
+              .doc('${p.casa} VS ${p.fuori}')
+              .set({
+            'girone': _selectedSegment,
+            'casa': p.casa,
+            'fuori': p.fuori,
+            'orario': p.orario ?? '',
+            'campo': p.campo ?? '',
+            'arbitro': p.arbitro ?? '',
+            'refertista': p.refertista ?? '',
+            'turno': (turno + 1).toString(),
+            'data': '25/04/2025',
+            'iniziata': false,
+            'finita': false,
+            'marcatori': p.marcatori ?? [],
+            'tipo': 'girone',
+          });
+          p.oldDocId = newDocId;
+        } else if (p.oldDocId == newDocId) {
+          await FirebaseFirestore.instance
+              .collection('ccPartiteGironi')
+              .doc('${p.casa} VS ${p.fuori}')
+              .update({
+            'orario': p.orario ?? '',
+            'campo': p.campo ?? '',
+            'arbitro': p.arbitro ?? '',
+            'refertista': p.refertista ?? '',
+          });
+        } else {
+          await FirebaseFirestore.instance
+              .collection('ccPartiteGironi')
+              .doc('${p.casa} VS ${p.fuori}')
+              .set({
+            'girone': _selectedSegment,
+            'casa': p.casa,
+            'fuori': p.fuori,
+            'orario': p.orario ?? '',
+            'campo': p.campo ?? '',
+            'arbitro': p.arbitro ?? '',
+            'refertista': p.refertista ?? '',
+            'turno': (turno + 1).toString(),
+            'data': '25/04/2025',
+            'iniziata': false,
+            'finita': false,
+            'marcatori': p.marcatori ?? [],
+            'tipo': 'girone',
+          });
+          p.oldDocId = newDocId;
+        }
       }
     }
     Navigator.of(context).pop();
@@ -229,7 +260,11 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Nessun girone presente', style: TextStyle(fontSize: 19, color: Colors.black54),));
+            return const Center(
+                child: Text(
+              'Nessun girone presente',
+              style: TextStyle(fontSize: 19, color: Colors.black54),
+            ));
           } else if (squadre.isEmpty) {
             return const Center(
               child: Text(
@@ -282,7 +317,10 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                   items: squadre.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(
+                                        value,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -297,6 +335,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                     return null;
                                   },
                                   decoration: getInputDecoration('Casa'),
+                                  isExpanded: true,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -306,7 +345,10 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                   items: squadre.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(
+                                        value,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -321,6 +363,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                     return null;
                                   },
                                   decoration: getInputDecoration('Fuori'),
+                                  isExpanded: true,
                                 ),
                               ),
                             ],
@@ -361,11 +404,18 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].campo?.isNotEmpty == true ? turni[turno][partita].campo : null,
+                                  value:
+                                      turni[turno][partita].campo?.isNotEmpty ==
+                                              true
+                                          ? turni[turno][partita].campo
+                                          : null,
                                   items: campi.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(
+                                        value,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -374,6 +424,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                     });
                                   },
                                   decoration: getInputDecoration('Campo'),
+                                  isExpanded: true,
                                 ),
                               ),
                             ],
@@ -384,11 +435,19 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               children: [
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita].arbitro?.isNotEmpty == true ? turni[turno][partita].arbitro : null,
+                                    value: turni[turno][partita]
+                                                .arbitro
+                                                ?.isNotEmpty ==
+                                            true
+                                        ? turni[turno][partita].arbitro
+                                        : null,
                                     items: staff.map((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          value,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       );
                                     }).toList(),
                                     onChanged: (newValue) {
@@ -398,16 +457,25 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                       });
                                     },
                                     decoration: getInputDecoration('Arbitro'),
+                                    isExpanded: true,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita].refertista?.isNotEmpty == true ? turni[turno][partita].refertista : null,
+                                    value: turni[turno][partita]
+                                                .refertista
+                                                ?.isNotEmpty ==
+                                            true
+                                        ? turni[turno][partita].refertista
+                                        : null,
                                     items: staff.map((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          value,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       );
                                     }).toList(),
                                     onChanged: (newValue) {
@@ -416,11 +484,13 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                             newValue;
                                       });
                                     },
-                                    decoration: getInputDecoration('Refertista'),
+                                    decoration:
+                                        getInputDecoration('Refertista'),
+                                    isExpanded: true,
                                   ),
                                 ),
                               ]),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 20),
                         ],
                       ],
                       Center(

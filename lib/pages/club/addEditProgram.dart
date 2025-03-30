@@ -88,7 +88,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
     '3° liceo',
     '4° liceo',
     '5° liceo',
-    //'6° liceo'
+  ];
+  final List<String> rampaClassOptions = [
+    '1° liceo',
+    '2° liceo',
+    '3° liceo',
+    '4° liceo',
+    '5° liceo',
   ];
   List<String> selectedClasses = [];
   bool modifiedNotification = false;
@@ -527,6 +533,10 @@ class _AddEditProgramState extends State<AddEditProgram> {
             _address = 'Centro Delta';
             _latitude = '45.468245';
             _longitude = '9.164332';
+          } else if (widget.club == 'Rampa Club') {
+            _address = 'Rampa Club';
+            _latitude = '45.5382134';
+            _longitude = '9.2352257';
           }
         }
 
@@ -1330,6 +1340,22 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       spacing: 10,
                       children: widget.club == 'Tiber Club'
                           ? tiberClassOptions.map((e) {
+                              return ChoiceChip(
+                                label: Text(e),
+                                selected: selectedClasses.contains(e),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedClasses.add(e);
+                                    } else {
+                                      selectedClasses.remove(e);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList()
+                          : widget.club == 'Rampa Club' ?
+                            rampaClassOptions.map((e) {
                               return ChoiceChip(
                                 label: Text(e),
                                 selected: selectedClasses.contains(e),

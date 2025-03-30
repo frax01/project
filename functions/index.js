@@ -117,7 +117,7 @@ exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
 
 exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 18:30').timeZone('Europe/Rome').onRun(async (context) => {
 
-    for (const elem of ['Tiber Club', 'Delta Club']) {
+    for (const elem of ['Tiber Club', 'Delta Club', 'Rampa Club']) {
         const userstoken = await fetchPrograms(elem);
         if (userstoken.length > 0) {
             for (const list of userstoken) {
@@ -207,7 +207,7 @@ async function fetchProgramsTokens(classes, elem) {
 
 exports.scheduleNotification = functions.pubsub.schedule('every day 08:00').timeZone('Europe/Rome').onRun(async (context) => {
 
-    for (const elem of ['Tiber Club', 'Delta Club']) {
+    for (const elem of ['Tiber Club', 'Delta Club', 'Rampa Club']) {
         const usersBirthday = await fetchUsersBirthday(elem);
         if (usersBirthday[0].length > 0) {
             for (const name of usersBirthday[0]) {
@@ -229,7 +229,7 @@ exports.scheduleNotification = functions.pubsub.schedule('every day 08:00').time
     const monthToday = String(today.getMonth() + 1).padStart(2, '0');
 
     try {
-        for (const elem of ['Tiber Club', 'Delta Club']) {
+        for (const elem of ['Tiber Club', 'Delta Club', 'Rampa Club']) {
             const calendar = await admin.firestore()
                 .collection('calendario')
                 .where('club', '==', elem)

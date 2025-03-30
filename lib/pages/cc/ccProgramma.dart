@@ -103,7 +103,7 @@ class _CCProgrammaState extends State<CCProgramma> {
               });
 
               Map<String, List<QueryDocumentSnapshot>> groupedProgrammi = {};
-              DateTime now = DateTime.now(); //.add(const Duration(hours: 1));
+              DateTime now = DateTime.now();
               QueryDocumentSnapshot? lastBeforeNow;
 
               for (var programma in programmi) {
@@ -121,12 +121,16 @@ class _CCProgrammaState extends State<CCProgramma> {
 
                 if (programmaDateTime.isAfter(now)) {
                   if (lastBeforeNow != null) {
-                    if (!groupedProgrammi.containsKey(data)) {
-                      groupedProgrammi[data] = [];
+                    String lastBeforeNowData = lastBeforeNow['data'];
+                    if (lastBeforeNowData == data) {
+                      if (!groupedProgrammi.containsKey(data)) {
+                        groupedProgrammi[data] = [];
+                      }
+                      groupedProgrammi[data]!.add(lastBeforeNow);
                     }
-                    groupedProgrammi[data]!.add(lastBeforeNow);
                     lastBeforeNow = null;
                   }
+              
                   if (!groupedProgrammi.containsKey(data)) {
                     groupedProgrammi[data] = [];
                   }
@@ -426,14 +430,13 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                           .bold,
                                                                 ),
                                                               ),
-                                                              Text(
-                                                                squadre
-                                                                    .join(', '),
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            15),
-                                                              )
+                                                              Align(
+                                                                alignment: Alignment.centerLeft,
+                                                                child: Text(
+                                                                  squadre.join(', '),
+                                                                  style: const TextStyle(fontSize: 15),
+                                                                ),
+                                                              ),
                                                             ],
                                                           );
                                                         }

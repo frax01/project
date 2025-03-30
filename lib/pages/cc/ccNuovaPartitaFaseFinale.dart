@@ -135,11 +135,6 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   }
 
   Future<void> _getGironi() async {
-    //final QuerySnapshot querySnapshot =
-    //    await FirebaseFirestore.instance.collection('ccOttavi').get();
-    //setState(() {
-    //  gironi = querySnapshot.docs.map((doc) => doc.id).toList();
-    //});
     await _getSquadre();
   }
 
@@ -292,7 +287,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value),
+                                    child: Text(value, overflow: TextOverflow.ellipsis,),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -301,6 +296,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   });
                                 },
                                 decoration: getInputDecoration('Casa'),
+                                isExpanded: true,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -312,7 +308,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value),
+                                    child: Text(value, overflow: TextOverflow.ellipsis,),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -321,6 +317,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   });
                                 },
                                 decoration: getInputDecoration('Fuori'),
+                                isExpanded: true,
                               ),
                             ),
                           ],
@@ -365,7 +362,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                 items: campi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value),
+                                    child: Text(value, overflow: TextOverflow.ellipsis,),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -374,6 +371,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   });
                                 },
                                 decoration: getInputDecoration('Campo'),
+                                isExpanded: true,
                               ),
                             ),
                           ],
@@ -391,7 +389,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(value, overflow: TextOverflow.ellipsis,),
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -400,6 +398,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     });
                                   },
                                   decoration: getInputDecoration('Arbitro'),
+                                  isExpanded: true,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -412,7 +411,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value),
+                                      child: Text(value, overflow: TextOverflow.ellipsis,)
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -421,10 +420,11 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                     });
                                   },
                                   decoration: getInputDecoration('Refertista'),
+                                  isExpanded: true,
                                 ),
                               ),
                             ]),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
                       ],
                       Center(
                         child: ElevatedButton(

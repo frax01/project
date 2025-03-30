@@ -32,8 +32,7 @@ class CCHomePage extends StatefulWidget {
   final String? ccRole;
   final bool user;
   final String email;
-  final String
-      nome; //se il nome è vuoto prenderlo dalla tabella user (nome+cognome) solo se ccRole==staff
+  final String nome;
 
   @override
   State<CCHomePage> createState() => _CCHomePageState();
@@ -71,7 +70,7 @@ class _CCHomePageState extends State<CCHomePage> {
         child: CCCalendario(
             ccRole: widget.ccRole ?? '',
             nome: widget
-                .nome), //se widget.nome in calendario è vuoto allora niente, altrimenti si vedono le partite
+                .nome),
       ),
       PopScope(
         onPopInvoked: (_) {
@@ -141,8 +140,7 @@ class _CCHomePageState extends State<CCHomePage> {
       if (confirm) {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('cc', 'no');
-        //Navigator.pushReplacement(
-        //    context, MaterialPageRoute(builder: (context) => const Login()));
+        await prefs.setString('club', '');
         restartApp(context, prefs.getString('club') ?? '',
             prefs.getString('cc') ?? '', 'user', '');
       }
@@ -184,10 +182,8 @@ class _CCHomePageState extends State<CCHomePage> {
     _showLoadingDialog();
 
     try {
-      // Crea un nuovo file Excel
       var excelFile = excel.Excel.createExcel();
-
-      // Definisci le collezioni Firestore per ogni fase
+      
       final List<Map<String, dynamic>> fasi = [
         {'nome': 'Gironi', 'collezione': 'ccPartiteGironi'},
         {'nome': 'Ottavi', 'collezione': 'ccPartiteOttavi'},
@@ -197,16 +193,13 @@ class _CCHomePageState extends State<CCHomePage> {
       ];
 
       for (var fase in fasi) {
-        // Ottieni i dati da Firestore per la fase corrente
         final QuerySnapshot result = await FirebaseFirestore.instance
             .collection(fase['collezione'])
             .get();
         final List<DocumentSnapshot> documents = result.docs;
-
-        // Crea un foglio per la fase
+        
         var sheet = excelFile[fase['nome']];
-
-        // Aggiungi l'intestazione
+        
         sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value = excel.TextCellValue('Casa');
         sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value = excel.TextCellValue('Fuori');
         sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value = excel.TextCellValue('Tipo');
@@ -221,7 +214,7 @@ class _CCHomePageState extends State<CCHomePage> {
           if (fase['nome'] == 'Gironi') {
             tipo = '${doc['tipo']} ${doc['girone']}';
           } else {
-            tipo = doc['tipo'];
+            tipo = '${doc['codice'][0]}${int.parse(doc['codice'][1])+1}';
           }
           
           int golCasa = 0;
@@ -236,8 +229,7 @@ class _CCHomePageState extends State<CCHomePage> {
               golFuori++;
             }
           }
-
-          // Aggiungi la riga al foglio
+          
           sheet.appendRow([
             excel.TextCellValue(casa),
             excel.TextCellValue(fuori),
@@ -247,8 +239,7 @@ class _CCHomePageState extends State<CCHomePage> {
           ]);
         }
       }
-
-      // Salva il file Excel
+      
       final output = await getTemporaryDirectory();
       final file = File("${output.path}/partiteCC2025.xlsx");
       await file.writeAsBytes(excelFile.encode()!);
@@ -259,8 +250,7 @@ class _CCHomePageState extends State<CCHomePage> {
       );
 
       Navigator.of(context).pop();
-
-      // Condividi il file Excel
+      
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Ecco il file Excel delle partite per il Champions Club 2025!',

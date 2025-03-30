@@ -220,7 +220,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                                 'squadra': squadraName,
                                 'logo': localFileF != null
                                     ? await _uploadFileToFirebase(localFileF!)
-                                    : logoUrl //'',
+                                    : logoUrl
                               };
                             }
                           } else {
@@ -331,7 +331,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
               final squadre = List<Map<String, dynamic>>.from(club['squadre']);
 
               return Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
                   child: Card(
                     elevation: 5,
                     child: ExpansionTile(
@@ -354,6 +354,14 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                           Row(
                             children: [
                               IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: () => _showAddEditDialog(
+                                  club: clubName,
+                                  isEdit: false,
+                                  isAddingClub: false,
+                                ),
+                              ),
+                              IconButton(
                                 icon: const Icon(Icons.edit),
                                 onPressed: () => _showAddEditDialog(
                                   club: clubName,
@@ -366,14 +374,6 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                                 icon: const Icon(Icons.delete),
                                 onPressed: () =>
                                     _showDeleteDialog(club: clubName),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () => _showAddEditDialog(
-                                  club: clubName,
-                                  isEdit: false,
-                                  isAddingClub: false,
-                                ),
                               ),
                             ],
                           ),
@@ -404,7 +404,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                                   minFontSize: 16,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
-                                ), //Text(squadra['squadra'] ?? ''),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

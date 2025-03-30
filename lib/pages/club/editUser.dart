@@ -67,6 +67,13 @@ class _EditUserState extends State<EditUser> {
                 "4° liceo",
                 "5° liceo",
               ];
+              final List<String> rampaClubClassOptions = [
+                "1° liceo",
+                "2° liceo",
+                "3° liceo",
+                "4° liceo",
+                "5° liceo",
+              ];
 
               if (_selectedRole.isEmpty) {
                 _selectedRole = role;
@@ -253,6 +260,8 @@ class _EditUserState extends State<EditUser> {
                           "Classe",
                           widget.club == 'Tiber Club'
                             ? tiberClubClassOptions
+                            : widget.club == 'Rmapa Club'
+                            ? rampaClubClassOptions
                             : deltaClubClassOptions, (value) {
                               setState(() {
                                 selectedClubClass = value.toString();

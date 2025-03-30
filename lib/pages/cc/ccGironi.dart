@@ -216,7 +216,7 @@ class _CCGironiState extends State<CCGironi> {
     final Map<String, int> cartGialli =
         Map<String, int>.from(doc['cartGialli']);
 
-    // Crea una lista di squadre con i loro dati
+    
     List<Map<String, dynamic>> squadreData = partite.keys.map((squadra) {
       return {
         'squadra': squadra,

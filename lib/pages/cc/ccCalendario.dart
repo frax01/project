@@ -203,8 +203,35 @@ class _CCCalendarioState extends State<CCCalendario> {
   }
 
   Future<void> _pulisci(String sezione) async {
+    final bool confermato = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma'),
+          content: Text(
+              'Sei sicuro di voler pulire la sezione $sezione? Questa azione non può essere annullata'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Annulla'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Conferma'),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (confermato != true) return;
+    
     _showLoadingDialog();
-
+    
     final QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('ccPartite$sezione').get();
 
@@ -226,7 +253,7 @@ class _CCCalendarioState extends State<CCCalendario> {
         'codice': doc.id,
       });
     }
-
+    
     Navigator.of(context).pop();
   }
 
@@ -1083,7 +1110,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                                 'campo'],
                                                             arbitro: partita[
                                                                 'arbitro'],
-                                                            refertista: partita['refertista'], //passare anche il
+                                                            refertista: partita['refertista'],
                                                             nome: widget.nome,
                                                             girone: partita[
                                                                     'girone'] ??
@@ -1246,7 +1273,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                               );
                             }).toList(),
                             _selectedSegment == 'Ottavi' &&
-                                    widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
+                                    widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
                                 ? Column(children: [
                                     const SizedBox(height: 10),
                                     Center(
@@ -1258,7 +1285,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                     ))
                                   ])
                                 : _selectedSegment == 'Quarti' &&
-                                        widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
+                                        widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
                                     ? Column(children: [
                                         const SizedBox(height: 10),
                                         Center(
@@ -1270,7 +1297,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                         ))
                                       ])
                                     : _selectedSegment == 'Semifinali' &&
-                                            widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
+                                            widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
                                         ? Column(children: [
                                             const SizedBox(height: 10),
                                             Center(
@@ -1283,7 +1310,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                             ))
                                           ])
                                         : _selectedSegment == 'Finali' &&
-                                                widget.ccRole == 'staff' && widget.nome=='Francesco Martignoni'
+                                                widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
                                             ? Column(children: [
                                                 const SizedBox(height: 10),
                                                 Center(

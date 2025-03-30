@@ -344,7 +344,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> _showConfirmDialog() async {
+  Future<void> _showConfirmDialog(String club) async {
     final bool confirm = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -352,9 +352,10 @@ class _SettingsPageState extends State<SettingsPage> {
             return AlertDialog(
               title: const Text('Conferma'),
               content: Text(
-                widget.club == 'Tiber Club'
-                    ? 'Sei sicuro di voler passare al Delta?'
-                    : 'Sei sicuro di voler passare al Tiber?',
+                //widget.club == 'Tiber Club'
+                //    ? 'Sei sicuro di voler passare al Delta?'
+                //    : 
+                    'Sei sicuro di voler passare al $club?',
               ),
               actions: <Widget>[
                 TextButton(
@@ -392,8 +393,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _updateClub() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String newClub =
-        widget.club == 'Tiber Club' ? 'Delta Club' : 'Tiber Club';
+    final String newClub = widget.club == 'Tiber Club' ? 'Delta Club' : 'Tiber Club';
 
     await prefs.setString('club', newClub);
 
@@ -527,14 +527,14 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           )
                         : const SizedBox.shrink(),
-                    widget.email == 'francescomartignoni1@gmail.com'
+                    widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Tiber Club'
                         ? ListTile(
                             leading: const Icon(Icons.change_circle),
                             title: const Text('Sezione'),
                             trailing:
                                 const Icon(Icons.arrow_forward_ios, size: 20),
                             subtitle: const AutoSizeText(
-                              'Cambia Club',
+                              'Tiber Club',
                               style: TextStyle(fontSize: 20.0),
                               maxLines: 1,
                               minFontSize: 10,
@@ -543,7 +543,47 @@ class _SettingsPageState extends State<SettingsPage> {
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16.0, vertical: 10.0),
                             onTap: () async {
-                              await _showConfirmDialog();
+                              await _showConfirmDialog('Tiber Club');
+                            },
+                          )
+                        : const SizedBox.shrink(),
+                    widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Delta Club'
+                        ? ListTile(
+                            leading: const Icon(Icons.change_circle),
+                            title: const Text('Sezione'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Centro Delta',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () async {
+                              await _showConfirmDialog('Delta Club');
+                            },
+                          )
+                        : const SizedBox.shrink(),
+                    widget.email == 'francescomartignoni1@gmail.com' && widget.club!= 'Rampa Club'
+                        ? ListTile(
+                            leading: const Icon(Icons.change_circle),
+                            title: const Text('Sezione'),
+                            trailing:
+                                const Icon(Icons.arrow_forward_ios, size: 20),
+                            subtitle: const AutoSizeText(
+                              'Rampa Club',
+                              style: TextStyle(fontSize: 20.0),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            onTap: () async {
+                              await _showConfirmDialog('Rampa Club');
                             },
                           )
                         : const SizedBox.shrink(),

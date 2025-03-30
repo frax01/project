@@ -139,6 +139,10 @@ class MyApp extends StatelessWidget {
           lightTheme = lightColorSchemeDelta;
           darkTheme = darkColorSchemeDelta;
           break;
+        case 'Rampa Club':
+          lightTheme = lightColorSchemeRampa;
+          darkTheme = darkColorSchemeRampa;
+          break;
         default:
           lightTheme = lightColorSchemeTiber;
           darkTheme = darkColorSchemeTiber;

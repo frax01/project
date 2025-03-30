@@ -308,8 +308,7 @@ class _AccessoCCState extends State<AccessoCC> {
                       Expanded(
                         //child: Center(
                         child: DropdownButtonFormField<String>(
-                            value: clubs.isEmpty ? null : newclub,
-                            hint: const Text('Seleziona club'),
+                            value: newclub!='' ? newclub : null,
                             items: clubs.map((dynamic value) {
                               return DropdownMenuItem<String>(
                                 value: value,

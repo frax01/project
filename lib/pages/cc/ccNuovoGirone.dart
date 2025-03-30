@@ -22,7 +22,6 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
         for (var squadra in squadreList) {
           squadreDisponibili.add(squadra['squadra']);
         }
-        print("squadre disponibili: $squadreDisponibili");
       }
     });
   }

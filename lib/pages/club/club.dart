@@ -321,26 +321,11 @@ class _ClubPageState extends State<ClubPage> {
                 IconButton(
                     icon: const Icon(Icons.emoji_events),
                     onPressed: () async {
-                      //final querySnapshot = await FirebaseFirestore.instance
-                      //    .collection('user')
-                      //    .where('email', isEqualTo: widget.email)
-                      //    .get();
-//
-                      //if (querySnapshot.docs.isNotEmpty) {
-                      //  for (var doc in querySnapshot.docs) {
-                      //    if (doc.data()['ccRole'] == null ||
-                      //        doc.data()['ccRole'] == '' ||
-                      //        doc.data()['ccRole'] == 'user') {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AccessoCC(
-                                      email: widget.email,
-                                      club: widget.club
-                                  )));
-                      //    } else {
-                      //      await _showConfirmDialog(doc.data()['ccRole']);
-                      //    }
-                      //  }
-                      //}
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => AccessoCC(
+                                email: widget.email,
+                                club: widget.club
+                            )));
                     }
                     ),
                 IconButton(

@@ -70,7 +70,6 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
 
   Future<void> _loadSquadreIncaricoCodiceOptions() async {
     final collections = [
-      //'ccPartiteGironi',
       'ccPartiteOttavi',
       'ccPartiteQuarti',
       'ccPartiteSemifinali',
@@ -85,7 +84,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
         if (doc['tipo'] == 'girone') {
           codice = '${doc['tipo']} ${doc['turno']}';
         } else {
-          codice = '${doc['tipo']} ${doc['codice'][0]}';
+          codice = '${doc['tipo']} ${doc['codice']}';
         }
         setState(() {
           if (!_squadreCodiceOptions.contains(codice)) {
@@ -250,16 +249,11 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                         : _dataController.text,
                     decoration: getInputDecoration('Data'),
                     items: const [
-                      DropdownMenuItem(
-                          value: '23/04/2025', child: Text('23/04/2025')),
-                      DropdownMenuItem(
-                          value: '24/04/2025', child: Text('24/04/2025')),
-                      DropdownMenuItem(
-                          value: '25/04/2025', child: Text('25/04/2025')),
-                      DropdownMenuItem(
-                          value: '26/04/2025', child: Text('26/04/2025')),
-                      DropdownMenuItem(
-                          value: '27/04/2025', child: Text('27/04/2025')),
+                      DropdownMenuItem(value: '23/04/2025', child: Text('23/04/2025')),
+                      DropdownMenuItem(value: '24/04/2025', child: Text('24/04/2025')),
+                      DropdownMenuItem(value: '25/04/2025', child: Text('25/04/2025')),
+                      DropdownMenuItem(value: '26/04/2025', child: Text('26/04/2025')),
+                      DropdownMenuItem(value: '27/04/2025', child: Text('27/04/2025')),
                     ],
                     onChanged: (value) {
                       _dataController.text = value!;

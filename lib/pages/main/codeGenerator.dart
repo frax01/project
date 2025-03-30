@@ -48,6 +48,13 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     "4° liceo",
     "5° liceo",
   ];
+  final List<String> rampaClubClassOptions = [
+    "1° liceo",
+    "2° liceo",
+    "3° liceo",
+    "4° liceo",
+    "5° liceo",
+  ];
   final List<String> statusOptions = ["", "User", "Admin"];
 
   Future<void> _refresh() async {
@@ -97,6 +104,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                       "Classe",
                       widget.club == 'Tiber Club'
                           ? tiberClubClassOptions
+                          : widget.club == 'Rampa Club'
+                          ? rampaClubClassOptions
                           : deltaClubClassOptions, (value) {
                     setState(() {
                       selectedClubClass = value.toString();

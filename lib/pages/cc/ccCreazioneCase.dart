@@ -230,15 +230,12 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     _showLoadingDialog();
 
     try {
-      // Crea un nuovo file Excel
       var excelFile = excel.Excel.createExcel();
-
-      // Ottieni i dati da Firestore
+      
       final QuerySnapshot result =
           await FirebaseFirestore.instance.collection('ccCase').get();
       final List<DocumentSnapshot> documents = result.docs;
-
-      // Raggruppa i dati per club
+      
       Map<String, List<Map<String, dynamic>>> clubData = {};
       for (var doc in documents) {
         final numero = doc['numero'];
@@ -264,14 +261,11 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
       clubData.forEach((club, persone) {
     var sheet = excelFile[club.isNotEmpty ? club : 'Senza Club'];
 
-
-    // Aggiungi l'intestazione manualmente
     sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =  excel.TextCellValue('Cognome');
     sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =  excel.TextCellValue('Nome');
     sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =  excel.TextCellValue('Club');
     sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =  excel.TextCellValue('Appartamento');
 
-    // Aggiungi i dati delle persone
     for (int i = 0; i < persone.length; i++) {
       var persona = persone[i];
       sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1)).value = excel.TextCellValue(persona['Cognome']);
@@ -281,7 +275,6 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
       }
     });
 
-      // Salva il file Excel
       final output = await getTemporaryDirectory();
       final file = File("${output.path}/stanzeCC2025.xlsx");
       await file.writeAsBytes(excelFile.encode()!);
@@ -292,7 +285,6 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
 
       Navigator.of(context).pop();
 
-      // Condividi il file Excel
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Ecco il file Excel delle stanze per il Champions Club 2025!',
@@ -305,7 +297,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     }
   }
 
-  Future<void> _deleteDialog(String numero) async {
+  Future<void> _deleteDialog(String numero, String? club) async {
     bool? confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -329,6 +321,26 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
           .collection('ccCase')
           .doc(numero)
           .delete();
+          
+      final QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('ccIscrizioniSquadre')
+          .where('club', isEqualTo: club)
+          .get();
+      final List<DocumentSnapshot> documents = result.docs;
+      for (var doc in documents) {
+        final squadra = doc['nomeSquadra'];
+        final squadraDoc = FirebaseFirestore.instance
+            .collection('ccIscrizioniSquadre')
+            .doc(squadra);
+        final squadraData = await squadraDoc.get();
+        final giocatori = List<Map<String, dynamic>>.from(squadraData['giocatori']);
+        for (var giocatore in giocatori) {
+          if (giocatore['appartamento'] == numero) {
+            giocatore['appartamento'] = '';
+          }
+        }
+        await squadraDoc.update({'giocatori': giocatori});
+      }
       Navigator.of(context).pop();
     }
   }
@@ -433,15 +445,15 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () => _showDialog(
-                                numero: numero,
-                                posti: posti,
+                                numero: numero.toString(),
+                                posti: posti.toString(),
                                 club: club,
                                 isEditing: true,
                               ),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () => _deleteDialog(numero),
+                              onPressed: () => _deleteDialog(numero, club),
                             ),
                           ]),
                       children: [

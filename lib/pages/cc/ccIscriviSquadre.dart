@@ -51,8 +51,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
       }
     }
 
-    setState(() {
-    });
+    setState(() {});
   }
 
   Future<List<Map<String, dynamic>>> retrievePlayers(String squadra) async {
@@ -67,9 +66,20 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     return players;
   }
 
+  Map<dynamic, dynamic> caseM = {};
+
   Future<void> _loadSquadre() async {
     QuerySnapshot snapshot;
     QuerySnapshot ccCase;
+
+    QuerySnapshot caseSnapshot = await FirebaseFirestore.instance
+        .collection('ccCase')
+        .get();
+    for (var doc in caseSnapshot.docs) {
+      caseM[doc['numero']] = doc['posti'];
+    }
+
+
     if (widget.ccRole == 'staff') {
       snapshot = await FirebaseFirestore.instance.collection('ccSquadre').get();
       ccCase = await FirebaseFirestore.instance.collection('ccCase').get();
@@ -162,15 +172,17 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     });
   }
 
-  void _removeGiocatore(String squadra, int index) async { //eliminare anche qui i giocatori iscritti
+  void _removeGiocatore(String squadra, int index) async {
     String nuovoAppartamento = appartamentoControllers[squadra]![index].text;
     if (nuovoAppartamento != '') {
-      DocumentSnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('ccCase').doc(nuovoAppartamento).get();
+      DocumentSnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('ccCase')
+          .doc(nuovoAppartamento)
+          .get();
 
       if (querySnapshot.exists) {
         List<dynamic> personeRem = querySnapshot['persone'];
-        // Rimuovi la persona dall'appartamento precedente
+        
         bool found = false;
         for (var persona in personeRem) {
           if (persona['nome'] == giocatori[squadra]![index] &&
@@ -186,10 +198,14 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         }
       }
     }
-    
+
     String nome = giocatoriControllers[squadra]![index].text;
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection('ccIscrizioniSquadre').doc(squadra).get();
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('ccIscrizioniSquadre')
+        .doc(squadra)
+        .get();
     if (documentSnapshot.exists) {
+      
       List<dynamic> giocatoriRem = documentSnapshot['giocatori'];
       bool found = false;
       for (var giocatore in giocatoriRem) {
@@ -204,7 +220,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         await documentSnapshot.reference.update({'giocatori': giocatoriRem});
       }
     }
-    
+
     setState(() {
       if (index < giocatori[squadra]!.length) {
         giocatori[squadra]!.removeAt(index);
@@ -226,25 +242,20 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
     List<Map<String, String>> giocatoriData = [];
     for (int i = 0; i < giocatori[squadra]!.length; i++) {
-      //giocatoriData.add({
-      //  'nome': giocatori[squadra]![i],
-      //  'maglia': magliaControllers[squadra]![i].text,
-      //  'appartamento': appartamentoControllers[squadra]![i].text,
-      //});
 
       List<dynamic> persone = [];
       int posti = 0;
 
       String nuovoAppartamento = appartamentoControllers[squadra]![i].text;
-
-      // Controlla se la persona è già presente in un altro appartamento
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('ccCase').get(); //farlo in un altra funzione
+      
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('ccCase')
+          .get();
 
       for (var doc in querySnapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
         List<dynamic> personeRem = data['persone'];
-
-        // Rimuovi la persona dall'appartamento precedente
+        
         bool found = false;
         for (var persona in personeRem) {
           if (persona['nome'] == giocatori[squadra]![i] &&
@@ -256,12 +267,10 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         }
 
         if (found) {
-          // Aggiorna il documento dell'appartamento precedente
           await doc.reference.update({'persone': personeRem});
         }
       }
       if (nuovoAppartamento != '') {
-        //conteggio posti e persone
         DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
             .collection('ccCase')
             .doc(nuovoAppartamento)
@@ -270,7 +279,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
           persone = docSnapshot['persone'];
           posti = docSnapshot['posti'];
         }
-        // Aggiungi la persona al nuovo appartamento
         if (persone.length < posti) {
           await FirebaseFirestore.instance
               .collection('ccCase')
@@ -295,7 +303,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
             'appartamento': '',
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Numero massimo di $posti posti raggiunto')),
+            SnackBar(content: Text('Appartamento non salvato: numero massimo di $posti posti raggiunto')),
           );
         }
       } else {
@@ -322,11 +330,16 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         'giocatori': giocatoriData,
         'club': widget.ccRole != 'staff' ? widget.club : clubValue,
       });
+    } else {
+      await FirebaseFirestore.instance
+          .collection('ccIscrizioniSquadre')
+          .doc(squadra)
+          .set({
+        'nomeSquadra': squadra,
+        'giocatori': giocatoriData,
+        'club': widget.ccRole != 'staff' ? widget.club : squadra.split(" ")[0],
+      });
     }
-
-    //setState(() {
-    //  hasChanges[squadra] = false;
-    //});
 
     Navigator.pop(context);
 
@@ -341,7 +354,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
   Future<void> _importExcelFile() async {
     try {
-      // Seleziona il file Excel
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
@@ -350,15 +362,12 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
       if (result != null) {
         _showLoadingDialog();
         File file = File(result.files.single.path!);
-
-        // Leggi il file Excel
+        
         var bytes = file.readAsBytesSync();
         var excelF = excel.Excel.decodeBytes(bytes);
-
-        // Mappa per raggruppare i ragazzi per club
+        
         Map<String, List<String>> clubData = {};
-
-        // Itera sui fogli del file Excel
+        
         for (var table in excelF.tables.keys) {
           var sheet = excelF.tables[table];
           if (sheet != null) {
@@ -377,16 +386,13 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
             }
           }
         }
-
-        // Aggiorna Firestore
+        
         for (var club in clubData.keys) {
-          // Elimina il documento esistente se presente
           var docRef = FirebaseFirestore.instance
               .collection('ccIscrizioneRagazzi')
               .doc(club);
           await docRef.delete().catchError((_) {});
-
-          // Crea un nuovo documento
+          
           await docRef.set({
             'ragazzi': clubData[club],
           });
@@ -427,10 +433,12 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
       appBar: AppBar(
         title: const Text('Iscrivi giocatori'),
         actions: [
-          widget.ccRole=='staff' ? IconButton(
-            icon: const Icon(Icons.upload_file),
-            onPressed: _importExcelFile,
-          ) : Container()
+          widget.ccRole == 'staff'
+              ? IconButton(
+                  icon: const Icon(Icons.upload_file),
+                  onPressed: _importExcelFile,
+                )
+              : Container()
         ],
       ),
       body: FutureBuilder(
@@ -442,16 +450,18 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
               return Center(child: Text('Errore: ${snapshot.error}'));
             } else if (squadre.isEmpty) {
               return Center(
-                child: widget.ccRole=='staff' ? const Text(
-                  'Nessuna squadra iscritta',
-                  style: TextStyle(fontSize: 19, color: Colors.black54),
-                  textAlign: TextAlign.center,
-                ) : Text(
-                  'Nessuna squadra iscritta per ${widget.club}',
-                  style: const TextStyle(fontSize: 19, color: Colors.black54),
-                  textAlign: TextAlign.center,
-                )
-              );
+                  child: widget.ccRole == 'staff'
+                      ? const Text(
+                          'Nessuna squadra iscritta',
+                          style: TextStyle(fontSize: 19, color: Colors.black54),
+                          textAlign: TextAlign.center,
+                        )
+                      : Text(
+                          'Nessuna squadra iscritta per ${widget.club}',
+                          style: const TextStyle(
+                              fontSize: 19, color: Colors.black54),
+                          textAlign: TextAlign.center,
+                        ));
             } else {
               return ListView.builder(
                 itemCount: squadre.length,
@@ -518,14 +528,18 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                                   squadra]![i]
                                                               .text
                                                           : null,
-                                                      items: ragazzi[squadraMap]
+                                                      items: ragazzi[squadra.split(' ')[0]]
                                                           ?.map((dynamic
                                                               ragazziItem) {
                                                         return DropdownMenuItem<
                                                             String>(
                                                           value: ragazziItem,
-                                                          child:
-                                                              Text(ragazziItem),
+                                                          child: Text(
+                                                            ragazziItem,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
                                                         );
                                                       }).toList(),
                                                       onChanged: (value) {
@@ -535,8 +549,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                           giocatoriControllers[
                                                                   squadra]![i]
                                                               .text = value;
-                                                          print(
-                                                              "giocatoriNow: ${giocatori[squadra]}");
                                                           hasChanges[squadra] =
                                                               true;
                                                         });
@@ -573,6 +585,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                                           132)),
                                                         ),
                                                       ),
+                                                      isExpanded: true,
                                                     ),
                                                   ),
                                                 ],
@@ -642,41 +655,24 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                   ),
                                                   const SizedBox(width: 8),
                                                   Expanded(
-                                                    child: widget.ccRole ==
-                                                            'tutor'
-                                                        ? DropdownButtonFormField<
-                                                            String>(
-                                                            value: appartamentoControllers[
-                                                                            squadra]![
-                                                                        i]
-                                                                    .text
-                                                                    .isNotEmpty
-                                                                ? appartamentoControllers[
-                                                                        squadra]![i]
-                                                                    .text
-                                                                : null,
-                                                            items: ccCaseList
-                                                                .map((String
-                                                                    caseItem) {
-                                                              return DropdownMenuItem<
-                                                                  String>(
+                                                    child: widget.ccRole == 'tutor'
+                                                        ? DropdownButtonFormField<String>(
+                                                            value: appartamentoControllers[squadra]![i].text.isNotEmpty
+                                                            ? appartamentoControllers[squadra]![i].text
+                                                            : null,
+                                                            items: ccCaseList.map((String caseItem) {
+                                                              return DropdownMenuItem<String>(
                                                                 value: caseItem,
-                                                                child: Text(
-                                                                    caseItem),
+                                                                child: Text(caseM[caseItem]!=null ? '$caseItem (${caseM[caseItem]} posti)' : caseItem, overflow: TextOverflow.ellipsis,),
                                                               );
                                                             }).toList(),
                                                             onChanged: (value) {
                                                               setState(() {
-                                                                appartamentoControllers[
-                                                                        squadra]![i]
-                                                                    .text = value!;
-                                                                hasChanges[
-                                                                        squadra] =
-                                                                    true;
+                                                                appartamentoControllers[squadra]![i].text = value!;
+                                                                hasChanges[squadra] = true;
                                                               });
                                                             },
-                                                            decoration:
-                                                                const InputDecoration(
+                                                            decoration: const InputDecoration(
                                                               labelText:
                                                                   'N° appartamento',
                                                               filled: true,
@@ -705,46 +701,27 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                                             132)),
                                                               ),
                                                             ),
+                                                            isExpanded: true,
                                                           )
-                                                        : DropdownButtonFormField<
-                                                            String>(
-                                                            value: appartamentoControllers[
-                                                                            squadra]![
-                                                                        i]
-                                                                    .text
-                                                                    .isNotEmpty
-                                                                ? appartamentoControllers[
-                                                                        squadra]![i]
-                                                                    .text
-                                                                : null,
-                                                            items: ccCaseMap[
-                                                                        squadraMap] !=
-                                                                    null
-                                                                ? ccCaseMap[
-                                                                        squadraMap]!
-                                                                    .map((String
-                                                                        caseItem) {
-                                                                    return DropdownMenuItem<
-                                                                        String>(
-                                                                      value:
-                                                                          caseItem,
-                                                                      child: Text(
-                                                                          caseItem),
-                                                                    );
-                                                                  }).toList()
-                                                                : [],
+                                                        : DropdownButtonFormField<String>(
+                                                            value: appartamentoControllers[squadra]![i].text.isNotEmpty
+                                                            ? appartamentoControllers[squadra]![i].text
+                                                            : null,
+                                                            items: ccCaseMap[squadraMap] != null
+                                                            ? ccCaseMap[squadraMap]!.map((String caseItem) {
+                                                              return DropdownMenuItem<String>(
+                                                                value: caseItem,
+                                                                child: Text(caseM[caseItem]!=null ? '$caseItem (${caseM[caseItem]} posti)' : caseItem, overflow: TextOverflow.ellipsis,),
+                                                              );
+                                                            }).toList()
+                                                            : [],
                                                             onChanged: (value) {
                                                               setState(() {
-                                                                appartamentoControllers[
-                                                                        squadra]![i]
-                                                                    .text = value!;
-                                                                hasChanges[
-                                                                        squadra] =
-                                                                    true;
+                                                                appartamentoControllers[squadra]![i].text = value!;
+                                                                hasChanges[squadra] = true;
                                                               });
                                                             },
-                                                            decoration:
-                                                                const InputDecoration(
+                                                            decoration: const InputDecoration(
                                                               labelText:
                                                                   'N° appartamento',
                                                               filled: true,
@@ -773,6 +750,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                                             132)),
                                                               ),
                                                             ),
+                                                            isExpanded: true,
                                                           ),
                                                   ),
                                                 ],

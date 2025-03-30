@@ -553,7 +553,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
       newCodicePerdente = '';
     }
 
-    //  vincitore
+    //vincitore
     DocumentSnapshot docSnapshotVincitore = await FirebaseFirestore.instance
         .collection('ccPartite$tipo')
         .doc(newCodiceVincente)
@@ -577,7 +577,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
       });
     }
 
-    //  perdente
+    //perdente
     DocumentSnapshot docSnapshotPerdente = await FirebaseFirestore.instance
         .collection('ccPartite$tipo')
         .doc(newCodicePerdente)
@@ -709,7 +709,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         newCodicePerdente = '';
       }
 
-      //  vincitore
+      //vincitore
       DocumentSnapshot docSnapshotVincente = await FirebaseFirestore.instance
           .collection('ccPartite$tipo')
           .doc(newCodiceVincente)
@@ -732,7 +732,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         });
       }
 
-      //  perdente
+      //perdente
       DocumentSnapshot docSnapshotPerdente = await FirebaseFirestore.instance
           .collection('ccPartite$tipo')
           .doc(newCodicePerdente)
@@ -1186,13 +1186,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
-                                                  Navigator.of(context).pop(); // Chiudi il dialog
+                                                  Navigator.of(context).pop();
                                                 },
                                                 child: const Text('Annulla'),
                                               ),
                                               TextButton(
                                                 onPressed: () {
-                                                  Navigator.of(context).pop(); // Chiudi il dialog
+                                                  Navigator.of(context).pop();
                                                   setState(() {
                                                     boolRigori = false;
                                                     rigoriCasa = [];
@@ -1496,8 +1496,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                       )
                     : Container(),
                 !iniziata && !finita
-                    ? const Center(
+                    ? Center(
                         child: Column(children: [
+                          widget.nome==widget.refertista ? const SizedBox(height: 10) : Container(),
                         Text('Partita da giocare',
                             style: TextStyle(
                                 fontSize: 21, color: Colors.black54)),
