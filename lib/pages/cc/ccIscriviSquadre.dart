@@ -68,17 +68,27 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
   Map<dynamic, dynamic> caseM = {};
 
+  bool open = true;
+
   Future<void> _loadSquadre() async {
     QuerySnapshot snapshot;
     QuerySnapshot ccCase;
 
-    QuerySnapshot caseSnapshot = await FirebaseFirestore.instance
-        .collection('ccCase')
+    DocumentSnapshot querySnapshotIsc = await FirebaseFirestore.instance
+        .collection('ccIscrizioni')
+        .doc('iscrizioni')
         .get();
+    if (querySnapshotIsc.exists) {
+      setState(() {
+        open = querySnapshotIsc['open'];
+      });
+    }
+
+    QuerySnapshot caseSnapshot =
+        await FirebaseFirestore.instance.collection('ccCase').get();
     for (var doc in caseSnapshot.docs) {
       caseM[doc['numero']] = doc['posti'];
     }
-
 
     if (widget.ccRole == 'staff') {
       snapshot = await FirebaseFirestore.instance.collection('ccSquadre').get();
@@ -182,7 +192,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
       if (querySnapshot.exists) {
         List<dynamic> personeRem = querySnapshot['persone'];
-        
+
         bool found = false;
         for (var persona in personeRem) {
           if (persona['nome'] == giocatori[squadra]![index] &&
@@ -205,7 +215,6 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         .doc(squadra)
         .get();
     if (documentSnapshot.exists) {
-      
       List<dynamic> giocatoriRem = documentSnapshot['giocatori'];
       bool found = false;
       for (var giocatore in giocatoriRem) {
@@ -242,20 +251,18 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
 
     List<Map<String, String>> giocatoriData = [];
     for (int i = 0; i < giocatori[squadra]!.length; i++) {
-
       List<dynamic> persone = [];
       int posti = 0;
 
       String nuovoAppartamento = appartamentoControllers[squadra]![i].text;
-      
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('ccCase')
-          .get();
+
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('ccCase').get();
 
       for (var doc in querySnapshot.docs) {
         var data = doc.data() as Map<String, dynamic>;
         List<dynamic> personeRem = data['persone'];
-        
+
         bool found = false;
         for (var persona in personeRem) {
           if (persona['nome'] == giocatori[squadra]![i] &&
@@ -303,7 +310,9 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
             'appartamento': '',
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Appartamento non salvato: numero massimo di $posti posti raggiunto')),
+            SnackBar(
+                content: Text(
+                    'Appartamento non salvato: numero massimo di $posti posti raggiunto')),
           );
         }
       } else {
@@ -362,12 +371,12 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
       if (result != null) {
         _showLoadingDialog();
         File file = File(result.files.single.path!);
-        
+
         var bytes = file.readAsBytesSync();
         var excelF = excel.Excel.decodeBytes(bytes);
-        
+
         Map<String, List<String>> clubData = {};
-        
+
         for (var table in excelF.tables.keys) {
           var sheet = excelF.tables[table];
           if (sheet != null) {
@@ -386,13 +395,13 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
             }
           }
         }
-        
+
         for (var club in clubData.keys) {
           var docRef = FirebaseFirestore.instance
               .collection('ccIscrizioneRagazzi')
               .doc(club);
           await docRef.delete().catchError((_) {});
-          
+
           await docRef.set({
             'ragazzi': clubData[club],
           });
@@ -463,339 +472,407 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                           textAlign: TextAlign.center,
                         ));
             } else {
-              return ListView.builder(
-                itemCount: squadre.length,
-                itemBuilder: (context, index) {
-                  String squadra = squadre[index];
-                  String squadraMap = clubs[squadra]!;
-                  return Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 8, 0, 0),
-                      child: ExpansionTile(
-                        title: Text(
-                          'Squadra ${index + 1}',
-                          style: const TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(squadra, style: const TextStyle(fontSize: 25)),
-                            giocatori[squadra]!.length == 1
-                                ? const Text('1 giocatore',
-                                    style: TextStyle(fontSize: 17))
-                                : Text(
-                                    '${giocatori[squadra]!.length} giocatori',
-                                    style: const TextStyle(fontSize: 17))
-                          ],
-                        ),
-                        shape: Border.all(color: Colors.transparent),
-                        children: [
-                          Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
-                                for (int i = 0;
-                                    i < giocatori[squadra]!.length;
-                                    i++)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10.0, horizontal: 4),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Center(
-                                          child: Text(
-                                            '${i + 1}',
-                                            style:
-                                                const TextStyle(fontSize: 22),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child:
-                                                        DropdownButtonFormField<
-                                                            String>(
-                                                      value: giocatoriControllers[
-                                                                  squadra]![i]
-                                                              .text
-                                                              .isNotEmpty
-                                                          ? giocatoriControllers[
-                                                                  squadra]![i]
-                                                              .text
-                                                          : null,
-                                                      items: ragazzi[squadra.split(' ')[0]]
-                                                          ?.map((dynamic
-                                                              ragazziItem) {
-                                                        return DropdownMenuItem<
-                                                            String>(
-                                                          value: ragazziItem,
-                                                          child: Text(
-                                                            ragazziItem,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        );
-                                                      }).toList(),
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          giocatori[squadra]![
-                                                              i] = value!;
-                                                          giocatoriControllers[
-                                                                  squadra]![i]
-                                                              .text = value;
-                                                          hasChanges[squadra] =
-                                                              true;
-                                                        });
-                                                      },
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        labelText:
-                                                            'Nome e cognome',
-                                                        filled: true,
-                                                        fillColor: Colors.white,
-                                                        border:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                        ),
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          25,
-                                                                          84,
-                                                                          132)),
-                                                        ),
-                                                      ),
-                                                      isExpanded: true,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: TextFormField(
-                                                      controller:
-                                                          magliaControllers[
-                                                              squadra]![i],
-                                                      keyboardType:
-                                                          TextInputType.number,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          hasChanges[squadra] =
-                                                              true;
-                                                        });
-                                                      },
-                                                      validator: (value) {
-                                                        if (value != null &&
-                                                            value.isNotEmpty) {
-                                                          final int? number =
-                                                              int.tryParse(
-                                                                  value);
-                                                          if (number == null ||
-                                                              number < 0 ||
-                                                              number > 99) {
-                                                            return 'Numero non valido';
-                                                          }
-                                                        }
-                                                        return null;
-                                                      },
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        labelText: 'N° maglia',
-                                                        filled: true,
-                                                        fillColor: Colors.white,
-                                                        border:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                        ),
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Colors
-                                                                      .black54),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderSide:
-                                                              BorderSide(
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          25,
-                                                                          84,
-                                                                          132)),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: widget.ccRole == 'tutor'
-                                                        ? DropdownButtonFormField<String>(
-                                                            value: appartamentoControllers[squadra]![i].text.isNotEmpty
-                                                            ? appartamentoControllers[squadra]![i].text
-                                                            : null,
-                                                            items: ccCaseList.map((String caseItem) {
-                                                              return DropdownMenuItem<String>(
-                                                                value: caseItem,
-                                                                child: Text(caseM[caseItem]!=null ? '$caseItem (${caseM[caseItem]} posti)' : caseItem, overflow: TextOverflow.ellipsis,),
-                                                              );
-                                                            }).toList(),
-                                                            onChanged: (value) {
-                                                              setState(() {
-                                                                appartamentoControllers[squadra]![i].text = value!;
-                                                                hasChanges[squadra] = true;
-                                                              });
-                                                            },
-                                                            decoration: const InputDecoration(
-                                                              labelText:
-                                                                  'N° appartamento',
-                                                              filled: true,
-                                                              fillColor:
-                                                                  Colors.white,
-                                                              border:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Colors
-                                                                        .black54),
-                                                              ),
-                                                              enabledBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Colors
-                                                                        .black54),
-                                                              ),
-                                                              focusedBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            25,
-                                                                            84,
-                                                                            132)),
-                                                              ),
-                                                            ),
-                                                            isExpanded: true,
-                                                          )
-                                                        : DropdownButtonFormField<String>(
-                                                            value: appartamentoControllers[squadra]![i].text.isNotEmpty
-                                                            ? appartamentoControllers[squadra]![i].text
-                                                            : null,
-                                                            items: ccCaseMap[squadraMap] != null
-                                                            ? ccCaseMap[squadraMap]!.map((String caseItem) {
-                                                              return DropdownMenuItem<String>(
-                                                                value: caseItem,
-                                                                child: Text(caseM[caseItem]!=null ? '$caseItem (${caseM[caseItem]} posti)' : caseItem, overflow: TextOverflow.ellipsis,),
-                                                              );
-                                                            }).toList()
-                                                            : [],
-                                                            onChanged: (value) {
-                                                              setState(() {
-                                                                appartamentoControllers[squadra]![i].text = value!;
-                                                                hasChanges[squadra] = true;
-                                                              });
-                                                            },
-                                                            decoration: const InputDecoration(
-                                                              labelText:
-                                                                  'N° appartamento',
-                                                              filled: true,
-                                                              fillColor:
-                                                                  Colors.white,
-                                                              border:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Colors
-                                                                        .black54),
-                                                              ),
-                                                              enabledBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Colors
-                                                                        .black54),
-                                                              ),
-                                                              focusedBorder:
-                                                                  OutlineInputBorder(
-                                                                borderSide: BorderSide(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            25,
-                                                                            84,
-                                                                            132)),
-                                                              ),
-                                                            ),
-                                                            isExpanded: true,
-                                                          ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Center(
-                                          child: IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () =>
-                                                _removeGiocatore(squadra, i),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
+              if (!open) {
+                return Center(
+                    child: Text(
+                  'Le iscrizioni sono chiuse',
+                  style: const TextStyle(fontSize: 19, color: Colors.black54),
+                ));
+              } else {
+                return ListView.builder(
+                  itemCount: squadre.length,
+                  itemBuilder: (context, index) {
+                    String squadra = squadre[index];
+                    String squadraMap = clubs[squadra]!;
+                    return Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 0, 0),
+                        child: ExpansionTile(
+                          title: Text(
+                            'Squadra ${index + 1}',
+                            style: const TextStyle(fontStyle: FontStyle.italic),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.add),
-                                onPressed: () => _addGiocatore(squadra),
-                                highlightColor:
-                                    const Color.fromARGB(255, 25, 84, 132),
-                              ),
-                              ElevatedButton(
-                                onPressed: hasChanges[squadra]!
-                                    ? () {
-                                        if (_formKey.currentState!.validate()) {
-                                          _saveSquadra(squadra);
-                                        }
-                                      }
-                                    : null,
-                                child: const Text('Salva'),
-                              ),
+                              Text(squadra,
+                                  style: const TextStyle(fontSize: 25)),
+                              giocatori[squadra]!.length == 1
+                                  ? const Text('1 giocatore',
+                                      style: TextStyle(fontSize: 17))
+                                  : Text(
+                                      '${giocatori[squadra]!.length} giocatori',
+                                      style: const TextStyle(fontSize: 17))
                             ],
                           ),
-                        ],
-                      ));
-                },
-              );
+                          shape: Border.all(color: Colors.transparent),
+                          children: [
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  for (int i = 0;
+                                      i < giocatori[squadra]!.length;
+                                      i++)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10.0, horizontal: 4),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Center(
+                                            child: Text(
+                                              '${i + 1}',
+                                              style:
+                                                  const TextStyle(fontSize: 22),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child:
+                                                          DropdownButtonFormField<
+                                                              String>(
+                                                        value: giocatoriControllers[
+                                                                    squadra]![i]
+                                                                .text
+                                                                .isNotEmpty
+                                                            ? giocatoriControllers[
+                                                                    squadra]![i]
+                                                                .text
+                                                            : null,
+                                                        items: ragazzi[squadra
+                                                                .split(' ')[0]]
+                                                            ?.map((dynamic
+                                                                ragazziItem) {
+                                                          return DropdownMenuItem<
+                                                              String>(
+                                                            value: ragazziItem,
+                                                            child: Text(
+                                                              ragazziItem,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
+                                                          );
+                                                        }).toList(),
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            giocatori[squadra]![
+                                                                i] = value!;
+                                                            giocatoriControllers[
+                                                                    squadra]![i]
+                                                                .text = value;
+                                                            hasChanges[
+                                                                squadra] = true;
+                                                          });
+                                                        },
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          labelText:
+                                                              'Nome e cognome',
+                                                          filled: true,
+                                                          fillColor:
+                                                              Colors.white,
+                                                          border:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .black54),
+                                                          ),
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .black54),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        25,
+                                                                        84,
+                                                                        132)),
+                                                          ),
+                                                        ),
+                                                        isExpanded: true,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: TextFormField(
+                                                        controller:
+                                                            magliaControllers[
+                                                                squadra]![i],
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            hasChanges[
+                                                                squadra] = true;
+                                                          });
+                                                        },
+                                                        validator: (value) {
+                                                          if (value != null &&
+                                                              value
+                                                                  .isNotEmpty) {
+                                                            final int? number =
+                                                                int.tryParse(
+                                                                    value);
+                                                            if (number ==
+                                                                    null ||
+                                                                number < 0 ||
+                                                                number > 99) {
+                                                              return 'Numero non valido';
+                                                            }
+                                                          }
+                                                          return null;
+                                                        },
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          labelText:
+                                                              'N° maglia',
+                                                          filled: true,
+                                                          fillColor:
+                                                              Colors.white,
+                                                          border:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .black54),
+                                                          ),
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Colors
+                                                                    .black54),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        25,
+                                                                        84,
+                                                                        132)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: widget.ccRole ==
+                                                              'tutor'
+                                                          ? DropdownButtonFormField<
+                                                              String>(
+                                                              value: appartamentoControllers[
+                                                                              squadra]![
+                                                                          i]
+                                                                      .text
+                                                                      .isNotEmpty
+                                                                  ? appartamentoControllers[
+                                                                          squadra]![i]
+                                                                      .text
+                                                                  : null,
+                                                              items: ccCaseList
+                                                                  .map((String
+                                                                      caseItem) {
+                                                                return DropdownMenuItem<
+                                                                    String>(
+                                                                  value:
+                                                                      caseItem,
+                                                                  child: Text(
+                                                                    caseM[caseItem] !=
+                                                                            null
+                                                                        ? '$caseItem (${caseM[caseItem]} posti)'
+                                                                        : caseItem,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                  ),
+                                                                );
+                                                              }).toList(),
+                                                              onChanged:
+                                                                  (value) {
+                                                                setState(() {
+                                                                  appartamentoControllers[
+                                                                          squadra]![i]
+                                                                      .text = value!;
+                                                                  hasChanges[
+                                                                          squadra] =
+                                                                      true;
+                                                                });
+                                                              },
+                                                              decoration:
+                                                                  const InputDecoration(
+                                                                labelText:
+                                                                    'N° appartamento',
+                                                                filled: true,
+                                                                fillColor:
+                                                                    Colors
+                                                                        .white,
+                                                                border:
+                                                                    OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                          color:
+                                                                              Colors.black54),
+                                                                ),
+                                                                enabledBorder:
+                                                                    OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                          color:
+                                                                              Colors.black54),
+                                                                ),
+                                                                focusedBorder:
+                                                                    OutlineInputBorder(
+                                                                  borderSide: BorderSide(
+                                                                      color: Color.fromARGB(
+                                                                          255,
+                                                                          25,
+                                                                          84,
+                                                                          132)),
+                                                                ),
+                                                              ),
+                                                              isExpanded: true,
+                                                            )
+                                                          : DropdownButtonFormField<
+                                                              String>(
+                                                              value: appartamentoControllers[
+                                                                              squadra]![
+                                                                          i]
+                                                                      .text
+                                                                      .isNotEmpty
+                                                                  ? appartamentoControllers[
+                                                                          squadra]![i]
+                                                                      .text
+                                                                  : null,
+                                                              items: ccCaseMap[
+                                                                          squadraMap] !=
+                                                                      null
+                                                                  ? ccCaseMap[
+                                                                          squadraMap]!
+                                                                      .map((String
+                                                                          caseItem) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value:
+                                                                            caseItem,
+                                                                        child:
+                                                                            Text(
+                                                                          caseM[caseItem] != null
+                                                                              ? '$caseItem (${caseM[caseItem]} posti)'
+                                                                              : caseItem,
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                        ),
+                                                                      );
+                                                                    }).toList()
+                                                                  : [],
+                                                              onChanged:
+                                                                  (value) {
+                                                                setState(() {
+                                                                  appartamentoControllers[
+                                                                          squadra]![i]
+                                                                      .text = value!;
+                                                                  hasChanges[
+                                                                          squadra] =
+                                                                      true;
+                                                                });
+                                                              },
+                                                              decoration:
+                                                                  const InputDecoration(
+                                                                labelText:
+                                                                    'N° appartamento',
+                                                                filled: true,
+                                                                fillColor:
+                                                                    Colors
+                                                                        .white,
+                                                                border:
+                                                                    OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                          color:
+                                                                              Colors.black54),
+                                                                ),
+                                                                enabledBorder:
+                                                                    OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide(
+                                                                          color:
+                                                                              Colors.black54),
+                                                                ),
+                                                                focusedBorder:
+                                                                    OutlineInputBorder(
+                                                                  borderSide: BorderSide(
+                                                                      color: Color.fromARGB(
+                                                                          255,
+                                                                          25,
+                                                                          84,
+                                                                          132)),
+                                                                ),
+                                                              ),
+                                                              isExpanded: true,
+                                                            ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Center(
+                                            child: IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () =>
+                                                  _removeGiocatore(squadra, i),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () => _addGiocatore(squadra),
+                                  highlightColor:
+                                      const Color.fromARGB(255, 25, 84, 132),
+                                ),
+                                ElevatedButton(
+                                  onPressed: hasChanges[squadra]!
+                                      ? () {
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            _saveSquadra(squadra);
+                                          }
+                                        }
+                                      : null,
+                                  child: const Text('Salva'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ));
+                  },
+                );
+              }
             }
           }),
     );

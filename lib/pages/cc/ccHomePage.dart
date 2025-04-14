@@ -16,6 +16,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart' as excel;
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage(
@@ -264,6 +267,34 @@ class _CCHomePageState extends State<CCHomePage> {
     }
   }
 
+  Future<String?> _uploadFileToFirebase(PlatformFile file) async {
+    if (file.path == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Percorso del file non disponibile'),
+        ),
+      );
+      return null;
+    }
+
+    try {
+      final bytes = File(file.path!).readAsBytesSync();
+      final storageRef =
+          FirebaseStorage.instance.ref().child('giornalino/${file.name}');
+      final uploadTask = storageRef.putData(bytes);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante il caricamento del file'),
+        ),
+      );
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -394,6 +425,23 @@ class _CCHomePageState extends State<CCHomePage> {
                                 builder: (context) => CcIscriviSquadre(
                                     club: widget.club ?? '',
                                     ccRole: widget.ccRole ?? '')));
+                          },
+                        )
+                      : Container(),
+                  widget.ccRole == 'staff'
+                      ? ListTile(
+                          leading: const Icon(Icons.description),
+                          title: const Text('Carica giornalino'),
+                          onTap: () async {
+                            await FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['pdf', 'docx', 'xlsx'],
+                            ).then((result) async {
+                              if (result != null) {
+                                final file = result.files.first;
+                                await _uploadFileToFirebase(file);
+                              }
+                            });
                           },
                         )
                       : Container(),

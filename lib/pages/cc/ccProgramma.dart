@@ -4,6 +4,9 @@ import 'ccNuovoProgramma.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/intl.dart';
 import 'ccProgrammaCompleto.dart';
+import 'pdfView.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class CCProgramma extends StatefulWidget {
   const CCProgramma({super.key, required this.ccRole});
@@ -49,6 +52,39 @@ class _CCProgrammaState extends State<CCProgramma> {
     return nomiSquadre;
   }
 
+  Future<void> _openFileOrLink(String? url) async {
+    if (url == null || url.isEmpty) {
+      return;
+    }
+
+    try {
+      await FlutterWebBrowser.openWebPage(url: url);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nell\'aperatura del link')),
+      );
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _getDocumentsFromStorage() async {
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  final ListResult result = await storage.ref('giornalino/').listAll();
+
+  final List<Map<String, dynamic>> documents = [];
+  for (var item in result.items) {
+    final String url = await item.getDownloadURL();
+    final FullMetadata metadata = await item.getMetadata();
+    final DateTime updated = metadata.updated ?? DateTime.now();
+
+    documents.add({'url': url, 'updated': updated});
+  }
+
+  // Ordina i documenti in base alla data di aggiornamento
+  documents.sort((a, b) => a['updated'].compareTo(b['updated']));
+
+  return documents;
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,6 +108,135 @@ class _CCProgrammaState extends State<CCProgramma> {
                     height: 150,
                   ),
                 ),
+                Positioned(
+                  right: 12.0,
+                  top: 12.0,
+                  child: InkWell(
+                    onTap: () async {
+                      final FirebaseStorage _storage = FirebaseStorage.instance;
+                      final ref = _storage.ref().child('DocumentiCC/IMG-20250414-WA0009.jpg');
+                        final url = await ref.getDownloadURL();
+                        _openFileOrLink(url);
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.map, // Icona della mappa
+                        size: 28,
+                        color: Color(0xFF00296B),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 12.0,
+                  top: 65.0,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PdfViewerPage(
+                            pdfPath: 'images/RegolamentoChampionsClub2025.pdf',//'assets/document.pdf', // Percorso del PDF
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.description, // Icona del regolamento
+                        size: 28,
+                        color: Color(0xFF00296B),
+                      ),
+                    ),
+                  ),
+                ),
+                FutureBuilder<List<Map<String, dynamic>>>(
+          future: _getDocumentsFromStorage(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Positioned(
+                bottom: 16.0,
+                right: 12.0,
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Positioned(
+                bottom: 16.0,
+                right: 12.0,
+                child: Container(),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Positioned(
+                bottom: 16.0,
+                right: 12.0,
+                child: Container(),
+              );
+            }
+
+            final documents = snapshot.data!;
+            return Positioned(
+              bottom: 16.0,
+              right: 12.0,
+              child: Row(
+                children: List.generate(documents.length, (index) {
+                  final document = documents[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                    child: InkWell(
+                    onTap: () {
+                      _openFileOrLink(document['url']);
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(child: Text('${index + 1}',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00296B)),)
+                      ),
+                    ),
+                  ),
+                  );
+                }),
+              ),
+            );
+          },
+        ),
               ],
             ),
           ),

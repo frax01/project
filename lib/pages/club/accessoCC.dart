@@ -262,8 +262,7 @@ class _AccessoCCState extends State<AccessoCC> {
                     widget.email != '' ? _updateUser('user') : null;
                     final SharedPreferences prefs =
                         await SharedPreferences.getInstance();
-                    await prefs.setString('cc',
-                        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+                    await prefs.setString('cc', 'yes');
                     await prefs.setString('ccRole', 'user');
                     restartApp(context, prefs.getString('club') ?? '',
                         prefs.getString('cc') ?? '', 'user', '');

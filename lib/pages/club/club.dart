@@ -51,6 +51,7 @@ class _ClubPageState extends State<ClubPage> {
   Future<void> _fetchVersion() async {
     String versione = '';
     bool obbligatorio = false;
+    bool open = false;
     final querySnapshot = await FirebaseFirestore.instance
         .collection('aggiornamento')
         .doc('unico')
@@ -58,72 +59,75 @@ class _ClubPageState extends State<ClubPage> {
     if (querySnapshot.exists) {
       versione = querySnapshot.data()!['versione'];
       obbligatorio = querySnapshot.data()!['obbligatorio'];
+      open = querySnapshot.data()!['open'];
     }
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     print("versione: $versione");
     print("packageVersion: ${packageInfo.version}");
     if (versione != packageInfo.version) {
-      await showDialog<bool>(
-            context: context,
-            barrierDismissible: obbligatorio ? false : true,
-            barrierColor: const Color.fromARGB(255, 206, 203, 203),
-            builder: (BuildContext context) {
-              return StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
-                  return AlertDialog(
-                    title: const Center(
-                        child: Text('Aggiornamento',
-                            style: TextStyle(fontSize: 35))),
-                    content: obbligatorio
-                        ? const Text(
-                            'È necessario installare l\'ultima versione dell\'app per continuare ad usarla',
-                            style: TextStyle(fontSize: 20))
-                        : const Text('Scarica la nuova versione dell\'app',
-                            style: TextStyle(fontSize: 20)),
-                    actions: <Widget>[
-                      Center(
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                            !obbligatorio
-                                ? TextButton(
-                                    child: const Text('Più tardi',
-                                        style: TextStyle(fontSize: 20)),
-                                    onPressed: () {
-                                      Navigator.of(context).pop(false);
-                                    },
-                                  )
-                                : Container(),
-                            TextButton(
-                              child: const Text('Aggiorna',
-                                  style: TextStyle(fontSize: 20)),
-                              onPressed: () {
-                                if (Platform.isAndroid) {
-                                  FlutterWebBrowser.openWebPage(
-                                      url:
-                                          'https://play.google.com/store/apps/details?id=com.mycompany.dima');
-                                } else if (Platform.isIOS) {
-                                  FlutterWebBrowser.openWebPage(
-                                      url:
-                                          'https://apps.apple.com/it/app/club-app/id6642671734');
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                          'Aggiornamento non disponibile, contatta il tuo tutor'),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ]))
-                    ],
-                  );
-                },
-              );
-            },
-          ) ??
-          false;
+      if (open) {
+        await showDialog<bool>(
+              context: context,
+              barrierDismissible: obbligatorio ? false : true,
+              barrierColor: const Color.fromARGB(255, 206, 203, 203),
+              builder: (BuildContext context) {
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return AlertDialog(
+                      title: const Center(
+                          child: Text('Aggiornamento',
+                              style: TextStyle(fontSize: 35))),
+                      content: obbligatorio
+                          ? const Text(
+                              'È necessario installare l\'ultima versione dell\'app per continuare ad usarla',
+                              style: TextStyle(fontSize: 20))
+                          : const Text('Scarica la nuova versione dell\'app',
+                              style: TextStyle(fontSize: 20)),
+                      actions: <Widget>[
+                        Center(
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                              !obbligatorio
+                                  ? TextButton(
+                                      child: const Text('Più tardi',
+                                          style: TextStyle(fontSize: 20)),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                    )
+                                  : Container(),
+                              TextButton(
+                                child: const Text('Aggiorna',
+                                    style: TextStyle(fontSize: 20)),
+                                onPressed: () {
+                                  if (Platform.isAndroid) {
+                                    FlutterWebBrowser.openWebPage(
+                                        url:
+                                            'https://play.google.com/store/apps/details?id=com.mycompany.dima');
+                                  } else if (Platform.isIOS) {
+                                    FlutterWebBrowser.openWebPage(
+                                        url:
+                                            'https://apps.apple.com/it/app/club-app/id6642671734');
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Aggiornamento non disponibile, contatta il tuo tutor'),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ]))
+                      ],
+                    );
+                  },
+                );
+              },
+            ) ??
+            false;
+      }
     } else {
       await FirebaseFirestore.instance
           .collection('user')
@@ -140,55 +144,57 @@ class _ClubPageState extends State<ClubPage> {
 
     if (querySnapshot.exists) {
       Map<String, dynamic> data = querySnapshot.data() as Map<String, dynamic>;
-      if(data['privacy'] == false) {
+      if (data['privacy'] == false) {
         await showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            barrierColor: const Color.fromARGB(255, 206, 203, 203),
-            builder: (BuildContext context) {
-              return StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
-                  return AlertDialog(
-                    title: const Center(
-                        child: Text('Privacy & Policy',
-                            style: TextStyle(fontSize: 24))),
-                    content: Row(
-                      children: [
-                        const Expanded(child: Text(
-                            'È necessario accettare le condizioni di Privacy & Policy',
-                            style: TextStyle(fontSize: 17)),),
+              context: context,
+              barrierDismissible: false,
+              barrierColor: const Color.fromARGB(255, 206, 203, 203),
+              builder: (BuildContext context) {
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return AlertDialog(
+                      title: const Center(
+                          child: Text('Privacy & Policy',
+                              style: TextStyle(fontSize: 24))),
+                      content: Row(children: [
+                        const Expanded(
+                          child: Text(
+                              'È necessario accettare le condizioni di Privacy & Policy',
+                              style: TextStyle(fontSize: 17)),
+                        ),
                         IconButton(
                           icon: const Icon(Icons.open_in_new),
                           onPressed: () {
-                            FlutterWebBrowser.openWebPage(url: 'https://www.iubenda.com/privacy-policy/69534588');
+                            FlutterWebBrowser.openWebPage(
+                                url:
+                                    'https://www.iubenda.com/privacy-policy/69534588');
                           },
                         ),
-                      ]
-                    ),
-                    actions: <Widget>[
-                      Center(
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                            ElevatedButton(
-                              child: const Text('Accetto',
-                                  style: TextStyle(fontSize: 20)),
-                              onPressed: () {
-                                FirebaseFirestore.instance
-                                    .collection('user')
-                                    .doc(widget.id)
-                                    .update({'privacy': true});
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ]))
-                    ],
-                  );
-                },
-              );
-            },
-          ) ??
-          false;
+                      ]),
+                      actions: <Widget>[
+                        Center(
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                              ElevatedButton(
+                                child: const Text('Accetto',
+                                    style: TextStyle(fontSize: 20)),
+                                onPressed: () {
+                                  FirebaseFirestore.instance
+                                      .collection('user')
+                                      .doc(widget.id)
+                                      .update({'privacy': true});
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ]))
+                      ],
+                    );
+                  },
+                );
+              },
+            ) ??
+            false;
       }
     } else {
       print('Nessun documento trovato con questa email.');
@@ -261,7 +267,9 @@ class _ClubPageState extends State<ClubPage> {
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Center(child: Text('Champions Club'),),
+              title: const Center(
+                child: Text('Champions Club'),
+              ),
               content: const Text('Sei sicuro di voler passare alla CC?'),
               actions: <Widget>[
                 TextButton(
@@ -288,7 +296,8 @@ class _ClubPageState extends State<ClubPage> {
 
   Future<void> _updateCC(String ccRole) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cc', 'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
+    await prefs.setString('cc',
+        'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
     await prefs.setString('ccRole', ccRole);
     await prefs.setString('nome', '${widget.name} ${widget.surname}');
     restartApp(context, prefs.getString('club') ?? '',
@@ -325,11 +334,8 @@ class _ClubPageState extends State<ClubPage> {
                     onPressed: () async {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => AccessoCC(
-                                email: widget.email,
-                                club: widget.club
-                            )));
-                    }
-                    ),
+                              email: widget.email, club: widget.club)));
+                    }),
                 IconButton(
                   icon: const Icon(Icons.info_outline),
                   onPressed: () {
