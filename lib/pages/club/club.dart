@@ -60,6 +60,8 @@ class _ClubPageState extends State<ClubPage> {
       obbligatorio = querySnapshot.data()!['obbligatorio'];
     }
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    print("versione: $versione");
+    print("packageVersion: ${packageInfo.version}");
     if (versione != packageInfo.version) {
       await showDialog<bool>(
             context: context,
