@@ -548,7 +548,7 @@ class _DeltaState extends State<Delta> {
                           onTap: () {
                             FlutterWebBrowser.openWebPage(
                                 url:
-                                    'https://docs.google.com/forms/d/e/1FAIpQLScJXN1-8E4ICh7-LdoToH82lWQMljiFW4p2jnmEDpuYU5bFqQ/viewform?usp=sf_link');
+                                    'https://docs.google.com/forms/d/e/1FAIpQLSdysbhe4aj4AemaoCFy_05nzT-5oUCpSlQrvMTodtoinJMkow/viewform');
                           })
                       : Container(),
                   ListTile(

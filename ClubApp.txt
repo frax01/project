@@ -1,0 +1,42 @@
+https://www.iubenda.com/privacy-policy/73232344
+https://sites.google.com/view/infoclubapp
+---
+flutter run -d chrome --web-renderer html
+---
+github token: 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
+---
+impronta digitale: 07:b9:2e:02:75:d5:e2:f3:b3:51:ef:6c:44:c5:a6:74:c3:6b:e6:f4:36:9f:01:e0:13:34:af:a3:7b:6d:6e:ef
+---
+Quando elimini l'app gestire le sharedPreferences
+Grassetto e corsivo nei testi
+Aggiornamento classi utenti a settembre
+Chat con i tutor
+Link al sito web per gli esterni all'inizio e nelle info del club
+Sezione scuola calcio
+Visibilità pagina login
+Quando si cambia da Tiber a Delta non deve essere possibile tornare indietro al club precedente (ReplaceRoute)
+Possibilità di copiare i link caricati
+---
+maps:
+- maps sdk
+- autocompletion
+- geocoding
+---
+- Termini e condizioni
+- Mettere qualcosa che ti fa controllare chi ha aggiornato e chi no
+- Aggiungere Crashlitics Ios
+- Applicazione forzata App Check
+- Aggiungere App Attest
+- Eliminare immagini storage
+---
+- Quando si elimina un evento lo schermo diventa nero
+- Quando si clicca il pulsante per i link e si fa annulla e poi si torna indietro chiude l'app invece di tornare alla homepage, lo fa solo quando si cambia da Tiber a Delta e viceversa
+- Mettere google maps
+- Migliorare la pagina dell'evento
+---
+CC
+1. vademecum
+2. partite
+3. sondaggi
+4. dati da estrarre (partite, risultati, marcatori)
+5. tutto il resto
