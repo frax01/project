@@ -61,6 +61,12 @@ android {
         targetSdkVersion 35
     }
 
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
     signingConfigs {
         release {
             storeFile file("upload-keystore.jks")
