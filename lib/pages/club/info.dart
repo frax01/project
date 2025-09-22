@@ -31,7 +31,7 @@ class _InfoState extends State<Info> {
               Navigator.of(context).pop();
             },
           ),
-        ),
+        ), //
         body: widget.club == 'Tiber Club'
             ? Tiber(club: widget.club)
             : widget.club == 'Rampa Club'
