@@ -25,7 +25,7 @@ class _CCGironiState extends State<CCGironi> {
   Future<void> _loadLogo() async {
     final querySnapshot = await _firestore.collection('ccSquadre').get();
     for (var doc in querySnapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       final squadre = List<Map<String, dynamic>>.from(data['squadre']);
       for (var squadra in squadre) {
         logo[squadra['squadra']] = squadra['logo'];
@@ -37,7 +37,7 @@ class _CCGironiState extends State<CCGironi> {
   Future<void> _loadScontriDiretti() async {
     final querySnapshot = await _firestore.collection('ccPartiteGironi').get();
     for (var doc in querySnapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       final girone = data['girone'];
       final squadraCasa = data['casa'];
       final squadraFuori = data['fuori'];

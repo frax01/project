@@ -83,7 +83,7 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  refreshProgram() {
+  void refreshProgram() {
     setState(() {});
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ccNuovoGirone extends StatefulWidget {
+  const ccNuovoGirone({super.key});
+
   @override
   _ccNuovoGironeState createState() => _ccNuovoGironeState();
 }
@@ -57,7 +59,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -166,7 +168,7 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                                   squadreSelezionate[index] = value!;
                                 });
                               },
-                              value: squadreSelezionate[index].isEmpty ? null : squadreSelezionate[index],
+                              initialValue: squadreSelezionate[index].isEmpty ? null : squadreSelezionate[index],
                             ),
                           ),
                         ],

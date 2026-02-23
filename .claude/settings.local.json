@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter emulators)",
+      "Bash(flutter devices)",
+      "Bash(tasklist)",
+      "Bash(taskkill:*)",
+      "Bash(flutter clean:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter run:*)",
+      "Bash(ping:*)",
+      "Bash(netsh:*)",
+      "Bash(GRADLE_OPTS=\"-Djdk.net.unixdomain.tmpdir=C:/tmp -Djava.net.preferIPv4Stack=true\" ./gradlew.bat:*)",
+      "Bash(GRADLE_OPTS=\"-Djava.net.preferIPv4Stack=true -Djava.nio.channels.spi.SelectorProvider=sun.nio.ch.WindowsSelectorProvider\" ./gradlew.bat:*)",
+      "Bash(\"C:/Program Files/Android/Android Studio1/jbr/bin/java\":*)",
+      "Bash(\"C:/Program Files/Android/Android Studio1/jbr/bin/javac\" /c/Users/francesco/Desktop/project/TestLoopback.java)",
+      "Bash(\"C:/Program Files/Android/Android Studio1/jbr/bin/java\" -Djava.net.preferIPv4Stack=true -cp /c/Users/francesco/Desktop/project TestLoopback)",
+      "Bash(\"C:/Program Files/Android/Android Studio1/jbr/bin/javac\" /c/Users/francesco/Desktop/project/TestLoopback2.java)",
+      "Bash(\"C:/Program Files/Android/Android Studio1/jbr/bin/java\" -cp /c/Users/francesco/Desktop/project TestLoopback2)",
+      "Bash(findstr:*)",
+      "Bash(./gradlew:*)"
+    ]
+  }
+}

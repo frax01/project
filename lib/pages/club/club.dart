@@ -213,7 +213,7 @@ class _ClubPageState extends State<ClubPage> {
 
     _widgetOptions = <Widget>[
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: HomePage(
@@ -226,7 +226,7 @@ class _ClubPageState extends State<ClubPage> {
         ),
       ),
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: Calendar(
@@ -239,7 +239,7 @@ class _ClubPageState extends State<ClubPage> {
       ),
       if (widget.club == 'Tiber Club')
         PopScope(
-          onPopInvoked: (_) {
+          onPopInvokedWithResult: (_, result) {
             SystemNavigator.pop();
           },
           child: TabScorer(
@@ -248,7 +248,7 @@ class _ClubPageState extends State<ClubPage> {
         ),
       if (widget.club == 'Delta Club')
         PopScope(
-          onPopInvoked: (_) {
+          onPopInvokedWithResult: (_, result) {
             SystemNavigator.pop();
           },
           child: Lunch(
@@ -373,36 +373,35 @@ class _ClubPageState extends State<ClubPage> {
             },
             child: _widgetOptions.elementAt(_selectedIndex),
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            currentIndex: _selectedIndex,
-            onTap: (int index) {
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (int index) {
               setState(() {
                 _selectedIndex = index;
               });
             },
-            items: [
-              const BottomNavigationBarItem(
+            destinations: [
+              const NavigationDestination(
                 icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
+                selectedIcon: Icon(Icons.home),
                 label: 'Home',
               ),
-              const BottomNavigationBarItem(
+              const NavigationDestination(
                 icon: Icon(Icons.calendar_month_outlined),
-                activeIcon: Icon(Icons.calendar_month),
+                selectedIcon: Icon(Icons.calendar_month),
                 label: 'Calendario',
               ),
               if (widget.club == 'Tiber Club') ...[
-                const BottomNavigationBarItem(
+                const NavigationDestination(
                   icon: Icon(Icons.sports_soccer_outlined),
-                  activeIcon: Icon(Icons.sports_soccer),
+                  selectedIcon: Icon(Icons.sports_soccer),
                   label: '11 ideale',
                 ),
               ],
               if (widget.club == 'Delta Club') ...[
-                const BottomNavigationBarItem(
+                const NavigationDestination(
                   icon: Icon(Icons.fastfood_outlined),
-                  activeIcon: Icon(Icons.fastfood),
+                  selectedIcon: Icon(Icons.fastfood),
                   label: 'Pasti',
                 ),
               ],

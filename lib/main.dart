@@ -211,7 +211,7 @@ class _HomePageStartState extends State<HomePageStart> {
   List token = [];
 
   final _listItems = <ProgramCard>[];
-  refreshList() {
+  void refreshList() {
     setState(() {
       _listItems.clear();
     });

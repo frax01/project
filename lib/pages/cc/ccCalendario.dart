@@ -79,7 +79,7 @@ class _CCCalendarioState extends State<CCCalendario> {
           .snapshots()
           .map((querySnapshot) {
         List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
+            .map((doc) => doc.data())
             .toList();
 
         partite.sort((a, b) {
@@ -104,7 +104,7 @@ class _CCCalendarioState extends State<CCCalendario> {
           .snapshots()
           .map((querySnapshot) {
         List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
+            .map((doc) => doc.data())
             .toList();
 
         partite.sort((a, b) {
@@ -126,7 +126,7 @@ class _CCCalendarioState extends State<CCCalendario> {
           .snapshots()
           .map((querySnapshot) {
         List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
+            .map((doc) => doc.data())
             .toList();
 
         partite.sort((a, b) {
@@ -148,7 +148,7 @@ class _CCCalendarioState extends State<CCCalendario> {
           .snapshots()
           .map((querySnapshot) {
         List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
+            .map((doc) => doc.data())
             .toList();
 
         partite.sort((a, b) {
@@ -170,7 +170,7 @@ class _CCCalendarioState extends State<CCCalendario> {
           .snapshots()
           .map((querySnapshot) {
         List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
+            .map((doc) => doc.data())
             .toList();
 
         partite.sort((a, b) {
@@ -193,7 +193,7 @@ class _CCCalendarioState extends State<CCCalendario> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -1268,10 +1268,10 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                         ],
                                                       ))))
                                         ]);
-                                  }).toList(),
+                                  }),
                                 ],
                               );
-                            }).toList(),
+                            }),
                             _selectedSegment == 'Ottavi' &&
                                     widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
                                 ? Column(children: [

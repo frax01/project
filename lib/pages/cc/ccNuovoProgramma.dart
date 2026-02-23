@@ -47,9 +47,9 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   List<dynamic> _selectedIncarico = [];
   List<dynamic> _selectedCodiceIncarico = [];
   List<String> _squadreOptions = [];
-  List<String> _squadreCodiceOptions = [];
+  final List<String> _squadreCodiceOptions = [];
   List<String> _incaricoOptions = [];
-  List<String> _incaricoCodiceOptions = [];
+  final List<String> _incaricoCodiceOptions = [];
 
   @override
   void initState() {
@@ -135,7 +135,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -244,7 +244,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _dataController.text.isEmpty
+                    initialValue: _dataController.text.isEmpty
                         ? null
                         : _dataController.text,
                     decoration: getInputDecoration('Data'),
@@ -378,7 +378,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _categoriaController.text.isEmpty
+                    initialValue: _categoriaController.text.isEmpty
                         ? null
                         : _categoriaController.text,
                     decoration: getInputDecoration('Categoria'),

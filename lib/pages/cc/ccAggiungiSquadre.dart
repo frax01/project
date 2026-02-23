@@ -6,6 +6,8 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class CcAggiungiSquadre extends StatefulWidget {
+  const CcAggiungiSquadre({super.key});
+
   @override
   _CcAggiungiSquadreState createState() => _CcAggiungiSquadreState();
 }
@@ -47,7 +49,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),

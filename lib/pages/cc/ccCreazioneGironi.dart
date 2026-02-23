@@ -4,6 +4,8 @@ import 'ccNuovoGirone.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class ccCreazioneGironi extends StatefulWidget {
+  const ccCreazioneGironi({super.key});
+
   @override
   _ccCreazioneGironiState createState() => _ccCreazioneGironiState();
 }
@@ -97,7 +99,7 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),

@@ -46,12 +46,12 @@ class _LoginState extends State<Login> {
     );
   }
 
-  _goToWaiting() {
+  void _goToWaiting() {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const Waiting()));
   }
 
-  _goToHome(String club) {
+  void _goToHome(String club) {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => buildClubPage(club)));
   }
@@ -88,7 +88,7 @@ class _LoginState extends State<Login> {
     }
   }
 
-  _handleLogin() async {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
@@ -198,7 +198,7 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
-  _showForgotPasswordDialog() {
+  void _showForgotPasswordDialog() {
     _emailFocusNode.unfocus();
     _passwordFocusNode.unfocus();
     showDialog(

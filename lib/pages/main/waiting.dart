@@ -17,7 +17,7 @@ class Waiting extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      onPopInvoked: (canPop) async {
+      onPopInvokedWithResult: (canPop, result) async {
         Navigator.pushNamed(context, '/login');
       },
       child: Scaffold(

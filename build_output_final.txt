@@ -1,0 +1,140 @@
+Launching lib\main.dart on sdk gphone16k x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                          
+flutter : ../../AppData/Local/Pub/Cach
+e/hosted/pub.dev/flex_color_scheme-8.0
+.1-dev.3.22/lib/src/flex_color_scheme.
+dart:6075:51: Error: A value of type 
+'AppBarThemeData' can't be assigned 
+to a variable of type 'AppBarTheme'.
+In riga:1 car:1
++ flutter run 2>&1 | Out-File 
+-FilePath 
+C:\Users\francesco\Desktop\proj ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (../../AppData/L... 'AppBa  
+  rTheme'.:String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+ - 'AppBarThemeData' is from 'package:
+flutter/src/material/app_bar_theme.dar
+t' ('../DIMA/flutter_windows_3.13.4-st
+able/flutter/packages/flutter/lib/src/
+material/app_bar_theme.dart').
+ - 'AppBarTheme' is from 'package:flut
+ter/src/material/app_bar_theme.dart' (
+'../DIMA/flutter_windows_3.13.4-stable
+/flutter/packages/flutter/lib/src/mate
+rial/app_bar_theme.dart').
+      final AppBarTheme appBarTheme = 
+AppBarTheme.of(context);
+                                      
+            ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.1-dev.3.2
+2/lib/src/flex_color_scheme.dart:7667:
+11: Error: The argument type 
+'BottomAppBarTheme' can't be assigned 
+to the parameter type 
+'BottomAppBarThemeData?'.
+ - 'BottomAppBarTheme' is from 'packag
+e:flutter/src/material/bottom_app_bar_
+theme.dart' ('../DIMA/flutter_windows_
+3.13.4-stable/flutter/packages/flutter
+/lib/src/material/bottom_app_bar_theme
+.dart').
+ - 'BottomAppBarThemeData' is from 'pa
+ckage:flutter/src/material/bottom_app_
+bar_theme.dart' ('../DIMA/flutter_wind
+ows_3.13.4-stable/flutter/packages/flu
+tter/lib/src/material/bottom_app_bar_t
+heme.dart').
+          ? 
+FlexSubThemes.bottomAppBarTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.1-dev.3.2
+2/lib/src/flex_color_scheme.dart:7812:
+11: Error: The argument type 
+'CardTheme?' can't be assigned to the 
+parameter type 'CardThemeData?'.
+ - 'CardTheme' is from 'package:flutte
+r/src/material/card_theme.dart' ('../D
+IMA/flutter_windows_3.13.4-stable/flut
+ter/packages/flutter/lib/src/material/
+card_theme.dart').
+ - 'CardThemeData' is from 'package:fl
+utter/src/material/card_theme.dart' ('
+../DIMA/flutter_windows_3.13.4-stable/
+flutter/packages/flutter/lib/src/mater
+ial/card_theme.dart').
+          ? FlexSubThemes.cardTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.1-dev.3.2
+2/lib/src/flex_color_scheme.dart:7910:
+11: Error: The argument type 
+'DialogTheme?' can't be assigned to 
+the parameter type 'DialogThemeData?'.
+ - 'DialogTheme' is from 'package:flut
+ter/src/material/dialog_theme.dart' ('
+../DIMA/flutter_windows_3.13.4-stable/
+flutter/packages/flutter/lib/src/mater
+ial/dialog_theme.dart').
+ - 'DialogThemeData' is from 'package:
+flutter/src/material/dialog_theme.dart
+' ('../DIMA/flutter_windows_3.13.4-sta
+ble/flutter/packages/flutter/lib/src/m
+aterial/dialog_theme.dart').
+          ? FlexSubThemes.dialogTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.1-dev.3.2
+2/lib/src/flex_color_scheme.dart:8368:
+34: Error: The argument type 
+'TabBarTheme' can't be assigned to 
+the parameter type 'TabBarThemeData?'.
+ - 'TabBarTheme' is from 'package:flut
+ter/src/material/tab_bar_theme.dart' (
+'../DIMA/flutter_windows_3.13.4-stable
+/flutter/packages/flutter/lib/src/mate
+rial/tab_bar_theme.dart').
+ - 'TabBarThemeData' is from 'package:
+flutter/src/material/tab_bar_theme.dar
+t' ('../DIMA/flutter_windows_3.13.4-st
+able/flutter/packages/flutter/lib/src/
+material/tab_bar_theme.dart').
+      tabBarTheme: 
+FlexSubThemes.tabBarTheme(
+                                 ^
+Target kernel_snapshot_program 
+failed: Exception
+
+
+FAILURE: Build failed with an 
+exception.
+
+* What went wrong:
+Execution failed for task 
+':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\Users\francesco
+\Desktop\DIMA\flutter_windows_3.13.4-s
+table\flutter\bin\flutter.bat'' 
+finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get 
+the stack trace.
+> Run with --info or --debug option 
+to get more log output.
+> Run with --scan to get full 
+insights.
+> Get more help at 
+https://help.gradle.org.
+
+BUILD FAILED in 3m 45s
+Running Gradle task 'assembleDebug'...                            226,7s
+Error: Gradle task assembleDebug 
+failed with exit code 1

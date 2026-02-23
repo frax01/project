@@ -113,8 +113,8 @@ class _CCProgrammaState extends State<CCProgramma> {
                   top: 12.0,
                   child: InkWell(
                     onTap: () async {
-                      final FirebaseStorage _storage = FirebaseStorage.instance;
-                      final ref = _storage.ref().child('DocumentiCC/IMG-20250414-WA0009.jpg');
+                      final FirebaseStorage storage = FirebaseStorage.instance;
+                      final ref = storage.ref().child('DocumentiCC/IMG-20250414-WA0009.jpg');
                         final url = await ref.getDownloadURL();
                         _openFileOrLink(url);
                     },
@@ -126,7 +126,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -162,7 +162,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -220,7 +220,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -651,7 +651,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     );
                   },

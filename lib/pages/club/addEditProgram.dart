@@ -156,7 +156,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
     await _fetchTutors();
   }
 
-  _fetchTutors() async {
+  Future<void> _fetchTutors() async {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('user')
         .where('role', isEqualTo: 'Tutor')
@@ -171,7 +171,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
 
   bool _isUploading = false;
 
-  _uploadImage(String level, {bool isCreate = false}) async {
+  Future<void> _uploadImage(String level, {bool isCreate = false}) async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
@@ -1042,7 +1042,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
                                       image: NetworkImage(_image),
                                       fit: BoxFit.cover,
                                       colorFilter: ColorFilter.mode(
-                                        Colors.white.withOpacity(0.5),
+                                        Colors.white.withValues(alpha: 0.5),
                                         BlendMode.lighten,
                                       ),
                                     ),

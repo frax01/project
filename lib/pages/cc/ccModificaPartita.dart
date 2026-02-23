@@ -22,7 +22,7 @@ class CCModificaPartita extends StatefulWidget {
   final String codice;
   final String ccRole;
 
-  CCModificaPartita({
+  const CCModificaPartita({super.key, 
     required this.casa,
     required this.fuori,
     required this.logocasa,

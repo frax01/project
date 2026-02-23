@@ -165,7 +165,7 @@ class _AccessoCCState extends State<AccessoCC> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -307,7 +307,7 @@ class _AccessoCCState extends State<AccessoCC> {
                       Expanded(
                         //child: Center(
                         child: DropdownButtonFormField<String>(
-                            value: newclub!='' ? newclub : null,
+                            initialValue: newclub!='' ? newclub : null,
                             items: clubs.map((dynamic value) {
                               return DropdownMenuItem<String>(
                                 value: value,
