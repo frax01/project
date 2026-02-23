@@ -14,7 +14,7 @@ var lightColorSchemeTiber = FlexThemeData.light(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
-
+    useMaterial3Typography: true,
     adaptiveRemoveElevationTint: FlexAdaptive.all(),
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
@@ -77,7 +77,7 @@ var darkColorSchemeTiber = FlexThemeData.dark(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
-
+    useMaterial3Typography: true,
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
     defaultRadius: 15.0,
@@ -131,7 +131,7 @@ var darkColorSchemeTiber = FlexThemeData.dark(
 
 var lightColorSchemeDelta = FlexThemeData.light(
   colors: const FlexSchemeColor(
-    primary: Color(0xFF00296B), 
+    primary: Color(0xFF00296B),
     secondary: Color(0xFF00296B),
   ),
   appBarStyle: FlexAppBarStyle.primary,
@@ -142,6 +142,7 @@ var lightColorSchemeDelta = FlexThemeData.light(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveRemoveElevationTint: FlexAdaptive.all(),
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
@@ -207,6 +208,7 @@ var darkColorSchemeDelta = FlexThemeData.dark(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
     defaultRadius: 15.0,
@@ -271,6 +273,7 @@ var lightColorSchemeCC = FlexThemeData.light(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveRemoveElevationTint: FlexAdaptive.all(),
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
@@ -336,6 +339,7 @@ var darkColorSchemeCC = FlexThemeData.dark(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
     defaultRadius: 15.0,
@@ -389,8 +393,8 @@ var darkColorSchemeCC = FlexThemeData.dark(
 
 var lightColorSchemeRampa = FlexThemeData.light(
   colors: const FlexSchemeColor(
-    primary: Color.fromARGB(255, 215, 89, 5), 
-    secondary: Color.fromARGB(255, 215, 89, 5), 
+    primary: Color.fromARGB(255, 215, 89, 5),
+    secondary: Color.fromARGB(255, 215, 89, 5),
   ),
   appBarStyle: FlexAppBarStyle.primary,
   appBarElevation: 4.0,
@@ -400,6 +404,7 @@ var lightColorSchemeRampa = FlexThemeData.light(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveRemoveElevationTint: FlexAdaptive.all(),
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
@@ -465,6 +470,7 @@ var darkColorSchemeRampa = FlexThemeData.dark(
     interactionEffects: false,
     tintedDisabledControls: false,
     blendOnColors: false,
+    useMaterial3Typography: true,
     adaptiveElevationShadowsBack: FlexAdaptive.all(),
     adaptiveAppBarScrollUnderOff: FlexAdaptive.all(),
     defaultRadius: 15.0,
