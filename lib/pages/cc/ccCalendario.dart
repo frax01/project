@@ -78,9 +78,8 @@ class _CCCalendarioState extends State<CCCalendario> {
           .where('girone', isEqualTo: _selectedGirone)
           .snapshots()
           .map((querySnapshot) {
-        List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data())
-            .toList();
+        List<Map<String, dynamic>> partite =
+            querySnapshot.docs.map((doc) => doc.data()).toList();
 
         partite.sort((a, b) {
           int gironeComparison = a['girone'].compareTo(b['girone']);
@@ -103,9 +102,8 @@ class _CCCalendarioState extends State<CCCalendario> {
           .collection('ccPartiteOttavi')
           .snapshots()
           .map((querySnapshot) {
-        List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data())
-            .toList();
+        List<Map<String, dynamic>> partite =
+            querySnapshot.docs.map((doc) => doc.data()).toList();
 
         partite.sort((a, b) {
           int turnoComparison = a['codice'].compareTo(b['codice']);
@@ -125,9 +123,8 @@ class _CCCalendarioState extends State<CCCalendario> {
           .collection('ccPartiteQuarti')
           .snapshots()
           .map((querySnapshot) {
-        List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data())
-            .toList();
+        List<Map<String, dynamic>> partite =
+            querySnapshot.docs.map((doc) => doc.data()).toList();
 
         partite.sort((a, b) {
           int codiceComparison = a['codice'].compareTo(b['codice']);
@@ -147,9 +144,8 @@ class _CCCalendarioState extends State<CCCalendario> {
           .collection('ccPartiteSemifinali')
           .snapshots()
           .map((querySnapshot) {
-        List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data())
-            .toList();
+        List<Map<String, dynamic>> partite =
+            querySnapshot.docs.map((doc) => doc.data()).toList();
 
         partite.sort((a, b) {
           int codiceComparison = a['codice'].compareTo(b['codice']);
@@ -169,9 +165,8 @@ class _CCCalendarioState extends State<CCCalendario> {
           .collection('ccPartiteFinali')
           .snapshots()
           .map((querySnapshot) {
-        List<Map<String, dynamic>> partite = querySnapshot.docs
-            .map((doc) => doc.data())
-            .toList();
+        List<Map<String, dynamic>> partite =
+            querySnapshot.docs.map((doc) => doc.data()).toList();
 
         partite.sort((a, b) {
           int codiceComparison = a['codice'].compareTo(b['codice']);
@@ -227,11 +222,11 @@ class _CCCalendarioState extends State<CCCalendario> {
         );
       },
     );
-    
+
     if (confermato != true) return;
-    
+
     _showLoadingDialog();
-    
+
     final QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('ccPartite$sezione').get();
 
@@ -253,7 +248,7 @@ class _CCCalendarioState extends State<CCCalendario> {
         'codice': doc.id,
       });
     }
-    
+
     Navigator.of(context).pop();
   }
 
@@ -1004,327 +999,346 @@ class _CCCalendarioState extends State<CCCalendario> {
               ],
             ),
             Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _streamPartite,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Errore: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text('Nessuna partita trovata', style: TextStyle(fontSize: 19, color: Colors.black54)));
+                child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _streamPartite,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Errore: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                      child: Text('Nessuna partita trovata',
+                          style:
+                              TextStyle(fontSize: 19, color: Colors.black54)));
+                }
+
+                final partite = snapshot.data!;
+                final groupedPartite = <String, List<Map<String, dynamic>>>{};
+
+                for (var partita in partite) {
+                  final girone = partita['girone'] ?? partita['codice'];
+                  if (!groupedPartite.containsKey(girone)) {
+                    groupedPartite[girone] = [];
                   }
+                  groupedPartite[girone]!.add(partita);
+                }
 
-                  final partite = snapshot.data!;
-                  final groupedPartite = <String, List<Map<String, dynamic>>>{};
+                return SingleChildScrollView(
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 15),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ...groupedPartite.entries.map((entry) {
+                                final codiceP = entry.key;
+                                final partiteGirone = entry.value;
 
-                  for (var partita in partite) {
-                    final girone = partita['girone'] ?? partita['codice'];
-                    if (!groupedPartite.containsKey(girone)) {
-                      groupedPartite[girone] = [];
-                    }
-                    groupedPartite[girone]!.add(partita);
-                  }
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ...partiteGirone.map((partita) {
+                                      final logoCasa =
+                                          _squadreLoghi[partita['casa']] ?? '';
+                                      final logoFuori =
+                                          _squadreLoghi[partita['fuori']] ?? '';
 
-                  return SingleChildScrollView(child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 15),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ...groupedPartite.entries.map((entry) {
-                              final codiceP = entry.key;
-                              final partiteGirone = entry.value;
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ...partiteGirone.map((partita) {
-                                    final logoCasa =
-                                        _squadreLoghi[partita['casa']] ?? '';
-                                    final logoFuori =
-                                        _squadreLoghi[partita['fuori']] ?? '';
-
-                                    int golCasa = 0;
-                                    int golFuori = 0;
-                                    List<Map<String, dynamic>> marcatori =
-                                        List<Map<String, dynamic>>.from(
-                                            partita['marcatori'] ?? []);
-                                    for (var marcatore in marcatori) {
-                                      if (marcatore['dove'] == 'casa' &&
-                                          marcatore['cosa'] == 'gol') {
-                                        golCasa++;
-                                      } else if (marcatore['dove'] == 'fuori' &&
-                                          marcatore['cosa'] == 'gol') {
-                                        golFuori++;
-                                      }
-                                    }
-
-                                    int golRigoriCasa = 0;
-                                    int golRigoriFuori = 0;
-                                    if (partita['tipo'] != 'girone' &&
-                                        partita['boolRigori'] == true) {
-                                      List<String> rigoriCasa =
-                                          List<String>.from(
-                                              partita['rigoriCasa'] ?? []);
-                                      List<String> rigoriFuori =
-                                          List<String>.from(
-                                              partita['rigoriFuori'] ?? []);
-                                      for (var rigore in rigoriCasa) {
-                                        if (rigore == 'segnato') {
-                                          golRigoriCasa++;
+                                      int golCasa = 0;
+                                      int golFuori = 0;
+                                      List<Map<String, dynamic>> marcatori =
+                                          List<Map<String, dynamic>>.from(
+                                              partita['marcatori'] ?? []);
+                                      for (var marcatore in marcatori) {
+                                        if (marcatore['dove'] == 'casa' &&
+                                            marcatore['cosa'] == 'gol') {
+                                          golCasa++;
+                                        } else if (marcatore['dove'] ==
+                                                'fuori' &&
+                                            marcatore['cosa'] == 'gol') {
+                                          golFuori++;
                                         }
                                       }
-                                      for (var rigore in rigoriFuori) {
-                                        if (rigore == 'segnato') {
-                                          golRigoriFuori++;
+
+                                      int golRigoriCasa = 0;
+                                      int golRigoriFuori = 0;
+                                      if (partita['tipo'] != 'girone' &&
+                                          partita['boolRigori'] == true) {
+                                        List<String> rigoriCasa =
+                                            List<String>.from(
+                                                partita['rigoriCasa'] ?? []);
+                                        List<String> rigoriFuori =
+                                            List<String>.from(
+                                                partita['rigoriFuori'] ?? []);
+                                        for (var rigore in rigoriCasa) {
+                                          if (rigore == 'segnato') {
+                                            golRigoriCasa++;
+                                          }
+                                        }
+                                        for (var rigore in rigoriFuori) {
+                                          if (rigore == 'segnato') {
+                                            golRigoriFuori++;
+                                          }
                                         }
                                       }
-                                    }
 
-                                    return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          InkWell(
-                                              onTap: partita['casa'] != '' &&
-                                                      partita['fuori'] != ''
-                                                  ? () {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              CCModificaPartita(
-                                                            casa:
-                                                                partita['casa'],
-                                                            fuori: partita[
-                                                                'fuori'],
-                                                            logocasa: logoCasa,
-                                                            logofuori:
-                                                                logoFuori,
-                                                            data: '25/04/2025',
-                                                            orario: partita[
-                                                                'orario'],
-                                                            campo: partita[
-                                                                'campo'],
-                                                            arbitro: partita[
-                                                                'arbitro'],
-                                                            refertista: partita['refertista'],
-                                                            nome: widget.nome,
-                                                            girone: partita[
-                                                                    'girone'] ??
-                                                                '',
-                                                            iniziata: partita[
-                                                                'iniziata'],
-                                                            finita: partita[
-                                                                'finita'],
-                                                            tipo:
-                                                                partita['tipo'],
-                                                            codice: partita[
-                                                                    'codice'] ??
-                                                                '',
-                                                            ccRole:
-                                                                widget.ccRole,
+                                      return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            InkWell(
+                                                onTap: partita['casa'] != '' &&
+                                                        partita['fuori'] != ''
+                                                    ? () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                CCModificaPartita(
+                                                              casa: partita[
+                                                                  'casa'],
+                                                              fuori: partita[
+                                                                  'fuori'],
+                                                              logocasa:
+                                                                  logoCasa,
+                                                              logofuori:
+                                                                  logoFuori,
+                                                              data:
+                                                                  '25/04/2025',
+                                                              orario: partita[
+                                                                  'orario'],
+                                                              campo: partita[
+                                                                  'campo'],
+                                                              arbitro: partita[
+                                                                  'arbitro'],
+                                                              refertista: partita[
+                                                                  'refertista'],
+                                                              nome: widget.nome,
+                                                              girone: partita[
+                                                                      'girone'] ??
+                                                                  '',
+                                                              iniziata: partita[
+                                                                  'iniziata'],
+                                                              finita: partita[
+                                                                  'finita'],
+                                                              tipo: partita[
+                                                                  'tipo'],
+                                                              codice: partita[
+                                                                      'codice'] ??
+                                                                  '',
+                                                              ccRole:
+                                                                  widget.ccRole,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      );
-                                                    }
-                                                  : null,
-                                              child: Card(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                  ),
-                                                  elevation: 5,
-                                                  child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              16.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceBetween,
-                                                                children: [
-                                                                  Row(
-                                                                    children: [
-                                                                      logoCasa
-                                                                              .isNotEmpty
-                                                                          ? Image
-                                                                              .network(
-                                                                              logoCasa,
-                                                                              width: 35,
-                                                                              height: 35,
-                                                                            )
-                                                                          : IconButton(
-                                                                              icon: const FaIcon(FontAwesomeIcons.shieldHalved),
-                                                                              onPressed: () {}),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              6),
-                                                                      partita['casa'] !=
-                                                                              ''
-                                                                          ? Text(
-                                                                              partita['casa'],
-                                                                              style: const TextStyle(fontSize: 17))
-                                                                          : const Text('Da definire', style: TextStyle(fontSize: 17)),
-                                                                    ],
-                                                                  ),
-                                                                  partita['iniziata'] ||
-                                                                          partita[
-                                                                              'finita']
-                                                                      ? Row(
-                                                                          children: [
-                                                                            Text('$golCasa',
-                                                                                style: const TextStyle(fontSize: 21)),
-                                                                            partita['tipo'] != 'girone' && partita['boolRigori']
-                                                                                ? Text(' ($golRigoriCasa)', style: const TextStyle(fontSize: 15))
-                                                                                : Container()
-                                                                          ],
-                                                                        )
-                                                                      : Row(
-                                                                          children: [
-                                                                            partita['orario'] == ''
-                                                                                ? const Icon(Icons.access_time, size: 22)
-                                                                                : Container(),
-                                                                            Text(partita['orario'] != '' ? '${partita['orario']}' : '',
-                                                                                style: const TextStyle(fontSize: 18)),
-                                                                          ],
-                                                                        ),
-                                                                ],
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceBetween,
-                                                                children: [
-                                                                  Row(
+                                                        );
+                                                      }
+                                                    : null,
+                                                child: Card(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15.0),
+                                                    ),
+                                                    elevation: 5,
+                                                    child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16.0),
+                                                        child: Column(
+                                                          children: [
+                                                            Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Row(
                                                                       children: [
-                                                                        logoFuori.isNotEmpty
-                                                                            ? Image.network(
-                                                                                logoFuori,
+                                                                        logoCasa
+                                                                                .isNotEmpty
+                                                                            ? Image
+                                                                                .network(
+                                                                                logoCasa,
                                                                                 width: 35,
                                                                                 height: 35,
                                                                               )
                                                                             : IconButton(
                                                                                 icon: const FaIcon(FontAwesomeIcons.shieldHalved),
-                                                                                onPressed: () {},
-                                                                              ),
+                                                                                onPressed: () {}),
                                                                         const SizedBox(
                                                                             width:
                                                                                 6),
-                                                                        partita['fuori'] !=
+                                                                        partita['casa'] !=
                                                                                 ''
-                                                                            ? Text(partita['fuori'],
+                                                                            ? Text(partita['casa'],
                                                                                 style: const TextStyle(fontSize: 17))
                                                                             : const Text('Da definire', style: TextStyle(fontSize: 17)),
-                                                                      ]),
-                                                                  partita['iniziata'] ||
-                                                                          partita[
-                                                                              'finita']
-                                                                      ? Row(
-                                                                          children: [
-                                                                              Text('$golFuori', style: const TextStyle(fontSize: 21)),
-                                                                              partita['tipo'] != 'girone' && partita['boolRigori'] ? Text(' ($golRigoriFuori)', style: const TextStyle(fontSize: 15)) : Container()
-                                                                            ])
-                                                                      : Row(
-                                                                          children: [
-                                                                            partita['campo'] == ''
-                                                                                ? const Icon(Icons.location_on_outlined, size: 22)
-                                                                                : Container(),
-                                                                            Text(partita['campo'].length > 1 ? '${partita['campo']}' : '',
-                                                                                style: const TextStyle(fontSize: 18)),
-                                                                          ],
-                                                                        ),
-                                                                ],
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              _widgetText(
-                                                                  codiceP,
-                                                                  partita[
-                                                                      'arbitro'],
-                                                                  partita[
-                                                                      'refertista'],
-                                                                  partita[
-                                                                      'iniziata'],
-                                                                  partita[
-                                                                      'finita'])
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ))))
-                                        ]);
-                                  }),
-                                ],
-                              );
-                            }),
-                            _selectedSegment == 'Ottavi' &&
-                                    widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
-                                ? Column(children: [
-                                    const SizedBox(height: 10),
-                                    Center(
-                                        child: ElevatedButton(
-                                      onPressed: () {
-                                        _pulisci('Ottavi');
-                                      },
-                                      child: const Text('Pulisci Ottavi'),
-                                    ))
-                                  ])
-                                : _selectedSegment == 'Quarti' &&
-                                        widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
-                                    ? Column(children: [
-                                        const SizedBox(height: 10),
-                                        Center(
-                                            child: ElevatedButton(
-                                          onPressed: () {
-                                            _pulisci('Quarti');
-                                          },
-                                          child: const Text('Pulisci Quarti'),
-                                        ))
-                                      ])
-                                    : _selectedSegment == 'Semifinali' &&
-                                            widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
-                                        ? Column(children: [
-                                            const SizedBox(height: 10),
-                                            Center(
-                                                child: ElevatedButton(
-                                              onPressed: () {
-                                                _pulisci('Semifinali');
-                                              },
-                                              child: const Text(
-                                                  'Pulisci Semifinali'),
-                                            ))
-                                          ])
-                                        : _selectedSegment == 'Finali' &&
-                                                widget.ccRole == 'staff' && (widget.nome=='Francesco Martignoni' || widget.nome=='Cristian Ciardelli' || widget.nome=='Luca Bricchi' || widget.nome=='Michele Agostini')
-                                            ? Column(children: [
-                                                const SizedBox(height: 10),
-                                                Center(
-                                                    child: ElevatedButton(
-                                                  onPressed: () {
-                                                    _pulisci('Finali');
-                                                  },
-                                                  child: const Text(
-                                                      'Pulisci Finali'),
-                                                ))
-                                              ])
-                                            : Container()
-                          ])));
-                },
+                                                                      ],
+                                                                    ),
+                                                                    partita['iniziata'] ||
+                                                                            partita['finita']
+                                                                        ? Row(
+                                                                            children: [
+                                                                              Text('$golCasa', style: const TextStyle(fontSize: 21)),
+                                                                              partita['tipo'] != 'girone' && partita['boolRigori'] ? Text(' ($golRigoriCasa)', style: const TextStyle(fontSize: 15)) : Container()
+                                                                            ],
+                                                                          )
+                                                                        : Row(
+                                                                            children: [
+                                                                              partita['orario'] == '' ? const Icon(Icons.access_time, size: 22) : Container(),
+                                                                              Text(partita['orario'] != '' ? '${partita['orario']}' : '', style: const TextStyle(fontSize: 18)),
+                                                                            ],
+                                                                          ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 8),
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Row(
+                                                                        children: [
+                                                                          logoFuori.isNotEmpty
+                                                                              ? Image.network(
+                                                                                  logoFuori,
+                                                                                  width: 35,
+                                                                                  height: 35,
+                                                                                )
+                                                                              : IconButton(
+                                                                                  icon: const FaIcon(FontAwesomeIcons.shieldHalved),
+                                                                                  onPressed: () {},
+                                                                                ),
+                                                                          const SizedBox(
+                                                                              width: 6),
+                                                                          partita['fuori'] != ''
+                                                                              ? Text(partita['fuori'], style: const TextStyle(fontSize: 17))
+                                                                              : const Text('Da definire', style: TextStyle(fontSize: 17)),
+                                                                        ]),
+                                                                    partita['iniziata'] ||
+                                                                            partita[
+                                                                                'finita']
+                                                                        ? Row(
+                                                                            children: [
+                                                                                Text('$golFuori', style: const TextStyle(fontSize: 21)),
+                                                                                partita['tipo'] != 'girone' && partita['boolRigori'] ? Text(' ($golRigoriFuori)', style: const TextStyle(fontSize: 15)) : Container()
+                                                                              ])
+                                                                        : Row(
+                                                                            children: [
+                                                                              partita['campo'] == '' ? const Icon(Icons.location_on_outlined, size: 22) : Container(),
+                                                                              Text(partita['campo'].length > 1 ? '${partita['campo']}' : '', style: const TextStyle(fontSize: 18)),
+                                                                            ],
+                                                                          ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 8),
+                                                                _widgetText(
+                                                                    codiceP,
+                                                                    partita[
+                                                                        'arbitro'],
+                                                                    partita[
+                                                                        'refertista'],
+                                                                    partita[
+                                                                        'iniziata'],
+                                                                    partita[
+                                                                        'finita'])
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ))))
+                                          ]);
+                                    }),
+                                  ],
+                                );
+                              }),
+                              _selectedSegment == 'Ottavi' &&
+                                      widget.ccRole == 'staff' &&
+                                      (widget.nome == 'Francesco Martignoni' ||
+                                          widget.nome == 'Cristian Ciardelli' ||
+                                          widget.nome == 'Luca Bricchi' ||
+                                          widget.nome == 'Michele Agostini')
+                                  ? Column(children: [
+                                      const SizedBox(height: 10),
+                                      Center(
+                                          child: ElevatedButton(
+                                        onPressed: () {
+                                          _pulisci('Ottavi');
+                                        },
+                                        child: const Text('Pulisci Ottavi'),
+                                      ))
+                                    ])
+                                  : _selectedSegment == 'Quarti' &&
+                                          widget.ccRole == 'staff' &&
+                                          (widget.nome == 'Francesco Martignoni' ||
+                                              widget.nome ==
+                                                  'Cristian Ciardelli' ||
+                                              widget.nome == 'Luca Bricchi' ||
+                                              widget.nome == 'Michele Agostini')
+                                      ? Column(children: [
+                                          const SizedBox(height: 10),
+                                          Center(
+                                              child: ElevatedButton(
+                                            onPressed: () {
+                                              _pulisci('Quarti');
+                                            },
+                                            child: const Text('Pulisci Quarti'),
+                                          ))
+                                        ])
+                                      : _selectedSegment == 'Semifinali' &&
+                                              widget.ccRole == 'staff' &&
+                                              (widget.nome ==
+                                                      'Francesco Martignoni' ||
+                                                  widget.nome ==
+                                                      'Cristian Ciardelli' ||
+                                                  widget.nome ==
+                                                      'Luca Bricchi' ||
+                                                  widget.nome ==
+                                                      'Michele Agostini')
+                                          ? Column(children: [
+                                              const SizedBox(height: 10),
+                                              Center(
+                                                  child: ElevatedButton(
+                                                onPressed: () {
+                                                  _pulisci('Semifinali');
+                                                },
+                                                child: const Text(
+                                                    'Pulisci Semifinali'),
+                                              ))
+                                            ])
+                                          : _selectedSegment == 'Finali' &&
+                                                  widget.ccRole == 'staff' &&
+                                                  (widget.nome ==
+                                                          'Francesco Martignoni' ||
+                                                      widget.nome ==
+                                                          'Cristian Ciardelli' ||
+                                                      widget.nome ==
+                                                          'Luca Bricchi' ||
+                                                      widget.nome ==
+                                                          'Michele Agostini')
+                                              ? Column(children: [
+                                                  const SizedBox(height: 10),
+                                                  Center(
+                                                      child: ElevatedButton(
+                                                    onPressed: () {
+                                                      _pulisci('Finali');
+                                                    },
+                                                    child: const Text(
+                                                        'Pulisci Finali'),
+                                                  ))
+                                                ])
+                                              : Container()
+                            ])));
+              },
             ))
           ],
         ),

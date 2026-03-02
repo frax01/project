@@ -35,7 +35,10 @@ class _CCGironiState extends State<CCGironi> {
   }
 
   Future<void> _loadScontriDiretti() async {
-    final querySnapshot = await _firestore.collection('ccPartiteGironi').get();
+    final querySnapshot = await _firestore
+        .collection('ccPartiteGironi')
+        .where('finita', isEqualTo: true)
+        .get();
     for (var doc in querySnapshot.docs) {
       final data = doc.data();
       final girone = data['girone'];
@@ -99,7 +102,8 @@ class _CCGironiState extends State<CCGironi> {
                     } else if (snapshot.data!.docs.isEmpty) {
                       return const Center(
                           child: Text('Nessun girone presente',
-                              style: TextStyle(fontSize: 19, color: Colors.black54)));
+                              style: TextStyle(
+                                  fontSize: 19, color: Colors.black54)));
                     }
                     return SingleChildScrollView(
                       child: Column(
@@ -216,7 +220,6 @@ class _CCGironiState extends State<CCGironi> {
     final Map<String, int> cartGialli =
         Map<String, int>.from(doc['cartGialli']);
 
-    
     List<Map<String, dynamic>> squadreData = partite.keys.map((squadra) {
       return {
         'squadra': squadra,

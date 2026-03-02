@@ -22,7 +22,8 @@ class CCModificaPartita extends StatefulWidget {
   final String codice;
   final String ccRole;
 
-  const CCModificaPartita({super.key, 
+  const CCModificaPartita({
+    super.key,
     required this.casa,
     required this.fuori,
     required this.logocasa,
@@ -58,127 +59,165 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   bool iniziata = false;
   bool finita = false;
   bool boolRigori = false;
+  bool _isUpdating = false;
 
   Future<void> _updateGironi() async {
-    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-        .collection('ccGironi')
-        .doc(widget.girone)
-        .get();
-
-    Map<String, dynamic> gironeData =
-        docSnapshot.data() as Map<String, dynamic>;
-
-    // Aggiorna partite giocate
-    gironeData['partiteG'][widget.casa] =
-        (gironeData['partiteG'][widget.casa] ?? 0) + 1;
-    gironeData['partiteG'][widget.fuori] =
-        (gironeData['partiteG'][widget.fuori] ?? 0) + 1;
-
-    // Aggiorna goal fatti e subiti
-    gironeData['goalFatti'][widget.casa] =
-        (gironeData['goalFatti'][widget.casa] ?? 0) + golCasa;
-    gironeData['goalFatti'][widget.fuori] =
-        (gironeData['goalFatti'][widget.fuori] ?? 0) + golFuori;
-    gironeData['goalSubiti'][widget.casa] =
-        (gironeData['goalSubiti'][widget.casa] ?? 0) + golFuori;
-    gironeData['goalSubiti'][widget.fuori] =
-        (gironeData['goalSubiti'][widget.fuori] ?? 0) + golCasa;
-
-    // Aggiorna cartellini gialli
-    gironeData['cartGialli'][widget.casa] =
-        (gironeData['cartGialli'][widget.casa] ?? 0) + gialliCasa;
-    gironeData['cartGialli'][widget.fuori] =
-        (gironeData['cartGialli'][widget.fuori] ?? 0) + gialliFuori;
-
-    // Aggiorna differenza reti
-    gironeData['diffReti'][widget.casa] =
-        (gironeData['diffReti'][widget.casa] ?? 0) + (golCasa - golFuori);
-    gironeData['diffReti'][widget.fuori] =
-        (gironeData['diffReti'][widget.fuori] ?? 0) + (golFuori - golCasa);
-
-    // Aggiorna punti
-    if (golCasa > golFuori) {
-      gironeData['punti'][widget.casa] =
-          (gironeData['punti'][widget.casa] ?? 0) + 3;
-    } else if (golCasa < golFuori) {
-      gironeData['punti'][widget.fuori] =
-          (gironeData['punti'][widget.fuori] ?? 0) + 3;
-    } else {
-      gironeData['punti'][widget.casa] =
-          (gironeData['punti'][widget.casa] ?? 0) + 1;
-      gironeData['punti'][widget.fuori] =
-          (gironeData['punti'][widget.fuori] ?? 0) + 1;
-    }
-
-    FirebaseFirestore.instance
+    setState(() => _isUpdating = true);
+    final gironeRef =
+        FirebaseFirestore.instance.collection('ccGironi').doc(widget.girone);
+    final partitaRef = FirebaseFirestore.instance
         .collection('ccPartiteGironi')
-        .doc('${widget.casa} VS ${widget.fuori}')
-        .update({
-      'iniziata': false,
-      'finita': true,
-    });
+        .doc('${widget.casa} VS ${widget.fuori}');
 
-    await FirebaseFirestore.instance
-        .collection('ccGironi')
-        .doc(widget.girone)
-        .update(gironeData);
+    try {
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot gironeSnap = await transaction.get(gironeRef);
+
+        if (!gironeSnap.exists) {
+          throw Exception("Girone non trovato!");
+        }
+
+        Map<String, dynamic> gironeData =
+            gironeSnap.data() as Map<String, dynamic>;
+
+        // Helper per inizializzare mappe se mancanti (non dovrebbe succedere se il girone è creato correttamente)
+        Map<String, int> partiteG =
+            Map<String, int>.from(gironeData['partiteG'] ?? {});
+        Map<String, int> goalFatti =
+            Map<String, int>.from(gironeData['goalFatti'] ?? {});
+        Map<String, int> goalSubiti =
+            Map<String, int>.from(gironeData['goalSubiti'] ?? {});
+        Map<String, int> diffReti =
+            Map<String, int>.from(gironeData['diffReti'] ?? {});
+        Map<String, int> punti =
+            Map<String, int>.from(gironeData['punti'] ?? {});
+        Map<String, int> cartGialli =
+            Map<String, int>.from(gironeData['cartGialli'] ?? {});
+
+        // Aggiorna partite giocate
+        partiteG[widget.casa] = (partiteG[widget.casa] ?? 0) + 1;
+        partiteG[widget.fuori] = (partiteG[widget.fuori] ?? 0) + 1;
+
+        // Aggiorna goal fatti e subiti
+        goalFatti[widget.casa] = (goalFatti[widget.casa] ?? 0) + golCasa;
+        goalFatti[widget.fuori] = (goalFatti[widget.fuori] ?? 0) + golFuori;
+        goalSubiti[widget.casa] = (goalSubiti[widget.casa] ?? 0) + golFuori;
+        goalSubiti[widget.fuori] = (goalSubiti[widget.fuori] ?? 0) + golCasa;
+
+        // Aggiorna cartellini gialli
+        cartGialli[widget.casa] = (cartGialli[widget.casa] ?? 0) + gialliCasa;
+        cartGialli[widget.fuori] =
+            (cartGialli[widget.fuori] ?? 0) + gialliFuori;
+
+        // Aggiorna differenza reti
+        diffReti[widget.casa] =
+            (diffReti[widget.casa] ?? 0) + (golCasa - golFuori);
+        diffReti[widget.fuori] =
+            (diffReti[widget.fuori] ?? 0) + (golFuori - golCasa);
+
+        // Aggiorna punti
+        if (golCasa > golFuori) {
+          punti[widget.casa] = (punti[widget.casa] ?? 0) + 3;
+        } else if (golCasa < golFuori) {
+          punti[widget.fuori] = (punti[widget.fuori] ?? 0) + 3;
+        } else {
+          punti[widget.casa] = (punti[widget.casa] ?? 0) + 1;
+          punti[widget.fuori] = (punti[widget.fuori] ?? 0) + 1;
+        }
+
+        // Aggiorna il documento del girone
+        transaction.update(gironeRef, {
+          'partiteG': partiteG,
+          'goalFatti': goalFatti,
+          'goalSubiti': goalSubiti,
+          'diffReti': diffReti,
+          'punti': punti,
+          'cartGialli': cartGialli,
+        });
+
+        // Aggiorna lo stato della partita
+        transaction.update(partitaRef, {
+          'iniziata': false,
+          'finita': true,
+        });
+      });
+    } finally {
+      setState(() => _isUpdating = false);
+    }
   }
 
   Future<void> _updateGironiReverse() async {
-    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-        .collection('ccGironi')
-        .doc(widget.girone)
-        .get();
+    setState(() => _isUpdating = true);
+    final gironeRef =
+        FirebaseFirestore.instance.collection('ccGironi').doc(widget.girone);
 
-    Map<String, dynamic> gironeData =
-        docSnapshot.data() as Map<String, dynamic>;
+    try {
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot gironeSnap = await transaction.get(gironeRef);
 
-    // Aggiorna partite giocate
-    gironeData['partiteG'][widget.casa] =
-        (gironeData['partiteG'][widget.casa] ?? 0) - 1;
-    gironeData['partiteG'][widget.fuori] =
-        (gironeData['partiteG'][widget.fuori] ?? 0) - 1;
+        if (!gironeSnap.exists) {
+          throw Exception("Girone non trovato!");
+        }
 
-    // Aggiorna goal fatti e subiti
-    gironeData['goalFatti'][widget.casa] =
-        (gironeData['goalFatti'][widget.casa] ?? 0) - golCasa;
-    gironeData['goalFatti'][widget.fuori] =
-        (gironeData['goalFatti'][widget.fuori] ?? 0) - golFuori;
-    gironeData['goalSubiti'][widget.casa] =
-        (gironeData['goalSubiti'][widget.casa] ?? 0) - golFuori;
-    gironeData['goalSubiti'][widget.fuori] =
-        (gironeData['goalSubiti'][widget.fuori] ?? 0) - golCasa;
+        Map<String, dynamic> gironeData =
+            gironeSnap.data() as Map<String, dynamic>;
 
-    // Aggiorna cartellini gialli
-    gironeData['cartGialli'][widget.casa] =
-        (gironeData['cartGialli'][widget.casa] ?? 0) - gialliCasa;
-    gironeData['cartGialli'][widget.fuori] =
-        (gironeData['cartGialli'][widget.fuori] ?? 0) - gialliFuori;
+        Map<String, int> partiteG =
+            Map<String, int>.from(gironeData['partiteG'] ?? {});
+        Map<String, int> goalFatti =
+            Map<String, int>.from(gironeData['goalFatti'] ?? {});
+        Map<String, int> goalSubiti =
+            Map<String, int>.from(gironeData['goalSubiti'] ?? {});
+        Map<String, int> diffReti =
+            Map<String, int>.from(gironeData['diffReti'] ?? {});
+        Map<String, int> punti =
+            Map<String, int>.from(gironeData['punti'] ?? {});
+        Map<String, int> cartGialli =
+            Map<String, int>.from(gironeData['cartGialli'] ?? {});
 
-    // Aggiorna differenza reti
-    gironeData['diffReti'][widget.casa] =
-        (gironeData['diffReti'][widget.casa] ?? 0) - (golCasa - golFuori);
-    gironeData['diffReti'][widget.fuori] =
-        (gironeData['diffReti'][widget.fuori] ?? 0) - (golFuori - golCasa);
+        // Aggiorna partite giocate (sottrai)
+        partiteG[widget.casa] = (partiteG[widget.casa] ?? 0) - 1;
+        partiteG[widget.fuori] = (partiteG[widget.fuori] ?? 0) - 1;
 
-    // Aggiorna punti
-    if (golCasa > golFuori) {
-      gironeData['punti'][widget.casa] =
-          (gironeData['punti'][widget.casa] ?? 0) - 3;
-    } else if (golCasa < golFuori) {
-      gironeData['punti'][widget.fuori] =
-          (gironeData['punti'][widget.fuori] ?? 0) - 3;
-    } else {
-      gironeData['punti'][widget.casa] =
-          (gironeData['punti'][widget.casa] ?? 0) - 1;
-      gironeData['punti'][widget.fuori] =
-          (gironeData['punti'][widget.fuori] ?? 0) - 1;
+        // Aggiorna goal fatti e subiti (sottrai)
+        goalFatti[widget.casa] = (goalFatti[widget.casa] ?? 0) - golCasa;
+        goalFatti[widget.fuori] = (goalFatti[widget.fuori] ?? 0) - golFuori;
+        goalSubiti[widget.casa] = (goalSubiti[widget.casa] ?? 0) - golFuori;
+        goalSubiti[widget.fuori] = (goalSubiti[widget.fuori] ?? 0) - golCasa;
+
+        // Aggiorna cartellini gialli (sottrai)
+        cartGialli[widget.casa] = (cartGialli[widget.casa] ?? 0) - gialliCasa;
+        cartGialli[widget.fuori] =
+            (cartGialli[widget.fuori] ?? 0) - gialliFuori;
+
+        // Aggiorna differenza reti (sottrai)
+        diffReti[widget.casa] =
+            (diffReti[widget.casa] ?? 0) - (golCasa - golFuori);
+        diffReti[widget.fuori] =
+            (diffReti[widget.fuori] ?? 0) - (golFuori - golCasa);
+
+        // Aggiorna punti (sottrai)
+        if (golCasa > golFuori) {
+          punti[widget.casa] = (punti[widget.casa] ?? 0) - 3;
+        } else if (golCasa < golFuori) {
+          punti[widget.fuori] = (punti[widget.fuori] ?? 0) - 3;
+        } else {
+          punti[widget.casa] = (punti[widget.casa] ?? 0) - 1;
+          punti[widget.fuori] = (punti[widget.fuori] ?? 0) - 1;
+        }
+
+        transaction.update(gironeRef, {
+          'partiteG': partiteG,
+          'goalFatti': goalFatti,
+          'goalSubiti': goalSubiti,
+          'diffReti': diffReti,
+          'punti': punti,
+          'cartGialli': cartGialli,
+        });
+      });
+    } finally {
+      setState(() => _isUpdating = false);
     }
-
-    await FirebaseFirestore.instance
-        .collection('ccGironi')
-        .doc(widget.girone)
-        .update(gironeData);
   }
 
   Future<List<String>> getGiocatori(String squadra) async {
@@ -188,7 +227,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         .get();
     List<dynamic> giocatori = snapshot['giocatori'];
     return giocatori
-        .map((giocatore) => '${giocatore['maglia']!='' ? giocatore['maglia'] : '?'} ${giocatore['nome']}')
+        .map((giocatore) =>
+            '${giocatore['maglia'] != '' ? giocatore['maglia'] : '?'} ${giocatore['nome']}')
         .toList();
   }
 
@@ -240,7 +280,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         } else if (marcatore['dove'] == 'fuori' && marcatore['cosa'] == 'amm') {
           gialliFuori++;
         }
-        marcatori.add({'nome': marcatore['nome'], 'dove': marcatore['dove'], 'cosa': marcatore['cosa']});
+        marcatori.add({
+          'nome': marcatore['nome'],
+          'dove': marcatore['dove'],
+          'cosa': marcatore['cosa']
+        });
       }
 
       iniziata = docSnapshot['iniziata'];
@@ -326,7 +370,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'amm'});
         gialliCasa++;
       } else if (squadra == widget.fuori && cosa == 'amm') {
-        marcatori.insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
+        marcatori
+            .insert(0, {'nome': giocatore, 'dove': 'fuori', 'cosa': 'amm'});
         gialliFuori++;
       } else if (squadra == widget.casa && cosa == 'esp') {
         marcatori.insert(0, {'nome': giocatore, 'dove': 'casa', 'cosa': 'esp'});
@@ -413,10 +458,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
 
     setState(() {
       for (int i = 0; i < marcatori.length; i++) {
-        if (marcatori[i]['nome'] == giocatore && marcatori[i]['dove'] == (squadra == widget.casa ? 'casa' : 'fuori') && marcatori[i]['cosa'] == cosa) {
+        if (marcatori[i]['nome'] == giocatore &&
+            marcatori[i]['dove'] ==
+                (squadra == widget.casa ? 'casa' : 'fuori') &&
+            marcatori[i]['cosa'] == cosa) {
           if (squadra == widget.casa && marcatori[i]['cosa'] == 'gol') {
             golCasa--;
-          } else if(squadra == widget.fuori && marcatori[i]['cosa'] == 'gol') {
+          } else if (squadra == widget.fuori && marcatori[i]['cosa'] == 'gol') {
             golFuori--;
           } else if (squadra == widget.casa && marcatori[i]['cosa'] == 'amm') {
             gialliCasa--;
@@ -433,7 +481,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
     for (int i = 0; i < marcatoriFirestore.length; i++) {
       if (marcatoriFirestore[i]['nome'] == giocatore &&
           marcatoriFirestore[i]['dove'] ==
-              (squadra == widget.casa ? 'casa' : 'fuori') && marcatoriFirestore[i]['cosa'] == cosa) {
+              (squadra == widget.casa ? 'casa' : 'fuori') &&
+          marcatoriFirestore[i]['cosa'] == cosa) {
         marcatoriFirestore.removeAt(i);
         foundFirestore = true;
         break;
@@ -997,7 +1046,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                           )
                         ])),
                 const SizedBox(height: 16),
-                widget.ccRole == 'staff' && widget.nome==widget.refertista
+                widget.ccRole == 'staff' && widget.nome == widget.refertista
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
@@ -1006,7 +1055,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                             widget.casa != '' && widget.fuori != ''
                                 ? Expanded(
                                     child: ElevatedButton(
-                                      onPressed: !iniziata
+                                      onPressed: !iniziata && !_isUpdating
                                           ? () {
                                               setState(() {
                                                 iniziata = true;
@@ -1069,7 +1118,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                             widget.casa != '' && widget.fuori != ''
                                 ? Expanded(
                                     child: ElevatedButton(
-                                      onPressed: iniziata
+                                      onPressed: iniziata && !_isUpdating
                                           ? () {
                                               setState(() {
                                                 golFuori != golCasa &&
@@ -1145,13 +1194,14 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         ),
                       )
                     : Container(),
-                  Padding(
+                Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     child: Row(children: [
                       golFuori == golCasa &&
                               widget.tipo != 'girone' &&
                               iniziata &&
-                              widget.ccRole == 'staff' && widget.nome==widget.refertista
+                              widget.ccRole == 'staff' &&
+                              widget.nome == widget.refertista
                           ? Expanded(
                               child: ElevatedButton(
                               onPressed: !boolRigori
@@ -1233,10 +1283,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                               ),
                             ))
                           : Container(),
-                    ]
-                  )
-                  ),
-                iniziata && widget.ccRole == 'staff' && !boolRigori && widget.nome==widget.refertista
+                    ])),
+                iniziata &&
+                        widget.ccRole == 'staff' &&
+                        !boolRigori &&
+                        widget.nome == widget.refertista
                     ? Padding(
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                         child: Row(
@@ -1271,7 +1322,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text(giocatore, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                    child: Text(giocatore,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1396,7 +1450,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text(giocatore, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                    child: Text(giocatore,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1498,10 +1555,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                 !iniziata && !finita
                     ? Center(
                         child: Column(children: [
-                          widget.nome==widget.refertista ? const SizedBox(height: 10) : Container(),
+                        widget.nome == widget.refertista
+                            ? const SizedBox(height: 10)
+                            : Container(),
                         Text('Partita da giocare',
-                            style: TextStyle(
-                                fontSize: 21, color: Colors.black54)),
+                            style:
+                                TextStyle(fontSize: 21, color: Colors.black54)),
                       ]))
                     : Center(
                         child: Column(children: [
@@ -1541,7 +1600,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                   GestureDetector(
                                       onTap: () async {
                                         if (iniziata &&
-                                            widget.ccRole == 'staff' && widget.nome==widget.refertista) {
+                                            widget.ccRole == 'staff' &&
+                                            widget.nome == widget.refertista) {
                                           _showRigoreDialog(context, 'casa',
                                               index, widget.tipo);
                                         }
@@ -1584,7 +1644,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                         GestureDetector(
                                             onTap: () async {
                                               if (iniziata &&
-                                                  widget.ccRole == 'staff' && widget.nome==widget.refertista) {
+                                                  widget.ccRole == 'staff' &&
+                                                  widget.nome ==
+                                                      widget.refertista) {
                                                 _showRigoreDialog(
                                                     context,
                                                     'fuori',
@@ -1611,7 +1673,10 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 )))
                       ])
                     : Container(),
-                iniziata && widget.ccRole == 'staff' && boolRigori && widget.nome==widget.refertista
+                iniziata &&
+                        widget.ccRole == 'staff' &&
+                        boolRigori &&
+                        widget.nome == widget.refertista
                     ? Row(
                         children: [
                           const SizedBox(width: 16),
@@ -1690,12 +1755,17 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      iniziata && !boolRigori
+                                      iniziata &&
+                                              !boolRigori &&
+                                              widget.ccRole == 'staff' &&
+                                              widget.nome == widget.refertista
                                           ? IconButton(
                                               icon: const Icon(Icons.delete),
                                               onPressed: () {
-                                                rimuoviMarcatore(widget.casa,
-                                                    marcatore['nome']!, marcatore['cosa']!);
+                                                rimuoviMarcatore(
+                                                    widget.casa,
+                                                    marcatore['nome']!,
+                                                    marcatore['cosa']!);
                                               },
                                             )
                                           : const SizedBox(width: 20),
@@ -1706,8 +1776,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                 height: 23,
                                                 decoration: BoxDecoration(
                                                   color: Colors.yellow,
-                                                  borderRadius: BorderRadius.circular(2),
-                                                  border: Border.all(color: Colors.black54, width: 0.75),
+                                                  borderRadius:
+                                                      BorderRadius.circular(2),
+                                                  border: Border.all(
+                                                      color: Colors.black54,
+                                                      width: 0.75),
                                                 ),
                                               ),
                                               const SizedBox(width: 4),
@@ -1719,8 +1792,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                     height: 23,
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
-                                                      borderRadius: BorderRadius.circular(2),
-                                                      border: Border.all(color: Colors.black54, width: 0.75),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
+                                                      border: Border.all(
+                                                          color: Colors.black54,
+                                                          width: 0.75),
                                                     ),
                                                   ),
                                                   const SizedBox(width: 4),
@@ -1798,7 +1875,9 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                   color: Colors.yellow,
                                                   borderRadius:
                                                       BorderRadius.circular(2),
-                                                      border: Border.all(color: Colors.black54, width: 0.75),
+                                                  border: Border.all(
+                                                      color: Colors.black54,
+                                                      width: 0.75),
                                                 ),
                                               ),
                                             ])
@@ -1813,17 +1892,24 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               2),
-                                                              border: Border.all(color: Colors.black54, width: 0.75),
+                                                      border: Border.all(
+                                                          color: Colors.black54,
+                                                          width: 0.75),
                                                     ),
                                                   ),
                                                 ])
                                               : const Icon(Icons.sports_soccer),
-                                      iniziata && !boolRigori
+                                      iniziata &&
+                                              !boolRigori &&
+                                              widget.ccRole == 'staff' &&
+                                              widget.nome == widget.refertista
                                           ? IconButton(
                                               icon: const Icon(Icons.delete),
                                               onPressed: () {
-                                                rimuoviMarcatore(widget.fuori,
-                                                    marcatore['nome']!, marcatore['cosa']!);
+                                                rimuoviMarcatore(
+                                                    widget.fuori,
+                                                    marcatore['nome']!,
+                                                    marcatore['cosa']!);
                                               },
                                             )
                                           : const SizedBox(width: 20),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:animations/animations.dart';
 import 'ccCapocannonieri.dart';
 import 'ccCalendario.dart';
 import 'ccGironi.dart';
@@ -11,6 +10,7 @@ import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
 import 'ccCreazioneGironi.dart';
 import 'ccCreazioneCase.dart';
+import 'ccAlboDOroAnni.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart' as excel;
@@ -43,10 +43,18 @@ class CCHomePage extends StatefulWidget {
 class _CCHomePageState extends State<CCHomePage> {
   late List<Widget> _ccWidgetOptions;
   int _selectedIndex = 0;
+  late PageController _pageController;
+
+  // Tutor/Staff access fields
+  String tutorPassword = '';
+  String staffPassword = '';
+  List<dynamic> clubs = [''];
 
   @override
   void initState() {
     super.initState();
+    _retrievePw();
+    _retrieveClubs();
 
     print("nome: ${widget.nome}");
     print("email: ${widget.email}");
@@ -69,10 +77,7 @@ class _CCHomePageState extends State<CCHomePage> {
         onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
-        child: CCCalendario(
-            ccRole: widget.ccRole ?? '',
-            nome: widget
-                .nome),
+        child: CCCalendario(ccRole: widget.ccRole ?? '', nome: widget.nome),
       ),
       PopScope(
         onPopInvokedWithResult: (_, result) {
@@ -81,6 +86,388 @@ class _CCHomePageState extends State<CCHomePage> {
         child: const CCCapocannonieri(),
       ),
     ];
+
+    _selectedIndex = widget.selectedIndex;
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _retrievePw() async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('ccPassword')
+        .doc('password')
+        .get();
+    if (snapshot.exists) {
+      setState(() {
+        staffPassword = snapshot['staffPw'];
+        tutorPassword = snapshot['tutorPw'];
+      });
+    }
+  }
+
+  Future<void> _retrieveClubs() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccSquadre').get();
+    if (snapshot.docs.isNotEmpty) {
+      for (var doc in snapshot.docs) {
+        clubs.add(doc['club']);
+      }
+    }
+    setState(() {});
+  }
+
+  Future<void> _updateUser(String role) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('user')
+        .where('email', isEqualTo: widget.email)
+        .get();
+    if (querySnapshot.docs.isNotEmpty) {
+      for (var doc in querySnapshot.docs) {
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(doc.id)
+            .update({'ccRole': role});
+      }
+    }
+  }
+
+  void _checkPasswordTutor(String enteredPassword, String? newclub) async {
+    if (newclub == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inserisci il tuo club')),
+      );
+      return;
+    }
+    if (enteredPassword == tutorPassword) {
+      await _updateUser('tutor');
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cc', 'yes');
+      await prefs.setString('ccRole', 'tutor');
+      await prefs.setString('club', newclub ?? '');
+      restartApp(
+          context,
+          newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
+          prefs.getString('cc') ?? '',
+          'tutor',
+          '');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password errata')),
+      );
+    }
+  }
+
+  void _checkPasswordStaff(
+      String enteredPassword, String nome, String mood) async {
+    if (mood == 'login') {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('ccStaff')
+          .doc(nome)
+          .get();
+      if (snapshot.exists) {
+        if (enteredPassword == staffPassword) {
+          await _updateUser('staff');
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cc', 'yes');
+          await prefs.setString('ccRole', 'staff');
+          await prefs.setString('nome', nome);
+          await prefs.setString('club', widget.club ?? '');
+          restartApp(context, prefs.getString('club') ?? '',
+              prefs.getString('cc') ?? '', 'staff', nome);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password errata')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nome utente errato')),
+        );
+      }
+    } else {
+      if (enteredPassword == staffPassword) {
+        DocumentSnapshot snapshot = await FirebaseFirestore.instance
+            .collection('ccStaff')
+            .doc(nome)
+            .get();
+        if (snapshot.exists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Esiste già un utente con questo nome')),
+          );
+        } else {
+          await FirebaseFirestore.instance
+              .collection('ccStaff')
+              .doc(nome)
+              .set({'nome': nome});
+          await _updateUser('staff');
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cc', 'yes');
+          await prefs.setString('ccRole', 'staff');
+          await prefs.setString('nome', nome);
+          await prefs.setString('club', widget.club ?? '');
+          restartApp(context, prefs.getString('club') ?? '',
+              prefs.getString('cc') ?? '', 'staff', nome);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password errata')),
+        );
+      }
+    }
+  }
+
+  void _showRoleSwitchSheet() {
+    final tutorPasswordController = TextEditingController();
+    final staffPasswordController = TextEditingController();
+    final staffDataController = TextEditingController();
+    bool showTutor = false;
+    bool showStaff = false;
+    bool isObscure = false;
+    String oldclub = widget.club ?? '';
+    String newclub = '';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF00296B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            InputDecoration getInputDecoration(String label) {
+              return InputDecoration(
+                labelText: label,
+                labelStyle: const TextStyle(color: Colors.white70),
+                floatingLabelStyle: const TextStyle(color: Colors.white),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    isObscure ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setModalState(() {
+                      isObscure = !isObscure;
+                    });
+                  },
+                ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.15),
+                border: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white54),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white54),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide:
+                      BorderSide(color: Color.fromARGB(255, 39, 132, 207)),
+                ),
+              );
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white54,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Tutor button
+                  Row(children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setModalState(() {
+                            showTutor = !showTutor;
+                            showStaff = false;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: showTutor
+                              ? const Color.fromARGB(255, 39, 132, 207)
+                              : Colors.white.withValues(alpha: 0.15),
+                        ),
+                        child: const Text('Entra come tutor'),
+                      ),
+                    ),
+                  ]),
+                  if (showTutor) ...[
+                    const SizedBox(height: 15),
+                    if (oldclub == '')
+                      DropdownButtonFormField<String>(
+                        dropdownColor: const Color(0xFF00296B),
+                        style: const TextStyle(color: Colors.white),
+                        initialValue: newclub != '' ? newclub : null,
+                        items: clubs.map((dynamic value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setModalState(() {
+                            newclub = newValue!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Club',
+                          labelStyle: const TextStyle(color: Colors.white70),
+                          floatingLabelStyle:
+                              const TextStyle(color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.15),
+                          border: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white54),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white54),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Color.fromARGB(255, 39, 132, 207)),
+                          ),
+                        ),
+                      ),
+                    if (oldclub == '') const SizedBox(height: 15),
+                    TextField(
+                      controller: tutorPasswordController,
+                      decoration: getInputDecoration('Password tutor'),
+                      obscureText: !isObscure,
+                      cursorColor: Colors.white,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 15),
+                    Row(children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _checkPasswordTutor(
+                            tutorPasswordController.text,
+                            oldclub != '' ? oldclub : newclub,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 39, 132, 207),
+                          ),
+                          child: const Text('Entra'),
+                        ),
+                      ),
+                    ]),
+                  ],
+                  const SizedBox(height: 10),
+                  // Staff button
+                  Row(children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setModalState(() {
+                            showTutor = false;
+                            showStaff = !showStaff;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: showStaff
+                              ? const Color.fromARGB(255, 39, 132, 207)
+                              : Colors.white.withValues(alpha: 0.15),
+                        ),
+                        child: const Text('Entra come staff'),
+                      ),
+                    ),
+                  ]),
+                  if (showStaff) ...[
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      textCapitalization: TextCapitalization.sentences,
+                      controller: staffDataController,
+                      cursorColor: Colors.white,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Nome e cognome',
+                        labelStyle: const TextStyle(color: Colors.white70),
+                        floatingLabelStyle:
+                            const TextStyle(color: Colors.white),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.15),
+                        border: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white54),
+                        ),
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white54),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Color.fromARGB(255, 39, 132, 207)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      obscureText: !isObscure,
+                      controller: staffPasswordController,
+                      decoration: getInputDecoration('Password staff'),
+                      cursorColor: Colors.white,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 15),
+                    Row(children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _checkPasswordStaff(
+                            staffPasswordController.text,
+                            staffDataController.text,
+                            'login',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 39, 132, 207),
+                          ),
+                          child: const Text('Login'),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _checkPasswordStaff(
+                            staffPasswordController.text,
+                            staffDataController.text,
+                            'registrati',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 39, 132, 207),
+                          ),
+                          child: const Text('Registrati'),
+                        ),
+                      ),
+                    ]),
+                  ],
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _showConfirmDialog(bool user) async {
@@ -167,6 +554,221 @@ class _CCHomePageState extends State<CCHomePage> {
         prefs.getString('cc') ?? '', prefs.getString('ccRole') ?? '', '');
   }
 
+  Future<void> _creaAlbo() async {
+    _showLoadingDialog();
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final int anno = DateTime.now().year;
+
+      // 1. Load team details (logo + city/club)
+      final squadreSnap = await firestore.collection('ccSquadre').get();
+      final Map<String, Map<String, String>> teamDetails = {};
+      for (var doc in squadreSnap.docs) {
+        final data = doc.data();
+        final squadre = List<Map<String, dynamic>>.from(data['squadre'] ?? []);
+        for (var s in squadre) {
+          teamDetails[s['squadra']] = {
+            'logo': s['logo'] ?? '',
+          };
+        }
+      }
+
+      // 2. Get ordered teams from each knockout phase
+      // Helper: get match winner and loser
+      Map<String, dynamic> getMatchResult(Map<String, dynamic> matchData) {
+        final casa = matchData['casa'] as String;
+        final fuori = matchData['fuori'] as String;
+        final marcatori =
+            List<Map<String, dynamic>>.from(matchData['marcatori'] ?? []);
+        int golCasa = marcatori
+            .where((m) => m['cosa'] == 'gol' && m['dove'] == 'casa')
+            .length;
+        int golFuori = marcatori
+            .where((m) => m['cosa'] == 'gol' && m['dove'] == 'fuori')
+            .length;
+        // If draw, whoever has penalties or keep as draw
+        return {
+          'casa': casa,
+          'fuori': fuori,
+          'golCasa': golCasa,
+          'golFuori': golFuori,
+          'winner': golCasa >= golFuori ? casa : fuori,
+          'loser': golCasa >= golFuori ? fuori : casa,
+        };
+      }
+
+      // Collect positions
+      final List<Map<String, dynamic>> classifica = [];
+      final Set<String> positioned = {};
+
+      // Finali
+      final finaliSnap = await firestore.collection('ccPartiteFinali').get();
+
+      // Sort finali by codice to identify final vs 3rd place match
+      final finaliDocs =
+          finaliSnap.docs.where((d) => d.data()['finita'] == true).toList();
+      finaliDocs.sort((a, b) =>
+          (a.data()['codice'] ?? '').compareTo(b.data()['codice'] ?? ''));
+
+      // Process all finali matches in order of codice
+      // First match (lowest codice) is the final, second is 3rd place, etc.
+      for (int i = 0; i < finaliDocs.length; i++) {
+        final result = getMatchResult(finaliDocs[i].data());
+        final winner = result['winner'] as String;
+        final loser = result['loser'] as String;
+        if (!positioned.contains(winner)) {
+          positioned.add(winner);
+          classifica.add({'squadra': winner});
+        }
+        if (!positioned.contains(loser)) {
+          positioned.add(loser);
+          classifica.add({'squadra': loser});
+        }
+      }
+
+      // Semifinali losers (5th-6th or beyond what finali already covered)
+      final semiSnap = await firestore.collection('ccPartiteSemifinali').get();
+      final semiLosers = semiSnap.docs
+          .where((d) => d.data()['finita'] == true)
+          .map((d) => getMatchResult(d.data())['loser'] as String)
+          .where((team) => !positioned.contains(team))
+          .toList();
+      for (var team in semiLosers) {
+        positioned.add(team);
+        classifica.add({'squadra': team});
+      }
+
+      // Quarti losers
+      final quartiSnap = await firestore.collection('ccPartiteQuarti').get();
+      final quartiLosers = quartiSnap.docs
+          .where((d) => d.data()['finita'] == true)
+          .map((d) => getMatchResult(d.data())['loser'] as String)
+          .where((team) => !positioned.contains(team))
+          .toList();
+      for (var team in quartiLosers) {
+        positioned.add(team);
+        classifica.add({'squadra': team});
+      }
+
+      // Ottavi losers
+      final ottaviSnap = await firestore.collection('ccPartiteOttavi').get();
+      final ottaviLosers = ottaviSnap.docs
+          .where((d) => d.data()['finita'] == true)
+          .map((d) => getMatchResult(d.data())['loser'] as String)
+          .where((team) => !positioned.contains(team))
+          .toList();
+      for (var team in ottaviLosers) {
+        positioned.add(team);
+        classifica.add({'squadra': team});
+      }
+
+      // Remaining teams from group stage (sorted by points)
+      final gironiSnap = await firestore.collection('ccGironi').get();
+      final List<Map<String, dynamic>> groupTeams = [];
+      for (var doc in gironiSnap.docs) {
+        final data = doc.data();
+        final punti = Map<String, int>.from(data['punti'] ?? {});
+        final diffReti = Map<String, int>.from(data['diffReti'] ?? {});
+        final goalFatti = Map<String, int>.from(data['goalFatti'] ?? {});
+        for (var entry in punti.entries) {
+          if (!positioned.contains(entry.key)) {
+            groupTeams.add({
+              'squadra': entry.key,
+              'punti': entry.value,
+              'diffReti': diffReti[entry.key] ?? 0,
+              'goalFatti': goalFatti[entry.key] ?? 0,
+            });
+          }
+        }
+      }
+      groupTeams.sort((a, b) {
+        int c = (b['punti'] as int).compareTo(a['punti'] as int);
+        if (c != 0) return c;
+        c = (b['diffReti'] as int).compareTo(a['diffReti'] as int);
+        if (c != 0) return c;
+        return (b['goalFatti'] as int).compareTo(a['goalFatti'] as int);
+      });
+      for (var team in groupTeams) {
+        positioned.add(team['squadra']);
+        classifica.add({'squadra': team['squadra']});
+      }
+
+      // Assign positions and add team details
+      for (int i = 0; i < classifica.length; i++) {
+        final name = classifica[i]['squadra'] as String;
+        classifica[i]['posizione'] = i + 1;
+        classifica[i]['logo'] = teamDetails[name]?['logo'] ?? '';
+      }
+
+      // 3. Capocannonieri (same logic as ccCapocannonieri)
+      final collections = [
+        'ccPartiteGironi',
+        'ccPartiteOttavi',
+        'ccPartiteQuarti',
+        'ccPartiteSemifinali',
+        'ccPartiteFinali',
+      ];
+      final Map<String, int> marcatoriMap = {};
+      final Map<String, String> marcatoriSquadre = {};
+
+      for (var collection in collections) {
+        final snap = await firestore.collection(collection).get();
+        for (var doc in snap.docs) {
+          final data = doc.data();
+          final List<dynamic> marcatoriList = data['marcatori'] ?? [];
+          for (var marcatore in marcatoriList) {
+            final String nome =
+                (marcatore['nome'] as String).split(' ').sublist(1).join(' ');
+            final String dove = marcatore['dove'];
+            final String cosa = marcatore['cosa'];
+            if (cosa == 'gol') {
+              final String squadra =
+                  dove == 'casa' ? data['casa'] : data['fuori'];
+              marcatoriMap[nome] = (marcatoriMap[nome] ?? 0) + 1;
+              marcatoriSquadre.putIfAbsent(nome, () => squadra);
+            }
+          }
+        }
+      }
+
+      final sortedMarcatori = marcatoriMap.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      final List<Map<String, dynamic>> marcatoriData = sortedMarcatori
+          .map((e) => {
+                'nome': e.key,
+                'gol': e.value,
+                'squadra': marcatoriSquadre[e.key] ?? '',
+              })
+          .toList();
+
+      // 4. Save to Firestore
+      // 4. Save to Firestore with random ID
+      await firestore.collection('ccAlboDoro').add({
+        'anno': anno,
+        'classifica': classifica,
+        'marcatori': marcatoriData,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        Navigator.of(context).pop(); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('[V3] Albo d\'Oro $anno archiviato con ID casuale!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore: $e')),
+        );
+      }
+    }
+  }
+
   void _showLoadingDialog() {
     showDialog(
       context: context,
@@ -185,7 +787,7 @@ class _CCHomePageState extends State<CCHomePage> {
 
     try {
       var excelFile = excel.Excel.createExcel();
-      
+
       final List<Map<String, dynamic>> fasi = [
         {'nome': 'Gironi', 'collezione': 'ccPartiteGironi'},
         {'nome': 'Ottavi', 'collezione': 'ccPartiteOttavi'},
@@ -199,15 +801,24 @@ class _CCHomePageState extends State<CCHomePage> {
             .collection(fase['collezione'])
             .get();
         final List<DocumentSnapshot> documents = result.docs;
-        
-        var sheet = excelFile[fase['nome']];
-        
-        sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value = excel.TextCellValue('Casa');
-        sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value = excel.TextCellValue('Fuori');
-        sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value = excel.TextCellValue('Tipo');
-        sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value = excel.TextCellValue('Gol casa');
-        sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value = excel.TextCellValue('Gol fuori');
 
+        var sheet = excelFile[fase['nome']];
+
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+            .value = excel.TextCellValue('Casa');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0))
+            .value = excel.TextCellValue('Fuori');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0))
+            .value = excel.TextCellValue('Tipo');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0))
+            .value = excel.TextCellValue('Gol casa');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0))
+            .value = excel.TextCellValue('Gol fuori');
 
         for (var doc in documents) {
           final casa = doc['casa'];
@@ -216,9 +827,9 @@ class _CCHomePageState extends State<CCHomePage> {
           if (fase['nome'] == 'Gironi') {
             tipo = '${doc['tipo']} ${doc['girone']}';
           } else {
-            tipo = '${doc['codice'][0]}${int.parse(doc['codice'][1])+1}';
+            tipo = '${doc['codice'][0]}${int.parse(doc['codice'][1]) + 1}';
           }
-          
+
           int golCasa = 0;
           int golFuori = 0;
           List<Map<String, dynamic>> marcatori =
@@ -231,7 +842,7 @@ class _CCHomePageState extends State<CCHomePage> {
               golFuori++;
             }
           }
-          
+
           sheet.appendRow([
             excel.TextCellValue(casa),
             excel.TextCellValue(fuori),
@@ -241,7 +852,7 @@ class _CCHomePageState extends State<CCHomePage> {
           ]);
         }
       }
-      
+
       final output = await getTemporaryDirectory();
       final file = File("${output.path}/partiteCC2025.xlsx");
       await file.writeAsBytes(excelFile.encode()!);
@@ -252,10 +863,10 @@ class _CCHomePageState extends State<CCHomePage> {
       );
 
       Navigator.of(context).pop();
-      
+
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Ecco il file Excel delle partite per il Champions Club 2025!',
+        text: 'Ecco il file Excel delle partite per il Champions Club 2026!',
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -313,6 +924,21 @@ class _CCHomePageState extends State<CCHomePage> {
               )
             : null,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.leaderboard),
+            tooltip: 'Albo d\'Oro',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CcAlboDOroAnni()),
+              );
+            },
+          ),
+          if (widget.ccRole == 'user')
+            IconButton(
+              icon: const Icon(Icons.account_circle),
+              tooltip: 'Accesso Tutor/Staff',
+              onPressed: _showRoleSwitchSheet,
+            ),
           widget.ccRole == 'tutor'
               ? IconButton(
                   icon: const Icon(Icons.edit),
@@ -444,6 +1070,38 @@ class _CCHomePageState extends State<CCHomePage> {
                           },
                         )
                       : Container(),
+                  widget.ccRole == 'staff'
+                      ? ListTile(
+                          leading: const Icon(Icons.leaderboard),
+                          title: const Text('Crea l\'albo d\'oro'),
+                          onTap: () async {
+                            Navigator.of(context).pop(); // close drawer
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Conferma'),
+                                content: Text(
+                                    'Creare l\'albo d\'oro ${DateTime.now().year}?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Annulla'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text('Conferma'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              await _creaAlbo();
+                            }
+                          },
+                        )
+                      : Container(),
                   ListTile(
                     leading: const Icon(Icons.logout_outlined),
                     title: Text(widget.user == true ? 'Torna al Club' : 'Esci'),
@@ -455,53 +1113,69 @@ class _CCHomePageState extends State<CCHomePage> {
               ),
             )
           : null,
-      body: PageTransitionSwitcher(
-        transitionBuilder: (Widget child, Animation<double> animation,
-            Animation<double> secondaryAnimation) {
-          return FadeThroughTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            child: child,
-          );
-        },
-        child: _ccWidgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (int index) {
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (int index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        selectedItemColor: const Color(0xFF00296B),
-        unselectedItemColor: Colors.black54,
-        selectedIconTheme: const IconThemeData(
-          color: Color(0xFF00296B),
+        children: _ccWidgetOptions,
+      ),
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          indicatorColor: const Color(0xFF00296B).withValues(alpha: 0.1),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF00296B),
+              );
+            }
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+            );
+          }),
         ),
-        unselectedIconTheme: const IconThemeData(color: Colors.black54),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Programma',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.table_chart_outlined),
-            activeIcon: Icon(Icons.table_chart),
-            label: 'Gironi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Calendario',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer_outlined),
-            activeIcon: Icon(Icons.sports_soccer),
-            label: 'Marcatori',
-          ),
-        ],
+        child: NavigationBar(
+          height: 70,
+          backgroundColor: Colors.white,
+          elevation: 10,
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (int index) {
+            _pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home, color: Color(0xFF00296B)),
+              label: 'Programma',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.table_chart_outlined),
+              selectedIcon: Icon(Icons.table_chart, color: Color(0xFF00296B)),
+              label: 'Gironi',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_month_outlined),
+              selectedIcon:
+                  Icon(Icons.calendar_month, color: Color(0xFF00296B)),
+              label: 'Calendario',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.sports_soccer_outlined),
+              selectedIcon: Icon(Icons.sports_soccer, color: Color(0xFF00296B)),
+              label: 'Marcatori',
+            ),
+          ],
+        ),
       ),
     );
   }

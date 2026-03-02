@@ -67,23 +67,23 @@ class _CCProgrammaState extends State<CCProgramma> {
   }
 
   Future<List<Map<String, dynamic>>> _getDocumentsFromStorage() async {
-  final FirebaseStorage storage = FirebaseStorage.instance;
-  final ListResult result = await storage.ref('giornalino/').listAll();
+    final FirebaseStorage storage = FirebaseStorage.instance;
+    final ListResult result = await storage.ref('giornalino/').listAll();
 
-  final List<Map<String, dynamic>> documents = [];
-  for (var item in result.items) {
-    final String url = await item.getDownloadURL();
-    final FullMetadata metadata = await item.getMetadata();
-    final DateTime updated = metadata.updated ?? DateTime.now();
+    final List<Map<String, dynamic>> documents = [];
+    for (var item in result.items) {
+      final String url = await item.getDownloadURL();
+      final FullMetadata metadata = await item.getMetadata();
+      final DateTime updated = metadata.updated ?? DateTime.now();
 
-    documents.add({'url': url, 'updated': updated});
+      documents.add({'url': url, 'updated': updated});
+    }
+
+    // Ordina i documenti in base alla data di aggiornamento
+    documents.sort((a, b) => a['updated'].compareTo(b['updated']));
+
+    return documents;
   }
-
-  // Ordina i documenti in base alla data di aggiornamento
-  documents.sort((a, b) => a['updated'].compareTo(b['updated']));
-
-  return documents;
-}
 
   @override
   Widget build(BuildContext context) {
@@ -114,9 +114,11 @@ class _CCProgrammaState extends State<CCProgramma> {
                   child: InkWell(
                     onTap: () async {
                       final FirebaseStorage storage = FirebaseStorage.instance;
-                      final ref = storage.ref().child('DocumentiCC/IMG-20250414-WA0009.jpg');
-                        final url = await ref.getDownloadURL();
-                        _openFileOrLink(url);
+                      final ref = storage
+                          .ref()
+                          .child('DocumentiCC/IMG-20250414-WA0009.jpg');
+                      final url = await ref.getDownloadURL();
+                      _openFileOrLink(url);
                     },
                     child: Container(
                       width: 40,
@@ -149,7 +151,8 @@ class _CCProgrammaState extends State<CCProgramma> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PdfViewerPage(
-                            pdfPath: 'images/RegolamentoChampionsClub2025.pdf',//'assets/document.pdf', // Percorso del PDF
+                            pdfPath:
+                                'images/RegolamentoChampionsClub2025.pdf', //'assets/document.pdf', // Percorso del PDF
                           ),
                         ),
                       );
@@ -177,66 +180,73 @@ class _CCProgrammaState extends State<CCProgramma> {
                   ),
                 ),
                 FutureBuilder<List<Map<String, dynamic>>>(
-          future: _getDocumentsFromStorage(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Positioned(
-                bottom: 16.0,
-                right: 12.0,
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Positioned(
-                bottom: 16.0,
-                right: 12.0,
-                child: Container(),
-              );
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Positioned(
-                bottom: 16.0,
-                right: 12.0,
-                child: Container(),
-              );
-            }
+                  future: _getDocumentsFromStorage(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Positioned(
+                        bottom: 16.0,
+                        right: 12.0,
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Positioned(
+                        bottom: 16.0,
+                        right: 12.0,
+                        child: Container(),
+                      );
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Positioned(
+                        bottom: 16.0,
+                        right: 12.0,
+                        child: Container(),
+                      );
+                    }
 
-            final documents = snapshot.data!;
-            return Positioned(
-              bottom: 16.0,
-              right: 12.0,
-              child: Row(
-                children: List.generate(documents.length, (index) {
-                  final document = documents[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                    child: InkWell(
-                    onTap: () {
-                      _openFileOrLink(document['url']);
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                    final documents = snapshot.data!;
+                    return Positioned(
+                      bottom: 16.0,
+                      right: 12.0,
+                      child: Row(
+                        children: List.generate(documents.length, (index) {
+                          final document = documents[index];
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 6.0),
+                            child: InkWell(
+                              onTap: () {
+                                _openFileOrLink(document['url']);
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                    child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF00296B)),
+                                )),
+                              ),
+                            ),
+                          );
+                        }),
                       ),
-                      child: Center(child: Text('${index + 1}',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00296B)),)
-                      ),
-                    ),
-                  ),
-                  );
-                }),
-              ),
-            );
-          },
-        ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -255,9 +265,11 @@ class _CCProgrammaState extends State<CCProgramma> {
                 );
               } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SliverFillRemaining(
-                  child: Center(child: Text('Nessun programma trovato',
-                  style: TextStyle(fontSize: 19, color: Colors.black54),))
-                );
+                    child: Center(
+                        child: Text(
+                  'Nessun programma trovato',
+                  style: TextStyle(fontSize: 19, color: Colors.black54),
+                )));
               }
 
               final programmi = snapshot.data!.docs;
@@ -295,7 +307,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                     }
                     lastBeforeNow = null;
                   }
-              
+
                   if (!groupedProgrammi.containsKey(data)) {
                     groupedProgrammi[data] = [];
                   }
@@ -322,17 +334,17 @@ class _CCProgrammaState extends State<CCProgramma> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Expanded(child:
-                                    AutoSizeText(
+                                    Expanded(
+                                      child: AutoSizeText(
                                         data == '23/04/2025'
-                                          ? 'Mercoledì 23'
-                                          : data == '24/04/2025'
-                                              ? 'Giovedì 24'
-                                              : data == '25/04/2025'
-                                                  ? 'Venerdì 25'
-                                                  : data == '26/04/2025'
-                                                      ? 'Sabato 26'
-                                                      : 'Domenica 27',
+                                            ? 'Mercoledì 23'
+                                            : data == '24/04/2025'
+                                                ? 'Giovedì 24'
+                                                : data == '25/04/2025'
+                                                    ? 'Venerdì 25'
+                                                    : data == '26/04/2025'
+                                                        ? 'Sabato 26'
+                                                        : 'Domenica 27',
                                         style: const TextStyle(
                                           fontSize: 19,
                                           fontWeight: FontWeight.bold,
@@ -359,25 +371,24 @@ class _CCProgrammaState extends State<CCProgramma> {
                                     ),
                                   ],
                                 )
-                              :
-                              AutoSizeText(
-                                 data == '23/04/2025'
-                                   ? 'Mercoledì 23'
-                                   : data == '24/04/2025'
-                                       ? 'Giovedì 24'
-                                       : data == '25/04/2025'
-                                           ? 'Venerdì 25'
-                                           : data == '26/04/2025'
-                                               ? 'Sabato 26'
-                                               : 'Domenica 27',
-                                 style: const TextStyle(
-                                   fontSize: 19,
-                                   fontWeight: FontWeight.bold,
-                                 ),
-                                 minFontSize: 19,
-                                 overflow: TextOverflow.ellipsis,
-                                 maxLines: 1,
-                              ),
+                              : AutoSizeText(
+                                  data == '23/04/2025'
+                                      ? 'Mercoledì 23'
+                                      : data == '24/04/2025'
+                                          ? 'Giovedì 24'
+                                          : data == '25/04/2025'
+                                              ? 'Venerdì 25'
+                                              : data == '26/04/2025'
+                                                  ? 'Sabato 26'
+                                                  : 'Domenica 27',
+                                  style: const TextStyle(
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  minFontSize: 19,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                         ),
                         ...programmiPerData.map((programma) {
                           return Card(
@@ -517,7 +528,9 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                 .connectionState ==
                                                             ConnectionState
                                                                 .waiting) {
-                                                          return const Center(child:CircularProgressIndicator());
+                                                          return const Center(
+                                                              child:
+                                                                  CircularProgressIndicator());
                                                         } else if (snapshot
                                                             .hasError) {
                                                           return Text(
@@ -561,7 +574,9 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                 .connectionState ==
                                                             ConnectionState
                                                                 .waiting) {
-                                                          return const Center(child: CircularProgressIndicator());
+                                                          return const Center(
+                                                              child:
+                                                                  CircularProgressIndicator());
                                                         } else if (snapshot
                                                             .hasError) {
                                                           return Text(
@@ -596,10 +611,14 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                 ),
                                                               ),
                                                               Align(
-                                                                alignment: Alignment.centerLeft,
+                                                                alignment: Alignment
+                                                                    .centerLeft,
                                                                 child: Text(
-                                                                  squadre.join(', '),
-                                                                  style: const TextStyle(fontSize: 15),
+                                                                  squadre.join(
+                                                                      ', '),
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          15),
                                                                 ),
                                                               ),
                                                             ],

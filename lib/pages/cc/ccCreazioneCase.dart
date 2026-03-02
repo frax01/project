@@ -233,11 +233,11 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
 
     try {
       var excelFile = excel.Excel.createExcel();
-      
+
       final QuerySnapshot result =
           await FirebaseFirestore.instance.collection('ccCase').get();
       final List<DocumentSnapshot> documents = result.docs;
-      
+
       Map<String, List<Map<String, dynamic>>> clubData = {};
       for (var doc in documents) {
         final numero = doc['numero'];
@@ -261,39 +261,61 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
       }
 
       clubData.forEach((club, persone) {
-    var sheet = excelFile[club.isNotEmpty ? club : 'Senza Club'];
+        var sheet = excelFile[club.isNotEmpty ? club : 'Senza Club'];
 
-    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =  excel.TextCellValue('Cognome');
-    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value =  excel.TextCellValue('Nome');
-    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value =  excel.TextCellValue('Club');
-    sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value =  excel.TextCellValue('Appartamento');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+            .value = excel.TextCellValue('Cognome');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0))
+            .value = excel.TextCellValue('Nome');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0))
+            .value = excel.TextCellValue('Club');
+        sheet
+            .cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0))
+            .value = excel.TextCellValue('Appartamento');
 
-    for (int i = 0; i < persone.length; i++) {
-      var persona = persone[i];
-      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1)).value = excel.TextCellValue(persona['Cognome']);
-      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1)).value = excel.TextCellValue(persona['Nome']);
-      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1)).value = excel.TextCellValue(persona['Club']);
-      sheet.cell(excel.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1)).value = excel.TextCellValue(persona['Appartamento']);
-      }
-    });
+        for (int i = 0; i < persone.length; i++) {
+          var persona = persone[i];
+          sheet
+              .cell(excel.CellIndex.indexByColumnRow(
+                  columnIndex: 0, rowIndex: i + 1))
+              .value = excel.TextCellValue(persona['Cognome']);
+          sheet
+              .cell(excel.CellIndex.indexByColumnRow(
+                  columnIndex: 1, rowIndex: i + 1))
+              .value = excel.TextCellValue(persona['Nome']);
+          sheet
+              .cell(excel.CellIndex.indexByColumnRow(
+                  columnIndex: 2, rowIndex: i + 1))
+              .value = excel.TextCellValue(persona['Club']);
+          sheet
+              .cell(excel.CellIndex.indexByColumnRow(
+                  columnIndex: 3, rowIndex: i + 1))
+              .value = excel.TextCellValue(persona['Appartamento']);
+        }
+      });
 
       final output = await getTemporaryDirectory();
       final file = File("${output.path}/stanzeCC2025.xlsx");
       await file.writeAsBytes(excelFile.encode()!);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File Excel creato e condiviso con successo!')),
+        const SnackBar(
+            content: Text('File Excel creato e condiviso con successo!')),
       );
 
       Navigator.of(context).pop();
 
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Ecco il file Excel delle stanze per il Champions Club 2025!',
+        text: 'Ecco il file Excel delle stanze per il Champions Club 2026!',
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore durante la creazione del file Excel: $e')),
+        SnackBar(
+            content: Text('Errore durante la creazione del file Excel: $e')),
       );
       Navigator.of(context).pop();
     }
@@ -323,7 +345,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
           .collection('ccCase')
           .doc(numero)
           .delete();
-          
+
       final QuerySnapshot result = await FirebaseFirestore.instance
           .collection('ccIscrizioniSquadre')
           .where('club', isEqualTo: club)
@@ -335,7 +357,8 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
             .collection('ccIscrizioniSquadre')
             .doc(squadra);
         final squadraData = await squadraDoc.get();
-        final giocatori = List<Map<String, dynamic>>.from(squadraData['giocatori']);
+        final giocatori =
+            List<Map<String, dynamic>>.from(squadraData['giocatori']);
         for (var giocatore in giocatori) {
           if (giocatore['appartamento'] == numero) {
             giocatore['appartamento'] = '';
@@ -390,7 +413,10 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.data!.docs.isEmpty) {
               return const Center(
-                child: Text('Nessuna casa', style: TextStyle(fontSize: 19, color: Colors.black54),),
+                child: Text(
+                  'Nessuna casa',
+                  style: TextStyle(fontSize: 19, color: Colors.black54),
+                ),
               );
             }
 

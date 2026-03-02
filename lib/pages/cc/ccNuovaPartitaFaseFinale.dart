@@ -244,8 +244,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'
-        ),
+            'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'),
       ),
       body: FutureBuilder<void>(
         future: _futureGironi,
@@ -281,13 +280,17 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                initialValue: turni[turno].casa?.isNotEmpty == true
-                                    ? turni[turno].casa
-                                    : null,
+                                initialValue:
+                                    turni[turno].casa?.isNotEmpty == true
+                                        ? turni[turno].casa
+                                        : null,
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value, overflow: TextOverflow.ellipsis,),
+                                    child: Text(
+                                      value,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -302,13 +305,17 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                initialValue: turni[turno].fuori?.isNotEmpty == true
-                                    ? turni[turno].fuori
-                                    : null,
+                                initialValue:
+                                    turni[turno].fuori?.isNotEmpty == true
+                                        ? turni[turno].fuori
+                                        : null,
                                 items: squadre.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value, overflow: TextOverflow.ellipsis,),
+                                    child: Text(
+                                      value,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -356,13 +363,17 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                initialValue: turni[turno].campo?.isNotEmpty == true
-                                    ? turni[turno].campo
-                                    : null,
+                                initialValue:
+                                    turni[turno].campo?.isNotEmpty == true
+                                        ? turni[turno].campo
+                                        : null,
                                 items: campi.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value, overflow: TextOverflow.ellipsis,),
+                                    child: Text(
+                                      value,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (newValue) {
@@ -389,7 +400,10 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value, overflow: TextOverflow.ellipsis,),
+                                      child: Text(
+                                        value,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (newValue) {
@@ -404,15 +418,18 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  initialValue: turni[turno].refertista?.isNotEmpty ==
-                                          true
-                                      ? turni[turno].refertista
-                                      : null,
+                                  initialValue:
+                                      turni[turno].refertista?.isNotEmpty ==
+                                              true
+                                          ? turni[turno].refertista
+                                          : null,
                                   items: staff.map((String value) {
                                     return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value, overflow: TextOverflow.ellipsis,)
-                                    );
+                                        value: value,
+                                        child: Text(
+                                          value,
+                                          overflow: TextOverflow.ellipsis,
+                                        ));
                                   }).toList(),
                                   onChanged: (newValue) {
                                     setState(() {

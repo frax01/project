@@ -100,40 +100,50 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                         ),
                         const SizedBox(height: 15),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            textStyle: const TextStyle(fontSize: 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            style: ElevatedButton.styleFrom(
+                              textStyle: const TextStyle(fontSize: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 5,
                             ),
-                            elevation: 5,
-                          ),
-                          onPressed: () async {
-                            _showLoadingDialog();
-                            FilePickerResult? result =
-                                await FilePicker.platform.pickFiles();
-                            if (result != null) {
-                              setDialogState(() {
-                                localFileF = result.files.first;
-                                placeHolder = localFileF!.name;
-                                print("File selezionato: $localFileF");
-                              });
-                            }
-                            Navigator.of(context).pop();
-                          },
-                          child: logoUrl == '' || logoUrl == null 
-                          ? Text(placeHolder, style: const TextStyle(fontSize: 16.0), maxLines: 1, overflow: TextOverflow.ellipsis,)
-                          : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Image.network(
-                              logoUrl,
-                              width: 30,
-                              height: 30,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text('Cambia logo', style: TextStyle(fontSize: 16.0), maxLines: 1, overflow: TextOverflow.ellipsis,)
-                          ],)
-                        ),
+                            onPressed: () async {
+                              _showLoadingDialog();
+                              FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles();
+                              if (result != null) {
+                                setDialogState(() {
+                                  localFileF = result.files.first;
+                                  placeHolder = localFileF!.name;
+                                  print("File selezionato: $localFileF");
+                                });
+                              }
+                              Navigator.of(context).pop();
+                            },
+                            child: logoUrl == '' || logoUrl == null
+                                ? Text(
+                                    placeHolder,
+                                    style: const TextStyle(fontSize: 16.0),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.network(
+                                        logoUrl,
+                                        width: 30,
+                                        height: 30,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        'Cambia logo',
+                                        style: TextStyle(fontSize: 16.0),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    ],
+                                  )),
                         if (localFileF == null && logoUrl == null)
                           const Text(
                             'Seleziona un file',
@@ -180,8 +190,11 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                           List<Map<String, dynamic>> squadre =
                               List<Map<String, dynamic>>.from(
                                   docSnapshot['squadre']);
-                                  
-                          await _firestore.collection("ccSquadre").doc(club).delete();
+
+                          await _firestore
+                              .collection("ccSquadre")
+                              .doc(club)
+                              .delete();
 
                           await _firestore
                               .collection('ccSquadre')

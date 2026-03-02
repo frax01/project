@@ -7,10 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../functions/dataFunctions.dart';
 import 'waiting.dart';
 import 'package:flutter/gestures.dart';
-import 'package:club/pages/club/accessoCC.dart';
+import 'package:club/main.dart';
+import 'ccLoginPage.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  const Login({super.key, this.skipCcCheck = false});
+
+  final bool skipCcCheck;
 
   @override
   _LoginState createState() => _LoginState();
@@ -259,6 +262,10 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.skipCcCheck && CcLoginPage.isActive()) {
+      return const CcLoginPage();
+    }
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -377,36 +384,50 @@ class _LoginState extends State<Login> {
                       ),
                       const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AccessoCC(email: '', club: club))),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF00296B),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      'images/logo_champions_bianco.png',
-                                      width: 30,
-                                      height: 30,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Text(
-                                      'Champions Club 2025',
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                  ]
-                                )
-                              )
-                            )
-                          ],
-                        )
-                      ),
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        final SharedPreferences prefs =
+                                            await SharedPreferences
+                                                .getInstance();
+                                        await prefs.setString('cc', 'yes');
+                                        await prefs.setString('ccRole', 'user');
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => MyApp(
+                                                club: club,
+                                                cc: 'yes',
+                                                ccRole: 'user',
+                                                nome: ''),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF00296B),
+                                      ),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              'images/logo_champions_bianco.png',
+                                              width: 30,
+                                              height: 30,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Text(
+                                              'Champions Club 2026',
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                          ])))
+                            ],
+                          )),
                       const SizedBox(height: 10),
                       TextButton(
                         onPressed: _showForgotPasswordDialog,
