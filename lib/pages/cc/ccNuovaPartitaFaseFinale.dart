@@ -142,7 +142,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -281,7 +281,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].casa?.isNotEmpty == true
+                                initialValue: turni[turno].casa?.isNotEmpty == true
                                     ? turni[turno].casa
                                     : null,
                                 items: squadre.map((String value) {
@@ -302,7 +302,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].fuori?.isNotEmpty == true
+                                initialValue: turni[turno].fuori?.isNotEmpty == true
                                     ? turni[turno].fuori
                                     : null,
                                 items: squadre.map((String value) {
@@ -356,7 +356,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: turni[turno].campo?.isNotEmpty == true
+                                initialValue: turni[turno].campo?.isNotEmpty == true
                                     ? turni[turno].campo
                                     : null,
                                 items: campi.map((String value) {
@@ -382,7 +382,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value:
+                                  initialValue:
                                       turni[turno].arbitro?.isNotEmpty == true
                                           ? turni[turno].arbitro
                                           : null,
@@ -404,7 +404,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno].refertista?.isNotEmpty ==
+                                  initialValue: turni[turno].refertista?.isNotEmpty ==
                                           true
                                       ? turni[turno].refertista
                                       : null,

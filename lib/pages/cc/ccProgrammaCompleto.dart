@@ -47,7 +47,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
             groupedProgrammi[data]!.add(programma);
           }
 
-          Future<List<String>> _getNomiSquadre(List<String> codiciSquadre) async {
+          Future<List<String>> getNomiSquadre(List<String> codiciSquadre) async {
             List<String> nomiSquadre = [];
             for (String codice in codiciSquadre) {
               List<String> parts = codice.split(' ');
@@ -218,7 +218,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                                                       programma['codiceSquadre']
                                                           .isNotEmpty
                                                   ? FutureBuilder<List<String>>(
-                                                      future: _getNomiSquadre(List<
+                                                      future: getNomiSquadre(List<
                                                               String>.from(
                                                           programma[
                                                               'codiceSquadre'])),
@@ -262,7 +262,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                                                               'codiceIncarico']
                                                           .isNotEmpty
                                                   ? FutureBuilder<List<String>>(
-                                                      future: _getNomiSquadre(List<
+                                                      future: getNomiSquadre(List<
                                                               String>.from(
                                                           programma[
                                                               'codiceIncarico'])),
@@ -363,7 +363,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                               ),
                             ),
                           );
-                  }).toList(),
+                  }),
                 ],
               );
             },

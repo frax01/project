@@ -12,7 +12,7 @@ class LocalNotificationService {
         InitializationSettings(
             android: AndroidInitializationSettings("@mipmap/ic_launcher"), iOS: DarwinInitializationSettings());
 
-    _notificationsPlugin.initialize(initializationSettings,
+    _notificationsPlugin.initialize(settings: initializationSettings,
         onDidReceiveNotificationResponse: (payload) {
           handleMessageFromBackgroundAndForegroundState(notificationMessage);
     });
@@ -29,10 +29,10 @@ class LocalNotificationService {
             largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher')));
 
     _notificationsPlugin.show(
-      DateTime.now().microsecond,
-      message.data["notTitle"],
-      message.data["notBody"],
-      notificationDetail,
+      id: DateTime.now().microsecond,
+      title: message.data["notTitle"],
+      body: message.data["notBody"],
+      notificationDetails: notificationDetail,
       payload: message.data["category"],
     );
   }

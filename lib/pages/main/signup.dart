@@ -50,7 +50,7 @@ class _SignUpState extends State<SignUp> {
     super.dispose();
   }
 
-  _firebaseMessaging() async {
+  Future<String> _firebaseMessaging() async {
     String? token = await FirebaseMessaging.instance.getToken();
     assert(token != null);
     return token != null && token.isNotEmpty ? token : '';
@@ -62,7 +62,7 @@ class _SignUpState extends State<SignUp> {
     return s[0].toUpperCase() + s.substring(1).toLowerCase();
   }
 
-  _saveUser(ClubUser user) async {
+  Future<void> _saveUser(ClubUser user) async {
     try {
       String formattedName = _capitalize(user.name);
       String formattedSurname = _capitalize(user.surname);
@@ -89,7 +89,7 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
-  _handleSignup() async {
+  Future<void> _handleSignup() async {
     if (_isPrivacyAccepted == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -165,7 +165,7 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
-  _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context) async {
     _nameFocusNode.unfocus();
     _surnameFocusNode.unfocus();
     _emailFocusNode.unfocus();

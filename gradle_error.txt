@@ -1,0 +1,808 @@
+Starting a Gradle Daemon, 1 busy and 1 incompatible Daemons could not be reused, use --status for details
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:compileKotlin UP-TO-DATE
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources UP-TO-DATE
+> Task :gradle:classes UP-TO-DATE
+> Task :gradle:jar UP-TO-DATE
+
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 9.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+
+> Configure project :file_picker
+Warning: The plugin file_picker requires Android SDK version 36 or higher.
+For more information about build configuration, see https://flutter.dev/to/review-gradle-config.
+
+> Configure project :package_info_plus
+Warning: The plugin package_info_plus requires Android SDK version 36 or higher.
+For more information about build configuration, see https://flutter.dev/to/review-gradle-config.
+
+> Configure project :share_plus
+Warning: The plugin share_plus requires Android SDK version 36 or higher.
+For more information about build configuration, see https://flutter.dev/to/review-gradle-config.
+
+> Configure project :url_launcher_android
+.\gradlew.bat : Your project is 
+configured to compile against Android 
+SDK 35, but the following plugin(s) 
+require to be compiled against a 
+higher Android SDK version:
+In riga:1 car:58
++ ... roject\android; .\gradlew.bat 
+assembleDebug --stacktrace 2>&1 | 
+Out-F ...
++                     ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+NotSpecified    : (Your project 
+is...id SDK version::S    tring) [], 
+RemoteException
+    + FullyQualifiedErrorId : 
+NativeComman    dError
+ 
+- file_picker compiles against 
+Android SDK 36
+- package_info_plus compiles against 
+Android SDK 36
+- share_plus compiles against Android 
+SDK 36
+Fix this issue by compiling against 
+the highest Android SDK version (they 
+are backward compatible).
+Add the following to C:\Users\francesc
+o\Desktop\project\android\app\build.gr
+adle:
+
+    android {
+        compileSdk = 36
+        ...
+    }
+Your project is configured with 
+Android NDK 26.1.10909125, but the 
+following plugin(s) depend on a 
+different Android NDK version:
+- cloud_firestore requires Android 
+NDK 27.0.12077973
+- device_info_plus requires Android 
+NDK 27.0.12077973
+- file_picker requires Android NDK 
+27.0.12077973
+- firebase_analytics requires Android 
+NDK 27.0.12077973
+- firebase_auth requires Android NDK 
+27.0.12077973
+- firebase_core requires Android NDK 
+27.0.12077973
+- firebase_in_app_messaging requires 
+Android NDK 27.0.12077973
+- firebase_messaging requires Android 
+NDK 27.0.12077973
+- firebase_storage requires Android 
+NDK 27.0.12077973
+- flutter_background_service_android 
+requires Android NDK 27.0.12077973
+- flutter_keyboard_visibility 
+requires Android NDK 27.0.12077973
+- flutter_local_notifications 
+requires Android NDK 27.0.12077973
+- flutter_pdfview requires Android 
+NDK 27.0.12077973
+- flutter_plugin_android_lifecycle 
+requires Android NDK 27.0.12077973
+- flutter_web_browser requires 
+Android NDK 27.0.12077973
+- image_picker_android requires 
+Android NDK 27.0.12077973
+- maps_launcher requires Android NDK 
+27.0.12077973
+- package_info_plus requires Android 
+NDK 27.0.12077973
+- path_provider_android requires 
+Android NDK 27.0.12077973
+- permission_handler_android requires 
+Android NDK 27.0.12077973
+- printing requires Android NDK 
+27.0.12077973
+- share_plus requires Android NDK 
+27.0.12077973
+- shared_preferences_android requires 
+Android NDK 27.0.12077973
+- url_launcher_android requires 
+Android NDK 27.0.12077973
+Fix this issue by using the highest 
+Android NDK version (they are 
+backward compatible).
+Add the following to C:\Users\francesc
+o\Desktop\project\android\app\build.gr
+adle:
+
+    android {
+        ndkVersion = "27.0.12077973"
+        ...
+    }
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 36
+
+This Android Gradle plugin (8.7.3) was tested up to compileSdk = 35.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 36.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 36 is available.
+
+For more information refer to the compatibility table:
+https://d.android.com/r/tools/api-level-support
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=36
+to this project's gradle.properties.
+
+> Task :app:DebugMinSdkCheck
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig
+
+> Task :app:compileFlutterBuildDebug
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.0/lib/src
+/flex_color_scheme.dart:6075:51: 
+Error: A value of type 
+'AppBarThemeData' can't be assigned 
+to a variable of type 'AppBarTheme'.
+ - 'AppBarThemeData' is from 'package:
+flutter/src/material/app_bar_theme.dar
+t' ('../DIMA/flutter_windows_3.13.4-st
+able/flutter/packages/flutter/lib/src/
+material/app_bar_theme.dart').
+ - 'AppBarTheme' is from 'package:flut
+ter/src/material/app_bar_theme.dart' (
+'../DIMA/flutter_windows_3.13.4-stable
+/flutter/packages/flutter/lib/src/mate
+rial/app_bar_theme.dart').
+      final AppBarTheme appBarTheme = 
+AppBarTheme.of(context);
+                                      
+            ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.0/lib/src
+/flex_color_scheme.dart:7667:11: 
+Error: The argument type 
+'BottomAppBarTheme' can't be assigned 
+to the parameter type 
+'BottomAppBarThemeData?'.
+ - 'BottomAppBarTheme' is from 'packag
+e:flutter/src/material/bottom_app_bar_
+theme.dart' ('../DIMA/flutter_windows_
+3.13.4-stable/flutter/packages/flutter
+/lib/src/material/bottom_app_bar_theme
+.dart').
+ - 'BottomAppBarThemeData' is from 'pa
+ckage:flutter/src/material/bottom_app_
+bar_theme.dart' ('../DIMA/flutter_wind
+ows_3.13.4-stable/flutter/packages/flu
+tter/lib/src/material/bottom_app_bar_t
+heme.dart').
+          ? 
+FlexSubThemes.bottomAppBarTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.0/lib/src
+/flex_color_scheme.dart:7812:11: 
+Error: The argument type 'CardTheme?' 
+can't be assigned to the parameter 
+type 'CardThemeData?'.
+ - 'CardTheme' is from 'package:flutte
+r/src/material/card_theme.dart' ('../D
+IMA/flutter_windows_3.13.4-stable/flut
+ter/packages/flutter/lib/src/material/
+card_theme.dart').
+ - 'CardThemeData' is from 'package:fl
+utter/src/material/card_theme.dart' ('
+../DIMA/flutter_windows_3.13.4-stable/
+flutter/packages/flutter/lib/src/mater
+ial/card_theme.dart').
+          ? FlexSubThemes.cardTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.0/lib/src
+/flex_color_scheme.dart:7910:11: 
+Error: The argument type 
+'DialogTheme?' can't be assigned to 
+the parameter type 'DialogThemeData?'.
+ - 'DialogTheme' is from 'package:flut
+ter/src/material/dialog_theme.dart' ('
+../DIMA/flutter_windows_3.13.4-stable/
+flutter/packages/flutter/lib/src/mater
+ial/dialog_theme.dart').
+ - 'DialogThemeData' is from 'package:
+flutter/src/material/dialog_theme.dart
+' ('../DIMA/flutter_windows_3.13.4-sta
+ble/flutter/packages/flutter/lib/src/m
+aterial/dialog_theme.dart').
+          ? FlexSubThemes.dialogTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/p
+ub.dev/flex_color_scheme-8.0.0/lib/src
+/flex_color_scheme.dart:8368:34: 
+Error: The argument type 
+'TabBarTheme' can't be assigned to 
+the parameter type 'TabBarThemeData?'.
+ - 'TabBarTheme' is from 'package:flut
+ter/src/material/tab_bar_theme.dart' (
+'../DIMA/flutter_windows_3.13.4-stable
+/flutter/packages/flutter/lib/src/mate
+rial/tab_bar_theme.dart').
+ - 'TabBarThemeData' is from 'package:
+flutter/src/material/tab_bar_theme.dar
+t' ('../DIMA/flutter_windows_3.13.4-st
+able/flutter/packages/flutter/lib/src/
+material/tab_bar_theme.dart').
+      tabBarTheme: 
+FlexSubThemes.tabBarTheme(
+                                 ^
+Target kernel_snapshot_program 
+failed: Exception
+
+
+> Task :app:compileFlutterBuildDebug FAILED
+[Incubating] Problems report is available at: file:///C:/Users/francesco/Desktop/project/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an 
+exception.
+
+* What went wrong:
+Execution failed for task 
+':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\Users\francesco
+\Desktop\DIMA\flutter_windows_3.13.4-s
+table\flutter\bin\flutter.bat'' 
+finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option 
+to get more log output.
+> Run with --scan to get full 
+insights.
+> Get more help at 
+https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionExce
+ption: Execution failed for task 
+':app:compileFlutterBuildDebug'.
+	at org.gradle.api.internal.tasks.exec
+ution.ExecuteActionsTaskExecuter.lambd
+a$executeIfValid$1(ExecuteActionsTaskE
+xecuter.java:130)
+	at org.gradle.internal.Try$Failure.if
+SuccessfulOrElse(Try.java:293)
+	at org.gradle.api.internal.tasks.exec
+ution.ExecuteActionsTaskExecuter.execu
+teIfValid(ExecuteActionsTaskExecuter.j
+ava:128)
+	at org.gradle.api.internal.tasks.exec
+ution.ExecuteActionsTaskExecuter.execu
+te(ExecuteActionsTaskExecuter.java:116
+)
+	at org.gradle.api.internal.tasks.exec
+ution.FinalizePropertiesTaskExecuter.e
+xecute(FinalizePropertiesTaskExecuter.
+java:46)
+	at org.gradle.api.internal.tasks.exec
+ution.ResolveTaskExecutionModeExecuter
+.execute(ResolveTaskExecutionModeExecu
+ter.java:51)
+	at org.gradle.api.internal.tasks.exec
+ution.SkipTaskWithNoActionsExecuter.ex
+ecute(SkipTaskWithNoActionsExecuter.ja
+va:57)
+	at org.gradle.api.internal.tasks.exec
+ution.SkipOnlyIfTaskExecuter.execute(S
+kipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.exec
+ution.CatchExceptionTaskExecuter.execu
+te(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.execut
+eTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.call(E
+ventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.call(E
+ventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:209)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:204)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.call(DefaultB
+uildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter.execute(
+EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTas
+kNodeExecutor.execute(LocalTaskNodeExe
+cutor.java:42)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$InvokeNodeExecu
+torsAction.execute(DefaultTaskExecutio
+nGraph.java:331)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$InvokeNodeExecu
+torsAction.execute(DefaultTaskExecutio
+nGraph.java:318)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.lambda$execute$0(D
+efaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.Cur
+rentBuildOperationRef.with(CurrentBuil
+dOperationRef.java:85)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.execute(DefaultTas
+kExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.execute(DefaultTas
+kExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultP
+lanExecutor$ExecutorWorker.execute(Def
+aultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultP
+lanExecutor$ExecutorWorker.run(Default
+PlanExecutor.java:376)
+	at org.gradle.internal.concurrent.Exe
+cutorPolicy$CatchAndRecordFailures.onE
+xecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.Abs
+tractManagedExecutor$1.run(AbstractMan
+agedExecutor.java:48)
+Caused by: org.gradle.process.internal
+.ExecException: Process 'command 'C:\U
+sers\francesco\Desktop\DIMA\flutter_wi
+ndows_3.13.4-stable\flutter\bin\flutte
+r.bat'' finished with non-zero exit 
+value 1
+	at org.gradle.process.internal.Defaul
+tExecHandle$ExecResultImpl.assertNorma
+lExitValue(DefaultExecHandle.java:442)
+	at org.gradle.process.internal.Defaul
+tExecAction.execute(DefaultExecAction.
+java:38)
+	at org.gradle.process.internal.Defaul
+tExecActionFactory.exec(DefaultExecAct
+ionFactory.java:202)
+	at org.gradle.process.internal.Defaul
+tExecOperations.exec(DefaultExecOperat
+ions.java:37)
+	at com.flutter.gradle.tasks.BaseFlutt
+erTaskHelper.buildBundle(BaseFlutterTa
+skHelper.kt:159)
+	at com.flutter.gradle.tasks.BaseFlutt
+erTask.buildBundle(BaseFlutterTask.kt:
+143)
+	at com.flutter.gradle.tasks.FlutterTa
+skHelper.build$gradle(FlutterTaskHelpe
+r.kt:90)
+	at com.flutter.gradle.tasks.FlutterTa
+sk.build(FlutterTask.kt:51)
+	at java.base/jdk.internal.reflect.Dir
+ectMethodHandleAccessor.invoke(DirectM
+ethodHandleAccessor.java:103)
+	at org.gradle.internal.reflect.JavaMe
+thod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.ta
+skfactory.StandardTaskAction.doExecute
+(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.ta
+skfactory.StandardTaskAction.execute(S
+tandardTaskAction.java:51)
+	at org.gradle.api.internal.project.ta
+skfactory.StandardTaskAction.execute(S
+tandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution$3.run(TaskExecutio
+n.java:244)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$1.execute(Def
+aultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$1.execute(Def
+aultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.run(DefaultBu
+ildOperationRunner.java:47)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution.executeAction(Task
+Execution.java:229)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution.executeActions(Tas
+kExecution.java:212)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution.executeWithPreviou
+sOutputFiles(TaskExecution.java:195)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution.execute(TaskExecut
+ion.java:162)
+	at org.gradle.internal.execution.step
+s.ExecuteStep.executeInternal(ExecuteS
+tep.java:105)
+	at org.gradle.internal.execution.step
+s.ExecuteStep.access$000(ExecuteStep.j
+ava:44)
+	at org.gradle.internal.execution.step
+s.ExecuteStep$1.call(ExecuteStep.java:
+59)
+	at org.gradle.internal.execution.step
+s.ExecuteStep$1.call(ExecuteStep.java:
+56)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:209)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:204)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.call(DefaultB
+uildOperationRunner.java:53)
+	at org.gradle.internal.execution.step
+s.ExecuteStep.execute(ExecuteStep.java
+:56)
+	at org.gradle.internal.execution.step
+s.ExecuteStep.execute(ExecuteStep.java
+:44)
+	at org.gradle.internal.execution.step
+s.CancelExecutionStep.execute(CancelEx
+ecutionStep.java:42)
+	at org.gradle.internal.execution.step
+s.TimeoutStep.executeWithoutTimeout(Ti
+meoutStep.java:75)
+	at org.gradle.internal.execution.step
+s.TimeoutStep.execute(TimeoutStep.java
+:55)
+	at org.gradle.internal.execution.step
+s.PreCreateOutputParentsStep.execute(P
+reCreateOutputParentsStep.java:50)
+	at org.gradle.internal.execution.step
+s.PreCreateOutputParentsStep.execute(P
+reCreateOutputParentsStep.java:28)
+	at org.gradle.internal.execution.step
+s.RemovePreviousOutputsStep.execute(Re
+movePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.step
+s.RemovePreviousOutputsStep.execute(Re
+movePreviousOutputsStep.java:37)
+	at org.gradle.internal.execution.step
+s.BroadcastChangingOutputsStep.execute
+(BroadcastChangingOutputsStep.java:61)
+	at org.gradle.internal.execution.step
+s.BroadcastChangingOutputsStep.execute
+(BroadcastChangingOutputsStep.java:26)
+	at org.gradle.internal.execution.step
+s.CaptureOutputsAfterExecutionStep.exe
+cute(CaptureOutputsAfterExecutionStep.
+java:69)
+	at org.gradle.internal.execution.step
+s.CaptureOutputsAfterExecutionStep.exe
+cute(CaptureOutputsAfterExecutionStep.
+java:46)
+	at org.gradle.internal.execution.step
+s.ResolveInputChangesStep.execute(Reso
+lveInputChangesStep.java:40)
+	at org.gradle.internal.execution.step
+s.ResolveInputChangesStep.execute(Reso
+lveInputChangesStep.java:29)
+	at org.gradle.internal.execution.step
+s.BuildCacheStep.executeWithoutCache(B
+uildCacheStep.java:189)
+	at org.gradle.internal.execution.step
+s.BuildCacheStep.lambda$execute$1(Buil
+dCacheStep.java:75)
+	at org.gradle.internal.Either$Right.f
+old(Either.java:175)
+	at org.gradle.internal.execution.cach
+ing.CachingState.fold(CachingState.jav
+a:62)
+	at org.gradle.internal.execution.step
+s.BuildCacheStep.execute(BuildCacheSte
+p.java:73)
+	at org.gradle.internal.execution.step
+s.BuildCacheStep.execute(BuildCacheSte
+p.java:48)
+	at org.gradle.internal.execution.step
+s.StoreExecutionStateStep.execute(Stor
+eExecutionStateStep.java:46)
+	at org.gradle.internal.execution.step
+s.StoreExecutionStateStep.execute(Stor
+eExecutionStateStep.java:35)
+	at org.gradle.internal.execution.step
+s.SkipUpToDateStep.executeBecause(Skip
+UpToDateStep.java:75)
+	at org.gradle.internal.execution.step
+s.SkipUpToDateStep.lambda$execute$2(Sk
+ipUpToDateStep.java:53)
+	at org.gradle.internal.execution.step
+s.SkipUpToDateStep.execute(SkipUpToDat
+eStep.java:53)
+	at org.gradle.internal.execution.step
+s.SkipUpToDateStep.execute(SkipUpToDat
+eStep.java:35)
+	at org.gradle.internal.execution.step
+s.legacy.MarkSnapshottingInputsFinishe
+dStep.execute(MarkSnapshottingInputsFi
+nishedStep.java:37)
+	at org.gradle.internal.execution.step
+s.legacy.MarkSnapshottingInputsFinishe
+dStep.execute(MarkSnapshottingInputsFi
+nishedStep.java:27)
+	at org.gradle.internal.execution.step
+s.ResolveIncrementalCachingStateStep.e
+xecuteDelegate(ResolveIncrementalCachi
+ngStateStep.java:49)
+	at org.gradle.internal.execution.step
+s.ResolveIncrementalCachingStateStep.e
+xecuteDelegate(ResolveIncrementalCachi
+ngStateStep.java:27)
+	at org.gradle.internal.execution.step
+s.AbstractResolveCachingStateStep.exec
+ute(AbstractResolveCachingStateStep.ja
+va:71)
+	at org.gradle.internal.execution.step
+s.AbstractResolveCachingStateStep.exec
+ute(AbstractResolveCachingStateStep.ja
+va:39)
+	at org.gradle.internal.execution.step
+s.ResolveChangesStep.execute(ResolveCh
+angesStep.java:65)
+	at org.gradle.internal.execution.step
+s.ResolveChangesStep.execute(ResolveCh
+angesStep.java:36)
+	at org.gradle.internal.execution.step
+s.ValidateStep.execute(ValidateStep.ja
+va:107)
+	at org.gradle.internal.execution.step
+s.ValidateStep.execute(ValidateStep.ja
+va:56)
+	at org.gradle.internal.execution.step
+s.AbstractCaptureStateBeforeExecutionS
+tep.execute(AbstractCaptureStateBefore
+ExecutionStep.java:64)
+	at org.gradle.internal.execution.step
+s.AbstractCaptureStateBeforeExecutionS
+tep.execute(AbstractCaptureStateBefore
+ExecutionStep.java:43)
+	at org.gradle.internal.execution.step
+s.AbstractSkipEmptyWorkStep.executeWit
+hNonEmptySources(AbstractSkipEmptyWork
+Step.java:125)
+	at org.gradle.internal.execution.step
+s.AbstractSkipEmptyWorkStep.execute(Ab
+stractSkipEmptyWorkStep.java:56)
+	at org.gradle.internal.execution.step
+s.AbstractSkipEmptyWorkStep.execute(Ab
+stractSkipEmptyWorkStep.java:36)
+	at org.gradle.internal.execution.step
+s.legacy.MarkSnapshottingInputsStarted
+Step.execute(MarkSnapshottingInputsSta
+rtedStep.java:38)
+	at org.gradle.internal.execution.step
+s.LoadPreviousExecutionStateStep.execu
+te(LoadPreviousExecutionStateStep.java
+:36)
+	at org.gradle.internal.execution.step
+s.LoadPreviousExecutionStateStep.execu
+te(LoadPreviousExecutionStateStep.java
+:23)
+	at org.gradle.internal.execution.step
+s.HandleStaleOutputsStep.execute(Handl
+eStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.step
+s.HandleStaleOutputsStep.execute(Handl
+eStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.step
+s.AssignMutableWorkspaceStep.lambda$ex
+ecute$0(AssignMutableWorkspaceStep.jav
+a:35)
+	at org.gradle.api.internal.tasks.exec
+ution.TaskExecution$4.withWorkspace(Ta
+skExecution.java:289)
+	at org.gradle.internal.execution.step
+s.AssignMutableWorkspaceStep.execute(A
+ssignMutableWorkspaceStep.java:31)
+	at org.gradle.internal.execution.step
+s.AssignMutableWorkspaceStep.execute(A
+ssignMutableWorkspaceStep.java:22)
+	at org.gradle.internal.execution.step
+s.ChoosePipelineStep.execute(ChoosePip
+elineStep.java:40)
+	at org.gradle.internal.execution.step
+s.ChoosePipelineStep.execute(ChoosePip
+elineStep.java:23)
+	at org.gradle.internal.execution.step
+s.ExecuteWorkBuildOperationFiringStep.
+lambda$execute$2(ExecuteWorkBuildOpera
+tionFiringStep.java:67)
+	at org.gradle.internal.execution.step
+s.ExecuteWorkBuildOperationFiringStep.
+execute(ExecuteWorkBuildOperationFirin
+gStep.java:67)
+	at org.gradle.internal.execution.step
+s.ExecuteWorkBuildOperationFiringStep.
+execute(ExecuteWorkBuildOperationFirin
+gStep.java:39)
+	at org.gradle.internal.execution.step
+s.IdentityCacheStep.execute(IdentityCa
+cheStep.java:46)
+	at org.gradle.internal.execution.step
+s.IdentityCacheStep.execute(IdentityCa
+cheStep.java:34)
+	at org.gradle.internal.execution.step
+s.IdentifyStep.execute(IdentifyStep.ja
+va:48)
+	at org.gradle.internal.execution.step
+s.IdentifyStep.execute(IdentifyStep.ja
+va:35)
+	at org.gradle.internal.execution.impl
+.DefaultExecutionEngine$1.execute(Defa
+ultExecutionEngine.java:61)
+	at org.gradle.api.internal.tasks.exec
+ution.ExecuteActionsTaskExecuter.execu
+teIfValid(ExecuteActionsTaskExecuter.j
+ava:127)
+	at org.gradle.api.internal.tasks.exec
+ution.ExecuteActionsTaskExecuter.execu
+te(ExecuteActionsTaskExecuter.java:116
+)
+	at org.gradle.api.internal.tasks.exec
+ution.FinalizePropertiesTaskExecuter.e
+xecute(FinalizePropertiesTaskExecuter.
+java:46)
+	at org.gradle.api.internal.tasks.exec
+ution.ResolveTaskExecutionModeExecuter
+.execute(ResolveTaskExecutionModeExecu
+ter.java:51)
+	at org.gradle.api.internal.tasks.exec
+ution.SkipTaskWithNoActionsExecuter.ex
+ecute(SkipTaskWithNoActionsExecuter.ja
+va:57)
+	at org.gradle.api.internal.tasks.exec
+ution.SkipOnlyIfTaskExecuter.execute(S
+kipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.exec
+ution.CatchExceptionTaskExecuter.execu
+te(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.execut
+eTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.call(E
+ventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter$1.call(E
+ventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:209)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$CallableBuild
+OperationWorker.execute(DefaultBuildOp
+erationRunner.java:204)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner$2.execute(Def
+aultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.execute(Defau
+ltBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.Def
+aultBuildOperationRunner.call(DefaultB
+uildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.exec
+ution.EventFiringTaskExecuter.execute(
+EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTas
+kNodeExecutor.execute(LocalTaskNodeExe
+cutor.java:42)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$InvokeNodeExecu
+torsAction.execute(DefaultTaskExecutio
+nGraph.java:331)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$InvokeNodeExecu
+torsAction.execute(DefaultTaskExecutio
+nGraph.java:318)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.lambda$execute$0(D
+efaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.Cur
+rentBuildOperationRef.with(CurrentBuil
+dOperationRef.java:85)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.execute(DefaultTas
+kExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.Def
+aultTaskExecutionGraph$BuildOperationA
+wareExecutionAction.execute(DefaultTas
+kExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultP
+lanExecutor$ExecutorWorker.execute(Def
+aultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultP
+lanExecutor$ExecutorWorker.run(Default
+PlanExecutor.java:376)
+	at org.gradle.internal.concurrent.Exe
+cutorPolicy$CatchAndRecordFailures.onE
+xecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.Abs
+tractManagedExecutor$1.run(AbstractMan
+agedExecutor.java:48)
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 22m 28s
+7 actionable tasks: 3 executed, 4 up-to-date

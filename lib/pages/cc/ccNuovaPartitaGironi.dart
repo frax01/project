@@ -127,7 +127,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -313,7 +313,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].casa,
+                                  initialValue: turni[turno][partita].casa,
                                   items: squadre.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -341,7 +341,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: turni[turno][partita].fuori,
+                                  initialValue: turni[turno][partita].fuori,
                                   items: squadre.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
@@ -404,7 +404,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value:
+                                  initialValue:
                                       turni[turno][partita].campo?.isNotEmpty ==
                                               true
                                           ? turni[turno][partita].campo
@@ -435,7 +435,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                               children: [
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita]
+                                    initialValue: turni[turno][partita]
                                                 .arbitro
                                                 ?.isNotEmpty ==
                                             true
@@ -463,7 +463,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: turni[turno][partita]
+                                    initialValue: turni[turno][partita]
                                                 .refertista
                                                 ?.isNotEmpty ==
                                             true

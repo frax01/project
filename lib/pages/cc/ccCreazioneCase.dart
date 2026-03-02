@@ -7,6 +7,8 @@ import 'package:excel/excel.dart' as excel;
 import 'package:share_plus/share_plus.dart';
 
 class CcCreazioneCase extends StatefulWidget {
+  const CcCreazioneCase({super.key});
+
   @override
   _CcCreazioneCaseState createState() => _CcCreazioneCaseState();
 }
@@ -36,7 +38,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -114,7 +116,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _selectedClub,
+                  initialValue: _selectedClub,
                   hint: const Text('Seleziona Club'),
                   items: _clubs.map((String value) {
                     return DropdownMenuItem<String>(
@@ -476,7 +478,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                                         fontStyle: FontStyle.italic)),
                               ),
                             ]);
-                          }).toList()
+                          })
                         else
                           const ListTile(
                             title: Text('Nessuna persona'),

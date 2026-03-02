@@ -8,7 +8,7 @@ class CcIscriviSquadre extends StatefulWidget {
   final String club;
   final String ccRole;
 
-  CcIscriviSquadre({required this.club, required this.ccRole});
+  const CcIscriviSquadre({super.key, required this.club, required this.ccRole});
 
   @override
   _CcIscriviSquadreState createState() => _CcIscriviSquadreState();
@@ -424,7 +424,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),
@@ -537,7 +537,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                       child:
                                                           DropdownButtonFormField<
                                                               String>(
-                                                        value: giocatoriControllers[
+                                                        initialValue: giocatoriControllers[
                                                                     squadra]![i]
                                                                 .text
                                                                 .isNotEmpty
@@ -677,7 +677,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                               'tutor'
                                                           ? DropdownButtonFormField<
                                                               String>(
-                                                              value: appartamentoControllers[
+                                                              initialValue: appartamentoControllers[
                                                                               squadra]![
                                                                           i]
                                                                       .text
@@ -751,7 +751,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                                             )
                                                           : DropdownButtonFormField<
                                                               String>(
-                                                              value: appartamentoControllers[
+                                                              initialValue: appartamentoControllers[
                                                                               squadra]![
                                                                           i]
                                                                       .text

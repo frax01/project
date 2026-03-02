@@ -28,13 +28,13 @@ class _HomePageState extends State<HomePage> {
   final _listItems = <ProgramCard>[];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
-  refreshList() {
+  void refreshList() {
     setState(() {
       _listItems.clear();
     });
   }
 
-  _loadItems() async {
+  Future<void> _loadItems() async {
     refreshList();
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip']) {
@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
     _listItems.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
-  _buildList(String section) {
+  FutureBuilder<Object?> _buildList(String section) {
     return FutureBuilder(
       future: _loadItems(),
       builder: (context, snapshot) {

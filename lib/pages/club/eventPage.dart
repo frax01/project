@@ -60,7 +60,7 @@ class _EventPageState extends State<EventPage> {
     }
   }
 
-  refreshProgram() {
+  void refreshProgram() {
     setState(() {});
   }
 

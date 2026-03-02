@@ -57,7 +57,7 @@ class _ProgramCardState extends State<ProgramCard> {
     }
   }
 
-  _buildShimmer() {
+  Padding _buildShimmer() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: Card(
@@ -119,7 +119,7 @@ class _ProgramCardState extends State<ProgramCard> {
     );
   }
 
-  _buildCard() {
+  Padding _buildCard() {
     var title = data['title'];
     var level = data['selectedOption'];
     var start = data['startDate'];

@@ -18,7 +18,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage(
@@ -55,19 +54,19 @@ class _CCHomePageState extends State<CCHomePage> {
 
     _ccWidgetOptions = <Widget>[
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: CCProgramma(ccRole: widget.ccRole ?? ''),
       ),
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: const CCGironi(),
       ),
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: CCCalendario(
@@ -76,7 +75,7 @@ class _CCHomePageState extends State<CCHomePage> {
                 .nome),
       ),
       PopScope(
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (_, result) {
           SystemNavigator.pop();
         },
         child: const CCCapocannonieri(),
@@ -172,7 +171,7 @@ class _CCHomePageState extends State<CCHomePage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (context) {
         return const Center(
           child: CircularProgressIndicator(),

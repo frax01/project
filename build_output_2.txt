@@ -1,0 +1,88 @@
+Compiling lib\main.dart for the Web...                          
+Warning: In index.html:37: Local variable for "serviceWorkerVersion" is deprecated. Use "{{flutter_service_worker_version}}" template token instead. See https://docs.flutter.dev/platform-integration/web/initialization for more details.
+Warning: In index.html:46: "FlutterLoader.loadEntrypoint" is deprecated. Use "FlutterLoader.load" instead. See https://docs.flutter.dev/platform-integration/web/initialization for more details.
+Wasm dry run findings:
+Found incompatibilities with WebAssembly.
+
+package:flutter_keyboard_visibility_web/flutter_keyboard_visibility_web.dart 1:1 - dart:html unsupported (0)
+file:///C:/Users/francesco/AppData/Local/Pub/Cache/hosted/pub.dev/image-4.3.0/lib/src/exif/ifd_directory.dart 174:26 - avoid_double_and_int_checks lint violation: Explicit check for double or int. (13)
+file:///C:/Users/francesco/AppData/Local/Pub/Cache/hosted/pub.dev/image-4.3.0/lib/src/exif/ifd_directory.dart 183:26 - avoid_double_and_int_checks lint violation: Explicit check for double or int. (13)
+
+Consider addressing these issues to enable wasm builds. See docs for more info: https://docs.flutter.dev/platform-integration/web/wasm
+
+Use --no-wasm-dry-run to disable these warnings.
+Target dart2js failed: ProcessException: Process exited abnormally with exit code 1:
+../../AppData/Local/Pub/Cache/hosted/pub.dev/flex_color_scheme-8.0.0/lib/src/flex_color_scheme.dart:6075:51:
+Error: A value of type 'AppBarThemeData' can't be assigned to a variable of type 'AppBarTheme'.
+ - 'AppBarThemeData' is from 'package:flutter/src/material/app_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/app_bar_theme.dart').
+ - 'AppBarTheme' is from 'package:flutter/src/material/app_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/app_bar_theme.dart').
+      final AppBarTheme appBarTheme = AppBarTheme.of(context);
+                                                  ^
+../../AppData/Local/Pub/Cache/hosted/pub.dev/flex_color_scheme-8.0.0/lib/src/flex_color_scheme.dart:7667:11:
+Error: The argument type 'BottomAppBarTheme' can't be assigned to the parameter type 'BottomAppBarThemeData?'.
+ - 'BottomAppBarTheme' is from 'package:flutter/src/material/bottom_app_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/bottom_app_bar_theme.dart').
+ - 'BottomAppBarThemeData' is from 'package:flutter/src/material/bottom_app_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/bottom_app_bar_theme.dart').
+          ? FlexSubThemes.bottomAppBarTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/pub.dev/flex_color_scheme-8.0.0/lib/src/flex_color_scheme.dart:7812:11:
+Error: The argument type 'CardTheme?' can't be assigned to the parameter type 'CardThemeData?'.
+ - 'CardTheme' is from 'package:flutter/src/material/card_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/card_theme.dart').
+ - 'CardThemeData' is from 'package:flutter/src/material/card_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/card_theme.dart').
+          ? FlexSubThemes.cardTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/pub.dev/flex_color_scheme-8.0.0/lib/src/flex_color_scheme.dart:7910:11:
+Error: The argument type 'DialogTheme?' can't be assigned to the parameter type 'DialogThemeData?'.
+ - 'DialogTheme' is from 'package:flutter/src/material/dialog_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/dialog_theme.dart').
+ - 'DialogThemeData' is from 'package:flutter/src/material/dialog_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/dialog_theme.dart').
+          ? FlexSubThemes.dialogTheme(
+          ^
+../../AppData/Local/Pub/Cache/hosted/pub.dev/flex_color_scheme-8.0.0/lib/src/flex_color_scheme.dart:8368:34:
+Error: The argument type 'TabBarTheme' can't be assigned to the parameter type 'TabBarThemeData?'.
+ - 'TabBarTheme' is from 'package:flutter/src/material/tab_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/tab_bar_theme.dart').
+ - 'TabBarThemeData' is from 'package:flutter/src/material/tab_bar_theme.dart' ('../DIMA/flutter_windows_3.13.4-stable/flutter/packages/flutter/lib/src/material/tab_bar_theme.dart').
+      tabBarTheme: FlexSubThemes.tabBarTheme(
+                                 ^
+Error: Compilation failed.
+  Command: C:\Users\francesco\Desktop\DIMA\flutter_windows_3.13.4-stable\flutter\bin\cache\dart-sdk\bin\dart.exe compile js --platform-binaries=C:\Users\francesco\Desktop\DIMA\flutter_windows_3.13.4-stable\flutter\bin\cache\flutter_web_sdk\kernel --invoker=flutter_tool -Ddart.vm.product=true -DFLUTTER_VERSION=3.22.2 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=761747bfc5 -DFLUTTER_ENGINE_REVISION=587c18f873 -DFLUTTER_DART_VERSION=3.10.8 -DFLUTTER_WEB_USE_SKIA=true -DFLUTTER_WEB_USE_SKWASM=false -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/587c18f873b8ab57330422bce09047420d9c7f42/ --native-null-assertions --no-source-maps -O4 --minify -o C:\Users\francesco\Desktop\project\.dart_tool\flutter_build\51c32b3ca4324ba07f8cf7c3fa822489\app.dill --packages=C:\Users\francesco\Desktop\project\.dart_tool\package_config.json --cfe-only C:\Users\francesco\Desktop\project\.dart_tool\flutter_build\51c32b3ca4324ba07f8cf7c3fa822489\main.dart
+#0      RunResult.throwException (package:flutter_tools/src/base/process.dart:153:5)
+#1      _DefaultProcessUtils.run (package:flutter_tools/src/base/process.dart:379:19)
+<asynchronous suspension>
+#2      Dart2JSTarget.build (package:flutter_tools/src/build_system/targets/web.dart:207:5)
+<asynchronous suspension>
+#3      _BuildInstance._invokeInternal (package:flutter_tools/src/build_system/build_system.dart:895:9)
+<asynchronous suspension>
+#4      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#5      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:833:32)
+<asynchronous suspension>
+#6      Future.wait.<anonymous closure> (dart:async/future.dart:546:21)
+<asynchronous suspension>
+#7      _BuildInstance.invokeTarget (package:flutter_tools/src/build_system/build_system.dart:833:32)
+<asynchronous suspension>
+#8      FlutterBuildSystem.build (package:flutter_tools/src/build_system/build_system.dart:653:16)
+<asynchronous suspension>
+#9      WebBuilder.buildWeb (package:flutter_tools/src/web/compile.dart:94:34)
+<asynchronous suspension>
+#10     BuildWebCommand.runCommand (package:flutter_tools/src/commands/build_web.dart:296:5)
+<asynchronous suspension>
+#11     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1559:27)
+<asynchronous suspension>
+#12     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#13     CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#14     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:487:9)
+<asynchronous suspension>
+#15     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#16     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:422:5)
+<asynchronous suspension>
+#17     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:104:11)
+<asynchronous suspension>
+#18     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#19     main (package:flutter_tools/executable.dart:103:3)
+<asynchronous suspension>
+
+Compiling lib\main.dart for the Web...                             71,1s
+Error: Failed to compile application for the Web.

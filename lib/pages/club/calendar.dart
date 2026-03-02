@@ -238,7 +238,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   final _listItems = <ProgramCard>[];
-  refreshList() {
+  void refreshList() {
     setState(() {
       _listItems.clear();
     });
