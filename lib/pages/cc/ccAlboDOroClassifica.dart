@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:confetti/confetti.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:math';
 
 class CcAlboDOroClassifica extends StatefulWidget {
   final String docId;
@@ -16,7 +14,6 @@ class CcAlboDOroClassifica extends StatefulWidget {
 }
 
 class _CcAlboDOroClassificaState extends State<CcAlboDOroClassifica> {
-  late ConfettiController _confettiController;
   List<Map<String, dynamic>> _classifica = [];
   List<Map<String, dynamic>> _marcatori = [];
   bool _isLoading = true;
@@ -25,14 +22,12 @@ class _CcAlboDOroClassificaState extends State<CcAlboDOroClassifica> {
   @override
   void initState() {
     super.initState();
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
+
     _loadData();
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();
     super.dispose();
   }
 
@@ -57,9 +52,6 @@ class _CcAlboDOroClassificaState extends State<CcAlboDOroClassifica> {
           _marcatori
               .sort((a, b) => (b['gol'] as int).compareTo(a['gol'] as int));
           _isLoading = false;
-        });
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) _confettiController.play();
         });
       } else {
         setState(() => _isLoading = false);
@@ -171,27 +163,6 @@ class _CcAlboDOroClassificaState extends State<CcAlboDOroClassifica> {
                     ),
                   ],
                 ),
-          // Confetti (only on classifica view)
-          if (_showClassifica)
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirection: pi / 2,
-                maxBlastForce: 5,
-                minBlastForce: 2,
-                emissionFrequency: 0.05,
-                numberOfParticles: 30,
-                gravity: 0.1,
-                colors: const [
-                  Color(0xFFFFD700),
-                  Color(0xFFC0C0C0),
-                  Color(0xFFCD7F32),
-                  Colors.white,
-                  Color(0xFF0052CC),
-                ],
-              ),
-            ),
         ],
       ),
     );

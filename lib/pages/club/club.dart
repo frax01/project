@@ -13,7 +13,7 @@ import 'dart:io';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:club/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'accessoCC.dart';
+import '../main/ccLoginPage.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({
@@ -333,8 +333,7 @@ class _ClubPageState extends State<ClubPage> {
                     icon: const Icon(Icons.emoji_events),
                     onPressed: () async {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => AccessoCC(
-                              email: widget.email, club: widget.club)));
+                          builder: (context) => const CcLoginPage()));
                     }),
                 IconButton(
                   icon: const Icon(Icons.info_outline),
@@ -373,40 +372,74 @@ class _ClubPageState extends State<ClubPage> {
             },
             child: _widgetOptions.elementAt(_selectedIndex),
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              const NavigationDestination(
-                icon: Icon(Icons.calendar_month_outlined),
-                selectedIcon: Icon(Icons.calendar_month),
-                label: 'Calendario',
-              ),
-              if (widget.club == 'Tiber Club') ...[
-                const NavigationDestination(
-                  icon: Icon(Icons.sports_soccer_outlined),
-                  selectedIcon: Icon(Icons.sports_soccer),
-                  label: '11 ideale',
+          bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              indicatorColor: getActiveColor().withValues(alpha: 0.1),
+              labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: getActiveColor(),
+                  );
+                }
+                return const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                );
+              }),
+            ),
+            child: NavigationBar(
+              height: 70,
+              backgroundColor: Colors.white,
+              elevation: 10,
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (int index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home, color: getActiveColor()),
+                  label: 'Home',
                 ),
-              ],
-              if (widget.club == 'Delta Club') ...[
-                const NavigationDestination(
-                  icon: Icon(Icons.fastfood_outlined),
-                  selectedIcon: Icon(Icons.fastfood),
-                  label: 'Pasti',
+                NavigationDestination(
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  selectedIcon:
+                      Icon(Icons.calendar_month, color: getActiveColor()),
+                  label: 'Calendario',
                 ),
+                if (widget.club == 'Tiber Club') ...[
+                  NavigationDestination(
+                    icon: const Icon(Icons.sports_soccer_outlined),
+                    selectedIcon:
+                        Icon(Icons.sports_soccer, color: getActiveColor()),
+                    label: '11 ideale',
+                  ),
+                ],
+                if (widget.club == 'Delta Club') ...[
+                  NavigationDestination(
+                    icon: const Icon(Icons.fastfood_outlined),
+                    selectedIcon: Icon(Icons.fastfood, color: getActiveColor()),
+                    label: 'Pasti',
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ));
+  }
+
+  Color getActiveColor() {
+    if (widget.club == 'Tiber Club') {
+      return const Color(0xFFB71C1C); // Deep Red
+    } else if (widget.club == 'Rampa Club') {
+      return const Color(0xFFE65100); // Deep Orange
+    } else {
+      return const Color(0xFF00296B); // Default Blue (Matches CC)
+    }
   }
 }

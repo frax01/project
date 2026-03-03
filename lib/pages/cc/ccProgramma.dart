@@ -267,7 +267,7 @@ class _CCProgrammaState extends State<CCProgramma> {
                 return const SliverFillRemaining(
                     child: Center(
                         child: Text(
-                  'Nessun programma trovato',
+                  'Nessun programma',
                   style: TextStyle(fontSize: 19, color: Colors.black54),
                 )));
               }
@@ -336,15 +336,13 @@ class _CCProgrammaState extends State<CCProgramma> {
                                   children: [
                                     Expanded(
                                       child: AutoSizeText(
-                                        data == '23/04/2025'
-                                            ? 'Mercoledì 23'
-                                            : data == '24/04/2025'
-                                                ? 'Giovedì 24'
-                                                : data == '25/04/2025'
-                                                    ? 'Venerdì 25'
-                                                    : data == '26/04/2025'
-                                                        ? 'Sabato 26'
-                                                        : 'Domenica 27',
+                                        data == '30/04/2026'
+                                            ? 'Giovedì 30'
+                                            : data == '01/05/2026'
+                                                ? 'Venerdì 1'
+                                                : data == '02/05/2026'
+                                                    ? 'Sabato 2'
+                                                    : 'Domenica 3',
                                         style: const TextStyle(
                                           fontSize: 19,
                                           fontWeight: FontWeight.bold,
@@ -372,15 +370,13 @@ class _CCProgrammaState extends State<CCProgramma> {
                                   ],
                                 )
                               : AutoSizeText(
-                                  data == '23/04/2025'
-                                      ? 'Mercoledì 23'
-                                      : data == '24/04/2025'
-                                          ? 'Giovedì 24'
-                                          : data == '25/04/2025'
-                                              ? 'Venerdì 25'
-                                              : data == '26/04/2025'
-                                                  ? 'Sabato 26'
-                                                  : 'Domenica 27',
+                                  data == '30/04/2026'
+                                      ? 'Giovedì 30'
+                                      : data == '01/05/2026'
+                                          ? 'Venerdì 1'
+                                          : data == '02/05/2026'
+                                              ? 'Sabato 2'
+                                              : 'Domenica 3',
                                   style: const TextStyle(
                                     fontSize: 19,
                                     fontWeight: FontWeight.bold,

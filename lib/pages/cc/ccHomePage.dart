@@ -18,6 +18,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CCHomePage extends StatefulWidget {
   const CCHomePage(
@@ -292,25 +294,39 @@ class _CCHomePageState extends State<CCHomePage> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  // Tutor button
-                  Row(children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setModalState(() {
-                            showTutor = !showTutor;
-                            showStaff = false;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: showTutor
-                              ? const Color.fromARGB(255, 39, 132, 207)
-                              : Colors.white.withValues(alpha: 0.15),
+                  // Tutor button (visible when staff is NOT selected)
+                  if (!showStaff)
+                    Row(children: [
+                      if (showTutor)
+                        IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            setModalState(() {
+                              showTutor = false;
+                            });
+                          },
                         ),
-                        child: const Text('Entra come tutor'),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setModalState(() {
+                              showTutor = !showTutor;
+                              showStaff = false;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.15),
+                            side: showTutor
+                                ? const BorderSide(
+                                    color: Colors.white, width: 1)
+                                : BorderSide.none,
+                          ),
+                          child: const Text('Entra come tutor'),
+                        ),
                       ),
-                    ),
-                  ]),
+                    ]),
                   if (showTutor) ...[
                     const SizedBox(height: 15),
                     if (oldclub == '')
@@ -374,25 +390,39 @@ class _CCHomePageState extends State<CCHomePage> {
                     ]),
                   ],
                   const SizedBox(height: 10),
-                  // Staff button
-                  Row(children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setModalState(() {
-                            showTutor = false;
-                            showStaff = !showStaff;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: showStaff
-                              ? const Color.fromARGB(255, 39, 132, 207)
-                              : Colors.white.withValues(alpha: 0.15),
+                  // Staff button (visible when tutor is NOT selected)
+                  if (!showTutor)
+                    Row(children: [
+                      if (showStaff)
+                        IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            setModalState(() {
+                              showStaff = false;
+                            });
+                          },
                         ),
-                        child: const Text('Entra come staff'),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setModalState(() {
+                              showTutor = false;
+                              showStaff = !showStaff;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.15),
+                            side: showStaff
+                                ? const BorderSide(
+                                    color: Colors.white, width: 1)
+                                : BorderSide.none,
+                          ),
+                          child: const Text('Entra come staff'),
+                        ),
                       ),
-                    ),
-                  ]),
+                    ]),
                   if (showStaff) ...[
                     const SizedBox(height: 15),
                     TextFormField(
@@ -854,7 +884,7 @@ class _CCHomePageState extends State<CCHomePage> {
       }
 
       final output = await getTemporaryDirectory();
-      final file = File("${output.path}/partiteCC2025.xlsx");
+      final file = File("${output.path}/partiteCC2026.xlsx");
       await file.writeAsBytes(excelFile.encode()!);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -925,7 +955,8 @@ class _CCHomePageState extends State<CCHomePage> {
             : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.leaderboard),
+            icon: const FaIcon(FontAwesomeIcons.medal,
+                color: Color.fromARGB(255, 255, 255, 255), size: 21),
             tooltip: 'Albo d\'Oro',
             onPressed: () {
               Navigator.of(context).push(
@@ -1072,7 +1103,8 @@ class _CCHomePageState extends State<CCHomePage> {
                       : Container(),
                   widget.ccRole == 'staff'
                       ? ListTile(
-                          leading: const Icon(Icons.leaderboard),
+                          leading: const FaIcon(FontAwesomeIcons.medal,
+                              color: Color.fromARGB(255, 51, 51, 51), size: 21),
                           title: const Text('Crea l\'albo d\'oro'),
                           onTap: () async {
                             Navigator.of(context).pop(); // close drawer

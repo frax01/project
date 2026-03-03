@@ -179,7 +179,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
         'campo': p.campo ?? '',
         'arbitro': p.arbitro ?? '',
         'refertista': p.refertista ?? '',
-        'data': '26/04/2025',
+        'data': '02/05/2026',
         'iniziata': p.iniziata ?? false,
         'finita': p.finita ?? false,
         'marcatori': p.marcatori ?? [],

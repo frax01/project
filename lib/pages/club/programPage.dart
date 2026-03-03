@@ -43,6 +43,12 @@ class _ProgramPageState extends State<ProgramPage> {
   Map<String, dynamic> _weather = {};
   Map<String, dynamic> _event = {};
   String newRole = '';
+  @override
+  void dispose() {
+    _amiciProgrammaController.dispose();
+    _amiciPranzoController.dispose();
+    super.dispose();
+  }
 
   Future<void> _loadData() async {
     var doc = await FirebaseFirestore.instance
@@ -659,6 +665,410 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
+  // --- Amici (Friends) Management ---
+
+  List<String> get _allPresenti {
+    List<String> result = List<String>.from(_data['prenotazioni'] ?? []);
+    if (_data.containsKey('amici')) {
+      Map<String, dynamic> amici = _data['amici'];
+      amici.forEach((key, value) {
+        result.addAll((value as List).cast<String>());
+      });
+    }
+    return result;
+  }
+
+  List<String> get _allPresentiPranzo {
+    List<String> result = List<String>.from(_data['prenotazionePranzo'] ?? []);
+    if (_data.containsKey('amiciPranzo')) {
+      Map<String, dynamic> amiciPranzo = _data['amiciPranzo'];
+      amiciPranzo.forEach((key, value) {
+        result.addAll((value as List).cast<String>());
+      });
+    }
+    return result;
+  }
+
+  List<String> get _myAmici {
+    if (!_data.containsKey('amici')) return [];
+    Map<String, dynamic> amici = _data['amici'];
+    if (!amici.containsKey(widget.name)) return [];
+    return List<String>.from(amici[widget.name]);
+  }
+
+  bool _isRestrictedRole() {
+    if (_data.isEmpty) return true;
+    if (widget.club == 'Delta Club' &&
+        _data['selectedOption'] == 'trip' &&
+        (widget.role == 'Ragazzo' || newRole == 'Ragazzo') &&
+        !_data['selectedClass'].any((className) =>
+            ['3° liceo', '4° liceo', '5° liceo'].contains(className)) &&
+        _data['selectedClass'].any((className) =>
+            ['1° liceo', '2° liceo'].contains(className))) {
+      return true;
+    }
+    if (widget.club == 'Delta Club' &&
+        _data['selectedOption'] == 'weekend' &&
+        (widget.role == 'Genitore' || newRole == 'Genitore')) {
+      return true;
+    }
+    if (widget.club == 'Tiber Club' &&
+        _data['selectedOption'] == 'weekend' &&
+        (widget.role == 'Genitore' || newRole == 'Genitore') &&
+        !_data['selectedClass'].any((className) =>
+            ['4° elem', '5° elem', '1° media', '2° media', '3° media']
+                .contains(className))) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> _removeAmico(String name) async {
+    Map<String, dynamic> amici =
+        Map<String, dynamic>.from(_data['amici']);
+    List<String> myAmici = List<String>.from(amici[widget.name]);
+    myAmici.remove(name);
+    if (myAmici.isEmpty) {
+      amici.remove(widget.name);
+    } else {
+      amici[widget.name] = myAmici;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amici': amici});
+
+    setState(() {
+      _data['amici'] = amici;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name rimosso dai presenti')));
+  }
+
+  Future<void> _editAmico(String oldName, String newName) async {
+    if (newName.trim().isEmpty) return;
+
+    Map<String, dynamic> amici =
+        Map<String, dynamic>.from(_data['amici']);
+    List<String> myAmici = List<String>.from(amici[widget.name]);
+    int index = myAmici.indexOf(oldName);
+    if (index != -1) {
+      myAmici[index] = newName.trim();
+    }
+    amici[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amici': amici});
+
+    setState(() {
+      _data['amici'] = amici;
+    });
+  }
+
+  void _showEditAmiciDialog(String name) {
+    TextEditingController editController =
+        TextEditingController(text: name);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifica amico'),
+        content: TextField(
+          controller: editController,
+          decoration: const InputDecoration(
+            hintText: 'Nome amico',
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _editAmico(name, editController.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Salva'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAmiciDialog(String name) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina amico'),
+        content: Text('Vuoi eliminare "$name" dalla lista?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _removeAmico(name);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  final TextEditingController _amiciProgrammaController = TextEditingController();
+  final TextEditingController _amiciPranzoController = TextEditingController();
+
+  Future<void> _addAmicoProgramma(String name) async {
+    if (name.trim().isEmpty) return;
+    Map<String, dynamic> amici = _data.containsKey('amici')
+        ? Map<String, dynamic>.from(_data['amici'])
+        : {};
+    List<String> myAmici = amici.containsKey(widget.name)
+        ? List<String>.from(amici[widget.name])
+        : [];
+    myAmici.add(name.trim());
+    amici[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amici': amici});
+
+    setState(() {
+      _data['amici'] = amici;
+      _amiciProgrammaController.clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${name.trim()} aggiunto ai presenti')));
+  }
+
+  Future<void> _addAmicoPranzo(String name) async {
+    if (name.trim().isEmpty) return;
+    Map<String, dynamic> amiciPranzo = _data.containsKey('amiciPranzo')
+        ? Map<String, dynamic>.from(_data['amiciPranzo'])
+        : {};
+    List<String> myAmici = amiciPranzo.containsKey(widget.name)
+        ? List<String>.from(amiciPranzo[widget.name])
+        : [];
+    myAmici.add(name.trim());
+    amiciPranzo[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amiciPranzo': amiciPranzo});
+
+    setState(() {
+      _data['amiciPranzo'] = amiciPranzo;
+      _amiciPranzoController.clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${name.trim()} aggiunto ai presenti pranzo')));
+  }
+
+  Future<void> _removeAmicoPranzo(String name) async {
+    Map<String, dynamic> amiciPranzo =
+        Map<String, dynamic>.from(_data['amiciPranzo']);
+    List<String> myAmici = List<String>.from(amiciPranzo[widget.name]);
+    myAmici.remove(name);
+    if (myAmici.isEmpty) {
+      amiciPranzo.remove(widget.name);
+    } else {
+      amiciPranzo[widget.name] = myAmici;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amiciPranzo': amiciPranzo});
+
+    setState(() {
+      _data['amiciPranzo'] = amiciPranzo;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name rimosso dai presenti pranzo')));
+  }
+
+  Future<void> _editAmicoPranzo(String oldName, String newName) async {
+    if (newName.trim().isEmpty) return;
+    Map<String, dynamic> amiciPranzo =
+        Map<String, dynamic>.from(_data['amiciPranzo']);
+    List<String> myAmici = List<String>.from(amiciPranzo[widget.name]);
+    int index = myAmici.indexOf(oldName);
+    if (index != -1) {
+      myAmici[index] = newName.trim();
+    }
+    amiciPranzo[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .update({'amiciPranzo': amiciPranzo});
+
+    setState(() {
+      _data['amiciPranzo'] = amiciPranzo;
+    });
+  }
+
+  List<String> get _myAmiciPranzo {
+    if (!_data.containsKey('amiciPranzo')) return [];
+    Map<String, dynamic> amiciPranzo = _data['amiciPranzo'];
+    if (!amiciPranzo.containsKey(widget.name)) return [];
+    return List<String>.from(amiciPranzo[widget.name]);
+  }
+
+  void _showEditAmiciPranzoDialog(String name) {
+    TextEditingController editController =
+        TextEditingController(text: name);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifica amico'),
+        content: TextField(
+          controller: editController,
+          decoration: const InputDecoration(hintText: 'Nome amico'),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _editAmicoPranzo(name, editController.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Salva'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAmiciPranzoDialog(String name) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina amico'),
+        content: Text('Vuoi eliminare "$name" dalla lista?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _removeAmicoPranzo(name);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmiciContainer({required String type}) {
+    final bool isPranzo = type == 'pranzo';
+    final controller = isPranzo ? _amiciPranzoController : _amiciProgrammaController;
+    final myFriends = isPranzo ? _myAmiciPranzo : _myAmici;
+    final addFn = isPranzo ? _addAmicoPranzo : _addAmicoProgramma;
+    final editFn = isPranzo ? _showEditAmiciPranzoDialog : _showEditAmiciDialog;
+    final deleteFn = isPranzo ? _showDeleteAmiciPranzoDialog : _showDeleteAmiciDialog;
+    final label = isPranzo ? 'Aggiungi amici pasto' : 'Aggiungi amici';
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      margin: const EdgeInsets.fromLTRB(0, 10.0, 0, 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.person_add, size: 30, color: Colors.black),
+              const SizedBox(width: 10),
+              AutoSizeText(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+                maxLines: 1,
+                minFontSize: 15,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    hintText: 'Nome amico',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  onSubmitted: (value) => addFn(value),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => addFn(controller.text),
+                icon: const Icon(Icons.add_circle,
+                    color: Colors.black, size: 35),
+              ),
+            ],
+          ),
+          if (myFriends.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Divider(),
+            ...myFriends.map<Widget>((name) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: AutoSizeText(
+                    name,
+                    style: const TextStyle(fontSize: 18),
+                    maxLines: 1,
+                    minFontSize: 14,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () => editFn(name),
+                        icon: const Icon(Icons.edit,
+                            color: Colors.black, size: 22),
+                      ),
+                      IconButton(
+                        onPressed: () => deleteFn(name),
+                        icon: const Icon(Icons.delete,
+                            color: Colors.black, size: 22),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -872,7 +1282,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                 Align(
                                   alignment: Alignment.center,
                                   child: AutoSizeText(
-                                    'Presenti (${_data['prenotazioni'].length})',
+                                    'Presenti (${_allPresenti.length})',
                                     style: const TextStyle(
                                         fontSize: 20),
                                     maxLines: 1,
@@ -897,7 +1307,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                     Align(
                                       alignment: Alignment.center,
                                       child: AutoSizeText(
-                                        'Presenti (${_data['prenotazioni'].length})',
+                                        'Presenti (${_allPresenti.length})',
                                         style: const TextStyle(
                                             fontSize: 20),
                                         maxLines: 1,
@@ -1010,7 +1420,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                             children: [
                                               ExpansionTile(
                                                 title: AutoSizeText(
-                                                  'Presenti (${_data['prenotazioni'].length}) - Assenti (${_data['assenze'].length})',
+                                                  'Presenti (${_allPresenti.length}) - Assenti (${_data['assenze'].length})',
                                                   style: const TextStyle(
                                                       fontSize: 20),
                                                   maxLines: 1,
@@ -1032,9 +1442,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                                           TextOverflow.ellipsis,
                                                     ),
                                                   ),
-                                                  if (_data['prenotazioni']
-                                                      .isNotEmpty)
-                                                    ..._data['prenotazioni']
+                                                  if (_allPresenti.isNotEmpty)
+                                                    ..._allPresenti
                                                         .map<Widget>((name) =>
                                                             ListTile(
                                                               title: AutoSizeText(
@@ -1114,7 +1523,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                             children: [
                                               const SizedBox(height: 20.0),
                                               AutoSizeText(
-                                                  'Prenotazioni (${_data['prenotazioni'].length})',
+                                                  'Prenotazioni (${_allPresenti.length})',
                                                   style: const TextStyle(
                                                       fontSize: 20),
                                                   maxLines: 1,
@@ -1126,6 +1535,11 @@ class _ProgramPageState extends State<ProgramPage> {
                                           ),
                                       ],
                                     )),
+                      // Amici programma
+                      if (_data.containsKey('prenotazioni') &&
+                          _data.containsKey('assenze') &&
+                          !_isRestrictedRole())
+                        _buildAmiciContainer(type: 'programma'),
                       //pranzo
                       if (_data.containsKey('pasto') && (widget.role != 'Genitore' || (newRole != '' && newRole != 'Genitore')))
                         Container(
@@ -1212,7 +1626,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                     children: [
                                       ExpansionTile(
                                         title: AutoSizeText(
-                                            'Presenti (${_data['prenotazionePranzo'].length}) - Assenti (${_data['assenzaPranzo'].length})',
+                                            'Presenti (${_allPresentiPranzo.length}) - Assenti (${_data['assenzaPranzo'].length})',
                                             style:
                                                 const TextStyle(fontSize: 20),
                                             maxLines: 1,
@@ -1230,9 +1644,8 @@ class _ProgramPageState extends State<ProgramPage> {
                                                 overflow:
                                                     TextOverflow.ellipsis),
                                           ),
-                                          if (_data['prenotazionePranzo']
-                                              .isNotEmpty)
-                                            ..._data['prenotazionePranzo']
+                                          if (_allPresentiPranzo.isNotEmpty)
+                                            ..._allPresentiPranzo
                                                 .map<Widget>((name) => ListTile(
                                                       title: AutoSizeText(name,
                                                           style:
@@ -1301,7 +1714,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                     children: [
                                       const SizedBox(height: 20.0),
                                       AutoSizeText(
-                                          'Prenotazioni (${_data['prenotazionePranzo'].length})',
+                                          'Prenotazioni (${_allPresentiPranzo.length})',
                                           style: const TextStyle(fontSize: 20),
                                           maxLines: 1,
                                           minFontSize: 15,
@@ -1311,6 +1724,10 @@ class _ProgramPageState extends State<ProgramPage> {
                                   ),
                               ])
                             ])),
+                      // Amici pranzo
+                      if (_data.containsKey('pasto') &&
+                          (widget.role != 'Genitore' || (newRole != '' && newRole != 'Genitore')))
+                        _buildAmiciContainer(type: 'pranzo'),
                       if (_data.containsKey('file'))
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1331,6 +1748,7 @@ class _ProgramPageState extends State<ProgramPage> {
                                   fontSize: 15, color: Colors.black54),
                             ),
                           ])),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 ),

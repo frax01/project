@@ -240,7 +240,7 @@ class _CCCalendarioState extends State<CCCalendario> {
         'orario': '',
         'campo': '',
         'arbitro': '',
-        'data': sezione == 'Finali' ? '27/04/2025' : '26/04/2025',
+        'data': sezione == 'Finali' ? '03/05/2026' : '02/05/2026',
         'iniziata': false,
         'finita': false,
         'marcatori': [],
@@ -281,12 +281,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -320,12 +317,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -363,12 +357,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -406,12 +397,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -446,12 +434,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -486,12 +471,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -526,12 +508,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -566,12 +545,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -605,12 +581,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -644,12 +617,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -683,12 +653,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -722,12 +689,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -761,12 +725,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -800,12 +761,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -839,12 +797,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -878,12 +833,9 @@ class _CCCalendarioState extends State<CCCalendario> {
                     (widget.nome == arbitro || widget.nome == refertista)
                 ? Expanded(
                     child: Divider(
-                      color:
-                          (widget.nome == arbitro && widget.nome == refertista)
-                              ? const Color.fromARGB(255, 58, 57, 57)
-                              : widget.nome == arbitro
-                                  ? const Color.fromARGB(255, 178, 28, 28)
-                                  : const Color.fromARGB(255, 37, 201, 43),
+                      color: widget.nome == arbitro
+                          ? const Color.fromARGB(255, 178, 28, 28)
+                          : const Color.fromARGB(255, 37, 201, 43),
                       thickness: 5,
                     ),
                   )
@@ -971,23 +923,6 @@ class _CCCalendarioState extends State<CCCalendario> {
                                     width: 6,
                                   ),
                                   Text('Refertista',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          fontStyle: FontStyle.italic)),
-                                ]),
-                                SizedBox(
-                                  width: 16,
-                                ),
-                                Row(children: [
-                                  CircleAvatar(
-                                    backgroundColor:
-                                        Color.fromARGB(255, 58, 57, 57),
-                                    radius: 7,
-                                  ),
-                                  SizedBox(
-                                    width: 6,
-                                  ),
-                                  Text('Entrambi',
                                       style: TextStyle(
                                           fontSize: 14,
                                           fontStyle: FontStyle.italic)),
@@ -1104,7 +1039,7 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                               logofuori:
                                                                   logoFuori,
                                                               data:
-                                                                  '25/04/2025',
+                                                                  '01/05/2026',
                                                               orario: partita[
                                                                   'orario'],
                                                               campo: partita[

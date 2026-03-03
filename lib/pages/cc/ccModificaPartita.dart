@@ -46,7 +46,8 @@ class CCModificaPartita extends StatefulWidget {
   _CCModificaPartitaState createState() => _CCModificaPartitaState();
 }
 
-class _CCModificaPartitaState extends State<CCModificaPartita> {
+class _CCModificaPartitaState extends State<CCModificaPartita>
+    with SingleTickerProviderStateMixin {
   int golCasa = 0;
   int golFuori = 0;
   int gialliCasa = 0;
@@ -60,6 +61,13 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   bool finita = false;
   bool boolRigori = false;
   bool _isUpdating = false;
+  late AnimationController _blinkController;
+
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
 
   Future<void> _updateGironi() async {
     setState(() => _isUpdating = true);
@@ -235,6 +243,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
   @override
   void initState() {
     super.initState();
+    iniziata = widget.iniziata;
+    finita = widget.finita;
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
     _loadInitialData();
   }
 
@@ -1017,7 +1031,28 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                           style: const TextStyle(fontSize: 18)),
                                     ],
                                   )
-                                : Container()
+                                : Container(),
+                            if (iniziata && !finita)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  FadeTransition(
+                                    opacity: _blinkController,
+                                    child: const CircleAvatar(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 178, 28, 28),
+                                      radius: 5,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Text('Live',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color.fromARGB(
+                                              255, 178, 28, 28))),
+                                ],
+                              ),
                           ]),
                           const SizedBox(width: 4),
                           Expanded(
@@ -1322,10 +1357,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text(giocatore,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1364,7 +1396,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1403,7 +1435,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1450,10 +1482,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text(giocatore,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1492,7 +1521,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1531,7 +1560,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                                               .map((giocatore) =>
                                                   DropdownMenuItem<String>(
                                                     value: giocatore,
-                                                    child: Text('· $giocatore'),
+                                                    child: Text(giocatore),
                                                   ))
                                               .toList(),
                                           onChanged: (giocatore) {
@@ -1558,25 +1587,11 @@ class _CCModificaPartitaState extends State<CCModificaPartita> {
                         widget.nome == widget.refertista
                             ? const SizedBox(height: 10)
                             : Container(),
-                        Text('Partita da giocare',
+                        const Text('Partita da giocare',
                             style:
                                 TextStyle(fontSize: 21, color: Colors.black54)),
                       ]))
-                    : Center(
-                        child: Column(children: [
-                          widget.ccRole == 'staff'
-                              ? const SizedBox(height: 10)
-                              : Container(),
-                          !finita
-                              ? const Text("Partita in corso",
-                                  style: TextStyle(
-                                      fontSize: 21, color: Colors.black54))
-                              : const Center(
-                                  child: Text('Partita terminata',
-                                      style: TextStyle(
-                                          fontSize: 21, color: Colors.black54)))
-                        ]),
-                      ),
+                    : Container(),
                 boolRigori
                     ? Row(children: [
                         Expanded(

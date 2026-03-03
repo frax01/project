@@ -58,9 +58,11 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
     if (widget.orario != null) _orarioController.text = widget.orario!;
     if (widget.titolo != null) _titoloController.text = widget.titolo!;
     if (widget.squadre != null) _selectedSquadre = widget.squadre!;
-    if (widget.codiceSquadre != null) _selectedCodiceSquadre = widget.codiceSquadre!;
+    if (widget.codiceSquadre != null)
+      _selectedCodiceSquadre = widget.codiceSquadre!;
     if (widget.incarico != null) _selectedIncarico = widget.incarico!;
-    if (widget.codiceIncarico != null) _selectedCodiceIncarico = widget.codiceIncarico!;
+    if (widget.codiceIncarico != null)
+      _selectedCodiceIncarico = widget.codiceIncarico!;
     if (widget.altro != null) _altroController.text = widget.altro!;
     if (widget.categoria != null) _categoriaController.text = widget.categoria!;
     _loadSquadreOptions();
@@ -249,11 +251,14 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                         : _dataController.text,
                     decoration: getInputDecoration('Data'),
                     items: const [
-                      DropdownMenuItem(value: '23/04/2025', child: Text('23/04/2025')),
-                      DropdownMenuItem(value: '24/04/2025', child: Text('24/04/2025')),
-                      DropdownMenuItem(value: '25/04/2025', child: Text('25/04/2025')),
-                      DropdownMenuItem(value: '26/04/2025', child: Text('26/04/2025')),
-                      DropdownMenuItem(value: '27/04/2025', child: Text('27/04/2025')),
+                      DropdownMenuItem(
+                          value: '30/04/2026', child: Text('30/04/2026')),
+                      DropdownMenuItem(
+                          value: '01/05/2026', child: Text('01/05/2026')),
+                      DropdownMenuItem(
+                          value: '02/05/2026', child: Text('02/05/2026')),
+                      DropdownMenuItem(
+                          value: '03/05/2026', child: Text('03/05/2026')),
                     ],
                     onChanged: (value) {
                       _dataController.text = value!;
@@ -404,52 +409,51 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                     children: [
                       if (widget.programmaId != null)
                         Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(child:
-                              ElevatedButton(
-                            onPressed: () async {
-                              bool confirm = await showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Conferma eliminazione'),
-                                  content: const Text(
-                                      'Sei sicuro di voler eliminare questo programma?'),
-                                  actions: [
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(false),
-                                      child: const Text('No'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: const Text('Sì'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirm) {
-                                _showLoadingDialog();
-                                await FirebaseFirestore.instance
-                                    .collection('ccProgramma')
-                                    .doc(widget.programmaId)
-                                    .delete();
-                                Navigator.pop(context);
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: const Text('Elimina'),
-                          ),),
-                          const SizedBox(width: 12),
-                          ])
-                        ),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _saveProgramma,
-                            child: const Text('Salva'),
+                            child: Row(children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                bool confirm = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Conferma eliminazione'),
+                                    content: const Text(
+                                        'Sei sicuro di voler eliminare questo programma?'),
+                                    actions: [
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: const Text('No'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text('Sì'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm) {
+                                  _showLoadingDialog();
+                                  await FirebaseFirestore.instance
+                                      .collection('ccProgramma')
+                                      .doc(widget.programmaId)
+                                      .delete();
+                                  Navigator.pop(context);
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: const Text('Elimina'),
+                            ),
                           ),
-                        )
+                          const SizedBox(width: 12),
+                        ])),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _saveProgramma,
+                          child: const Text('Salva'),
+                        ),
+                      )
                     ],
                   ),
                 ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccAlboDOroClassifica.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CcAlboDOroAnni extends StatefulWidget {
   const CcAlboDOroAnni({super.key});
@@ -95,8 +96,7 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.leaderboard,
-                                    color: Color(0xFFFFD700), size: 32),
+                                const FaIcon(FontAwesomeIcons.medal, color: Color.fromARGB(255, 255, 255, 255), size: 28),
                                 const SizedBox(width: 14),
                                 Text(
                                   'CC $anno',
