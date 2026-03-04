@@ -940,6 +940,7 @@ class _CCHomePageState extends State<CCHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Champions Club"),
+        centerTitle: false,
         automaticallyImplyLeading: false,
         leading: widget.ccRole == 'staff'
             ? Builder(
@@ -1156,7 +1157,10 @@ class _CCHomePageState extends State<CCHomePage> {
       ),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
-          indicatorColor: const Color(0xFF00296B).withValues(alpha: 0.1),
+          indicatorColor: const Color(0xFF1565C0).withValues(alpha: 0.3),
+          overlayColor: WidgetStateProperty.all(
+            const Color(0xFF1565C0).withValues(alpha: 0.1),
+          ),
           labelTextStyle: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return const TextStyle(

@@ -348,6 +348,8 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
               return Padding(
                   padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
                   child: Card(
+                    shadowColor: Colors.black54,
+                    surfaceTintColor: Colors.transparent,
                     elevation: 5,
                     child: ExpansionTile(
                       shape: Border.all(color: Colors.transparent),

@@ -434,6 +434,8 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
 
                 return Column(children: [
                   Card(
+                    shadowColor: Colors.black54,
+                    surfaceTintColor: Colors.transparent,
                     elevation: 4,
                     child: ExpansionTile(
                       shape: Border.all(color: Colors.transparent),

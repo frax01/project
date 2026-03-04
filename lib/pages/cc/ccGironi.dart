@@ -113,6 +113,7 @@ class _CCGironiState extends State<CCGironi> {
                           return Card(
                             margin: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                             shadowColor: Colors.black54,
+                            surfaceTintColor: Colors.transparent,
                             elevation: 7,
                             child: Column(
                               children: [

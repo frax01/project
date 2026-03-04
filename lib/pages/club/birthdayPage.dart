@@ -153,6 +153,8 @@ class _BirthdayPageState extends State<BirthdayPage> {
                     return Card(
                       margin: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
+                      shadowColor: Colors.black54,
+                      surfaceTintColor: Colors.transparent,
                       elevation: 4,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),

@@ -327,6 +327,7 @@ class _ClubPageState extends State<ClubPage> {
               title: widget.club == 'Delta Club'
                   ? const Text('Centro Delta')
                   : Text(widget.club),
+              centerTitle: false,
               automaticallyImplyLeading: false,
               actions: [
                 IconButton(
@@ -374,7 +375,10 @@ class _ClubPageState extends State<ClubPage> {
           ),
           bottomNavigationBar: NavigationBarTheme(
             data: NavigationBarThemeData(
-              indicatorColor: getActiveColor().withValues(alpha: 0.1),
+              indicatorColor: getActiveColor().withValues(alpha: 0.3),
+              overlayColor: WidgetStateProperty.all(
+                getActiveColor().withValues(alpha: 0.1),
+              ),
               labelTextStyle: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
                   return TextStyle(

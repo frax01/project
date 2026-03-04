@@ -112,6 +112,8 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                   ...programmiPerData.map((programma) {
                     return Card(
                       margin: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 16.0),
+                      shadowColor: Colors.black54,
+                      surfaceTintColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15.0),
                       ),

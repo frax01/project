@@ -853,40 +853,46 @@ class _CCCalendarioState extends State<CCCalendario> {
             const SizedBox(height: 10),
             Wrap(
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  SegmentedButton<String>(
-                    selectedIcon: const Icon(Icons.check),
-                    segments: const <ButtonSegment<String>>[
-                      ButtonSegment<String>(
-                        value: 'Gironi',
-                        label: Text('Gir', style: TextStyle(fontSize: 10)),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SegmentedButton<String>(
+                        selectedIcon: const Icon(Icons.check, size: 16),
+                        segments: const <ButtonSegment<String>>[
+                          ButtonSegment<String>(
+                            value: 'Gironi',
+                            label: Text('Gir', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Ottavi',
+                            label: Text('Ott', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Quarti',
+                            label: Text('Qua', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Semifinali',
+                            label: Text('Sem', style: TextStyle(fontSize: 10)),
+                          ),
+                          ButtonSegment<String>(
+                            value: 'Finali',
+                            label: Text('Fin', style: TextStyle(fontSize: 10)),
+                          ),
+                        ],
+                        selected: <String>{_selectedSegment},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          setState(() {
+                            _selectedSegment = newSelection.first;
+                            _streamPartite = _getPartite();
+                          });
+                        },
                       ),
-                      ButtonSegment<String>(
-                        value: 'Ottavi',
-                        label: Text('Ott', style: TextStyle(fontSize: 10)),
-                      ),
-                      ButtonSegment<String>(
-                        value: 'Quarti',
-                        label: Text('Qua', style: TextStyle(fontSize: 10)),
-                      ),
-                      ButtonSegment<String>(
-                        value: 'Semifinali',
-                        label: Text('Sem', style: TextStyle(fontSize: 10)),
-                      ),
-                      ButtonSegment<String>(
-                        value: 'Finali',
-                        label: Text('Fin', style: TextStyle(fontSize: 10)),
-                      ),
-                    ],
-                    selected: <String>{_selectedSegment},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      setState(() {
-                        _selectedSegment = newSelection.first;
-                        _streamPartite = _getPartite();
-                      });
-                    },
+                    ),
                   ),
-                ]),
+                ),
                 widget.ccRole == 'staff'
                     ? const Column(
                         children: [
@@ -1069,6 +1075,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                       }
                                                     : null,
                                                 child: Card(
+                                                    shadowColor: Colors.black54,
+                                                    surfaceTintColor: Colors.transparent,
                                                     shape:
                                                         RoundedRectangleBorder(
                                                       borderRadius:
@@ -1190,7 +1198,10 @@ class _CCCalendarioState extends State<CCCalendario> {
                                                               ],
                                                             ),
                                                           ],
-                                                        ))))
+                                                        )
+                                                      )
+                                                    )
+                                                  ),
                                           ]);
                                     }),
                                   ],
@@ -1281,106 +1292,74 @@ class _CCCalendarioState extends State<CCCalendario> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             if (_selectedSegment == 'Gironi') ...[
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _selectedGirone == 'A'
-                        ? Colors.black
-                        : Colors.transparent,
-                    width: 1.5,
-                  ),
-                ),
-                child: FloatingActionButton(
-                  heroTag: 'gironeA',
-                  onPressed: () {
-                    setState(() {
-                      _selectedGirone = 'A';
-                      _streamPartite = _getPartite();
-                    });
-                  },
-                  shape: const CircleBorder(),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  child: const Text('A', style: TextStyle(fontSize: 14)),
-                ),
+              FloatingActionButton.small(
+                heroTag: 'gironeA',
+                onPressed: () {
+                  setState(() {
+                    _selectedGirone = 'A';
+                    _streamPartite = _getPartite();
+                  });
+                },
+                shape: const CircleBorder(),
+                backgroundColor: _selectedGirone == 'A'
+                    ? const Color(0xFF00296B)
+                    : Colors.white,
+                foregroundColor: _selectedGirone == 'A'
+                    ? Colors.white
+                    : Colors.black,
+                child: const Text('A', style: TextStyle(fontSize: 13)),
               ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _selectedGirone == 'B'
-                        ? Colors.black
-                        : Colors.transparent,
-                    width: 1.5,
-                  ),
-                ),
-                child: FloatingActionButton(
-                  heroTag: 'gironeB',
-                  onPressed: () {
-                    setState(() {
-                      _selectedGirone = 'B';
-                      _streamPartite = _getPartite();
-                    });
-                  },
-                  shape: const CircleBorder(),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  child: const Text('B', style: TextStyle(fontSize: 14)),
-                ),
+              FloatingActionButton.small(
+                heroTag: 'gironeB',
+                onPressed: () {
+                  setState(() {
+                    _selectedGirone = 'B';
+                    _streamPartite = _getPartite();
+                  });
+                },
+                shape: const CircleBorder(),
+                backgroundColor: _selectedGirone == 'B'
+                    ? const Color(0xFF00296B)
+                    : Colors.white,
+                foregroundColor: _selectedGirone == 'B'
+                    ? Colors.white
+                    : Colors.black,
+                child: const Text('B', style: TextStyle(fontSize: 13)),
               ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _selectedGirone == 'C'
-                        ? Colors.black
-                        : Colors.transparent,
-                    width: 1.5,
-                  ),
-                ),
-                child: FloatingActionButton(
-                  heroTag: 'gironeC',
-                  onPressed: () {
-                    setState(() {
-                      _selectedGirone = 'C';
-                      _streamPartite = _getPartite();
-                    });
-                  },
-                  shape: const CircleBorder(),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  child: const Text('C', style: TextStyle(fontSize: 14)),
-                ),
+              FloatingActionButton.small(
+                heroTag: 'gironeC',
+                onPressed: () {
+                  setState(() {
+                    _selectedGirone = 'C';
+                    _streamPartite = _getPartite();
+                  });
+                },
+                shape: const CircleBorder(),
+                backgroundColor: _selectedGirone == 'C'
+                    ? const Color(0xFF00296B)
+                    : Colors.white,
+                foregroundColor: _selectedGirone == 'C'
+                    ? Colors.white
+                    : Colors.black,
+                child: const Text('C', style: TextStyle(fontSize: 13)),
               ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _selectedGirone == 'D'
-                        ? Colors.black
-                        : Colors.transparent,
-                    width: 1.5,
-                  ),
-                ),
-                child: FloatingActionButton(
-                  heroTag: 'gironeD',
-                  onPressed: () {
-                    setState(() {
-                      _selectedGirone = 'D';
-                      _streamPartite = _getPartite();
-                    });
-                  },
-                  shape: const CircleBorder(),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  child: const Text('D', style: TextStyle(fontSize: 14)),
-                ),
+              FloatingActionButton.small(
+                heroTag: 'gironeD',
+                onPressed: () {
+                  setState(() {
+                    _selectedGirone = 'D';
+                    _streamPartite = _getPartite();
+                  });
+                },
+                shape: const CircleBorder(),
+                backgroundColor: _selectedGirone == 'D'
+                    ? const Color(0xFF00296B)
+                    : Colors.white,
+                foregroundColor: _selectedGirone == 'D'
+                    ? Colors.white
+                    : Colors.black,
+                child: const Text('D', style: TextStyle(fontSize: 13)),
               ),
-              const SizedBox(width: 8),
             ],
             if (widget.ccRole == 'staff')
               FloatingActionButton(

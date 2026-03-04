@@ -5,6 +5,7 @@ import 'package:club/pages/main/signup.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'color_schemes.dart';
@@ -22,6 +23,39 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
+
+ThemeData _customizeAppBar(ThemeData theme) {
+  return theme.copyWith(
+    scaffoldBackgroundColor: Colors.white,
+    shadowColor: Colors.black54,
+    colorScheme: theme.colorScheme.copyWith(
+      surface: Colors.white,
+      surfaceContainerLowest: Colors.white,
+      surfaceContainerLow: Colors.white,
+      surfaceContainer: Colors.white,
+      surfaceContainerHigh: Colors.white,
+      surfaceContainerHighest: Colors.white,
+      shadow: Colors.black54,
+      surfaceTint: Colors.transparent,
+    ),
+    cardTheme: theme.cardTheme.copyWith(
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black54,
+    ),
+    dialogTheme: theme.dialogTheme.copyWith(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+    ),
+    appBarTheme: theme.appBarTheme.copyWith(
+      centerTitle: true,
+    ),
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (BuildContext context) =>
+          const Icon(Icons.arrow_back_ios),
+    ),
+  );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -162,8 +196,8 @@ class MyApp extends StatelessWidget {
       ],
       locale: const Locale('it', 'IT'),
       title: 'Club',
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      theme: _customizeAppBar(lightTheme),
+      darkTheme: _customizeAppBar(darkTheme),
       themeMode: ThemeMode.light,
       home: startWidget,
       initialRoute: '/home',

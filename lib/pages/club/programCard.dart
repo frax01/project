@@ -61,6 +61,8 @@ class _ProgramCardState extends State<ProgramCard> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
       child: Card(
+          shadowColor: Colors.black54,
+          surfaceTintColor: Colors.transparent,
           elevation: 5,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
