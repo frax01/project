@@ -1362,7 +1362,7 @@ class _CCCalendarioState extends State<CCCalendario> {
               ),
             ],
             if (widget.ccRole == 'staff')
-              FloatingActionButton(
+              FloatingActionButton.small(
                 heroTag: 'addButton',
                 onPressed: () {
                   _selectedSegment == 'Gironi'
