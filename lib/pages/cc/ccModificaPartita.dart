@@ -973,8 +973,16 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
             return SingleChildScrollView(
                 child: Column(
               children: [
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+                Card(
+                  elevation: 0,
+                  color: const Color(0xFF0D1B2A).withValues(alpha: 0.85),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  margin: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 8),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -986,7 +994,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                                         width: 90, height: 90)
                                     : IconButton(
                                         icon: const FaIcon(
-                                            FontAwesomeIcons.shieldHalved),
+                                            FontAwesomeIcons.shieldHalved,
+                                            color: Colors.white),
                                         onPressed: () {},
                                       ),
                                 const SizedBox(height: 8),
@@ -994,6 +1003,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                                   widget.casa,
                                   style: const TextStyle(
                                     fontSize: 20,
+                                    color: Colors.white,
                                   ),
                                   minFontSize: 20,
                                   overflow: TextOverflow.ellipsis,
@@ -1007,28 +1017,35 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                             Row(children: [
                               Text(
                                 '$golCasa',
-                                style: const TextStyle(fontSize: 34),
+                                style: const TextStyle(
+                                    fontSize: 34, color: Colors.white),
                               ),
                               const Text(' : ',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 22)),
+                                      fontSize: 22,
+                                      color: Colors.white)),
                               Text('$golFuori',
-                                  style: const TextStyle(fontSize: 34)),
+                                  style: const TextStyle(
+                                      fontSize: 34, color: Colors.white)),
                             ]),
                             boolRigori
                                 ? Row(
                                     children: [
                                       Text(
                                         '($golRigoreCasa)',
-                                        style: const TextStyle(fontSize: 18),
+                                        style: const TextStyle(
+                                            fontSize: 18, color: Colors.white),
                                       ),
                                       const Text(' dcr ',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 14)),
+                                              fontSize: 14,
+                                              color: Colors.white)),
                                       Text('($golRigoreFuori)',
-                                          style: const TextStyle(fontSize: 18)),
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.white)),
                                     ],
                                   )
                                 : Container(),
@@ -1048,7 +1065,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                                   const Text('Live',
                                       style: TextStyle(
                                           fontSize: 14,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.bold,
                                           color: Color.fromARGB(
                                               255, 178, 28, 28))),
                                 ],
@@ -1063,7 +1080,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                                         width: 90, height: 90)
                                     : IconButton(
                                         icon: const FaIcon(
-                                            FontAwesomeIcons.shieldHalved),
+                                            FontAwesomeIcons.shieldHalved,
+                                            color: Colors.white),
                                         onPressed: () {},
                                       ),
                                 const SizedBox(height: 8),
@@ -1071,6 +1089,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                                   widget.fuori,
                                   style: const TextStyle(
                                     fontSize: 20,
+                                    color: Colors.white,
                                   ),
                                   minFontSize: 20,
                                   overflow: TextOverflow.ellipsis,
@@ -1079,11 +1098,12 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                               ],
                             ),
                           )
-                        ])),
-                const SizedBox(height: 16),
+                        ]),
+                  ),
+                ),
                 widget.ccRole == 'staff' && widget.nome == widget.refertista
                     ? Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -1230,7 +1250,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                       )
                     : Container(),
                 Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                    padding: const EdgeInsets.fromLTRB(12, 3, 12, 0),
                     child: Row(children: [
                       golFuori == golCasa &&
                               widget.tipo != 'girone' &&
@@ -1324,14 +1344,14 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                         !boolRigori &&
                         widget.nome == widget.refertista
                     ? Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Column(
                                 children: [
-                                  const SizedBox(height: 12),
+                                  //const SizedBox(height: 12),
                                   FutureBuilder<List<String>>(
                                     future: getGiocatori(widget.casa),
                                     builder: (context, snapshot) {
@@ -1456,7 +1476,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                             Expanded(
                               child: Column(
                                 children: [
-                                  const SizedBox(height: 12),
+                                  //const SizedBox(height: 12),
                                   FutureBuilder<List<String>>(
                                     future: getGiocatori(widget.fuori),
                                     builder: (context, snapshot) {
@@ -1756,195 +1776,204 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                         ],
                       )
                     : Container(),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Column(
                   children: [
                     for (var marcatore in marcatori)
                       Padding(
-                        padding: iniziata
-                            ? const EdgeInsets.fromLTRB(2, 0, 2, 0)
-                            : const EdgeInsets.fromLTRB(6, 0, 6, 0),
-                        child: Column(
+                        padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+                        child: Row(
+                          mainAxisAlignment:
+                              marcatore['dove'] == 'casa'
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.end,
                           children: [
-                            marcatore['dove'] == 'casa'
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      iniziata &&
-                                              !boolRigori &&
-                                              widget.ccRole == 'staff' &&
-                                              widget.nome == widget.refertista
-                                          ? IconButton(
-                                              icon: const Icon(Icons.delete),
-                                              onPressed: () {
-                                                rimuoviMarcatore(
-                                                    widget.casa,
-                                                    marcatore['nome']!,
-                                                    marcatore['cosa']!);
-                                              },
-                                            )
-                                          : const SizedBox(width: 20),
-                                      marcatore['cosa'] == 'amm'
-                                          ? Row(children: [
-                                              Container(
-                                                width: 18,
-                                                height: 23,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow,
-                                                  borderRadius:
-                                                      BorderRadius.circular(2),
-                                                  border: Border.all(
-                                                      color: Colors.black54,
-                                                      width: 0.75),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 4),
-                                            ])
-                                          : marcatore['cosa'] == 'esp'
-                                              ? Row(children: [
-                                                  Container(
-                                                    width: 18,
-                                                    height: 23,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              2),
-                                                      border: Border.all(
-                                                          color: Colors.black54,
-                                                          width: 0.75),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                ])
-                                              : const Icon(Icons.sports_soccer),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                          child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                            AutoSizeText(
-                                              marcatore['nome']!,
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                              ),
-                                              minFontSize: 18,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                            Text(
-                                              marcatore['cosa'] == 'gol'
-                                                  ? 'Gol'
-                                                  : marcatore['cosa'] == 'amm'
-                                                      ? 'Ammonizione'
-                                                      : 'Espulsione',
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ]))
-                                    ],
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              AutoSizeText(
-                                                ' ${marcatore['nome']!}',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                ),
-                                                minFontSize: 18,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                              ),
-                                              Text(
-                                                marcatore['cosa'] == 'gol'
-                                                    ? 'Gol'
-                                                    : marcatore['cosa'] == 'amm'
-                                                        ? 'Ammonizione'
-                                                        : 'Espulsione',
-                                                style: const TextStyle(
-                                                    fontSize: 14),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ]),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      marcatore['cosa'] == 'amm'
-                                          ? Row(children: [
-                                              const SizedBox(width: 4),
-                                              Container(
-                                                width: 18,
-                                                height: 23,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.yellow,
-                                                  borderRadius:
-                                                      BorderRadius.circular(2),
-                                                  border: Border.all(
-                                                      color: Colors.black54,
-                                                      width: 0.75),
-                                                ),
-                                              ),
-                                            ])
-                                          : marcatore['cosa'] == 'esp'
-                                              ? Row(children: [
-                                                  const SizedBox(width: 4),
-                                                  Container(
-                                                    width: 18,
-                                                    height: 23,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              2),
-                                                      border: Border.all(
-                                                          color: Colors.black54,
-                                                          width: 0.75),
-                                                    ),
-                                                  ),
-                                                ])
-                                              : const Icon(Icons.sports_soccer),
-                                      iniziata &&
-                                              !boolRigori &&
-                                              widget.ccRole == 'staff' &&
-                                              widget.nome == widget.refertista
-                                          ? IconButton(
-                                              icon: const Icon(Icons.delete),
-                                              onPressed: () {
-                                                rimuoviMarcatore(
-                                                    widget.fuori,
-                                                    marcatore['nome']!,
-                                                    marcatore['cosa']!);
-                                              },
-                                            )
-                                          : const SizedBox(width: 20),
-                                    ],
+                            if (marcatore['dove'] == 'casa' &&
+                                iniziata &&
+                                !boolRigori &&
+                                widget.ccRole == 'staff' &&
+                                widget.nome == widget.refertista)
+                              Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide(
+                                      color: Colors.grey[400]!, width: 1),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () {
+                                    rimuoviMarcatore(
+                                        widget.casa,
+                                        marcatore['nome']!,
+                                        marcatore['cosa']!);
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Icon(Icons.delete, size: 22),
                                   ),
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10, 7, 10, 7),
-                              child: Divider(
-                                  thickness: 0.75, color: Colors.black54),
+                                ),
+                              ),
+                            if (marcatore['dove'] == 'casa' &&
+                                iniziata &&
+                                !boolRigori &&
+                                widget.ccRole == 'staff' &&
+                                widget.nome == widget.refertista)
+                              const SizedBox(width: 0),
+                            Card(
+                              elevation: 0,
+                              color: Colors.grey[200],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: marcatore['dove'] == 'casa'
+                                      ? [
+                                          _buildEventIcon(
+                                              marcatore['cosa']!),
+                                          const SizedBox(width: 8),
+                                          _buildPlayerInfo(
+                                              marcatore['nome']!,
+                                              marcatore['cosa']!,
+                                              CrossAxisAlignment.start),
+                                        ]
+                                      : [
+                                          _buildPlayerInfo(
+                                              marcatore['nome']!,
+                                              marcatore['cosa']!,
+                                              CrossAxisAlignment.end),
+                                          const SizedBox(width: 8),
+                                          _buildEventIcon(
+                                              marcatore['cosa']!),
+                                        ],
+                                ),
+                              ),
                             ),
+                            if (marcatore['dove'] == 'fuori' &&
+                                iniziata &&
+                                !boolRigori &&
+                                widget.ccRole == 'staff' &&
+                                widget.nome == widget.refertista)
+                              const SizedBox(width: 0),
+                            if (marcatore['dove'] == 'fuori' &&
+                                iniziata &&
+                                !boolRigori &&
+                                widget.ccRole == 'staff' &&
+                                widget.nome == widget.refertista)
+                              Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide(
+                                      color: Colors.grey[400]!, width: 1),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () {
+                                    rimuoviMarcatore(
+                                        widget.fuori,
+                                        marcatore['nome']!,
+                                        marcatore['cosa']!);
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Icon(Icons.delete, size: 22),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
                   ],
+                ),
+                ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                      Colors.grey, BlendMode.srcIn),
+                  child: Opacity(
+                    opacity: 0.3,
+                    child: Builder(builder: (context) {
+                      final w = MediaQuery.of(context).size.width * 0.5;
+                      return Image.asset(
+                        'images/logo_champions_bianco.png',
+                        width: w,
+                        height: w,
+                      );
+                    }),
+                  ),
                 ),
               ],
             ));
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildEventIcon(String cosa) {
+    if (cosa == 'amm') {
+      return Container(
+        width: 18,
+        height: 23,
+        decoration: BoxDecoration(
+          color: Colors.yellow,
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(color: Colors.black54, width: 0.75),
+        ),
+      );
+    } else if (cosa == 'esp') {
+      return Container(
+        width: 18,
+        height: 23,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(color: Colors.black54, width: 0.75),
+        ),
+      );
+    } else {
+      return const Text('⚽', style: TextStyle(fontSize: 20));
+    }
+  }
+
+  Widget _buildPlayerInfo(
+      String nome, String cosa, CrossAxisAlignment alignment) {
+    final subtitle = cosa == 'gol'
+        ? 'Gol'
+        : cosa == 'amm'
+            ? 'Ammonizione'
+            : 'Espulsione';
+    final spaceIndex = nome.indexOf(' ');
+    final nameWidget = spaceIndex > 0
+        ? Text.rich(
+            TextSpan(children: [
+              TextSpan(
+                text: nome.substring(0, spaceIndex),
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(
+                text: nome.substring(spaceIndex),
+                style: const TextStyle(fontSize: 18),
+              ),
+            ]),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        : Text(nome,
+            style: const TextStyle(fontSize: 18),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis);
+    return Column(
+      crossAxisAlignment: alignment,
+      children: [
+        nameWidget,
+        Text(subtitle,
+            style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+      ],
     );
   }
 }

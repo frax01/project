@@ -914,7 +914,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                   Text('Arbitro',
                                       style: TextStyle(
                                           fontSize: 14,
-                                          fontStyle: FontStyle.italic)),
+                                          //fontStyle: FontStyle.italic
+                                          )),
                                 ]),
                                 SizedBox(
                                   width: 16,
@@ -931,7 +932,8 @@ class _CCCalendarioState extends State<CCCalendario> {
                                   Text('Refertista',
                                       style: TextStyle(
                                           fontSize: 14,
-                                          fontStyle: FontStyle.italic)),
+                                          //fontStyle: FontStyle.italic
+                                          )),
                                 ]),
                               ]),
                         ],
