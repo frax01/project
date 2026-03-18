@@ -138,71 +138,80 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
 
   Future<void> _saveMatch() async {
     _showLoadingDialog();
-    for (int turno = 0; turno < turni.length; turno++) {
-      for (int partita = 0; partita < turni[turno].length; partita++) {
-        final Partita p = turni[turno][partita];
-        final String newDocId = '${p.casa} VS ${p.fuori}';
+    try {
+      for (int turno = 0; turno < turni.length; turno++) {
+        for (int partita = 0; partita < turni[turno].length; partita++) {
+          final Partita p = turni[turno][partita];
+          final String newDocId = '${p.casa} VS ${p.fuori}';
 
-        if (p.oldDocId != null && p.oldDocId != newDocId) {
-          await FirebaseFirestore.instance
-              .collection('ccPartiteGironi')
-              .doc(p.oldDocId)
-              .delete();
+          if (p.oldDocId != null && p.oldDocId != newDocId) {
+            await FirebaseFirestore.instance
+                .collection('ccPartiteGironi')
+                .doc(p.oldDocId)
+                .delete();
 
-          await FirebaseFirestore.instance
-              .collection('ccPartiteGironi')
-              .doc('${p.casa} VS ${p.fuori}')
-              .set({
-            'girone': _selectedSegment,
-            'casa': p.casa,
-            'fuori': p.fuori,
-            'orario': p.orario ?? '',
-            'campo': p.campo ?? '',
-            'arbitro': p.arbitro ?? '',
-            'refertista': p.refertista ?? '',
-            'turno': (turno + 1).toString(),
-            'data': '01/05/2026',
-            'iniziata': false,
-            'finita': false,
-            'marcatori': p.marcatori ?? [],
-            'tipo': 'girone',
-          });
-          p.oldDocId = newDocId;
-        } else if (p.oldDocId == newDocId) {
-          await FirebaseFirestore.instance
-              .collection('ccPartiteGironi')
-              .doc('${p.casa} VS ${p.fuori}')
-              .update({
-            'orario': p.orario ?? '',
-            'campo': p.campo ?? '',
-            'arbitro': p.arbitro ?? '',
-            'refertista': p.refertista ?? '',
-          });
-        } else {
-          await FirebaseFirestore.instance
-              .collection('ccPartiteGironi')
-              .doc('${p.casa} VS ${p.fuori}')
-              .set({
-            'girone': _selectedSegment,
-            'casa': p.casa,
-            'fuori': p.fuori,
-            'orario': p.orario ?? '',
-            'campo': p.campo ?? '',
-            'arbitro': p.arbitro ?? '',
-            'refertista': p.refertista ?? '',
-            'turno': (turno + 1).toString(),
-            'data': '01/05/2026',
-            'iniziata': false,
-            'finita': false,
-            'marcatori': p.marcatori ?? [],
-            'tipo': 'girone',
-          });
-          p.oldDocId = newDocId;
+            await FirebaseFirestore.instance
+                .collection('ccPartiteGironi')
+                .doc('${p.casa} VS ${p.fuori}')
+                .set({
+              'girone': _selectedSegment,
+              'casa': p.casa,
+              'fuori': p.fuori,
+              'orario': p.orario ?? '',
+              'campo': p.campo ?? '',
+              'arbitro': p.arbitro ?? '',
+              'refertista': p.refertista ?? '',
+              'turno': (turno + 1).toString(),
+              'data': '01/05/2026',
+              'iniziata': false,
+              'finita': false,
+              'marcatori': p.marcatori ?? [],
+              'tipo': 'girone',
+            });
+            p.oldDocId = newDocId;
+          } else if (p.oldDocId == newDocId) {
+            await FirebaseFirestore.instance
+                .collection('ccPartiteGironi')
+                .doc('${p.casa} VS ${p.fuori}')
+                .update({
+              'orario': p.orario ?? '',
+              'campo': p.campo ?? '',
+              'arbitro': p.arbitro ?? '',
+              'refertista': p.refertista ?? '',
+            });
+          } else {
+            await FirebaseFirestore.instance
+                .collection('ccPartiteGironi')
+                .doc('${p.casa} VS ${p.fuori}')
+                .set({
+              'girone': _selectedSegment,
+              'casa': p.casa,
+              'fuori': p.fuori,
+              'orario': p.orario ?? '',
+              'campo': p.campo ?? '',
+              'arbitro': p.arbitro ?? '',
+              'refertista': p.refertista ?? '',
+              'turno': (turno + 1).toString(),
+              'data': '01/05/2026',
+              'iniziata': false,
+              'finita': false,
+              'marcatori': p.marcatori ?? [],
+              'tipo': 'girone',
+            });
+            p.oldDocId = newDocId;
+          }
         }
       }
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      Navigator.of(context).pop(); // chiude pagina
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore: $e')),
+      );
     }
-    Navigator.of(context).pop();
-    Navigator.of(context).pop();
   }
 
   Future<String?> _selectTime(Partita partita) async {

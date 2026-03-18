@@ -15,7 +15,6 @@ class CcAggiungiSquadre extends StatefulWidget {
 class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  String placeHolder = 'Aggiungi logo';
   PlatformFile? fileF;
 
   Future<String?> _uploadFileToFirebase(PlatformFile file) async {
@@ -108,22 +107,25 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                               elevation: 5,
                             ),
                             onPressed: () async {
-                              _showLoadingDialog();
                               FilePickerResult? result =
                                   await FilePicker.platform.pickFiles();
                               if (result != null) {
                                 setDialogState(() {
                                   localFileF = result.files.first;
-                                  placeHolder = localFileF!.name;
-                                  print("File selezionato: $localFileF");
                                 });
                               }
-                              Navigator.of(context).pop();
                             },
-                            child: logoUrl == '' || logoUrl == null
+                            child: localFileF != null
                                 ? Text(
-                                    placeHolder,
+                                    localFileF!.name,
                                     style: const TextStyle(fontSize: 16.0),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : (logoUrl == '' || logoUrl == null)
+                                ? const Text(
+                                    'Aggiungi logo',
+                                    style: TextStyle(fontSize: 16.0),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   )
@@ -161,103 +163,116 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
                 ElevatedButton(
                   onPressed: () async {
                     _showLoadingDialog();
+                    try {
+                      final String newClubName = clubController.text;
+                      final String squadraName = squadraController.text;
 
-                    final String newClubName = clubController.text;
-                    final String squadraName = squadraController.text;
+                      if (isAddingClub && newClubName.isNotEmpty) {
+                        if (isEditingClub == false) {
+                          final DocumentReference docRef =
+                              _firestore.collection('ccSquadre').doc(newClubName);
+                          final DocumentSnapshot docSnapshot = await docRef.get();
 
-                    if (isAddingClub && newClubName.isNotEmpty) {
-                      if (isEditingClub == false) {
+                          if (docSnapshot.exists) {
+                            if (!mounted) return;
+                            Navigator.of(context).pop(); // chiude dialog loading
+                            Navigator.of(context).pop(); // chiude dialog form
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Il club esiste già')),
+                            );
+                            return;
+                          } else {
+                            await docRef.set({
+                              'club': newClubName,
+                              'squadre': [],
+                            });
+                          }
+                        } else {
+                          final DocumentReference docRef =
+                              _firestore.collection('ccSquadre').doc(club);
+                          final DocumentSnapshot docSnapshot = await docRef.get();
+
+                          if (docSnapshot.exists) {
+                            List<Map<String, dynamic>> squadre =
+                                List<Map<String, dynamic>>.from(
+                                    docSnapshot['squadre']);
+
+                            await _firestore
+                                .collection("ccSquadre")
+                                .doc(club)
+                                .delete();
+
+                            await _firestore
+                                .collection('ccSquadre')
+                                .doc(newClubName)
+                                .set({
+                              'club': newClubName,
+                              'squadre': squadre,
+                            });
+                          }
+                        }
+                      } else if (newClubName.isNotEmpty &&
+                          squadraName.isNotEmpty) {
                         final DocumentReference docRef =
                             _firestore.collection('ccSquadre').doc(newClubName);
-                        final DocumentSnapshot docSnapshot = await docRef.get();
-
-                        if (docSnapshot.exists) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Il club esiste già')),
-                          );
-                        } else {
-                          await docRef.set({
-                            'club': newClubName,
-                            'squadre': [],
-                          });
-                        }
-                      } else {
-                        final DocumentReference docRef =
-                            _firestore.collection('ccSquadre').doc(club);
                         final DocumentSnapshot docSnapshot = await docRef.get();
 
                         if (docSnapshot.exists) {
                           List<Map<String, dynamic>> squadre =
                               List<Map<String, dynamic>>.from(
                                   docSnapshot['squadre']);
-
-                          await _firestore
-                              .collection("ccSquadre")
-                              .doc(club)
-                              .delete();
-
-                          await _firestore
-                              .collection('ccSquadre')
-                              .doc(newClubName)
-                              .set({
-                            'club': newClubName,
-                            'squadre': squadre,
-                          });
-                        }
-                      }
-                    } else if (newClubName.isNotEmpty &&
-                        squadraName.isNotEmpty) {
-                      final DocumentReference docRef =
-                          _firestore.collection('ccSquadre').doc(newClubName);
-                      final DocumentSnapshot docSnapshot = await docRef.get();
-
-                      if (docSnapshot.exists) {
-                        List<Map<String, dynamic>> squadre =
-                            List<Map<String, dynamic>>.from(
-                                docSnapshot['squadre']);
-                        bool squadraExists = squadre.any((s) =>
-                            s['squadra'] == squadraName &&
-                            s['squadra'] != squadra?['squadra']);
-                        if (squadraExists) {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('La squadra esiste già')),
-                          );
-                          return;
-                        } else {
-                          if (isEdit && squadra != null) {
-                            int index = squadre.indexWhere(
-                                (s) => s['squadra'] == squadra['squadra']);
-                            if (index != -1) {
-                              squadre[index] = {
+                          bool squadraExists = squadre.any((s) =>
+                              s['squadra'] == squadraName &&
+                              s['squadra'] != squadra?['squadra']);
+                          if (squadraExists) {
+                            if (!mounted) return;
+                            Navigator.of(context).pop(); // chiude dialog loading
+                            Navigator.of(context).pop(); // chiude dialog form
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('La squadra esiste già')),
+                            );
+                            return;
+                          } else {
+                            if (isEdit && squadra != null) {
+                              int index = squadre.indexWhere(
+                                  (s) => s['squadra'] == squadra['squadra']);
+                              if (index != -1) {
+                                squadre[index] = {
+                                  'squadra': squadraName,
+                                  'logo': localFileF != null
+                                      ? await _uploadFileToFirebase(localFileF!)
+                                      : logoUrl
+                                };
+                              }
+                            } else {
+                              squadre.add({
                                 'squadra': squadraName,
                                 'logo': localFileF != null
                                     ? await _uploadFileToFirebase(localFileF!)
-                                    : logoUrl
-                              };
+                                    : '',
+                              });
                             }
-                          } else {
-                            squadre.add({
-                              'squadra': squadraName,
-                              'logo': localFileF != null
-                                  ? await _uploadFileToFirebase(localFileF!)
-                                  : '',
-                            });
+                            await docRef.update({'squadre': squadre});
                           }
-                          await docRef.update({'squadre': squadre});
                         }
                       }
+
+                      setState(() {
+                        fileF = null;
+                      });
+
+                      if (!mounted) return;
+                      Navigator.of(context).pop(); // chiude dialog loading
+                      Navigator.of(context).pop(); // chiude dialog form
+                    } catch (e) {
+                      if (!mounted) return;
+                      Navigator.of(context).pop(); // chiude dialog loading
+                      Navigator.of(context).pop(); // chiude dialog form
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Errore: $e')),
+                      );
                     }
-
-                    setState(() {
-                      fileF = null;
-                      placeHolder = 'Aggiungi logo';
-                    });
-
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
                   },
                   child: Text(isEdit ? 'Modifica' : 'Salva'),
                 ),
@@ -285,25 +300,35 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
             ElevatedButton(
               onPressed: () async {
                 _showLoadingDialog();
-                if (squadra != null) {
-                  final DocumentReference docRef =
-                      _firestore.collection('ccSquadre').doc(club);
-                  final DocumentSnapshot docSnapshot = await docRef.get();
+                try {
+                  if (squadra != null) {
+                    final DocumentReference docRef =
+                        _firestore.collection('ccSquadre').doc(club);
+                    final DocumentSnapshot docSnapshot = await docRef.get();
 
-                  if (docSnapshot.exists) {
-                    List<Map<String, dynamic>> squadre =
-                        List<Map<String, dynamic>>.from(docSnapshot['squadre']);
-                    squadre.removeWhere((s) =>
-                        s['squadra'] == squadra['squadra'] &&
-                        s['logo'] == squadra['logo']);
-                    await docRef.update({'squadre': squadre});
+                    if (docSnapshot.exists) {
+                      List<Map<String, dynamic>> squadre =
+                          List<Map<String, dynamic>>.from(docSnapshot['squadre']);
+                      squadre.removeWhere((s) =>
+                          s['squadra'] == squadra['squadra'] &&
+                          s['logo'] == squadra['logo']);
+                      await docRef.update({'squadre': squadre});
+                    }
+                  } else {
+                    await _firestore.collection('ccSquadre').doc(club).delete();
                   }
-                } else {
-                  await _firestore.collection('ccSquadre').doc(club).delete();
-                }
 
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // chiude dialog loading
+                  Navigator.of(context).pop(); // chiude dialog conferma
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // chiude dialog loading
+                  Navigator.of(context).pop(); // chiude dialog conferma
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Errore: $e')),
+                  );
+                }
               },
               child: const Text('Elimina'),
             ),

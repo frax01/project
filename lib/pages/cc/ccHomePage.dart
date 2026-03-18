@@ -159,7 +159,10 @@ class _CCHomePageState extends State<CCHomePage> {
           '');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password errata')),
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Credenziali errate'),
+        ),
       );
     }
   }
@@ -183,12 +186,18 @@ class _CCHomePageState extends State<CCHomePage> {
               prefs.getString('cc') ?? '', 'staff', nome);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password errata')),
+            const SnackBar(
+              backgroundColor: Colors.red,
+              content: Text('Credenziali errate'),
+            ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nome utente errato')),
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Credenziali errate'),
+          ),
         );
       }
     } else {
@@ -218,7 +227,10 @@ class _CCHomePageState extends State<CCHomePage> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password errata')),
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Credenziali errate'),
+          ),
         );
       }
     }

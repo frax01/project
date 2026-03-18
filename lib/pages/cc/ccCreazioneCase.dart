@@ -147,9 +147,9 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  _showLoadingDialog();
-
+                if (!_formKey.currentState!.validate()) return;
+                _showLoadingDialog();
+                try {
                   final newNumero = _numeroController.text;
                   int posti = int.parse(_postiController.text);
                   final club = _selectedClub ?? '';
@@ -199,8 +199,9 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                   } else {
                     final doc = await docRef.get();
                     if (doc.exists) {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+                      if (!mounted) return;
+                      Navigator.of(context).pop(); // chiude dialog loading
+                      Navigator.of(context).pop(); // chiude dialog form
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('La casa esiste già'),
@@ -216,8 +217,16 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
                     });
                   }
 
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // chiude dialog loading
+                  Navigator.of(context).pop(); // chiude dialog form
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // chiude dialog loading
+                  Navigator.of(context).pop(); // chiude dialog form
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Errore: $e')),
+                  );
                 }
               },
               child: const Text('Salva'),
@@ -341,32 +350,41 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
     );
     if (confirm == true) {
       _showLoadingDialog();
-      await FirebaseFirestore.instance
-          .collection('ccCase')
-          .doc(numero)
-          .delete();
+      try {
+        await FirebaseFirestore.instance
+            .collection('ccCase')
+            .doc(numero)
+            .delete();
 
-      final QuerySnapshot result = await FirebaseFirestore.instance
-          .collection('ccIscrizioniSquadre')
-          .where('club', isEqualTo: club)
-          .get();
-      final List<DocumentSnapshot> documents = result.docs;
-      for (var doc in documents) {
-        final squadra = doc['nomeSquadra'];
-        final squadraDoc = FirebaseFirestore.instance
+        final QuerySnapshot result = await FirebaseFirestore.instance
             .collection('ccIscrizioniSquadre')
-            .doc(squadra);
-        final squadraData = await squadraDoc.get();
-        final giocatori =
-            List<Map<String, dynamic>>.from(squadraData['giocatori']);
-        for (var giocatore in giocatori) {
-          if (giocatore['appartamento'] == numero) {
-            giocatore['appartamento'] = '';
+            .where('club', isEqualTo: club)
+            .get();
+        final List<DocumentSnapshot> documents = result.docs;
+        for (var doc in documents) {
+          final squadra = doc['nomeSquadra'];
+          final squadraDoc = FirebaseFirestore.instance
+              .collection('ccIscrizioniSquadre')
+              .doc(squadra);
+          final squadraData = await squadraDoc.get();
+          final giocatori =
+              List<Map<String, dynamic>>.from(squadraData['giocatori']);
+          for (var giocatore in giocatori) {
+            if (giocatore['appartamento'] == numero) {
+              giocatore['appartamento'] = '';
+            }
           }
+          await squadraDoc.update({'giocatori': giocatori});
         }
-        await squadraDoc.update({'giocatori': giocatori});
+        if (!mounted) return;
+        Navigator.of(context).pop(); // chiude dialog loading
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // chiude dialog loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore: $e')),
+        );
       }
-      Navigator.of(context).pop();
     }
   }
 

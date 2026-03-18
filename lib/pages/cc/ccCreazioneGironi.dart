@@ -126,19 +126,28 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
           ElevatedButton(
             onPressed: () async {
               _showLoadingDialog();
+              try {
+                QuerySnapshot querySnapshot = await _firestore
+                    .collection('ccPartiteGironi')
+                    .where('girone', isEqualTo: docId)
+                    .get();
 
-              QuerySnapshot querySnapshot = await _firestore
-                  .collection('ccPartiteGironi')
-                  .where('girone', isEqualTo: docId)
-                  .get();
+                for (var doc in querySnapshot.docs) {
+                  await doc.reference.delete();
+                }
 
-              for (var doc in querySnapshot.docs) {
-                await doc.reference.delete();
+                await _firestore.collection('ccGironi').doc(docId).delete();
+                if (!mounted) return;
+                Navigator.of(context).pop(); // chiude dialog loading
+                Navigator.of(context).pop(); // chiude dialog conferma
+              } catch (e) {
+                if (!mounted) return;
+                Navigator.of(context).pop(); // chiude dialog loading
+                Navigator.of(context).pop(); // chiude dialog conferma
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Errore: $e')),
+                );
               }
-
-              await _firestore.collection('ccGironi').doc(docId).delete();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
             },
             child: const Text('Elimina'),
           ),

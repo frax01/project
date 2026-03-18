@@ -177,8 +177,9 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                   }),
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        _showLoadingDialog();
+                      if (!_formKey.currentState!.validate()) return;
+                      _showLoadingDialog();
+                      try {
                         final Map<String, int> mappa = _initializeMap(squadreSelezionate);
                         await FirebaseFirestore.instance.collection('ccGironi').doc(_nomeGironeController.text).set({
                           'nome': _nomeGironeController.text,
@@ -190,9 +191,16 @@ class _ccNuovoGironeState extends State<ccNuovoGirone> {
                           'partiteG': mappa,
                           'cartGialli': mappa,
                         });
-                        Navigator.of(context).pop();
+                        if (!mounted) return;
+                        Navigator.of(context).pop(); // chiude dialog
+                        Navigator.of(context).pop(); // chiude pagina
+                      } catch (e) {
+                        if (!mounted) return;
+                        Navigator.of(context).pop(); // chiude dialog
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Errore: $e')),
+                        );
                       }
-                      Navigator.of(context).pop();
                     },
                     child: const Text('Crea'),
                   ),

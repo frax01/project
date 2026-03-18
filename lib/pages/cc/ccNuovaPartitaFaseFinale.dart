@@ -153,46 +153,54 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
 
   Future<void> _saveMatch() async {
     _showLoadingDialog();
-    for (int turno = 0; turno < turni.length; turno++) {
-      final Partita p = turni[turno];
-      final String newDocId = '${p.codice![0]}$turno';
+    try {
+      for (int turno = 0; turno < turni.length; turno++) {
+        final Partita p = turni[turno];
+        final String newDocId = '${p.codice![0]}$turno';
 
-      if (p.casa == null || p.fuori == null) {
-        print('Errore: Casa o Fuori è null');
-        continue;
-      }
+        if (p.casa == null || p.fuori == null) {
+          continue;
+        }
 
-      if (p.oldDocId != null && p.oldDocId != newDocId) {
+        if (p.oldDocId != null && p.oldDocId != newDocId) {
+          await FirebaseFirestore.instance
+              .collection('ccPartite${widget.tipo}')
+              .doc(p.oldDocId)
+              .delete();
+        }
+
         await FirebaseFirestore.instance
             .collection('ccPartite${widget.tipo}')
-            .doc(p.oldDocId)
-            .delete();
+            .doc(newDocId)
+            .set({
+          'casa': p.casa,
+          'fuori': p.fuori,
+          'orario': p.orario ?? '',
+          'campo': p.campo ?? '',
+          'arbitro': p.arbitro ?? '',
+          'refertista': p.refertista ?? '',
+          'data': '02/05/2026',
+          'iniziata': p.iniziata ?? false,
+          'finita': p.finita ?? false,
+          'marcatori': p.marcatori ?? [],
+          'tipo': '${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}',
+          'codice': '${p.codice![0]}$turno',
+          'rigoriCasa': p.rigoriCasa ?? [],
+          'rigoriFuori': p.rigoriFuori ?? [],
+          'boolRigori': p.boolRigori ?? false,
+        });
+        p.oldDocId = newDocId;
       }
-
-      await FirebaseFirestore.instance
-          .collection('ccPartite${widget.tipo}')
-          .doc(newDocId)
-          .set({
-        'casa': p.casa,
-        'fuori': p.fuori,
-        'orario': p.orario ?? '',
-        'campo': p.campo ?? '',
-        'arbitro': p.arbitro ?? '',
-        'refertista': p.refertista ?? '',
-        'data': '02/05/2026',
-        'iniziata': p.iniziata ?? false,
-        'finita': p.finita ?? false,
-        'marcatori': p.marcatori ?? [],
-        'tipo': '${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}',
-        'codice': '${p.codice![0]}$turno',
-        'rigoriCasa': p.rigoriCasa ?? [],
-        'rigoriFuori': p.rigoriFuori ?? [],
-        'boolRigori': p.boolRigori ?? false,
-      });
-      p.oldDocId = newDocId;
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      Navigator.of(context).pop(); // chiude pagina
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore: $e')),
+      );
     }
-    Navigator.of(context).pop();
-    Navigator.of(context).pop();
   }
 
   Future<String?> _selectTime(Partita partita) async {

@@ -147,8 +147,9 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   }
 
   Future<void> _saveProgramma() async {
+    if (!_formKey.currentState!.validate()) return;
     _showLoadingDialog();
-    if (_formKey.currentState!.validate()) {
+    try {
       final data = _dataController.text;
       final orario = _orarioController.text;
       final titolo = _titoloController.text;
@@ -178,9 +179,16 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
             .update(programma);
       }
 
-      Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      Navigator.of(context).pop(); // chiude pagina
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore: $e')),
+      );
     }
-    Navigator.of(context).pop();
   }
 
   Future<String?> _selectTime() async {
@@ -435,12 +443,21 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                                 );
                                 if (confirm) {
                                   _showLoadingDialog();
-                                  await FirebaseFirestore.instance
-                                      .collection('ccProgramma')
-                                      .doc(widget.programmaId)
-                                      .delete();
-                                  Navigator.pop(context);
-                                  Navigator.of(context).pop();
+                                  try {
+                                    await FirebaseFirestore.instance
+                                        .collection('ccProgramma')
+                                        .doc(widget.programmaId)
+                                        .delete();
+                                    if (!mounted) return;
+                                    Navigator.of(context).pop(); // chiude dialog
+                                    Navigator.of(context).pop(); // chiude pagina
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    Navigator.of(context).pop(); // chiude dialog
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Errore: $e')),
+                                    );
+                                  }
                                 }
                               },
                               child: const Text('Elimina'),

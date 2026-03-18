@@ -19,7 +19,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   Map<String, List<dynamic>> giocatori = {};
   Map<String, bool> hasChanges = {};
   late Future<void> _loadSquadreFuture;
-  final _formKey = GlobalKey<FormState>();
+  final Map<String, GlobalKey<FormState>> _formKeys = {};
   Map<String, List<TextEditingController>> giocatoriControllers = {};
 
   List<String> ccCaseList = [];
@@ -54,116 +54,91 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
     setState(() {});
   }
 
-  Future<List<Map<String, dynamic>>> retrievePlayers(String squadra) async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('ccIscrizioniSquadre')
-        .where('nomeSquadra', isEqualTo: squadra)
-        .get();
-
-    List<Map<String, dynamic>> players = snapshot.docs
-        .expand((doc) => List<Map<String, dynamic>>.from(doc['giocatori']))
-        .toList();
-    return players;
-  }
-
   Map<dynamic, dynamic> caseM = {};
 
   bool open = true;
 
   Future<void> _loadSquadre() async {
-    QuerySnapshot snapshot;
-    QuerySnapshot ccCase;
+    // 1. Scarica tutto in parallelo (3 query invece di ~24 sequenziali)
+    final results = await Future.wait([
+      FirebaseFirestore.instance.collection('ccIscrizioni').doc('iscrizioni').get(),
+      FirebaseFirestore.instance.collection('ccCase').get(),
+      widget.ccRole == 'staff'
+          ? FirebaseFirestore.instance.collection('ccSquadre').get()
+          : FirebaseFirestore.instance.collection('ccSquadre').where('club', isEqualTo: widget.club).get(),
+      FirebaseFirestore.instance.collection('ccIscrizioniSquadre').get(),
+    ]);
 
-    DocumentSnapshot querySnapshotIsc = await FirebaseFirestore.instance
-        .collection('ccIscrizioni')
-        .doc('iscrizioni')
-        .get();
-    if (querySnapshotIsc.exists) {
-      setState(() {
-        open = querySnapshotIsc['open'];
-      });
+    final DocumentSnapshot iscrizioniDoc = results[0] as DocumentSnapshot;
+    final QuerySnapshot caseSnapshot = results[1] as QuerySnapshot;
+    final QuerySnapshot squadreSnapshot = results[2] as QuerySnapshot;
+    final QuerySnapshot iscrizioniSquadreSnapshot = results[3] as QuerySnapshot;
+
+    // 2. Iscrizioni aperte/chiuse
+    if (iscrizioniDoc.exists) {
+      open = iscrizioniDoc['open'];
     }
 
-    QuerySnapshot caseSnapshot =
-        await FirebaseFirestore.instance.collection('ccCase').get();
+    // 3. Case - costruisci mappa una volta sola
     for (var doc in caseSnapshot.docs) {
       caseM[doc['numero']] = doc['posti'];
     }
 
     if (widget.ccRole == 'staff') {
-      snapshot = await FirebaseFirestore.instance.collection('ccSquadre').get();
-      ccCase = await FirebaseFirestore.instance.collection('ccCase').get();
       ccCaseMap = {};
-      if (ccCase.docs.isNotEmpty) {
-        for (var squadra in ccCase.docs) {
-          String club = squadra['club'];
-          String numero = squadra['numero'];
-          if (ccCaseMap.containsKey(club)) {
-            ccCaseMap[club]!.add(numero);
-          } else {
-            ccCaseMap[club] = ['', numero];
-          }
+      for (var doc in caseSnapshot.docs) {
+        String club = doc['club'];
+        String numero = doc['numero'];
+        if (ccCaseMap.containsKey(club)) {
+          ccCaseMap[club]!.add(numero);
+        } else {
+          ccCaseMap[club] = ['', numero];
         }
       }
-      setState(() {});
     } else {
-      snapshot = await FirebaseFirestore.instance
-          .collection('ccSquadre')
-          .where('club', isEqualTo: widget.club)
-          .get();
-      ccCase = await FirebaseFirestore.instance
-          .collection('ccCase')
-          .where('club', isEqualTo: widget.club)
-          .get();
       ccCaseList = [''];
-      if (ccCase.docs.isNotEmpty) {
-        for (var squadra in ccCase.docs) {
-          ccCaseList.add(squadra['numero']);
+      for (var doc in caseSnapshot.docs) {
+        if (doc['club'] == widget.club) {
+          ccCaseList.add(doc['numero']);
         }
       }
-      setState(() {});
     }
 
-    List<Map<String, dynamic>> loadedSquadre = snapshot.docs
+    // 4. Mappa tutti i giocatori iscritti (già scaricati, nessuna query extra)
+    Map<String, List<Map<String, dynamic>>> playersMap = {};
+    Map<String, String> clubsMap = {};
+    for (var doc in iscrizioniSquadreSnapshot.docs) {
+      String nomeSquadra = doc['nomeSquadra'];
+      playersMap[nomeSquadra] = List<Map<String, dynamic>>.from(doc['giocatori']);
+      clubsMap[nomeSquadra] = doc['club'];
+    }
+
+    // 5. Costruisci i dati locali
+    List<Map<String, dynamic>> loadedSquadre = squadreSnapshot.docs
         .expand((doc) => List<Map<String, dynamic>>.from(doc['squadre']))
         .toList();
     Map<String, List<dynamic>> loadedGiocatori = {};
     Map<String, bool> loadedHasChanges = {};
 
     for (var squadra in loadedSquadre) {
-      List<Map<String, dynamic>> players =
-          await retrievePlayers(squadra['squadra']);
-      loadedGiocatori[squadra['squadra']] =
-          players.map((player) => player['nome']!).toList();
-      giocatoriControllers[squadra['squadra']] = players
-          .map((player) => TextEditingController(text: player['nome']))
+      String nome = squadra['squadra'];
+      List<Map<String, dynamic>> players = playersMap[nome] ?? [];
+      loadedGiocatori[nome] = players.map((p) => p['nome']!).toList();
+      giocatoriControllers[nome] = players
+          .map((p) => TextEditingController(text: p['nome']))
           .toList();
-      magliaControllers[squadra['squadra']] = players
-          .map((player) => TextEditingController(text: player['maglia']))
+      magliaControllers[nome] = players
+          .map((p) => TextEditingController(text: p['maglia']))
           .toList();
-      appartamentoControllers[squadra['squadra']] = players
-          .map((player) => TextEditingController(text: player['appartamento']))
+      appartamentoControllers[nome] = players
+          .map((p) => TextEditingController(text: p['appartamento']))
           .toList();
-      loadedHasChanges[squadra['squadra']] = false;
+      loadedHasChanges[nome] = false;
+      _formKeys[nome] = GlobalKey<FormState>();
     }
 
-    squadre =
-        loadedSquadre.map((squadra) => squadra['squadra'] as String).toList();
-    for (var elem in squadre) {
-      if (!clubs.containsKey(elem)) {
-        QuerySnapshot value = await FirebaseFirestore.instance
-            .collection('ccIscrizioniSquadre')
-            .where('nomeSquadra', isEqualTo: elem)
-            .get();
-        String search = '';
-        if (value.docs.isNotEmpty) {
-          for (var doc in value.docs) {
-            search = doc['club'];
-          }
-        }
-        clubs[elem] = search;
-      }
-    }
+    squadre = loadedSquadre.map((s) => s['squadra'] as String).toList();
+    clubs = clubsMap;
 
     setState(() {
       giocatori = loadedGiocatori;
@@ -183,182 +158,218 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   }
 
   void _removeGiocatore(String squadra, int index) async {
-    String nuovoAppartamento = appartamentoControllers[squadra]![index].text;
-    if (nuovoAppartamento != '') {
-      DocumentSnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('ccCase')
-          .doc(nuovoAppartamento)
+    String nome = giocatoriControllers[squadra]![index].text;
+    if (nome.isNotEmpty) {
+      bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Conferma eliminazione'),
+          content: Text('Vuoi eliminare $nome?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Annulla'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Elimina'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+    }
+
+    _showLoadingDialog();
+    try {
+      String nuovoAppartamento = appartamentoControllers[squadra]![index].text;
+      if (nuovoAppartamento != '') {
+        DocumentSnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('ccCase')
+            .doc(nuovoAppartamento)
+            .get();
+
+        if (querySnapshot.exists) {
+          List<dynamic> personeRem = querySnapshot['persone'];
+
+          bool found = false;
+          for (var persona in personeRem) {
+            if (persona['nome'] == giocatori[squadra]![index] &&
+                persona['squadra'] == squadra) {
+              personeRem.remove(persona);
+              found = true;
+              break;
+            }
+          }
+
+          if (found) {
+            await querySnapshot.reference.update({'persone': personeRem});
+          }
+        }
+      }
+
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('ccIscrizioniSquadre')
+          .doc(squadra)
           .get();
-
-      if (querySnapshot.exists) {
-        List<dynamic> personeRem = querySnapshot['persone'];
-
+      if (documentSnapshot.exists) {
+        List<dynamic> giocatoriRem = documentSnapshot['giocatori'];
         bool found = false;
-        for (var persona in personeRem) {
-          if (persona['nome'] == giocatori[squadra]![index] &&
-              persona['squadra'] == squadra) {
-            personeRem.remove(persona);
+        for (var giocatore in giocatoriRem) {
+          if (giocatore['nome'] == nome) {
+            giocatoriRem.remove(giocatore);
             found = true;
             break;
           }
         }
 
         if (found) {
-          await querySnapshot.reference.update({'persone': personeRem});
-        }
-      }
-    }
-
-    String nome = giocatoriControllers[squadra]![index].text;
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('ccIscrizioniSquadre')
-        .doc(squadra)
-        .get();
-    if (documentSnapshot.exists) {
-      List<dynamic> giocatoriRem = documentSnapshot['giocatori'];
-      bool found = false;
-      for (var giocatore in giocatoriRem) {
-        if (giocatore['nome'] == nome) {
-          giocatoriRem.remove(giocatore);
-          found = true;
-          break;
+          await documentSnapshot.reference.update({'giocatori': giocatoriRem});
         }
       }
 
-      if (found) {
-        await documentSnapshot.reference.update({'giocatori': giocatoriRem});
-      }
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog loading
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              CcIscriviSquadre(club: widget.club, ccRole: widget.ccRole),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // chiude dialog loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore: $e')),
+      );
     }
-
-    setState(() {
-      if (index < giocatori[squadra]!.length) {
-        giocatori[squadra]!.removeAt(index);
-      }
-      if (index < giocatoriControllers[squadra]!.length) {
-        giocatoriControllers[squadra]!.removeAt(index);
-      }
-      if (index < magliaControllers[squadra]!.length) {
-        magliaControllers[squadra]!.removeAt(index);
-      }
-      if (index < appartamentoControllers[squadra]!.length) {
-        appartamentoControllers[squadra]!.removeAt(index);
-      }
-    });
   }
 
   void _saveSquadra(String squadra) async {
     _showLoadingDialog();
-
-    List<Map<String, String>> giocatoriData = [];
-    for (int i = 0; i < giocatori[squadra]!.length; i++) {
-      List<dynamic> persone = [];
-      int posti = 0;
-
-      String nuovoAppartamento = appartamentoControllers[squadra]![i].text;
-
-      QuerySnapshot querySnapshot =
+    try {
+      // Cache singola query per tutte le case
+      QuerySnapshot caseSnapshot =
           await FirebaseFirestore.instance.collection('ccCase').get();
 
-      for (var doc in querySnapshot.docs) {
-        var data = doc.data() as Map<String, dynamic>;
-        List<dynamic> personeRem = data['persone'];
+      List<Map<String, String>> giocatoriData = [];
+      for (int i = 0; i < giocatori[squadra]!.length; i++) {
+        List<dynamic> persone = [];
+        int posti = 0;
 
-        bool found = false;
-        for (var persona in personeRem) {
-          if (persona['nome'] == giocatori[squadra]![i] &&
-              persona['squadra'] == squadra) {
-            personeRem.remove(persona);
-            found = true;
-            break;
+        String nuovoAppartamento = appartamentoControllers[squadra]![i].text;
+
+        for (var doc in caseSnapshot.docs) {
+          var data = doc.data() as Map<String, dynamic>;
+          List<dynamic> personeRem = data['persone'];
+
+          bool found = false;
+          for (var persona in personeRem) {
+            if (persona['nome'] == giocatori[squadra]![i] &&
+                persona['squadra'] == squadra) {
+              personeRem.remove(persona);
+              found = true;
+              break;
+            }
+          }
+
+          if (found) {
+            await doc.reference.update({'persone': personeRem});
           }
         }
-
-        if (found) {
-          await doc.reference.update({'persone': personeRem});
-        }
-      }
-      if (nuovoAppartamento != '') {
-        DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-            .collection('ccCase')
-            .doc(nuovoAppartamento)
-            .get();
-        if (docSnapshot.exists) {
-          persone = docSnapshot['persone'];
-          posti = docSnapshot['posti'];
-        }
-        if (persone.length < posti) {
-          await FirebaseFirestore.instance
+        if (nuovoAppartamento != '') {
+          DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
               .collection('ccCase')
               .doc(nuovoAppartamento)
-              .update({
-            'persone': FieldValue.arrayUnion([
-              {
-                'squadra': squadra,
-                'nome': giocatori[squadra]![i],
-              }
-            ]),
-          });
-          giocatoriData.add({
-            'nome': giocatori[squadra]![i],
-            'maglia': magliaControllers[squadra]![i].text,
-            'appartamento': appartamentoControllers[squadra]![i].text,
-          });
+              .get();
+          if (docSnapshot.exists) {
+            persone = docSnapshot['persone'];
+            posti = docSnapshot['posti'];
+          }
+          if (persone.length < posti) {
+            await FirebaseFirestore.instance
+                .collection('ccCase')
+                .doc(nuovoAppartamento)
+                .update({
+              'persone': FieldValue.arrayUnion([
+                {
+                  'squadra': squadra,
+                  'nome': giocatori[squadra]![i],
+                }
+              ]),
+            });
+            giocatoriData.add({
+              'nome': giocatori[squadra]![i],
+              'maglia': magliaControllers[squadra]![i].text,
+              'appartamento': appartamentoControllers[squadra]![i].text,
+            });
+          } else {
+            giocatoriData.add({
+              'nome': giocatori[squadra]![i],
+              'maglia': magliaControllers[squadra]![i].text,
+              'appartamento': '',
+            });
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Appartamento non salvato: numero massimo di $posti posti raggiunto')),
+              );
+            }
+          }
         } else {
           giocatoriData.add({
             'nome': giocatori[squadra]![i],
             'maglia': magliaControllers[squadra]![i].text,
             'appartamento': '',
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Appartamento non salvato: numero massimo di $posti posti raggiunto')),
-          );
         }
+      }
+
+      DocumentSnapshot docClub = await FirebaseFirestore.instance
+          .collection('ccIscrizioniSquadre')
+          .doc(squadra)
+          .get();
+
+      if (docClub.exists) {
+        String clubValue = docClub['club'];
+        await FirebaseFirestore.instance
+            .collection('ccIscrizioniSquadre')
+            .doc(squadra)
+            .update({
+          'nomeSquadra': squadra,
+          'giocatori': giocatoriData,
+          'club': widget.ccRole != 'staff' ? widget.club : clubValue,
+        });
       } else {
-        giocatoriData.add({
-          'nome': giocatori[squadra]![i],
-          'maglia': magliaControllers[squadra]![i].text,
-          'appartamento': '',
+        await FirebaseFirestore.instance
+            .collection('ccIscrizioniSquadre')
+            .doc(squadra)
+            .set({
+          'nomeSquadra': squadra,
+          'giocatori': giocatoriData,
+          'club': widget.ccRole != 'staff' ? widget.club : squadra.split(" ")[0],
         });
       }
+
+      if (!mounted) return;
+      Navigator.pop(context); // chiude dialog
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              CcIscriviSquadre(club: widget.club, ccRole: widget.ccRole),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // chiude dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore: $e')),
+      );
     }
-
-    DocumentSnapshot docClub = await FirebaseFirestore.instance
-        .collection('ccIscrizioniSquadre')
-        .doc(squadra)
-        .get();
-
-    if (docClub.exists) {
-      String clubValue = docClub['club'];
-      await FirebaseFirestore.instance
-          .collection('ccIscrizioniSquadre')
-          .doc(squadra)
-          .update({
-        'nomeSquadra': squadra,
-        'giocatori': giocatoriData,
-        'club': widget.ccRole != 'staff' ? widget.club : clubValue,
-      });
-    } else {
-      await FirebaseFirestore.instance
-          .collection('ccIscrizioniSquadre')
-          .doc(squadra)
-          .set({
-        'nomeSquadra': squadra,
-        'giocatori': giocatoriData,
-        'club': widget.ccRole != 'staff' ? widget.club : squadra.split(" ")[0],
-      });
-    }
-
-    Navigator.pop(context);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            CcIscriviSquadre(club: widget.club, ccRole: widget.ccRole),
-      ),
-    );
   }
 
   Future<void> _importExcelFile() async {
@@ -407,13 +418,15 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
           });
         }
 
+        if (!mounted) return;
+        Navigator.pop(context); // chiude dialog loading
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('File Excel importato con successo!')),
         );
-
-        Navigator.pop(context);
       }
     } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // chiude dialog loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Errore durante l\'importazione: $e')),
       );
@@ -507,7 +520,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                           shape: Border.all(color: Colors.transparent),
                           children: [
                             Form(
-                              key: _formKey,
+                              key: _formKeys[squadra],
                               child: Column(
                                 children: [
                                   for (int i = 0;
@@ -858,7 +871,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
                                 ElevatedButton(
                                   onPressed: hasChanges[squadra]!
                                       ? () {
-                                          if (_formKey.currentState!
+                                          if (_formKeys[squadra]!.currentState!
                                               .validate()) {
                                             _saveSquadra(squadra);
                                           }
