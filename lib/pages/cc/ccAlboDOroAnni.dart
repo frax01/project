@@ -12,6 +12,7 @@ class CcAlboDOroAnni extends StatefulWidget {
 
 class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
   List<Map<String, dynamic>> _entries = [];
+  List<Map<String, dynamic>> _palmares = [];
   bool _isLoading = true;
 
   @override
@@ -24,6 +25,8 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
     final snapshot =
         await FirebaseFirestore.instance.collection('ccAlboDoro').get();
     final entries = <Map<String, dynamic>>[];
+    final Map<String, int> vittorie = {};
+
     for (var doc in snapshot.docs) {
       final data = doc.data();
       final anno = data['anno'];
@@ -32,11 +35,34 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
           'docId': doc.id,
           'anno': anno is int ? anno : int.tryParse(anno.toString()) ?? 0,
         });
+
+        // Extract the winner (posizione 1) from classifica
+        final List<dynamic> classifica = data['classifica'] ?? [];
+        for (var item in classifica) {
+          if (item is Map && item['posizione'] == 1) {
+            final fullName = item['squadra'] as String? ?? '';
+            final club = fullName.split(' ').first;
+            if (club.isNotEmpty) {
+              vittorie[club] = (vittorie[club] ?? 0) + 1;
+            }
+            break;
+          }
+        }
       }
     }
+
     entries.sort((a, b) => (b['anno'] as int).compareTo(a['anno'] as int));
+
+    // Build palmares sorted by wins descending
+    final palmaresEntries = vittorie.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final palmares = palmaresEntries
+        .map((e) => {'squadra': e.key, 'vittorie': e.value})
+        .toList();
+
     setState(() {
       _entries = entries;
+      _palmares = palmares;
       _isLoading = false;
     });
   }
@@ -55,68 +81,162 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
               ? const Center(
                   child: Text('Nessun anno disponibile',
                       style: TextStyle(fontSize: 18, color: Colors.black54)))
-              : ListView.builder(
+              : ListView(
                   padding:
                       const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  itemCount: _entries.length,
-                  itemBuilder: (context, index) {
-                    final entry = _entries[index];
-                    final anno = entry['anno'] as int;
-                    final docId = entry['docId'] as String;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
+                  children: [
+                    // Palmares section
+                    if (_palmares.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => CcAlboDOroClassifica(
-                                    docId: docId, anno: anno),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 20, horizontal: 18),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF0052CC), Color(0xFF003D99)],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF003D99)
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF00296B), Color(0xFF003D99)],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00296B)
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: Row(
-                              children: [
-                                const FaIcon(FontAwesomeIcons.medal, color: Color.fromARGB(255, 255, 255, 255), size: 28),
-                                const SizedBox(width: 14),
-                                Text(
-                                  'CC $anno',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1,
-                                  ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Palmares',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            ...List.generate(_palmares.length, (index) {
+                              final item = _palmares[index];
+                              final squadra = item['squadra'] as String;
+                              final vittorie = item['vittorie'] as int;
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 28,
+                                      child: Text(
+                                        '${index + 1}.',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        squadra,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: List.generate(
+                                        vittorie,
+                                        (_) => const Padding(
+                                          padding: EdgeInsets.only(left: 3),
+                                          child: FaIcon(
+                                            FontAwesomeIcons.trophy,
+                                            color: Color(0xFFFFD700),
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const Spacer(),
-                                const Icon(Icons.arrow_forward_ios,
-                                    color: Colors.white54, size: 18),
-                              ],
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Years list
+                    ...List.generate(_entries.length, (index) {
+                      final entry = _entries[index];
+                      final anno = entry['anno'] as int;
+                      final docId = entry['docId'] as String;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(14),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => CcAlboDOroClassifica(
+                                      docId: docId, anno: anno),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 18),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF0052CC),
+                                    Color(0xFF003D99)
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF003D99)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const FaIcon(FontAwesomeIcons.medal,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      size: 28),
+                                  const SizedBox(width: 14),
+                                  Text(
+                                    'CC $anno',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  const Icon(Icons.arrow_forward_ios,
+                                      color: Colors.white54, size: 18),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    }),
+                  ],
                 ),
     );
   }

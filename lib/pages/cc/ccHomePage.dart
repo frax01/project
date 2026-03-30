@@ -784,7 +784,6 @@ class _CCHomePageState extends State<CCHomePage> {
               })
           .toList();
 
-      // 4. Save to Firestore
       // 4. Save to Firestore with random ID
       await firestore.collection('ccAlboDoro').add({
         'anno': anno,
@@ -793,12 +792,34 @@ class _CCHomePageState extends State<CCHomePage> {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
+      // 5. Update palmares (vittorie per club)
+      final alboSnap = await firestore.collection('ccAlboDoro').get();
+      final Map<String, int> vittorie = {};
+      for (var doc in alboSnap.docs) {
+        final data = doc.data();
+        final List<dynamic> cls = data['classifica'] ?? [];
+        for (var item in cls) {
+          if (item is Map && item['posizione'] == 1) {
+            final fullName = item['squadra'] as String? ?? '';
+            final club = fullName.split(' ').first;
+            if (club.isNotEmpty) {
+              vittorie[club] = (vittorie[club] ?? 0) + 1;
+            }
+            break;
+          }
+        }
+      }
+      await firestore.collection('ccVittorieClub').doc('palmares').set({
+        'vittorie': vittorie,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
       if (mounted) {
         Navigator.of(context).pop(); // close loading
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-                  Text('[V3] Albo d\'Oro $anno archiviato con ID casuale!')),
+                  Text('Albo d\'Oro $anno archiviato!')),
         );
       }
     } catch (e) {
