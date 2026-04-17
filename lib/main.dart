@@ -24,10 +24,56 @@ import 'dart:io';
 import 'dart:async';
 import 'package:club/pages/cc/ccHomePage.dart';
 
+/// Transizione fra pagine: slide da destra con curva snappy (niente fade).
+class FastSlideTransitionsBuilder extends PageTransitionsBuilder {
+  const FastSlideTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final slideIn = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation);
+
+    // Leggera traslazione della pagina precedente verso sinistra (come iOS),
+    // cosi' non resta ferma sotto: rende il movimento piu' leggibile.
+    final slideOut = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-0.25, 0.0),
+    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(secondaryAnimation);
+
+    return SlideTransition(
+      position: slideOut,
+      child: SlideTransition(
+        position: slideIn,
+        child: child,
+      ),
+    );
+  }
+}
+
+const PageTransitionsTheme _noPageTransitions = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: FastSlideTransitionsBuilder(),
+    TargetPlatform.iOS: FastSlideTransitionsBuilder(),
+    TargetPlatform.fuchsia: FastSlideTransitionsBuilder(),
+    TargetPlatform.linux: FastSlideTransitionsBuilder(),
+    TargetPlatform.macOS: FastSlideTransitionsBuilder(),
+    TargetPlatform.windows: FastSlideTransitionsBuilder(),
+  },
+);
+
 ThemeData _customizeAppBar(ThemeData theme) {
   return theme.copyWith(
     scaffoldBackgroundColor: Colors.white,
     shadowColor: Colors.black54,
+    pageTransitionsTheme: _noPageTransitions,
     colorScheme: theme.colorScheme.copyWith(
       surface: Colors.white,
       surfaceContainerLowest: Colors.white,

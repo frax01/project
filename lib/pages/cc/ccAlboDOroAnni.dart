@@ -22,8 +22,16 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
   }
 
   Future<void> _loadEntries() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('ccAlboDoro').get();
+    final firestore = FirebaseFirestore.instance;
+
+    // Scarica in parallelo gli albi d'oro e il documento di bonus manuale.
+    final results = await Future.wait([
+      firestore.collection('ccAlboDoro').get(),
+      firestore.collection('ccVittorieClub').doc('bonus').get(),
+    ]);
+    final snapshot = results[0] as QuerySnapshot<Map<String, dynamic>>;
+    final bonusDoc = results[1] as DocumentSnapshot<Map<String, dynamic>>;
+
     final entries = <Map<String, dynamic>>[];
     final Map<String, int> vittorie = {};
 
@@ -48,6 +56,25 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
             break;
           }
         }
+      }
+    }
+
+    // Somma le vittorie bonus inserite manualmente su Firestore.
+    // Documento atteso: ccVittorieClub/bonus con campo `vittorie` (mappa club -> int).
+    if (bonusDoc.exists) {
+      final bonusData = bonusDoc.data();
+      final rawBonus = bonusData?['vittorie'];
+      if (rawBonus is Map) {
+        rawBonus.forEach((key, value) {
+          if (key is String && key.isNotEmpty) {
+            final extra = value is int
+                ? value
+                : int.tryParse(value.toString()) ?? 0;
+            if (extra > 0) {
+              vittorie[key] = (vittorie[key] ?? 0) + extra;
+            }
+          }
+        });
       }
     }
 
