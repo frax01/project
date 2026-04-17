@@ -342,6 +342,7 @@ class _CcAggiungiSquadreState extends State<CcAggiungiSquadre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Gestione squadre'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(

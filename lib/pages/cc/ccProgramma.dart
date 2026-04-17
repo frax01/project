@@ -109,74 +109,107 @@ class _CCProgrammaState extends State<CCProgramma> {
                   ),
                 ),
                 Positioned(
-                  right: 12.0,
-                  top: 12.0,
-                  child: InkWell(
-                    onTap: () async {
-                      final FirebaseStorage storage = FirebaseStorage.instance;
-                      final ref = storage
-                          .ref()
-                          .child('DocumentiCC/IMG-20250414-WA0009.jpg');
-                      final url = await ref.getDownloadURL();
-                      _openFileOrLink(url);
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                  right: 6.0,
+                  top: 10.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PdfViewerPage(
+                                pdfPath:
+                                    'images/RegolamentoChampionsClub2025.pdf',
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.map, // Icona della mappa
-                        size: 28,
-                        color: Color(0xFF00296B),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 12.0,
-                  top: 65.0,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PdfViewerPage(
-                            pdfPath:
-                                'images/RegolamentoChampionsClub2025.pdf', //'assets/document.pdf', // Percorso del PDF
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.description,
+                                size: 16,
+                                color: Color(0xFF00296B),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Regolamento',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF00296B),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                      ),
+                      const SizedBox(height: 7),
+                      InkWell(
+                        onTap: () async {
+                          final FirebaseStorage storage =
+                              FirebaseStorage.instance;
+                          final ref = storage
+                              .ref()
+                              .child('DocumentiCC/IMG-20250414-WA0009.jpg');
+                          final url = await ref.getDownloadURL();
+                          _openFileOrLink(url);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.map,
+                                size: 16,
+                                color: Color(0xFF00296B),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Mappa',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF00296B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.description, // Icona del regolamento
-                        size: 28,
-                        color: Color(0xFF00296B),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
                 FutureBuilder<List<Map<String, dynamic>>>(
@@ -186,59 +219,98 @@ class _CCProgrammaState extends State<CCProgramma> {
                       return const Positioned(
                         bottom: 16.0,
                         right: 12.0,
-                        child: CircularProgressIndicator(),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
                       );
-                    } else if (snapshot.hasError) {
-                      return Positioned(
-                        bottom: 16.0,
-                        right: 12.0,
-                        child: Container(),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Positioned(
-                        bottom: 16.0,
-                        right: 12.0,
-                        child: Container(),
-                      );
+                    } else if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        snapshot.data!.isEmpty) {
+                      return const SizedBox.shrink();
                     }
 
                     final documents = snapshot.data!;
                     return Positioned(
-                      bottom: 16.0,
-                      right: 12.0,
+                      bottom: 10.0,
+                      right: 6.0,
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: List.generate(documents.length, (index) {
                           final document = documents[index];
+                          final isFirst = index == 0;
+                          final isLast = index == documents.length - 1;
                           return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 6.0),
+                            padding: EdgeInsets.only(
+                              left: isFirst ? 0 : 2.0,
+                            ),
                             child: InkWell(
                               onTap: () {
                                 _openFileOrLink(document['url']);
                               },
+                              borderRadius: BorderRadius.only(
+                                topLeft: isFirst
+                                    ? const Radius.circular(20)
+                                    : Radius.zero,
+                                bottomLeft: isFirst
+                                    ? const Radius.circular(20)
+                                    : Radius.zero,
+                                topRight: isLast
+                                    ? const Radius.circular(20)
+                                    : Radius.zero,
+                                bottomRight: isLast
+                                    ? const Radius.circular(20)
+                                    : Radius.zero,
+                              ),
                               child: Container(
-                                width: 40,
-                                height: 40,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 7),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  shape: BoxShape.circle,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: isFirst
+                                        ? const Radius.circular(20)
+                                        : Radius.zero,
+                                    bottomLeft: isFirst
+                                        ? const Radius.circular(20)
+                                        : Radius.zero,
+                                    topRight: isLast
+                                        ? const Radius.circular(20)
+                                        : Radius.zero,
+                                    bottomRight: isLast
+                                        ? const Radius.circular(20)
+                                        : Radius.zero,
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
                                       color:
-                                          Colors.black.withValues(alpha: 0.2),
-                                      blurRadius: 4,
+                                          Colors.black.withValues(alpha: 0.15),
+                                      blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
-                                child: Center(
-                                    child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00296B)),
-                                )),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.newspaper,
+                                      size: 16,
+                                      color: Color(0xFF00296B),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Giorno ${index + 1}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF00296B),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );

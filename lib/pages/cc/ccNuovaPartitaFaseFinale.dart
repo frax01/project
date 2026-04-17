@@ -251,6 +251,7 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
             'Partite ${widget.tipo[0].toLowerCase()}${widget.tipo.substring(1)}'),
       ),

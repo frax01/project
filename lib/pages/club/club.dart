@@ -331,7 +331,14 @@ class _ClubPageState extends State<ClubPage> {
               automaticallyImplyLeading: false,
               actions: [
                 IconButton(
-                    icon: const Icon(Icons.emoji_events),
+                    icon: const Text(
+                      'CC',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
                     onPressed: () async {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const CcLoginPage()));

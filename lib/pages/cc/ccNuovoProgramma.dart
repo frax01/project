@@ -232,6 +232,7 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: const Text('Nuovo programma'),
         ),
         body: SingleChildScrollView(

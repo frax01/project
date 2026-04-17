@@ -36,17 +36,30 @@ class FastSlideTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    // Forward (push): easeOutCubic (decelera → arrivo morbido)
+    // Reverse (pop):  easeInCubic  (accelera → uscita scattante)
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
     final slideIn = Tween<Offset>(
       begin: const Offset(1.0, 0.0),
       end: Offset.zero,
-    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation);
+    ).animate(curvedAnimation);
 
-    // Leggera traslazione della pagina precedente verso sinistra (come iOS),
-    // cosi' non resta ferma sotto: rende il movimento piu' leggibile.
+    // Leggera traslazione della pagina precedente verso sinistra (come iOS).
+    final curvedSecondary = CurvedAnimation(
+      parent: secondaryAnimation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
     final slideOut = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(-0.25, 0.0),
-    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(secondaryAnimation);
+    ).animate(curvedSecondary);
 
     return SlideTransition(
       position: slideOut,
@@ -93,9 +106,7 @@ ThemeData _customizeAppBar(ThemeData theme) {
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
     ),
-    appBarTheme: theme.appBarTheme.copyWith(
-      centerTitle: true,
-    ),
+    appBarTheme: theme.appBarTheme.copyWith(),
     actionIconTheme: ActionIconThemeData(
       backButtonIconBuilder: (BuildContext context) =>
           const Icon(Icons.arrow_back_ios),

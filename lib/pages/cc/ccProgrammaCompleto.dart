@@ -17,6 +17,7 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Programma completo'),
       ),
       body: StreamBuilder<QuerySnapshot>(

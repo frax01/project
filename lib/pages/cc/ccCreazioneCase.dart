@@ -392,6 +392,7 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Gestione case'),
         actions: [
           IconButton(

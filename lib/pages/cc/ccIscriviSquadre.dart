@@ -453,6 +453,7 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Iscrivi giocatori'),
         actions: [
           widget.ccRole == 'staff'

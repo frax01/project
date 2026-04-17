@@ -99,6 +99,7 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Albo d\'oro'),
         backgroundColor: const Color(0xFF00296B),
       ),
@@ -240,10 +241,6 @@ class _CcAlboDOroAnniState extends State<CcAlboDOroAnni> {
                               ),
                               child: Row(
                                 children: [
-                                  const FaIcon(FontAwesomeIcons.medal,
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      size: 28),
-                                  const SizedBox(width: 14),
                                   Text(
                                     'CC $anno',
                                     style: const TextStyle(

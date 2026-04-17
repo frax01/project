@@ -41,6 +41,7 @@ class _ccCreazioneGironiState extends State<ccCreazioneGironi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Gironi'),
       ),
       body: StreamBuilder(

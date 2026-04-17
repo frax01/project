@@ -921,6 +921,7 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: widget.girone != ''
             ? Text('Girone ${widget.girone}')
             : Text(

@@ -66,6 +66,7 @@ class _CcAlboDOroClassificaState extends State<CcAlboDOroClassifica> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         title: Text('CC ${widget.anno}'),
         backgroundColor: const Color(0xFF00296B),
       ),

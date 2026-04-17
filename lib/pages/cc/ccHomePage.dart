@@ -817,9 +817,7 @@ class _CCHomePageState extends State<CCHomePage> {
       if (mounted) {
         Navigator.of(context).pop(); // close loading
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Albo d\'Oro $anno archiviato!')),
+          SnackBar(content: Text('Albo d\'Oro $anno archiviato!')),
         );
       }
     } catch (e) {
@@ -988,43 +986,110 @@ class _CCHomePageState extends State<CCHomePage> {
               )
             : null,
         actions: [
-          IconButton(
-            icon: const FaIcon(FontAwesomeIcons.medal,
-                color: Color.fromARGB(255, 255, 255, 255), size: 21),
-            tooltip: 'Albo d\'Oro',
-            onPressed: () {
+          InkWell(
+            onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CcAlboDOroAnni()),
               );
             },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  FaIcon(FontAwesomeIcons.medal, color: Colors.white, size: 18),
+                  SizedBox(height: 2),
+                  Text(
+                    'Albo d\'oro',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           if (widget.ccRole == 'user')
-            IconButton(
-              icon: const Icon(Icons.account_circle),
-              tooltip: 'Accesso Tutor/Staff',
-              onPressed: _showRoleSwitchSheet,
+            InkWell(
+              onTap: _showRoleSwitchSheet,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.account_circle, color: Colors.white, size: 20),
+                    SizedBox(height: 2),
+                    Text(
+                      'Account',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           widget.ccRole == 'tutor'
-              ? IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () async {
+              ? InkWell(
+                  onTap: () async {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => CcIscriviSquadre(
                             club: widget.club ?? '',
                             ccRole: widget.ccRole ?? '')));
-                  })
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.edit, color: Colors.white, size: 20),
+                        SizedBox(height: 2),
+                        Text(
+                          'Iscrizioni',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : Container(),
           widget.ccRole != 'staff'
-              ? IconButton(
-                  icon: const Icon(Icons.logout_outlined),
-                  onPressed: () async {
+              ? InkWell(
+                  onTap: () async {
                     await _showConfirmDialog(widget.user);
-                  })
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.logout_outlined,
+                            color: Colors.white, size: 20),
+                        SizedBox(height: 2),
+                        Text(
+                          'Esci',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : Container(),
           if (_selectedIndex == 2 && widget.ccRole == 'staff')
-            IconButton(
-              icon: const Icon(Icons.file_download),
-              onPressed: () async {
+            InkWell(
+              onTap: () async {
                 bool? confirm = await showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -1048,6 +1113,24 @@ class _CCHomePageState extends State<CCHomePage> {
                   await _createExcelPartite();
                 }
               },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.file_download, color: Colors.white, size: 20),
+                    SizedBox(height: 2),
+                    Text(
+                      'Scarica',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
         ],
         flexibleSpace: Container(

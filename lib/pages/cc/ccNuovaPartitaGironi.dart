@@ -261,6 +261,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Partite girone'),
       ),
       body: FutureBuilder<void>(
