@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovoProgramma.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:intl/intl.dart';
 
 class CCProgrammaCompleto extends StatefulWidget {
   const CCProgrammaCompleto({super.key, required this.ccRole});
@@ -36,7 +37,9 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
 
           final programmi = snapshot.data!.docs;
           programmi.sort((a, b) {
-            int dateComparison = a['data'].compareTo(b['data']);
+            final dateA = DateFormat('dd/MM/yyyy').parse(a['data']);
+            final dateB = DateFormat('dd/MM/yyyy').parse(b['data']);
+            int dateComparison = dateA.compareTo(dateB);
             if (dateComparison != 0) return dateComparison;
             return a['orario'].compareTo(b['orario']);
           });
@@ -154,6 +157,22 @@ class _CCProgrammaCompletoState extends State<CCProgrammaCompleto> {
                                       'images/show.png',
                                       width: 25,
                                       height: 25,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ]),
+                                if (programma['categoria'] == 'info')
+                                  Row(children: [
+                                    const Icon(
+                                      Icons.info_outline,
+                                      size: 25,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ]),
+                                if (programma['categoria'] == 'preghiera')
+                                  Row(children: [
+                                    const Text(
+                                      '🙏',
+                                      style: TextStyle(fontSize: 22),
                                     ),
                                     const SizedBox(width: 8),
                                   ]),

@@ -401,6 +401,9 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                       DropdownMenuItem(
                           value: 'partita', child: Text('Partita')),
                       DropdownMenuItem(value: 'show', child: Text('Show')),
+                      DropdownMenuItem(value: 'info', child: Text('Info')),
+                      DropdownMenuItem(
+                          value: 'preghiera', child: Text('Preghiera')),
                       DropdownMenuItem(value: 'altro', child: Text('Altro')),
                     ],
                     onChanged: (value) {
@@ -450,11 +453,14 @@ class _CCNuovoProgrammaState extends State<CCNuovoProgramma> {
                                         .doc(widget.programmaId)
                                         .delete();
                                     if (!mounted) return;
-                                    Navigator.of(context).pop(); // chiude dialog
-                                    Navigator.of(context).pop(); // chiude pagina
+                                    Navigator.of(context)
+                                        .pop(); // chiude dialog
+                                    Navigator.of(context)
+                                        .pop(); // chiude pagina
                                   } catch (e) {
                                     if (!mounted) return;
-                                    Navigator.of(context).pop(); // chiude dialog
+                                    Navigator.of(context)
+                                        .pop(); // chiude dialog
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text('Errore: $e')),
                                     );
