@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ccNuovoProgramma.dart';
@@ -65,6 +66,15 @@ class _CCProgrammaState extends State<CCProgramma> {
     }
   }
 
+  void _openLocalImages(List<String> assetPaths, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            _LocalImageViewer(assetPaths: assetPaths, title: title),
+      ),
+    );
+  }
+
   Future<List<Map<String, dynamic>>> _getDocumentsFromStorage() async {
     final FirebaseStorage storage = FirebaseStorage.instance;
     final ListResult result = await storage.ref('giornalino/').listAll();
@@ -115,13 +125,20 @@ class _CCProgrammaState extends State<CCProgramma> {
                     children: [
                       InkWell(
                         onTap: () async {
-                          final FirebaseStorage storage =
-                              FirebaseStorage.instance;
-                          final ref = storage
-                              .ref()
-                              .child('DocumentiCC/regolamento.pdf');
-                          final url = await ref.getDownloadURL();
-                          _openFileOrLink(url);
+                          if (Platform.isIOS) {
+                            _openLocalImages([
+                              'images/regolamentoPag1.png',
+                              'images/regolamentoPag2.png',
+                            ], 'Regolamento');
+                          } else {
+                            final FirebaseStorage storage =
+                                FirebaseStorage.instance;
+                            final ref = storage
+                                .ref()
+                                .child('DocumentiCC/regolamento.pdf');
+                            final url = await ref.getDownloadURL();
+                            _openFileOrLink(url);
+                          }
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
@@ -162,13 +179,17 @@ class _CCProgrammaState extends State<CCProgramma> {
                       const SizedBox(height: 7),
                       InkWell(
                         onTap: () async {
-                          final FirebaseStorage storage =
-                              FirebaseStorage.instance;
-                          final ref = storage
-                              .ref()
-                              .child('DocumentiCC/IMG-20250414-WA0009.jpg');
-                          final url = await ref.getDownloadURL();
-                          _openFileOrLink(url);
+                          if (Platform.isIOS) {
+                            _openLocalImages(['images/mappa.jpg'], 'Mappa');
+                          } else {
+                            final FirebaseStorage storage =
+                                FirebaseStorage.instance;
+                            final ref = storage
+                                .ref()
+                                .child('DocumentiCC/IMG-20250414-WA0009.jpg');
+                            final url = await ref.getDownloadURL();
+                            _openFileOrLink(url);
+                          }
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
@@ -785,6 +806,33 @@ class _CCProgrammaState extends State<CCProgramma> {
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+}
+
+class _LocalImageViewer extends StatelessWidget {
+  final List<String> assetPaths;
+  final String title;
+  const _LocalImageViewer({required this.assetPaths, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: const Color(0xFF00296B),
+        foregroundColor: Colors.white,
+      ),
+      body: InteractiveViewer(
+        minScale: 1,
+        maxScale: 5,
+        child: ListView.builder(
+          physics: const ClampingScrollPhysics(),
+          itemCount: assetPaths.length,
+          itemBuilder: (_, i) => Image.asset(assetPaths[i]),
+        ),
+      ),
     );
   }
 }
