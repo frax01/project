@@ -10,6 +10,7 @@ import 'package:club/main.dart';
 import 'ccIscriviSquadre.dart';
 import 'ccCreazioneGironi.dart';
 import 'ccCreazioneCase.dart';
+import 'ccGestioneArbitri.dart';
 import 'ccAlboDOroAnni.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -138,11 +139,10 @@ class _CCHomePageState extends State<CCHomePage> {
     }
   }
 
-  void _checkPasswordTutor(String enteredPassword, String? newclub) async {
-    if (newclub == '') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inserisci il tuo club')),
-      );
+  Future<void> _checkPasswordTutor(
+      String enteredPassword, String? newclub, Function(String) onError) async {
+    if (newclub == '' || enteredPassword == '') {
+      onError('Inserisci club e password');
       return;
     }
     if (enteredPassword == tutorPassword) {
@@ -158,17 +158,16 @@ class _CCHomePageState extends State<CCHomePage> {
           'tutor',
           '');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Credenziali errate'),
-        ),
-      );
+      onError('Password tutor errata');
     }
   }
 
-  void _checkPasswordStaff(
-      String enteredPassword, String nome, String mood) async {
+  Future<void> _checkPasswordStaff(String enteredPassword, String nome,
+      String mood, Function(String) onError) async {
+    if (enteredPassword == '' || nome == '') {
+      onError('Inserisci nome e password');
+      return;
+    }
     if (mood == 'login') {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection('ccStaff')
@@ -185,20 +184,10 @@ class _CCHomePageState extends State<CCHomePage> {
           restartApp(context, prefs.getString('club') ?? '',
               prefs.getString('cc') ?? '', 'staff', nome);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              backgroundColor: Colors.red,
-              content: Text('Credenziali errate'),
-            ),
-          );
+          onError('Nome o password errati');
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Credenziali errate'),
-          ),
-        );
+        onError('Utente non trovato');
       }
     } else {
       if (enteredPassword == staffPassword) {
@@ -207,10 +196,7 @@ class _CCHomePageState extends State<CCHomePage> {
             .doc(nome)
             .get();
         if (snapshot.exists) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Esiste già un utente con questo nome')),
-          );
+          onError('Questo nome è già registrato');
         } else {
           await FirebaseFirestore.instance
               .collection('ccStaff')
@@ -226,12 +212,7 @@ class _CCHomePageState extends State<CCHomePage> {
               prefs.getString('cc') ?? '', 'staff', nome);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Credenziali errate'),
-          ),
-        );
+        onError('Password staff errata');
       }
     }
   }
@@ -243,6 +224,8 @@ class _CCHomePageState extends State<CCHomePage> {
     bool showTutor = false;
     bool showStaff = false;
     bool isObscure = false;
+    String? loadingType;
+    String? errorMessage;
     String oldclub = widget.club ?? '';
     String newclub = '';
 
@@ -306,6 +289,21 @@ class _CCHomePageState extends State<CCHomePage> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
+                  if (errorMessage != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        errorMessage!,
+                        style: const TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   // Tutor button (visible when staff is NOT selected)
                   if (!showStaff)
                     Row(children: [
@@ -388,15 +386,40 @@ class _CCHomePageState extends State<CCHomePage> {
                     Row(children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _checkPasswordTutor(
-                            tutorPasswordController.text,
-                            oldclub != '' ? oldclub : newclub,
-                          ),
+                          onPressed: loadingType != null
+                              ? null
+                              : () async {
+                                  setModalState(() => loadingType = 'tutor');
+                                  await _checkPasswordTutor(
+                                    tutorPasswordController.text,
+                                    oldclub != '' ? oldclub : newclub,
+                                    (msg) {
+                                      setModalState(() => errorMessage = msg);
+                                      Future.delayed(const Duration(seconds: 3),
+                                          () {
+                                        if (mounted) {
+                                          setModalState(
+                                              () => errorMessage = null);
+                                        }
+                                      });
+                                    },
+                                  );
+                                  setModalState(() => loadingType = null);
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 39, 132, 207),
                           ),
-                          child: const Text('Entra'),
+                          child: loadingType == 'tutor'
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Entra'),
                         ),
                       ),
                     ]),
@@ -473,31 +496,82 @@ class _CCHomePageState extends State<CCHomePage> {
                     Row(children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _checkPasswordStaff(
-                            staffPasswordController.text,
-                            staffDataController.text,
-                            'login',
-                          ),
+                          onPressed: loadingType != null
+                              ? null
+                              : () async {
+                                  setModalState(() => loadingType = 'login');
+                                  await _checkPasswordStaff(
+                                    staffPasswordController.text,
+                                    staffDataController.text,
+                                    'login',
+                                    (msg) {
+                                      setModalState(() => errorMessage = msg);
+                                      Future.delayed(const Duration(seconds: 3),
+                                          () {
+                                        if (mounted) {
+                                          setModalState(
+                                              () => errorMessage = null);
+                                        }
+                                      });
+                                    },
+                                  );
+                                  setModalState(() => loadingType = null);
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 39, 132, 207),
                           ),
-                          child: const Text('Login'),
+                          child: loadingType == 'login'
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Login'),
                         ),
                       ),
                       const SizedBox(width: 15),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => _checkPasswordStaff(
-                            staffPasswordController.text,
-                            staffDataController.text,
-                            'registrati',
-                          ),
+                          onPressed: loadingType != null
+                              ? null
+                              : () async {
+                                  setModalState(
+                                      () => loadingType = 'registrati');
+                                  await _checkPasswordStaff(
+                                    staffPasswordController.text,
+                                    staffDataController.text,
+                                    'registrati',
+                                    (msg) {
+                                      setModalState(() => errorMessage = msg);
+                                      Future.delayed(const Duration(seconds: 3),
+                                          () {
+                                        if (mounted) {
+                                          setModalState(
+                                              () => errorMessage = null);
+                                        }
+                                      });
+                                    },
+                                  );
+                                  setModalState(() => loadingType = null);
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromARGB(255, 39, 132, 207),
                           ),
-                          child: const Text('Registrati'),
+                          child: loadingType == 'registrati'
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Registrati'),
                         ),
                       ),
                     ]),
@@ -1166,6 +1240,17 @@ class _CCHomePageState extends State<CCHomePage> {
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => CcAggiungiSquadre()));
+                          },
+                        )
+                      : Container(),
+                  widget.ccRole == 'staff'
+                      ? ListTile(
+                          leading: const Icon(Icons.sports),
+                          title: const Text('Gestione arbitri'),
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    const CcGestioneArbitri()));
                           },
                         )
                       : Container(),

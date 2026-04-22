@@ -49,6 +49,8 @@ class _CcIscriviSquadreState extends State<CcIscriviSquadre> {
         ragazzi[club] = [''];
         ragazzi[club]!.addAll(loadedRagazzi);
       }
+      
+      ragazzi[club] = ragazzi[club]!.toSet().toList();
     }
 
     setState(() {});

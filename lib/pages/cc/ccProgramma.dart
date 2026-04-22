@@ -6,6 +6,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/intl.dart';
 import 'ccProgrammaCompleto.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class CCProgramma extends StatefulWidget {
@@ -58,10 +59,15 @@ class _CCProgrammaState extends State<CCProgramma> {
     }
 
     try {
-      await FlutterWebBrowser.openWebPage(url: url);
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Errore nell\'aperatura del link')),
+        SnackBar(content: Text('Errore nell\'apertura del link: $e')),
       );
     }
   }
@@ -69,8 +75,7 @@ class _CCProgrammaState extends State<CCProgramma> {
   void _openLocalImages(List<String> assetPaths, String title) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            _LocalImageViewer(assetPaths: assetPaths, title: title),
+        builder: (_) => _LocalImageViewer(assetPaths: assetPaths, title: title),
       ),
     );
   }
@@ -85,13 +90,54 @@ class _CCProgrammaState extends State<CCProgramma> {
       final FullMetadata metadata = await item.getMetadata();
       final DateTime updated = metadata.updated ?? DateTime.now();
 
-      documents.add({'url': url, 'updated': updated});
+      documents.add({
+        'url': url,
+        'updated': updated,
+        'ref': item,
+      });
     }
 
     // Ordina i documenti in base alla data di aggiornamento
     documents.sort((a, b) => a['updated'].compareTo(b['updated']));
 
     return documents;
+  }
+
+  Future<void> _deleteDocument(Reference ref) async {
+    try {
+      await ref.delete();
+      setState(() {}); // Refresh the UI
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Giornalino eliminato correttamente')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante l\'eliminazione: $e')),
+      );
+    }
+  }
+
+  void _confirmDelete(Reference ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina Giornalino'),
+        content: const Text('Sei sicuro di voler eliminare questo giornalino?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteDocument(ref);
+            },
+            child: const Text('Elimina', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -236,10 +282,14 @@ class _CCProgrammaState extends State<CCProgramma> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Positioned(
                         bottom: 16.0,
-                        right: 12.0,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
+                        right: 20.0,
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.0,
+                          ),
                         ),
                       );
                     } else if (snapshot.hasError ||
@@ -262,72 +312,86 @@ class _CCProgrammaState extends State<CCProgramma> {
                             padding: EdgeInsets.only(
                               left: isFirst ? 0 : 2.0,
                             ),
-                            child: InkWell(
-                              onTap: () {
-                                _openFileOrLink(document['url']);
-                              },
-                              borderRadius: BorderRadius.only(
-                                topLeft: isFirst
-                                    ? const Radius.circular(20)
-                                    : Radius.zero,
-                                bottomLeft: isFirst
-                                    ? const Radius.circular(20)
-                                    : Radius.zero,
-                                topRight: isLast
-                                    ? const Radius.circular(20)
-                                    : Radius.zero,
-                                bottomRight: isLast
-                                    ? const Radius.circular(20)
-                                    : Radius.zero,
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: isFirst
-                                        ? const Radius.circular(20)
-                                        : Radius.zero,
-                                    bottomLeft: isFirst
-                                        ? const Radius.circular(20)
-                                        : Radius.zero,
-                                    topRight: isLast
-                                        ? const Radius.circular(20)
-                                        : Radius.zero,
-                                    bottomRight: isLast
-                                        ? const Radius.circular(20)
-                                        : Radius.zero,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.15),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                splashColor: widget.ccRole == 'staff'
+                                    ? Colors.red.withValues(alpha: 0.3)
+                                    : null,
+                                highlightColor: widget.ccRole == 'staff'
+                                    ? Colors.red.withValues(alpha: 0.1)
+                                    : null,
+                                onTap: () {
+                                  _openFileOrLink(document['url']);
+                                },
+                                onLongPress: widget.ccRole == 'staff'
+                                    ? () {
+                                        _confirmDelete(document['ref']);
+                                      }
+                                    : null,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: isFirst
+                                      ? const Radius.circular(20)
+                                      : Radius.zero,
+                                  bottomLeft: isFirst
+                                      ? const Radius.circular(20)
+                                      : Radius.zero,
+                                  topRight: isLast
+                                      ? const Radius.circular(20)
+                                      : Radius.zero,
+                                  bottomRight: isLast
+                                      ? const Radius.circular(20)
+                                      : Radius.zero,
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.newspaper,
-                                      size: 16,
-                                      color: Color(0xFF00296B),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: isFirst
+                                          ? const Radius.circular(20)
+                                          : Radius.zero,
+                                      bottomLeft: isFirst
+                                          ? const Radius.circular(20)
+                                          : Radius.zero,
+                                      topRight: isLast
+                                          ? const Radius.circular(20)
+                                          : Radius.zero,
+                                      bottomRight: isLast
+                                          ? const Radius.circular(20)
+                                          : Radius.zero,
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Giorno ${index + 1}',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.15),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.newspaper,
+                                        size: 16,
                                         color: Color(0xFF00296B),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ],
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Giorno ${index + 1}',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF00296B),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -626,12 +690,24 @@ class _CCProgrammaState extends State<CCProgramma> {
                                             children: [
                                               programma['squadre'].isNotEmpty ||
                                                       programma['codiceSquadre']
+                                                          .isNotEmpty ||
+                                                      programma['incarico']
+                                                          .isNotEmpty ||
+                                                      programma[
+                                                              'codiceIncarico']
                                                           .isNotEmpty
-                                                  ? FutureBuilder<List<String>>(
-                                                      future: _getNomiSquadre(List<
-                                                              String>.from(
-                                                          programma[
-                                                              'codiceSquadre'])),
+                                                  ? FutureBuilder<
+                                                      List<List<String>>>(
+                                                      future: Future.wait([
+                                                        _getNomiSquadre(List<
+                                                                String>.from(
+                                                            programma[
+                                                                'codiceSquadre'])),
+                                                        _getNomiSquadre(List<
+                                                                String>.from(
+                                                            programma[
+                                                                'codiceIncarico'])),
+                                                      ]),
                                                       builder:
                                                           (context, snapshot) {
                                                         if (snapshot
@@ -652,85 +728,88 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                                       'squadre']);
                                                           if (snapshot
                                                                   .hasData &&
-                                                              snapshot.data!
+                                                              snapshot.data![0]
                                                                   .isNotEmpty) {
                                                             squadre.addAll(
-                                                                snapshot.data!);
+                                                                snapshot
+                                                                    .data![0]);
                                                           }
-                                                          return Text(
-                                                            squadre.join(', '),
-                                                            style:
-                                                                const TextStyle(
-                                                                    fontSize:
-                                                                        15),
-                                                          );
-                                                        }
-                                                      },
-                                                    )
-                                                  : Container(),
-                                              programma['incarico']
-                                                          .isNotEmpty ||
-                                                      programma[
-                                                              'codiceIncarico']
-                                                          .isNotEmpty
-                                                  ? FutureBuilder<List<String>>(
-                                                      future: _getNomiSquadre(List<
-                                                              String>.from(
-                                                          programma[
-                                                              'codiceIncarico'])),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        if (snapshot
-                                                                .connectionState ==
-                                                            ConnectionState
-                                                                .waiting) {
-                                                          return const Center(
-                                                              child:
-                                                                  CircularProgressIndicator());
-                                                        } else if (snapshot
-                                                            .hasError) {
-                                                          return Text(
-                                                              'Errore: ${snapshot.error}');
-                                                        } else {
-                                                          List<String> squadre =
+
+                                                          List<String>
+                                                              incarico =
                                                               List<String>.from(
                                                                   programma[
                                                                       'incarico']);
                                                           if (snapshot
                                                                   .hasData &&
-                                                              snapshot.data!
+                                                              snapshot.data![1]
                                                                   .isNotEmpty) {
-                                                            squadre.addAll(
-                                                                snapshot.data!);
+                                                            incarico.addAll(
+                                                                snapshot
+                                                                    .data![1]);
                                                           }
+
+                                                          if (squadre.isEmpty &&
+                                                              incarico
+                                                                  .isEmpty) {
+                                                            return Center(
+                                                              child: Text(
+                                                                "In aggiornamento",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontStyle:
+                                                                        FontStyle
+                                                                            .italic),
+                                                              ),
+                                                            );
+                                                          }
+
                                                           return Column(
                                                             crossAxisAlignment:
                                                                 CrossAxisAlignment
                                                                     .start,
                                                             children: [
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              const Text(
-                                                                "Incarico",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 17,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                              ),
-                                                              Align(
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Text(
+                                                              if (squadre
+                                                                  .isNotEmpty)
+                                                                Text(
                                                                   squadre.join(
                                                                       ', '),
                                                                   style: const TextStyle(
                                                                       fontSize:
                                                                           15),
                                                                 ),
-                                                              ),
+                                                              if (incarico
+                                                                  .isNotEmpty) ...[
+                                                                if (squadre
+                                                                    .isNotEmpty)
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          8),
+                                                                const Text(
+                                                                  "Incarico",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        17,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .centerLeft,
+                                                                  child: Text(
+                                                                    incarico.join(
+                                                                        ', '),
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            15),
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ],
                                                           );
                                                         }
@@ -743,8 +822,20 @@ class _CCProgrammaState extends State<CCProgramma> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        const SizedBox(
-                                                            height: 8),
+                                                        if (programma[
+                                                                    'squadre']
+                                                                .isNotEmpty ||
+                                                            programma[
+                                                                    'codiceSquadre']
+                                                                .isNotEmpty ||
+                                                            programma[
+                                                                    'incarico']
+                                                                .isNotEmpty ||
+                                                            programma[
+                                                                    'codiceIncarico']
+                                                                .isNotEmpty)
+                                                          const SizedBox(
+                                                              height: 8),
                                                         const Text(
                                                           "Info",
                                                           style: TextStyle(
@@ -827,10 +918,13 @@ class _LocalImageViewer extends StatelessWidget {
       body: InteractiveViewer(
         minScale: 1,
         maxScale: 5,
-        child: ListView.builder(
-          physics: const ClampingScrollPhysics(),
-          itemCount: assetPaths.length,
-          itemBuilder: (_, i) => Image.asset(assetPaths[i]),
+        child: Center(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            itemCount: assetPaths.length,
+            itemBuilder: (_, i) => Image.asset(assetPaths[i]),
+          ),
         ),
       ),
     );

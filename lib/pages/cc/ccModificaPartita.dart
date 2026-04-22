@@ -900,6 +900,51 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
     );
   }
 
+  Future<void> _resetPartitaTotale() async {
+    // Se la partita era finita, togliamo i punti / l'avanzamento
+    if (finita) {
+      if (widget.tipo == 'girone') {
+        await _updateGironiReverse();
+      } else {
+        String tipoCapitalized = widget.tipo[0].toUpperCase() + widget.tipo.substring(1);
+        await removePartite(tipoCapitalized, widget.codice);
+      }
+    }
+
+    // Ora resettiamo completamente la partita
+    String collection = widget.tipo == 'girone' 
+        ? 'ccPartiteGironi' 
+        : 'ccPartite${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}';
+    String docId = widget.tipo == 'girone' ? '${widget.casa} VS ${widget.fuori}' : widget.codice;
+
+    await FirebaseFirestore.instance.collection(collection).doc(docId).update({
+      'iniziata': false,
+      'finita': false,
+      'marcatori': [],
+      'boolRigori': false,
+      'rigoriCasa': [],
+      'rigoriFuori': [],
+    });
+
+    setState(() {
+      iniziata = false;
+      finita = false;
+      marcatori.clear();
+      boolRigori = false;
+      rigoriCasa.clear();
+      rigoriFuori.clear();
+      golCasa = 0;
+      golFuori = 0;
+      gialliCasa = 0;
+      gialliFuori = 0;
+    });
+    
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Partita resettata con successo')),
+    );
+  }
+
   InputDecoration getInputDecoration(String label) {
     return InputDecoration(
       labelText: label,
@@ -926,6 +971,42 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
             ? Text('Girone ${widget.girone}')
             : Text(
                 '${widget.tipo[0].toUpperCase()}${widget.tipo.substring(1)}'),
+        actions: [
+          if (widget.ccRole == 'staff' &&
+              (widget.nome == 'Francesco Martignoni' ||
+                  widget.nome == 'Michele Agostini'))
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Conferma Reset'),
+                      content: const Text(
+                          'Vuoi resettare questa partita? Verranno rimossi gol, marcatori, rigori e la partita tornerà a "non iniziata".'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Annulla'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            await _resetPartitaTotale();
+                          },
+                          child: const Text('Conferma',
+                              style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -1015,21 +1096,25 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                           ),
                           const SizedBox(width: 4),
                           Column(children: [
-                            Row(children: [
-                              Text(
-                                '$golCasa',
-                                style: const TextStyle(
-                                    fontSize: 34, color: Colors.white),
-                              ),
-                              const Text(' : ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22,
-                                      color: Colors.white)),
-                              Text('$golFuori',
-                                  style: const TextStyle(
-                                      fontSize: 34, color: Colors.white)),
-                            ]),
+                            (!iniziata && !finita)
+                                ? const Text(' vs ',
+                                    style: TextStyle(
+                                        fontSize: 28, color: Colors.white))
+                                : Row(children: [
+                                    Text(
+                                      '$golCasa',
+                                      style: const TextStyle(
+                                          fontSize: 34, color: Colors.white),
+                                    ),
+                                    const Text(' : ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                            color: Colors.white)),
+                                    Text('$golFuori',
+                                        style: const TextStyle(
+                                            fontSize: 34, color: Colors.white)),
+                                  ]),
                             boolRigori
                                 ? Row(
                                     children: [
@@ -1602,16 +1687,8 @@ class _CCModificaPartitaState extends State<CCModificaPartita>
                         ),
                       )
                     : Container(),
-                !iniziata && !finita
-                    ? Center(
-                        child: Column(children: [
-                        widget.nome == widget.refertista
-                            ? const SizedBox(height: 10)
-                            : Container(),
-                        const Text('Partita da giocare',
-                            style:
-                                TextStyle(fontSize: 21, color: Colors.black54)),
-                      ]))
+                !iniziata && !finita && widget.nome == widget.refertista
+                    ? const SizedBox(height: 10)
                     : Container(),
                 boolRigori
                     ? Row(children: [

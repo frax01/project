@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class CCnuovaPartitaGironi extends StatefulWidget {
+  final String? gironeSelezionato;
   const CCnuovaPartitaGironi({
     super.key,
+    this.gironeSelezionato,
   });
 
   @override
@@ -83,12 +85,24 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
       squadre = [''];
       if (docSnapshot.exists) {
         List<dynamic> squadreList = docSnapshot['squadre'];
-        squadre.addAll(squadreList.cast<String>());
+        for (var squadra in squadreList.cast<String>()) {
+          List<String> parole = squadra.trim().split(RegExp(r'\s+'));
+          if (squadra.trim().toLowerCase() != 'staff') {
+            if (parole.length < 2 || parole[1].toLowerCase() != 'tutor') {
+              if (!squadre.contains(squadra)) {
+                squadre.add(squadra);
+              }
+            }
+          }
+        }
       }
 
       if (snapshot.docs.isNotEmpty) {
         for (var doc in snapshot.docs) {
-          staff.add(doc['nome']);
+          final data = doc.data() as Map<String, dynamic>;
+          if (data['isArbitro'] == true) {
+            staff.add(data['nome']);
+          }
         }
       }
     });
@@ -119,7 +133,7 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
     setState(() {
       gironi = querySnapshot.docs.map((doc) => doc.id).toList();
     });
-    _selectedSegment = gironi.first;
+    _selectedSegment = widget.gironeSelezionato ?? gironi.first;
     await _getSquadre();
   }
 
@@ -292,22 +306,24 @@ class _CCnuovaPartitaGironiState extends State<CCnuovaPartitaGironi> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SegmentedButton<String>(
-                        selectedIcon: const Icon(Icons.check),
-                        segments: gironi.map((girone) {
-                          return ButtonSegment<String>(
-                            value: girone,
-                            label: Text(girone,
-                                style: const TextStyle(fontSize: 12)),
-                          );
-                        }).toList(),
-                        selected: <String>{_selectedSegment},
-                        onSelectionChanged: (Set<String> newSelection) {
-                          setState(() {
-                            _selectedSegment = newSelection.first;
-                            _getSquadre();
-                          });
-                        },
+                      Center(
+                        child: SegmentedButton<String>(
+                          selectedIcon: const Icon(Icons.check),
+                          segments: gironi.map((girone) {
+                            return ButtonSegment<String>(
+                              value: girone,
+                              label: Text(girone,
+                                  style: const TextStyle(fontSize: 12)),
+                            );
+                          }).toList(),
+                          selected: <String>{_selectedSegment},
+                          onSelectionChanged: (Set<String> newSelection) {
+                            setState(() {
+                              _selectedSegment = newSelection.first;
+                              _getSquadre();
+                            });
+                          },
+                        ),
                       ),
                       const SizedBox(height: 10),
                       for (int turno = 0; turno < turni.length; turno++) ...[

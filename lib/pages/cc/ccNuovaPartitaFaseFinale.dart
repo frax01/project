@@ -105,15 +105,26 @@ class _CCnuovaPartitaOttaviState extends State<CCnuovaPartitaOttavi> {
       if (querySnapshot.docs.isNotEmpty) {
         for (var doc in querySnapshot.docs) {
           List<dynamic> squadreList = doc['squadre'];
-          for (var squadra in squadreList) {
-            squadre.add(squadra['squadra']);
+          for (var item in squadreList) {
+            String squadra = item['squadra'];
+            List<String> parole = squadra.trim().split(RegExp(r'\s+'));
+            if (squadra.trim().toLowerCase() != 'staff') {
+              if (parole.length < 2 || parole[1].toLowerCase() != 'tutor') {
+                if (!squadre.contains(squadra)) {
+                  squadre.add(squadra);
+                }
+              }
+            }
           }
         }
       }
 
       if (snapshot.docs.isNotEmpty) {
         for (var doc in snapshot.docs) {
-          staff.add(doc['nome']);
+          final data = doc.data() as Map<String, dynamic>;
+          if (data['isArbitro'] == true) {
+            staff.add(data['nome']);
+          }
         }
       }
     });

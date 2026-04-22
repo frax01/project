@@ -1364,15 +1364,16 @@ class _CCCalendarioState extends State<CCCalendario> {
               ),
             ],
             if (widget.ccRole == 'staff')
-              FloatingActionButton.small(
+              FloatingActionButton(
+                mini: _selectedSegment == 'Gironi',
                 heroTag: 'addButton',
                 onPressed: () {
                   _selectedSegment == 'Gironi'
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  const CCnuovaPartitaGironi()),
+                              builder: (context) => CCnuovaPartitaGironi(
+                                  gironeSelezionato: _selectedGirone)),
                         )
                       : Navigator.push(
                           context,
