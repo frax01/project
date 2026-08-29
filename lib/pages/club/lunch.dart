@@ -37,6 +37,7 @@ class _LunchState extends State<Lunch> {
         return [];
       } else {
         List<Map<String, dynamic>> meals = querySnapshot.docs.map((doc) {
+          final data = doc.data();
           return {
             'data': doc['data'],
             'orario': doc['orario'],
@@ -48,6 +49,7 @@ class _LunchState extends State<Lunch> {
             'status': doc['status'],
             'modificato': doc['modificato'],
             'classi': doc['classi'],
+            'amici': data.containsKey('amici') ? doc['amici'] : {},
           };
         }).toList();
 
@@ -163,10 +165,247 @@ class _LunchState extends State<Lunch> {
     _timeFocusNode.unfocus();
   }
 
+  // --- Amici (Friends) Management ---
+
+  final Map<String, TextEditingController> _amiciControllers = {};
+
+  TextEditingController _getAmiciController(String mealId) {
+    if (!_amiciControllers.containsKey(mealId)) {
+      _amiciControllers[mealId] = TextEditingController();
+    }
+    return _amiciControllers[mealId]!;
+  }
+
+  List<String> _getMyAmici(Map<String, dynamic> meal) {
+    if (!meal.containsKey('amici') || meal['amici'] == null) return [];
+    Map<String, dynamic> amici = meal['amici'];
+    if (!amici.containsKey(widget.name)) return [];
+    return List<String>.from(amici[widget.name]);
+  }
+
+  List<String> _getAllPresenti(Map<String, dynamic> meal) {
+    List<String> result = List<String>.from(meal['prenotazioni'] ?? []);
+    if (meal.containsKey('amici') && meal['amici'] != null) {
+      Map<String, dynamic> amici = meal['amici'];
+      amici.forEach((key, value) {
+        result.addAll((value as List).cast<String>());
+      });
+    }
+    return result;
+  }
+
+  Future<void> _addAmico(Map<String, dynamic> meal, String name) async {
+    if (name.trim().isEmpty) return;
+    Map<String, dynamic> amici = meal.containsKey('amici') && meal['amici'] != null
+        ? Map<String, dynamic>.from(meal['amici'])
+        : {};
+    List<String> myAmici = amici.containsKey(widget.name)
+        ? List<String>.from(amici[widget.name])
+        : [];
+    myAmici.add(name.trim());
+    amici[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('pasti')
+        .doc(meal['id'])
+        .update({'amici': amici});
+
+    setState(() {
+      meal['amici'] = amici;
+      _getAmiciController(meal['id']).clear();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${name.trim()} aggiunto ai presenti')));
+  }
+
+  Future<void> _removeAmico(Map<String, dynamic> meal, String name) async {
+    Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
+    List<String> myAmici = List<String>.from(amici[widget.name]);
+    myAmici.remove(name);
+    if (myAmici.isEmpty) {
+      amici.remove(widget.name);
+    } else {
+      amici[widget.name] = myAmici;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('pasti')
+        .doc(meal['id'])
+        .update({'amici': amici});
+
+    setState(() {
+      meal['amici'] = amici;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name rimosso dai presenti')));
+  }
+
+  Future<void> _editAmico(Map<String, dynamic> meal, String oldName, String newName) async {
+    if (newName.trim().isEmpty) return;
+    Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
+    List<String> myAmici = List<String>.from(amici[widget.name]);
+    int index = myAmici.indexOf(oldName);
+    if (index != -1) {
+      myAmici[index] = newName.trim();
+    }
+    amici[widget.name] = myAmici;
+
+    await FirebaseFirestore.instance
+        .collection('pasti')
+        .doc(meal['id'])
+        .update({'amici': amici});
+
+    setState(() {
+      meal['amici'] = amici;
+    });
+  }
+
+  void _showEditAmicoDialog(Map<String, dynamic> meal, String name) {
+    TextEditingController editController = TextEditingController(text: name);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifica amico'),
+        content: TextField(
+          controller: editController,
+          decoration: const InputDecoration(hintText: 'Nome amico'),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _editAmico(meal, name, editController.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Salva'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAmicoDialog(Map<String, dynamic> meal, String name) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina amico'),
+        content: Text('Vuoi eliminare "$name" dalla lista?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              _removeAmico(meal, name);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmiciContainer(Map<String, dynamic> meal) {
+    final controller = _getAmiciController(meal['id']);
+    final myFriends = _getMyAmici(meal);
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.person_add, size: 30, color: Colors.black),
+              const SizedBox(width: 10),
+              const AutoSizeText(
+                'Aggiungi amici',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+                maxLines: 1,
+                minFontSize: 15,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    hintText: 'Nome amico',
+                    border: OutlineInputBorder(),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  onSubmitted: (value) => _addAmico(meal, value),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => _addAmico(meal, controller.text),
+                icon: const Icon(Icons.add_circle,
+                    color: Colors.black, size: 35),
+              ),
+            ],
+          ),
+          if (myFriends.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Divider(),
+            ...myFriends.map<Widget>((name) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: AutoSizeText(
+                    name,
+                    style: const TextStyle(fontSize: 18),
+                    maxLines: 1,
+                    minFontSize: 14,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () => _showEditAmicoDialog(meal, name),
+                        icon: const Icon(Icons.edit,
+                            color: Colors.black, size: 22),
+                      ),
+                      IconButton(
+                        onPressed: () => _showDeleteAmicoDialog(meal, name),
+                        icon: const Icon(Icons.delete,
+                            color: Colors.black, size: 22),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _dateFocusNode.dispose();
     _timeFocusNode.dispose();
+    for (var controller in _amiciControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -598,10 +837,10 @@ class _LunchState extends State<Lunch> {
                                     widget.role!='Genitore'?
                                     ExpansionTile(
                                       title: Text(
-                                          'Prenotazioni (${meal['prenotazioni'].length})',
+                                          'Prenotazioni (${_getAllPresenti(meal).length})',
                                           style: const TextStyle(fontSize: 20)),
-                                      children: meal['prenotazioni'].isNotEmpty
-                                          ? meal['prenotazioni']
+                                      children: _getAllPresenti(meal).isNotEmpty
+                                          ? _getAllPresenti(meal)
                                               .map<Widget>((name) => ListTile(
                                                       title: Text(
                                                     name,
@@ -623,7 +862,7 @@ class _LunchState extends State<Lunch> {
                                         child: Padding(
                                           padding: const EdgeInsets.fromLTRB(18, 5, 0, 0),
                                           child: AutoSizeText(
-                                            'Prenotazioni (${meal['prenotazioni'].length})',
+                                            'Prenotazioni (${_getAllPresenti(meal).length})',
                                             style: const TextStyle(fontSize: 20),
                                             maxLines: 1,
                                             minFontSize: 15,
@@ -632,7 +871,10 @@ class _LunchState extends State<Lunch> {
                                         )
                                       )
                                   ],
-                                )
+                                ),
+                              // Amici widget
+                              if (meal['status'] == 'aperto' && widget.role != 'Genitore')
+                                _buildAmiciContainer(meal),
                             ],
                           ),
                         );
