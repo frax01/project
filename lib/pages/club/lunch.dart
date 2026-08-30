@@ -178,7 +178,7 @@ class _LunchState extends State<Lunch> {
 
   List<String> _getMyAmici(Map<String, dynamic> meal) {
     if (!meal.containsKey('amici') || meal['amici'] == null) return [];
-    Map<String, dynamic> amici = meal['amici'];
+    Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
     if (!amici.containsKey(widget.name)) return [];
     return List<String>.from(amici[widget.name]);
   }
@@ -186,7 +186,7 @@ class _LunchState extends State<Lunch> {
   List<String> _getAllPresenti(Map<String, dynamic> meal) {
     List<String> result = List<String>.from(meal['prenotazioni'] ?? []);
     if (meal.containsKey('amici') && meal['amici'] != null) {
-      Map<String, dynamic> amici = meal['amici'];
+      Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
       amici.forEach((key, value) {
         result.addAll((value as List).cast<String>());
       });
