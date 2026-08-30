@@ -6,6 +6,12 @@
         android:name="${applicationName}"
         android:icon="@mipmap/clublogo"
         android:enableOnBackInvokedCallback="true">
+
+        <!-- Android 16 (API 36): mantiene il blocco portrait anche su schermi >=600dp.
+             Opt-out temporaneo: non funzionera piu con targetSdk 37. -->
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+            android:value="true" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" /> <!--questo è per le notifiche piccole-->
