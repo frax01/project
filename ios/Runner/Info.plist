@@ -21,11 +21,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.0.6</string>
+	<string>3.0.7</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>10</string>
+	<string>307</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>tel</string>
@@ -36,7 +36,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires access to the photo library</string>
+	<string>Club accede alle tue foto per permetterti di scegliere dalla galleria l'immagine di copertina di un programma o di un evento del club, che viene poi caricata insieme al programma.</string>
 	<key>SKExternalLinkAccount</key>
 	<string>YES</string>
 	<key>UIApplicationSceneManifest</key>
