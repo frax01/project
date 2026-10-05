@@ -7,20 +7,15 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const config = require('./config.js');
-
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+const { onCall } = require("firebase-functions/v2/https");
 const { addDays, format } = require('date-fns');
 const { it } = require('date-fns/locale'); 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const axios = require('axios');
-const { google } = require('googleapis');
+const crypto = require('crypto');
+const notifications = require('./notifications');
 
 admin.initializeApp();
-
-const { GoogleAuth } = require('google-auth-library');
 
 
 exports.closeDefaultMeals = functions.pubsub.schedule('every monday 12:00').timeZone('Europe/Rome').onRun(async (context) => {
@@ -101,19 +96,29 @@ exports.createMondayLunch = functions.pubsub.schedule('every tuesday 07:00').tim
     }
 });
 
-exports.generateAccessToken = functions.https.onRequest(async (req, res) => {
-  try {
-    const auth = new GoogleAuth({
-      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
-    });
-    const client = await auth.getClient();
-    const accessTokenResponse = await client.getAccessToken();
-    res.json({ accessToken: accessTokenResponse.token });
-  } catch (error) {
-    console.error('Failed to generate access token', error);
-    res.status(500).send('Failed to generate access token');
-  }
-});
+// Replaces generateAccessToken, a public endpoint that handed an FCM OAuth token
+// to anybody: the app now asks the server to send the notification, and the
+// server checks who is calling and who may receive it (see notifications.js).
+exports.sendClubNotification = onCall(async (request) =>
+  notifications.handleSendClubNotification({
+    db: admin.firestore(),
+    messaging: admin.messaging(),
+    auth: request.auth,
+    data: request.data,
+  })
+);
+
+// The Champions Club staff/tutor passwords are checked here and are no longer
+// downloaded to every phone. No login required (the screen is open to people
+// without an account); wrong attempts are limited instead.
+const sha256 = (value) => crypto.createHash('sha256').update(value).digest();
+exports.verifyCcPassword = onCall(async (request) =>
+  notifications.handleVerifyCcPassword({
+    db: admin.firestore(),
+    data: request.data,
+    timingSafeEqual: (a, b) => crypto.timingSafeEqual(sha256(a), sha256(b)),
+  })
+);
 
 exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 18:30').timeZone('Europe/Rome').onRun(async (context) => {
 
@@ -377,118 +382,27 @@ async function fetchTokensBirthday(elem) {
 }
 
 async function sendNotification(token, section, name, filter, id, focused) {
-
-    let accessToken;
-    try {
-        const response = await axios.get('https://us-central1-club-60d94.cloudfunctions.net/generateAccessToken');
-        accessToken = response.data.accessToken;
-    } catch (error) {
-        console.error('Errore nel recupero del token di accesso:', error);
-        return;
-    }
-
-    let data = '';
-
-    let docId = '';
-    let selectedOption = '';
-    let category = '';
-    let notTitle = '';
-    let message = '';
-    let role = '';
-
-    if(section=='modified_event') {
-        docId = id;
-        selectedOption = filter;
-        category = section;
-        notTitle = `${name}`;
-        message = 'Domani';
-        role = '';
-    }
-    else if(section=='birthday' && filter=='broadcast') {
-        docId = '';
-        selectedOption = '';
-        category = section;
-        notTitle = `Oggi è il compleanno di ${name}`;
-        message = 'Fagli gli auguri!';
-    } else if(section=='birthday' && filter=='personale') {
-        docId = '';
-        selectedOption = '';
-        category = section;
-        notTitle = `Buon compleanno!`;
-        message = 'Festeggia al Club!';
+    let info;
+    if (section == 'modified_event') {
+        info = { category: section, title: `${name}`, body: 'Domani', docId: id, selectedOption: filter };
+    } else if (section == 'birthday' && filter == 'broadcast') {
+        info = { category: section, title: `Oggi è il compleanno di ${name}`, body: 'Fagli gli auguri!' };
+    } else if (section == 'birthday' && filter == 'personale') {
+        info = { category: section, title: 'Buon compleanno!', body: 'Festeggia al Club!' };
     } else {
-        docId = id;
-        selectedOption = '';
-        category = section;
-        notTitle = `${name}`;
-        message = 'Oggi';
-    }
-
-    if(section=='modified_event') {
-        data = {
-            click_action: 'FLUTTER_NOTIFICATION_CLICK',
-            id: Date.now().toString(),
-            docId: docId.toString(),
-            selectedOption: selectedOption.toString(),
-            status: 'done',
-            category: category.toString(),
-            notTitle: notTitle.toString(),
-            notBody: message.toString(),
-            role: role.toString(),
+        // evento: FCM data values must be strings (focused is a Date here).
+        info = {
+            category: section,
+            title: `${name}`,
+            body: 'Oggi',
+            docId: id,
+            extra: { focusedDay: focused instanceof Date ? focused.toISOString() : String(focused) },
         };
     }
-    else if(section=='birthday') {
-        data = {
-            click_action: 'FLUTTER_NOTIFICATION_CLICK',
-            id: Date.now().toString(),
-            docId: docId.toString(),
-            selectedOption: selectedOption.toString(),
-            status: 'done',
-            category: category.toString(),
-            notTitle: notTitle.toString(),
-            notBody: message.toString(),
-            //role: role.toString(),
-        };
-    } else if(section=='evento') {
-        data = {
-            click_action: 'FLUTTER_NOTIFICATION_CLICK',
-            id: Date.now().toString(),
-            focusedDay: focused,
-            docId: docId.toString(),
-            selectedOption: selectedOption.toString(),
-            status: 'done',
-            category: category.toString(),
-            notTitle: notTitle.toString(),
-            notBody: message.toString(),
-            //role: role.toString(),
-        };
-    }
-
-    const notification = {
-        title: notTitle,
-        body: message
-    };      
-
-    const messagePayload = {
-        'message': {
-            'token': token,
-            'notification': notification,
-            'data': data,
-        }
-    };
-
-    const url = 'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
 
     try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(messagePayload)
-        });
-        console.log('Notifica inviata con successo:', response);
+        const result = await notifications.sendToTokens(admin.messaging(), [token], info);
+        console.log('Notifica inviata:', result);
     } catch (error) {
         console.error('Errore nell\'invio della notifica: ', error);
     }

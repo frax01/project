@@ -2,42 +2,6 @@ import 'package:club/functions/tokenFunctions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('tokensFromField', () {
-    test('missing or null field gives no tokens', () {
-      expect(tokensFromField(null), isEmpty);
-      expect(tokensFromField('not a list'), isEmpty);
-    });
-
-    test('reads legacy string tokens and {device: token} maps', () {
-      final field = [
-        'legacy-1',
-        {'iPhone': 'token-a'},
-        {'SM-S918B-1a2b3c': 'token-b'},
-      ];
-      expect(tokensFromField(field), ['legacy-1', 'token-a', 'token-b']);
-    });
-
-    test('a null token must not break the other tokens (regression)', () {
-      final field = [
-        {'iPhone': null},
-        {'iPad': 'token-ok'},
-        null,
-        {},
-        '',
-      ];
-      expect(tokensFromField(field), ['token-ok']);
-    });
-
-    test('does not repeat the same token', () {
-      final field = [
-        'dup',
-        {'iPhone': 'dup'},
-        {'iPad': 'other'},
-      ];
-      expect(tokensFromField(field), ['dup', 'other']);
-    });
-  });
-
   group('upsertDeviceToken', () {
     test('adds the device to an empty list', () {
       expect(upsertDeviceToken([], 'iPhone-ab12cd', 'tok'), [

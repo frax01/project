@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:club/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:club/functions/ccPasswordFunctions.dart';
 
 class AccessoCC extends StatefulWidget {
   const AccessoCC({super.key, required this.email, required this.club});
@@ -21,8 +22,6 @@ class _AccessoCCState extends State<AccessoCC> {
   final tutorPasswordController = TextEditingController();
   final staffPasswordController = TextEditingController();
   final staffDataController = TextEditingController();
-  String tutorPassword = '';
-  String staffPassword = '';
 
   void restartApp(BuildContext context, String club, String cc, String ccRole,
       String nome) {
@@ -51,114 +50,72 @@ class _AccessoCCState extends State<AccessoCC> {
     }
   }
 
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
   void _checkPasswordStaff(
       String role, String? newclub, String nome, String mood) async {
-    String enteredPassword = staffPasswordController.text;
+    final CcPasswordResult check = await verifyCcPassword(
+        type: 'staff', password: staffPasswordController.text);
+    if (check != CcPasswordResult.ok) {
+      _showMessage(ccPasswordErrorMessage(check, 'Password errata'));
+      return;
+    }
+
+    final DocumentSnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccStaff').doc(nome).get();
     if (mood == 'login') {
-      //QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('ccStaff').where('nome', isEqualTo: nome).get();
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('ccStaff')
-          .doc(nome)
-          .get();
-      if (snapshot.exists) {
-        if (enteredPassword == staffPassword) {
-          await _updateUser('staff');
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cc',
-              'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-          await prefs.setString('ccRole', 'staff');
-          await prefs.setString('nome', nome);
-          await prefs.setString('club', newclub ?? '');
-          restartApp(context, prefs.getString('club') ?? '',
-              prefs.getString('cc') ?? '', 'staff', nome);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password errata'),
-            ),
-          );
-          return;
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nome utente errato'),
-          ),
-        );
+      if (!snapshot.exists) {
+        _showMessage('Nome utente errato');
         return;
       }
     } else {
-      if (enteredPassword == staffPassword) {
-        DocumentSnapshot snapshot = await FirebaseFirestore.instance
-            .collection('ccStaff')
-            .doc(nome)
-            .get();
-
-        if (snapshot.exists) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Esiste già un utente con questo nome'),
-            ),
-          );
-          return;
-        } else {
-          await FirebaseFirestore.instance.collection('ccStaff').doc(nome).set({
-            'nome': nome,
-          });
-          await _updateUser('staff');
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cc',
-              'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-          await prefs.setString('ccRole', 'staff');
-          await prefs.setString('nome', nome);
-          await prefs.setString('club', newclub ?? '');
-          restartApp(context, prefs.getString('club') ?? '',
-              prefs.getString('cc') ?? '', 'staff', nome);
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password errata'),
-          ),
-        );
+      if (snapshot.exists) {
+        _showMessage('Esiste già un utente con questo nome');
         return;
       }
+      await FirebaseFirestore.instance
+          .collection('ccStaff')
+          .doc(nome)
+          .set({'nome': nome});
     }
+    await _updateUser('staff');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'yes');
+    await prefs.setString('ccRole', 'staff');
+    await prefs.setString('nome', nome);
+    await prefs.setString('club', newclub ?? '');
+    if (!mounted) return;
+    restartApp(context, prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '', 'staff', nome);
   }
 
   void _checkPasswordTutor(String role, String? newclub) async {
-    String enteredPassword;
-    print('newclub: $newclub');
-    enteredPassword = tutorPasswordController.text;
     if (newclub == '') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inserisci il tuo club'),
-        ),
-      );
+      _showMessage('Inserisci il tuo club');
       return;
     }
-    if (enteredPassword == tutorPassword) {
-      await _updateUser('tutor');
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cc',
-          'yes'); //da qui bisogna fare che quando arriva una notifica del tuo club e tu la apri ti fa andare direttamente al club e non alla CC anche se hai cc nelle sharedPreferences
-      await prefs.setString('ccRole', 'tutor');
-      await prefs.setString('club', newclub ?? '');
-      restartApp(
-          context,
-          newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
-          prefs.getString('cc') ?? '',
-          'tutor',
-          '');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password errata'),
-        ),
-      );
+    final CcPasswordResult check = await verifyCcPassword(
+        type: 'tutor', password: tutorPasswordController.text);
+    if (check != CcPasswordResult.ok) {
+      _showMessage(ccPasswordErrorMessage(check, 'Password errata'));
       return;
     }
+
+    await _updateUser('tutor');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'yes');
+    await prefs.setString('ccRole', 'tutor');
+    await prefs.setString('club', newclub ?? '');
+    if (!mounted) return;
+    restartApp(
+        context,
+        newclub != '' ? newclub ?? '' : prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '',
+        'tutor',
+        '');
   }
 
   void _showLoadingDialog() {
@@ -206,20 +163,6 @@ class _AccessoCCState extends State<AccessoCC> {
   void initState() {
     super.initState();
     _retrieveClubs();
-    _retrievePw();
-  }
-
-  Future<void> _retrievePw() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('ccPassword')
-        .doc('password')
-        .get();
-    if (snapshot.exists) {
-      setState(() {
-        staffPassword = snapshot['staffPw'];
-        tutorPassword = snapshot['tutorPw'];
-      });
-    }
   }
 
   List<dynamic> clubs = [''];

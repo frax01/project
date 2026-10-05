@@ -709,24 +709,18 @@ class _AddEditProgramState extends State<AddEditProgram> {
             .add(document);
         document['id'] = doc.id;
 
-        List<String> token = [];
-        for (String value in selectedClasses) {
-          List<String> items =
-              await fetchToken('club_class', value, widget.club);
-          for (String elem in items) {
-            if (!token.contains(elem)) {
-              token.add(elem);
-            }
-          }
-        }
         setState(() {
           _isLoadingCreation = false;
         });
-        sendNotification(
-            token, 'Nuovo programma!', document['title'], 'new_event',
+        // The server decides who receives it (users of these classes in this
+        // club); not awaited, the program is already created.
+        sendClubNotification(
+            category: 'new_event',
+            classes: List<String>.from(selectedClasses),
+            title: 'Nuovo programma!',
+            body: document['title'],
             docId: doc.id,
-            selectedOption: widget.selectedOption,
-            role: widget.role);
+            selectedOption: widget.selectedOption);
         widget.refreshList?.call();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => ProgramPage(
@@ -918,23 +912,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
         }
       }
 
-      if (modifiedNotification) {
-        List<String> token = [];
-        for (String value in selectedClasses) {
-          List<String> items =
-              await fetchToken('club_class', value, widget.club);
-          for (String elem in items) {
-            if (!token.contains(elem)) {
-              token.add(elem);
-            }
-          }
-        }
-        sendNotification(token, 'Programma modificato!',
-            newDocument['title'] ?? widget.document!['title'], 'modified_event',
-            docId: widget.document!['id'],
-            selectedOption: widget.selectedOption,
-            role: widget.role);
-      }
+      final String notificationTitle =
+          (newDocument['title'] ?? widget.document!['title']).toString();
 
       for (var key in widget.document!.keys) {
         if (newDocument[key] == widget.document![key]) {
@@ -946,6 +925,17 @@ class _AddEditProgramState extends State<AddEditProgram> {
           .collection('club_${widget.selectedOption}')
           .doc(widget.document?['id'])
           .update(newDocument);
+
+      // After the update (it used to be sent before it was saved).
+      if (modifiedNotification) {
+        sendClubNotification(
+            category: 'modified_event',
+            classes: List<String>.from(selectedClasses),
+            title: 'Programma modificato!',
+            body: notificationTitle,
+            docId: widget.document!['id'],
+            selectedOption: widget.selectedOption);
+      }
 
       setState(() {
         _isLoadingModify = false;

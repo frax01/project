@@ -18,6 +18,7 @@ import 'package:excel/excel.dart' as excel;
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:club/functions/ccPasswordFunctions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -49,14 +50,11 @@ class _CCHomePageState extends State<CCHomePage> {
   late PageController _pageController;
 
   // Tutor/Staff access fields
-  String tutorPassword = '';
-  String staffPassword = '';
   List<dynamic> clubs = [''];
 
   @override
   void initState() {
     super.initState();
-    _retrievePw();
     _retrieveClubs();
 
     print("nome: ${widget.nome}");
@@ -100,19 +98,6 @@ class _CCHomePageState extends State<CCHomePage> {
     super.dispose();
   }
 
-  Future<void> _retrievePw() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('ccPassword')
-        .doc('password')
-        .get();
-    if (snapshot.exists) {
-      setState(() {
-        staffPassword = snapshot['staffPw'];
-        tutorPassword = snapshot['tutorPw'];
-      });
-    }
-  }
-
   Future<void> _retrieveClubs() async {
     QuerySnapshot snapshot =
         await FirebaseFirestore.instance.collection('ccSquadre').get();
@@ -145,7 +130,9 @@ class _CCHomePageState extends State<CCHomePage> {
       onError('Inserisci club e password');
       return;
     }
-    if (enteredPassword == tutorPassword) {
+    final CcPasswordResult check =
+        await verifyCcPassword(type: 'tutor', password: enteredPassword);
+    if (check == CcPasswordResult.ok) {
       await _updateUser('tutor');
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('cc', 'yes');
@@ -158,7 +145,7 @@ class _CCHomePageState extends State<CCHomePage> {
           'tutor',
           '');
     } else {
-      onError('Password tutor errata');
+      onError(ccPasswordErrorMessage(check, 'Password tutor errata'));
     }
   }
 
@@ -168,53 +155,39 @@ class _CCHomePageState extends State<CCHomePage> {
       onError('Inserisci nome e password');
       return;
     }
+    final CcPasswordResult check =
+        await verifyCcPassword(type: 'staff', password: enteredPassword);
+    if (check != CcPasswordResult.ok) {
+      onError(ccPasswordErrorMessage(
+          check, mood == 'login' ? 'Nome o password errati' : 'Password staff errata'));
+      return;
+    }
+
+    final DocumentSnapshot snapshot =
+        await FirebaseFirestore.instance.collection('ccStaff').doc(nome).get();
     if (mood == 'login') {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('ccStaff')
-          .doc(nome)
-          .get();
-      if (snapshot.exists) {
-        if (enteredPassword == staffPassword) {
-          await _updateUser('staff');
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cc', 'yes');
-          await prefs.setString('ccRole', 'staff');
-          await prefs.setString('nome', nome);
-          await prefs.setString('club', widget.club ?? '');
-          restartApp(context, prefs.getString('club') ?? '',
-              prefs.getString('cc') ?? '', 'staff', nome);
-        } else {
-          onError('Nome o password errati');
-        }
-      } else {
+      if (!snapshot.exists) {
         onError('Utente non trovato');
+        return;
       }
     } else {
-      if (enteredPassword == staffPassword) {
-        DocumentSnapshot snapshot = await FirebaseFirestore.instance
-            .collection('ccStaff')
-            .doc(nome)
-            .get();
-        if (snapshot.exists) {
-          onError('Questo nome è già registrato');
-        } else {
-          await FirebaseFirestore.instance
-              .collection('ccStaff')
-              .doc(nome)
-              .set({'nome': nome});
-          await _updateUser('staff');
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cc', 'yes');
-          await prefs.setString('ccRole', 'staff');
-          await prefs.setString('nome', nome);
-          await prefs.setString('club', widget.club ?? '');
-          restartApp(context, prefs.getString('club') ?? '',
-              prefs.getString('cc') ?? '', 'staff', nome);
-        }
-      } else {
-        onError('Password staff errata');
+      if (snapshot.exists) {
+        onError('Questo nome è già registrato');
+        return;
       }
+      await FirebaseFirestore.instance
+          .collection('ccStaff')
+          .doc(nome)
+          .set({'nome': nome});
     }
+    await _updateUser('staff');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cc', 'yes');
+    await prefs.setString('ccRole', 'staff');
+    await prefs.setString('nome', nome);
+    await prefs.setString('club', widget.club ?? '');
+    restartApp(context, prefs.getString('club') ?? '',
+        prefs.getString('cc') ?? '', 'staff', nome);
   }
 
   void _showRoleSwitchSheet() {
