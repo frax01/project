@@ -35,6 +35,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Club usa la fotocamera solo se scegli di scattare una foto da usare come immagine di copertina di un programma o di un evento del club.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Club accede alle tue foto per permetterti di scegliere dalla galleria l'immagine di copertina di un programma o di un evento del club, che viene poi caricata insieme al programma.</string>
 	<key>SKExternalLinkAccount</key>
