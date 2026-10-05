@@ -30,49 +30,38 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: any
+  firebase_core: ^4.4.0
   firebase_auth: ^6.1.4
   cloud_firestore: ^6.1.2
   shared_preferences: ^2.0.12
   intl: ^0.20.2
   image_picker: ^1.1.2
   firebase_storage: ^13.0.6
-  dots_indicator: ^4.0.1
   firebase_messaging: ^16.1.1
-  flutter_local_notifications: ^20.1.0
+  flutter_local_notifications: ^22.3.1
   firebase_analytics: ^12.1.2
   flutter_localizations:
     sdk: flutter
   flutter_speed_dial: ^7.0.0
   path_provider: ^2.1.3
-  typed_data: ^1.3.2
   http: ^1.2.2
   flutter_typeahead: ^5.2.0
   multi_select_flutter: ^4.1.3
-  cupertino_icons: ^1.0.8
   firebase_in_app_messaging: ^0.9.0+6
   adaptive_layout: ^0.1.7
-  flutter_staggered_grid_view: ^0.7.0
   animations: ^2.0.11
-  share_plus: ^12.0.1
+  share_plus: ^12.0.2
   font_awesome_flutter: ^11.0.0
   flex_color_scheme: ^8.4.0
   collection: ^1.18.0
   shimmer: ^3.0.0
-  maps_launcher: ^3.0.0+1
   confetti: ^0.8.0
   auto_size_text: ^3.0.0
   table_calendar: ^3.0.9
   file_picker: ^10.3.10
   flutter_pdfview: ^1.3.2
-  permission_handler: ^12.0.1
-  flutter_launcher_icons: ^0.14.3
-  package_info_plus: ^9.0.0
-  device_info_plus: ^12.3.0
-  flutter_background_service: ^5.1.0
-  lottie: ^3.1.3
-  pdf: ^3.3.0
-  printing: ^5.6.0
+  package_info_plus: ^9.0.1
+  device_info_plus: ^12.4.0
   excel: ^4.0.6
   url_launcher: ^6.3.1
 
@@ -86,6 +75,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter_icons:
   ios: true
@@ -106,7 +96,6 @@ flutter:
     - images/
     - android/app/src/main/res/drawable/tiberlogo.png
     - images/clubLogo.png
-    - assets/animations/stars.json
           
 
   # To add assets to your application, add an assets section, like this:

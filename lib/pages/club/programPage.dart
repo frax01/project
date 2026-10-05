@@ -1081,15 +1081,15 @@ class _ProgramPageState extends State<ProgramPage> {
           IconButton(
             onPressed: () {
               if (widget.selectedOption == 'trip') {
-                Share.share('${_data['title']}\n\n'
+                SharePlus.instance.share(ShareParams(text: '${_data['title']}\n\n'
                     '${_data['address']}\n\n'
                     'Dal ${_data['startDate']} al ${_data['endDate']}\n\n'
-                    '${_data['description']}\n');
+                    '${_data['description']}\n'));
               } else {
-                Share.share('${_data['title']}\n\n'
+                SharePlus.instance.share(ShareParams(text: '${_data['title']}\n\n'
                     '${_data['address']}\n\n'
                     '${_data['startDate']}\n\n'
-                    '${_data['description']}\n');
+                    '${_data['description']}\n'));
               }
             },
             icon: const Icon(

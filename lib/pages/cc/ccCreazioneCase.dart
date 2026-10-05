@@ -317,9 +317,8 @@ class _CcCreazioneCaseState extends State<CcCreazioneCase> {
 
       Navigator.of(context).pop();
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Ecco il file Excel delle stanze per il Champions Club 2026!',
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: 'Ecco il file Excel delle stanze per il Champions Club 2026!'),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
