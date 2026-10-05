@@ -38,6 +38,10 @@ class _ProgramCardState extends State<ProgramCard> {
   var data = <String, dynamic>{};
   var newData = <String, dynamic>{};
 
+  // Created once: it used to be created inside build(), so every rebuild of
+  // the list read the document again for each card.
+  late final Future<void> _loadFuture = _loadData();
+
   Future<void> _loadData() async {
     newData = <String, dynamic>{};
     var doc = await FirebaseFirestore.instance
@@ -243,7 +247,7 @@ class _ProgramCardState extends State<ProgramCard> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _loadData(),
+      future: _loadFuture,
       builder: (context, snapshot) {
         Widget child;
         if (snapshot.connectionState == ConnectionState.done) {

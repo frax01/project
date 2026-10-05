@@ -4,6 +4,7 @@ import 'package:club/functions/generalFunctions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../functions/bookingFunctions.dart';
 import '../../functions/weatherFunctions.dart';
 import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
@@ -57,10 +58,16 @@ class _ProgramPageState extends State<ProgramPage> {
         .doc(widget.documentId)
         .get();
     _data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    _weather = await fetchWeatherData(
-        _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
     if (!_data.containsKey('file')) {
       _data['file'] = [];
+    }
+    try {
+      _weather = await fetchWeatherData(
+          _data['startDate'], _data['endDate'], _data['lat'], _data['lon']);
+    } catch (e) {
+      // The weather is optional: a failing forecast API (or bad coordinates)
+      // used to make the whole page fail to build.
+      _weather = {};
     }
 
     if (widget.role == '') {
@@ -90,8 +97,55 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  void refreshProgram() {
-    setState(() {});
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = _startLoading();
+  }
+
+  // The future used to be created inside build(), so every setState (each
+  // booking tap, each friend added) refetched the document and the weather and
+  // flashed a spinner. It is created once and reloaded explicitly.
+  Future<void> _startLoading() =>
+      widget.selectedOption != 'evento' ? _loadData() : _loadEvent();
+
+  void _reload() {
+    setState(() {
+      _loadFuture = _startLoading();
+    });
+  }
+
+  void refreshProgram() => _reload();
+
+  /// Re-reads the booking fields so that changes made by other people
+  /// meanwhile show up, without reloading the whole page and the weather.
+  Future<void> _refreshBookings() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('club_${widget.selectedOption}')
+        .doc(widget.documentId)
+        .get();
+    final fresh = doc.data();
+    if (fresh == null || !mounted) return;
+    setState(() {
+      for (final key in const [
+        'prenotazioni',
+        'assenze',
+        'prenotazionePranzo',
+        'assenzaPranzo',
+        'amici',
+        'amiciPranzo',
+      ]) {
+        if (fresh.containsKey(key)) _data[key] = fresh[key];
+      }
+    });
+  }
+
+  void _showSaveError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nel salvataggio, riprova')));
   }
 
   Future<void> _showDeleteDialog(
@@ -112,12 +166,23 @@ class _ProgramPageState extends State<ProgramPage> {
             ),
             TextButton(
               onPressed: () async {
-                setState(() {
-                  deleteDocument('club_${_data["selectedOption"]}', id, image);
-                });
-                widget.refreshList!();
-                Navigator.pop(context);
-                Navigator.pop(context);
+                final NavigatorState navigator = Navigator.of(context);
+                navigator.pop(); // the dialog
+                try {
+                  // Awaited: the page used to close (and the list to refresh)
+                  // before the document was actually deleted, and a failure
+                  // was silent.
+                  await deleteDocument(
+                      'club_${_data["selectedOption"]}', id, image,
+                      files: _data['file'] ?? const []);
+                } catch (e) {
+                  _showSaveError();
+                  return;
+                }
+                // refreshList is null when the page was opened from a
+                // notification: it used to throw there and leave the page open.
+                widget.refreshList?.call();
+                if (mounted) navigator.pop(); // the page
               },
               child: const Text('Elimina'),
             ),
@@ -128,38 +193,25 @@ class _ProgramPageState extends State<ProgramPage> {
   }
 
   Widget weatherTile(Map weather) {
-    if ((weather["check"] == "true" || weather["check"]) &&
-        weather["image"] != "") {
-      return Row(
-        children: [
-          Image.network(weather["image"], width: 55, height: 55),
+    final bool check = weather["check"] == true || weather["check"] == "true";
+    if (!check) return Container();
+    final String image = (weather["image"] ?? '').toString();
+    return Row(
+      children: [
+        if (image.isNotEmpty) ...[
+          Image.network(image, width: 55, height: 55),
           const SizedBox(width: 10),
-          Column(
-            children: [
-              Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red, fontSize: 17)),
-              Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue, fontSize: 17)),
-            ],
-          ),
         ],
-      );
-    } else if ((weather["check"] == "true" || weather["check"])) {
-      return Row(
-        children: [
-          Column(
-            children: [
-              Text('${weather["t_max"]}ºC',
-                  style: const TextStyle(color: Colors.red, fontSize: 17)),
-              Text('${weather["t_min"]}ºC',
-                  style: const TextStyle(color: Colors.blue, fontSize: 17)),
-            ],
-          ),
-        ],
-      );
-    } else {
-      return Container();
-    }
+        Column(
+          children: [
+            Text('${weather["t_max"]}ºC',
+                style: const TextStyle(color: Colors.red, fontSize: 17)),
+            Text('${weather["t_min"]}ºC',
+                style: const TextStyle(color: Colors.blue, fontSize: 17)),
+          ],
+        ),
+      ],
+    );
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -391,10 +443,14 @@ class _ProgramPageState extends State<ProgramPage> {
       if (title.isNotEmpty &&
           (isLink && linkController.text.isNotEmpty ||
               isFile && file != null)) {
+        final String? uploadedPath =
+            isFile ? await _uploadFileToFirebase(file!) : null;
+        // A failed upload already showed an error: do not save an empty entry.
+        if (isFile && uploadedPath == null) return;
         final dataToSave = {
           'title': title,
           'link': isLink ? linkController.text : '',
-          'path': isFile ? await _uploadFileToFirebase(file!) : null,
+          'path': uploadedPath,
         };
 
         await FirebaseFirestore.instance
@@ -403,7 +459,7 @@ class _ProgramPageState extends State<ProgramPage> {
             .update({
           'file': FieldValue.arrayUnion([dataToSave])
         });
-        setState(() {});
+        _reload();
       }
     }
   }
@@ -511,7 +567,6 @@ class _ProgramPageState extends State<ProgramPage> {
               onPressed: () {
                 _deleteFileOrLink(fileData);
                 Navigator.of(context).pop();
-                setState(() {});
               },
               child: const Text('Elimina'),
             ),
@@ -528,6 +583,7 @@ class _ProgramPageState extends State<ProgramPage> {
         .update({
       'file': FieldValue.arrayRemove([fileData])
     });
+    if (mounted) _reload();
 
     if (fileData['path'] != null && fileData['path'].isNotEmpty) {
       try {
@@ -540,131 +596,60 @@ class _ProgramPageState extends State<ProgramPage> {
     }
   }
 
-  Future<void> _toggleReservation() async {
-    if (_data.containsKey('prenotazioni')) {
-      List<dynamic> prenotazioni = _data['prenotazioni'];
-      List<dynamic> assenze = _data['assenze'];
-      if (prenotazioni.contains(widget.name)) {
-        prenotazioni.remove(widget.name);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Presenza cancellata')));
-      } else {
-        if (assenze.contains(widget.name)) {
-          prenotazioni.add(widget.name);
-          assenze.remove(widget.name);
-        } else {
-          prenotazioni.add(widget.name);
-        }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Presenza confermata')));
-      }
+  DocumentReference<Map<String, dynamic>> get _programRef => FirebaseFirestore
+      .instance
+      .collection('club_${widget.selectedOption}')
+      .doc(widget.documentId);
 
-      await FirebaseFirestore.instance
-          .collection('club_${widget.selectedOption}')
-          .doc(widget.documentId)
-          .update({'prenotazioni': prenotazioni, 'assenze': assenze});
-
-      setState(() {
-        _data['prenotazioni'] = prenotazioni;
-        _data['assenze'] = assenze;
-      });
+  /// Adds/removes this user in [field] and takes them out of [otherField]
+  /// (present <-> absent), changing only this user's entry on the server.
+  Future<void> _toggleList({
+    required String field,
+    required String otherField,
+    required String addedMessage,
+    required String removedMessage,
+  }) async {
+    if (!_data.containsKey(field)) return;
+    final bool has = (_data[field] as List).contains(widget.name);
+    try {
+      await setPresence(_programRef,
+          name: widget.name,
+          field: field,
+          otherField: otherField,
+          join: !has);
+    } catch (e) {
+      _showSaveError();
+      return;
     }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(has ? removedMessage : addedMessage)));
+    await _refreshBookings();
   }
 
-  Future<void> _toggleReservationFood() async {
-    if (_data.containsKey('prenotazionePranzo')) {
-      List<dynamic> prenotazioni = _data['prenotazionePranzo'];
-      List<dynamic> assenze = _data['assenzaPranzo'];
-      if (prenotazioni.contains(widget.name)) {
-        prenotazioni.remove(widget.name);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Presenza cancellata')));
-      } else {
-        if (assenze.contains(widget.name)) {
-          prenotazioni.add(widget.name);
-          assenze.remove(widget.name);
-        } else {
-          prenotazioni.add(widget.name);
-        }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Presenza confermata')));
-      }
+  Future<void> _toggleReservation() => _toggleList(
+      field: 'prenotazioni',
+      otherField: 'assenze',
+      addedMessage: 'Presenza confermata',
+      removedMessage: 'Presenza cancellata');
 
-      await FirebaseFirestore.instance
-          .collection('club_${widget.selectedOption}')
-          .doc(widget.documentId)
-          .update(
-              {'prenotazionePranzo': prenotazioni, 'assenzaPranzo': assenze});
+  Future<void> _toggleReservationFood() => _toggleList(
+      field: 'prenotazionePranzo',
+      otherField: 'assenzaPranzo',
+      addedMessage: 'Presenza confermata',
+      removedMessage: 'Presenza cancellata');
 
-      setState(() {
-        _data['prenotazionePranzo'] = prenotazioni;
-        _data['assenzaPranzo'] = assenze;
-      });
-    }
-  }
+  Future<void> _toggleAbsence() => _toggleList(
+      field: 'assenze',
+      otherField: 'prenotazioni',
+      addedMessage: 'Assenza confermata',
+      removedMessage: 'Assenza cancellata');
 
-  Future<void> _toggleAbsence() async {
-    if (_data.containsKey('assenze')) {
-      List<dynamic> assenze = _data['assenze'];
-      List<dynamic> prenotazioni = _data['prenotazioni'];
-      if (assenze.contains(widget.name)) {
-        assenze.remove(widget.name);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Assenza cancellata')));
-      } else {
-        if (prenotazioni.contains(widget.name)) {
-          assenze.add(widget.name);
-          prenotazioni.remove(widget.name);
-        } else {
-          assenze.add(widget.name);
-        }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Assenza confermata')));
-      }
-
-      await FirebaseFirestore.instance
-          .collection('club_${widget.selectedOption}')
-          .doc(widget.documentId)
-          .update({'prenotazioni': prenotazioni, 'assenze': assenze});
-
-      setState(() {
-        _data['prenotazioni'] = prenotazioni;
-        _data['assenze'] = assenze;
-      });
-    }
-  }
-
-  Future<void> _toggleAbsenceFood() async {
-    if (_data.containsKey('assenzaPranzo')) {
-      List<dynamic> assenze = _data['assenzaPranzo'];
-      List<dynamic> prenotazioni = _data['prenotazionePranzo'];
-      if (assenze.contains(widget.name)) {
-        assenze.remove(widget.name);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Assenza cancellata')));
-      } else {
-        if (prenotazioni.contains(widget.name)) {
-          assenze.add(widget.name);
-          prenotazioni.remove(widget.name);
-        } else {
-          assenze.add(widget.name);
-        }
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Assenza confermata')));
-      }
-
-      await FirebaseFirestore.instance
-          .collection('club_${widget.selectedOption}')
-          .doc(widget.documentId)
-          .update(
-              {'prenotazionePranzo': prenotazioni, 'assenzaPranzo': assenze});
-
-      setState(() {
-        _data['prenotazionePranzo'] = prenotazioni;
-        _data['assenzaPranzo'] = assenze;
-      });
-    }
-  }
+  Future<void> _toggleAbsenceFood() => _toggleList(
+      field: 'assenzaPranzo',
+      otherField: 'prenotazionePranzo',
+      addedMessage: 'Assenza confermata',
+      removedMessage: 'Assenza cancellata');
 
   // --- Amici (Friends) Management ---
 
@@ -724,50 +709,79 @@ class _ProgramPageState extends State<ProgramPage> {
     return false;
   }
 
-  Future<void> _removeAmico(String name) async {
-    Map<String, dynamic> amici =
-        Map<String, dynamic>.from(_data['amici']);
-    List<String> myAmici = List<String>.from(amici[widget.name]);
-    myAmici.remove(name);
-    if (myAmici.isEmpty) {
-      amici.remove(widget.name);
-    } else {
-      amici[widget.name] = myAmici;
-    }
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amici': amici});
-
-    setState(() {
-      _data['amici'] = amici;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name rimosso dai presenti')));
+  Future<void> _saveMyAmici(String field, List<String> myAmici) async {
+    await saveFriends(_programRef,
+        field: field, userName: widget.name, friends: myAmici);
+    await _refreshBookings();
   }
 
-  Future<void> _editAmico(String oldName, String newName) async {
-    if (newName.trim().isEmpty) return;
+  Future<void> _addAmicoGeneric(
+      String field, List<String> current, String name, String message) async {
+    if (name.trim().isEmpty) return;
+    final List<String> myAmici = List<String>.from(current)..add(name.trim());
+    try {
+      await _saveMyAmici(field, myAmici);
+    } catch (e) {
+      _showSaveError();
+      return;
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${name.trim()} $message')));
+  }
 
-    Map<String, dynamic> amici =
-        Map<String, dynamic>.from(_data['amici']);
-    List<String> myAmici = List<String>.from(amici[widget.name]);
-    int index = myAmici.indexOf(oldName);
+  Future<void> _removeAmicoGeneric(
+      String field, List<String> current, String name, String message) async {
+    final List<String> myAmici = List<String>.from(current)..remove(name);
+    try {
+      await _saveMyAmici(field, myAmici);
+    } catch (e) {
+      _showSaveError();
+      return;
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('$name $message')));
+  }
+
+  Future<void> _editAmicoGeneric(String field, List<String> current,
+      String oldName, String newName) async {
+    if (newName.trim().isEmpty) return;
+    final List<String> myAmici = List<String>.from(current);
+    final int index = myAmici.indexOf(oldName);
     if (index != -1) {
       myAmici[index] = newName.trim();
     }
-    amici[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amici': amici});
-
-    setState(() {
-      _data['amici'] = amici;
-    });
+    try {
+      await _saveMyAmici(field, myAmici);
+    } catch (e) {
+      _showSaveError();
+    }
   }
+
+  Future<void> _removeAmico(String name) => _removeAmicoGeneric(
+      'amici', _myAmici, name, 'rimosso dai presenti');
+
+  Future<void> _editAmico(String oldName, String newName) =>
+      _editAmicoGeneric('amici', _myAmici, oldName, newName);
+
+  Future<void> _addAmicoProgramma(String name) async {
+    await _addAmicoGeneric(
+        'amici', _myAmici, name, 'aggiunto ai presenti');
+    if (mounted) _amiciProgrammaController.clear();
+  }
+
+  Future<void> _addAmicoPranzo(String name) async {
+    await _addAmicoGeneric(
+        'amiciPranzo', _myAmiciPranzo, name, 'aggiunto ai presenti pranzo');
+    if (mounted) _amiciPranzoController.clear();
+  }
+
+  Future<void> _removeAmicoPranzo(String name) => _removeAmicoGeneric(
+      'amiciPranzo', _myAmiciPranzo, name, 'rimosso dai presenti pranzo');
+
+  Future<void> _editAmicoPranzo(String oldName, String newName) =>
+      _editAmicoGeneric('amiciPranzo', _myAmiciPranzo, oldName, newName);
 
   void _showEditAmiciDialog(String name) {
     TextEditingController editController =
@@ -825,98 +839,6 @@ class _ProgramPageState extends State<ProgramPage> {
 
   final TextEditingController _amiciProgrammaController = TextEditingController();
   final TextEditingController _amiciPranzoController = TextEditingController();
-
-  Future<void> _addAmicoProgramma(String name) async {
-    if (name.trim().isEmpty) return;
-    Map<String, dynamic> amici = _data.containsKey('amici')
-        ? Map<String, dynamic>.from(_data['amici'])
-        : {};
-    List<String> myAmici = amici.containsKey(widget.name)
-        ? List<String>.from(amici[widget.name])
-        : [];
-    myAmici.add(name.trim());
-    amici[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amici': amici});
-
-    setState(() {
-      _data['amici'] = amici;
-      _amiciProgrammaController.clear();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${name.trim()} aggiunto ai presenti')));
-  }
-
-  Future<void> _addAmicoPranzo(String name) async {
-    if (name.trim().isEmpty) return;
-    Map<String, dynamic> amiciPranzo = _data.containsKey('amiciPranzo')
-        ? Map<String, dynamic>.from(_data['amiciPranzo'])
-        : {};
-    List<String> myAmici = amiciPranzo.containsKey(widget.name)
-        ? List<String>.from(amiciPranzo[widget.name])
-        : [];
-    myAmici.add(name.trim());
-    amiciPranzo[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amiciPranzo': amiciPranzo});
-
-    setState(() {
-      _data['amiciPranzo'] = amiciPranzo;
-      _amiciPranzoController.clear();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${name.trim()} aggiunto ai presenti pranzo')));
-  }
-
-  Future<void> _removeAmicoPranzo(String name) async {
-    Map<String, dynamic> amiciPranzo =
-        Map<String, dynamic>.from(_data['amiciPranzo']);
-    List<String> myAmici = List<String>.from(amiciPranzo[widget.name]);
-    myAmici.remove(name);
-    if (myAmici.isEmpty) {
-      amiciPranzo.remove(widget.name);
-    } else {
-      amiciPranzo[widget.name] = myAmici;
-    }
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amiciPranzo': amiciPranzo});
-
-    setState(() {
-      _data['amiciPranzo'] = amiciPranzo;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name rimosso dai presenti pranzo')));
-  }
-
-  Future<void> _editAmicoPranzo(String oldName, String newName) async {
-    if (newName.trim().isEmpty) return;
-    Map<String, dynamic> amiciPranzo =
-        Map<String, dynamic>.from(_data['amiciPranzo']);
-    List<String> myAmici = List<String>.from(amiciPranzo[widget.name]);
-    int index = myAmici.indexOf(oldName);
-    if (index != -1) {
-      myAmici[index] = newName.trim();
-    }
-    amiciPranzo[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('club_${widget.selectedOption}')
-        .doc(widget.documentId)
-        .update({'amiciPranzo': amiciPranzo});
-
-    setState(() {
-      _data['amiciPranzo'] = amiciPranzo;
-    });
-  }
 
   List<String> get _myAmiciPranzo {
     if (!_data.containsKey('amiciPranzo')) return [];
@@ -1130,8 +1052,7 @@ class _ProgramPageState extends State<ProgramPage> {
       ),
       body: AdaptiveLayout(
         smallLayout: FutureBuilder(
-          future:
-              widget.selectedOption != 'evento' ? _loadData() : _loadEvent(),
+          future: _loadFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(

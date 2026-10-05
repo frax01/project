@@ -511,7 +511,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
         setState(() {
           _isLoadingCreation = false;
         });
-        widget.refreshList!();
+        widget.refreshList?.call();
         Navigator.pop(context);
       } catch (e) {
         setState(() {
@@ -727,7 +727,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
             docId: doc.id,
             selectedOption: widget.selectedOption,
             role: widget.role);
-        widget.refreshList!();
+        widget.refreshList?.call();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => ProgramPage(
                   club: widget.club,
@@ -777,7 +777,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       setState(() {
         _isLoadingModify = false;
       });
-      widget.refreshProgram!();
+      widget.refreshProgram?.call();
     } else {
       Map<Object, Object?> newDocument = {};
       if (reservations) {
@@ -951,8 +951,8 @@ class _AddEditProgramState extends State<AddEditProgram> {
         _isLoadingModify = false;
       });
 
-      widget.refreshProgram!();
-      widget.refreshList!();
+      widget.refreshProgram?.call();
+      widget.refreshList?.call();
     }
     Navigator.pop(context);
   }
@@ -1305,13 +1305,18 @@ class _AddEditProgramState extends State<AddEditProgram> {
                       trailing: const Icon(Icons.arrow_forward),
                       onTap: () async {
                         _unfocusAll();
-                        selected = await Navigator.push(
+                        final List? result = await Navigator.push<List>(
                           context,
                           MaterialPageRoute(
                             builder: (context) => VisibilitySelectionPage(
                                 visibility: _visibility, club: widget.club),
                           ),
                         );
+                        // Going back (swipe / back button) returns null: it
+                        // used to throw a type error instead of keeping the
+                        // current selection.
+                        if (result == null) return;
+                        selected = result;
                         setState(() {
                           if (Set.from(selected).containsAll(users) &&
                               Set.from(users).containsAll(selected)) {
@@ -1412,14 +1417,13 @@ class _AddEditProgramState extends State<AddEditProgram> {
                                 : const Text('Modifica',
                                     style: TextStyle(color: Colors.white)))
                         : ElevatedButton(
-                            onPressed: () {
-                              if (_isLoadingModify) {
-                                null;
-                              } else {
-                                _handleCreate(context);
-                              }
-                            },
-                            child: _isLoadingModify
+                            // Guarded by _isLoadingCreation (the one set by
+                            // _handleCreate): a double tap used to create the
+                            // program twice and notify the class twice.
+                            onPressed: _isLoadingCreation
+                                ? null
+                                : () => _handleCreate(context),
+                            child: _isLoadingCreation
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,

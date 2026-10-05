@@ -44,26 +44,55 @@ class _EventPageState extends State<EventPage> {
         .doc(widget.documentId)
         .get();
     _event = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
-    for (var userEmail in _event['utenti']) {
-      var value = await FirebaseFirestore.instance
-          .collection('user')
-          .where('email', isEqualTo: userEmail)
-          .get();
 
-      for (var doc in value.docs) {
-        var data = doc.data();
-        _users.add('${data['name']} ${data['surname']}');
+    // _users is a field: it used to be appended to at every load and never
+    // cleared, so the participants were duplicated each time the page rebuilt.
+    final List<String> names = [];
+    final List<String> emails =
+        List<String>.from(_event['utenti'] ?? const []);
+    // whereIn accepts at most 10 values, so one query per block of 10 (run in
+    // parallel) instead of one sequential query per invited user.
+    final List<Future<QuerySnapshot<Map<String, dynamic>>>> queries = [
+      for (int i = 0; i < emails.length; i += 10)
+        FirebaseFirestore.instance
+            .collection('user')
+            .where('email',
+                whereIn: emails.sublist(
+                    i, i + 10 > emails.length ? emails.length : i + 10))
+            .get()
+    ];
+    for (final snapshot in await Future.wait(queries)) {
+      for (final userDoc in snapshot.docs) {
+        final data = userDoc.data();
+        names.add('${data['name']} ${data['surname']}');
       }
     }
+    _users
+      ..clear()
+      ..addAll(names);
 
     if (!_event.containsKey('file')) {
       _event['file'] = [];
     }
   }
 
-  void refreshProgram() {
-    setState(() {});
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = _loadEvent();
   }
+
+  // The future used to be created inside build(), so every rebuild (keyboard,
+  // dialogs) reloaded the event and refetched all the participants.
+  void _reload() {
+    setState(() {
+      _loadFuture = _loadEvent();
+    });
+  }
+
+  void refreshProgram() => _reload();
 
   Future<void> _showDeleteDialog(BuildContext context, String id) {
     return showDialog<void>(
@@ -315,10 +344,14 @@ class _EventPageState extends State<EventPage> {
       if (title.isNotEmpty &&
           (isLink && linkController.text.isNotEmpty ||
               isFile && file != null)) {
+        final String? uploadedPath =
+            isFile ? await _uploadFileToFirebase(file!) : null;
+        // A failed upload must not leave an empty attachment entry behind.
+        if (isFile && uploadedPath == null) return;
         final dataToSave = {
           'title': title,
           'link': isLink ? linkController.text : '',
-          'path': isFile ? await _uploadFileToFirebase(file!) : null,
+          'path': uploadedPath,
         };
 
         await FirebaseFirestore.instance
@@ -327,8 +360,9 @@ class _EventPageState extends State<EventPage> {
             .update({
           'file': FieldValue.arrayUnion([dataToSave])
         });
+        if (!mounted) return;
         Navigator.of(context).pop();
-        setState(() {});
+        _reload();
       }
     }
   }
@@ -437,7 +471,6 @@ class _EventPageState extends State<EventPage> {
               onPressed: () {
                 _deleteFileOrLink(fileData);
                 Navigator.of(context).pop();
-                setState(() {});
               },
               child: const Text('Elimina'),
             ),
@@ -454,6 +487,7 @@ class _EventPageState extends State<EventPage> {
         .update({
       'file': FieldValue.arrayRemove([fileData])
     });
+    if (mounted) _reload();
 
     if (fileData['path'] != null && fileData['path'].isNotEmpty) {
       try {
@@ -547,7 +581,7 @@ class _EventPageState extends State<EventPage> {
       ),
       body: AdaptiveLayout(
         smallLayout: FutureBuilder(
-          future: _loadEvent(),
+          future: _loadFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(

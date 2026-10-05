@@ -28,12 +28,28 @@ void deleteOldDocuments() async {
   }
 }
 
-Future<void> deleteDocument(String collection, String docId, String image) async {
+/// Deletes a program/trip document and then its files in Storage: the cover
+/// image and the attachments of [files] (each `{path: <download url>}`).
+/// Storage failures (file already gone, URL from another bucket) are ignored,
+/// they must not report the deletion as failed.
+Future<void> deleteDocument(String collection, String docId, String image,
+    {List<dynamic> files = const []}) async {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   await firestore.collection(collection).doc(docId).delete();
 
-  final storageRef = FirebaseStorage.instance.refFromURL(image);
-  await storageRef.delete();
+  final List<String> urls = [
+    image,
+    for (final file in files)
+      if (file is Map && file['path'] is String) file['path'] as String,
+  ];
+  for (final String url in urls) {
+    if (url.isEmpty) continue;
+    try {
+      await FirebaseStorage.instance.refFromURL(url).delete();
+    } catch (e) {
+      print('File non eliminato da Storage: $e');
+    }
+  }
 }
 
 String convertDateFormat(String date) {

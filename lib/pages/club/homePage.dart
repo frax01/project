@@ -28,14 +28,26 @@ class _HomePageState extends State<HomePage> {
   final _listItems = <ProgramCard>[];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
+  // Created once and recreated by refreshList(): the future used to be
+  // created inside build(), so every rebuild reloaded the whole list and made
+  // each card read its document again.
+  late Future<void> _itemsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemsFuture = _loadItems();
+  }
+
   void refreshList() {
     setState(() {
       _listItems.clear();
+      _itemsFuture = _loadItems();
     });
   }
 
   Future<void> _loadItems() async {
-    refreshList();
+    _listItems.clear();
     var db = FirebaseFirestore.instance;
     for (final collection in ['club_weekend', 'club_trip']) {
       if (widget.isAdmin && selectedOptions[0] == 'Tutti i programmi') {
@@ -65,6 +77,8 @@ class _HomePageState extends State<HomePage> {
           }
         });
       } else {
+        // arrayContainsAny does not accept an empty list.
+        if (widget.selectedClass.isEmpty) continue;
         await db
             .collection(collection)
             .where('selectedClass', arrayContainsAny: widget.selectedClass)
@@ -98,12 +112,24 @@ class _HomePageState extends State<HomePage> {
 
   FutureBuilder<Object?> _buildList(String section) {
     return FutureBuilder(
-      future: _loadItems(),
+      future: _itemsFuture,
       builder: (context, snapshot) {
         Widget child;
         if (snapshot.connectionState == ConnectionState.waiting) {
           child = const Center(
             child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          child = Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Errore nel caricamento',
+                    style: TextStyle(fontSize: 20.0, color: Colors.black54)),
+                TextButton(
+                    onPressed: refreshList, child: const Text('Riprova')),
+              ],
+            ),
           );
         } else {
           if (_listItems.isEmpty) {
@@ -142,11 +168,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   final List<String> options = [
     'Le tue classi',
     'Tutti i programmi',
@@ -159,7 +180,7 @@ class _HomePageState extends State<HomePage> {
       body: RefreshIndicator(
         onRefresh: () {
           refreshList();
-          return Future.value();
+          return _itemsFuture.catchError((_) {});
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),

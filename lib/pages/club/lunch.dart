@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import '../../functions/bookingFunctions.dart';
 import '../../functions/dateFunctions.dart';
+import '../../functions/timeFunctions.dart';
 
 class Lunch extends StatefulWidget {
   const Lunch(
@@ -25,87 +27,99 @@ class Lunch extends StatefulWidget {
 }
 
 class _LunchState extends State<Lunch> {
-  Future<List<Map<String, dynamic>>> _fetchMeals() async {
-    try {
-      final querySnapshot = widget.isAdmin
-          ? await FirebaseFirestore.instance.collection('pasti').get()
-          : await FirebaseFirestore.instance
-              .collection('pasti')
-              .where('classi', arrayContainsAny: widget.classes)
-              .get();
+  late Future<List<Map<String, dynamic>>> _mealsFuture;
 
-      if (querySnapshot.docs.isEmpty) {
-        return [];
-      } else {
-        List<Map<String, dynamic>> meals = querySnapshot.docs.map((doc) {
-          final data = doc.data();
-          return {
-            'data': doc['data'],
-            'orario': doc['orario'],
-            'giorno': doc['giorno'],
-            'prenotazioni': doc['prenotazioni'],
-            'appuntamento': doc['appuntamento'],
-            'id': doc.id,
-            'default': doc['default'],
-            'status': doc['status'],
-            'modificato': doc['modificato'],
-            'classi': doc['classi'],
-            'amici': data.containsKey('amici') ? doc['amici'] : {},
-          };
-        }).toList();
-
-        for (var meal in meals) {
-          await _checkAndUpdateMealStatus(meal);
-        }
-
-        meals.sort((a, b) {
-          DateTime dateA = DateFormat('dd-MM-yyyy').parse(a['appuntamento']);
-          DateTime dateB = DateFormat('dd-MM-yyyy').parse(b['appuntamento']);
-
-          if (dateA.isBefore(dateB)) {
-            return -1;
-          } else if (dateA.isAfter(dateB)) {
-            return 1;
-          } else {
-            int timeA = _timeToMinutes(a['orario']);
-            int timeB = _timeToMinutes(b['orario']);
-            return timeA.compareTo(timeB);
-          }
-        });
-        return meals;
-      }
-    } catch (e) {
-      return [];
-    }
+  // The list used to be reloaded at every rebuild (the future was created in
+  // build), so each tap flashed a spinner and refetched everything. It is now
+  // loaded once and reloaded explicitly.
+  Future<void> _reloadMeals() {
+    setState(() {
+      _mealsFuture = _fetchMeals();
+    });
+    return _mealsFuture.then((_) {}, onError: (_) {});
   }
 
-  int _timeToMinutes(String timeString) {
-    final parts = timeString.split(':');
-    final hour = int.parse(parts[0]);
-    final minute = int.parse(parts[1]);
-    return hour * 60 + minute;
+  Future<List<Map<String, dynamic>>> _fetchMeals() async {
+    // arrayContainsAny does not accept an empty list.
+    if (!widget.isAdmin && widget.classes.isEmpty) return [];
+
+    final querySnapshot = widget.isAdmin
+        ? await FirebaseFirestore.instance.collection('pasti').get()
+        : await FirebaseFirestore.instance
+            .collection('pasti')
+            .where('classi', arrayContainsAny: widget.classes)
+            .get();
+
+    final List<Map<String, dynamic>> meals = querySnapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'data': doc['data'],
+        'orario': doc['orario'],
+        'giorno': doc['giorno'],
+        'prenotazioni': doc['prenotazioni'],
+        'appuntamento': doc['appuntamento'],
+        'id': doc.id,
+        'default': doc['default'],
+        'status': doc['status'],
+        'modificato': doc['modificato'],
+        'classi': doc['classi'],
+        'amici': data.containsKey('amici') ? doc['amici'] : {},
+      };
+    }).toList();
+
+    for (var meal in meals) {
+      await _checkAndUpdateMealStatus(meal);
+    }
+
+    meals.sort((a, b) {
+      DateTime dateA = DateFormat('dd-MM-yyyy').parse(a['appuntamento']);
+      DateTime dateB = DateFormat('dd-MM-yyyy').parse(b['appuntamento']);
+
+      if (dateA.isBefore(dateB)) {
+        return -1;
+      } else if (dateA.isAfter(dateB)) {
+        return 1;
+      }
+      return (parseTimeToMinutes(a['orario']) ?? 0)
+          .compareTo(parseTimeToMinutes(b['orario']) ?? 0);
+    });
+    return meals;
+  }
+
+  /// Re-reads one meal so that bookings made by other people meanwhile show up.
+  Future<void> _refreshMeal(Map<String, dynamic> meal) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('pasti')
+        .doc(meal['id'])
+        .get();
+    final data = doc.data();
+    if (data == null || !mounted) return;
+    setState(() {
+      meal['prenotazioni'] = data['prenotazioni'] ?? [];
+      meal['amici'] = data['amici'] ?? {};
+      meal['status'] = data['status'] ?? meal['status'];
+    });
   }
 
   Future<void> _checkAndUpdateMealStatus(Map<String, dynamic> meal) async {
     if (meal['default'] == false &&
         meal['status'] == 'aperto' &&
         meal['modificato'] == false) {
-      DateTime now = DateTime.now();
-      DateTime mealDate = DateFormat('dd-MM-yyyy').parse(meal['appuntamento']);
-      TimeOfDay mealTime = TimeOfDay(
-        hour: int.parse(meal['orario'].split(":")[0]),
-        minute: int.parse(meal['orario'].split(":")[1]),
-      );
+      final int? minutes = parseTimeToMinutes(meal['orario']);
+      if (minutes == null) return;
 
-      DateTime mealDateTime = DateTime(
+      final DateTime now = DateTime.now();
+      final DateTime mealDate =
+          DateFormat('dd-MM-yyyy').parse(meal['appuntamento']);
+      final DateTime mealDateTime = DateTime(
         mealDate.year,
         mealDate.month,
         mealDate.day,
-        mealTime.hour,
-        mealTime.minute,
+        minutes ~/ 60,
+        minutes % 60,
       );
 
-      bool isToday = mealDate.year == now.year &&
+      final bool isToday = mealDate.year == now.year &&
           mealDate.month == now.month &&
           mealDate.day == now.day;
 
@@ -125,20 +139,27 @@ class _LunchState extends State<Lunch> {
   void initState() {
     super.initState();
     deleteOldDocuments();
+    _mealsFuture = _fetchMeals();
   }
 
   void deleteOldDocuments() async {
-    final firestore = FirebaseFirestore.instance;
-    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    // Errors are caught: this runs unawaited every time the page opens.
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
 
-    final querySnapshot = await firestore.collection('pasti').get();
-    for (final document in querySnapshot.docs) {
-      final startDateString = document.data()['appuntamento'] as String;
-      final startDate =
-          DateTime.parse(startDateString.split('-').reversed.join('-'));
-      if (startDate.isBefore(yesterday)) {
-        await document.reference.delete();
+      final querySnapshot = await firestore.collection('pasti').get();
+      for (final document in querySnapshot.docs) {
+        final startDateString = document.data()['appuntamento'] as String?;
+        if (startDateString == null || startDateString.isEmpty) continue;
+        final startDate = DateTime.tryParse(
+            startDateString.split('-').reversed.join('-'));
+        if (startDate != null && startDate.isBefore(yesterday)) {
+          await document.reference.delete();
+        }
       }
+    } catch (e) {
+      print('Errore durante la pulizia dei pasti scaduti: $e');
     }
   }
 
@@ -195,70 +216,63 @@ class _LunchState extends State<Lunch> {
     return result;
   }
 
+  void _showSaveError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nel salvataggio, riprova')));
+  }
+
+  DocumentReference<Map<String, dynamic>> _mealRef(Map<String, dynamic> meal) =>
+      FirebaseFirestore.instance.collection('pasti').doc(meal['id']);
+
+  Future<void> _saveMyAmici(
+      Map<String, dynamic> meal, List<String> myAmici) async {
+    await saveFriends(_mealRef(meal),
+        field: 'amici', userName: widget.name, friends: myAmici);
+    await _refreshMeal(meal);
+  }
+
   Future<void> _addAmico(Map<String, dynamic> meal, String name) async {
     if (name.trim().isEmpty) return;
-    Map<String, dynamic> amici = meal.containsKey('amici') && meal['amici'] != null
-        ? Map<String, dynamic>.from(meal['amici'])
-        : {};
-    List<String> myAmici = amici.containsKey(widget.name)
-        ? List<String>.from(amici[widget.name])
-        : [];
-    myAmici.add(name.trim());
-    amici[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('pasti')
-        .doc(meal['id'])
-        .update({'amici': amici});
-
-    setState(() {
-      meal['amici'] = amici;
-      _getAmiciController(meal['id']).clear();
-    });
+    final List<String> myAmici = _getMyAmici(meal)..add(name.trim());
+    try {
+      await _saveMyAmici(meal, myAmici);
+    } catch (e) {
+      _showSaveError();
+      return;
+    }
+    if (!mounted) return;
+    _getAmiciController(meal['id']).clear();
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${name.trim()} aggiunto ai presenti')));
   }
 
   Future<void> _removeAmico(Map<String, dynamic> meal, String name) async {
-    Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
-    List<String> myAmici = List<String>.from(amici[widget.name]);
-    myAmici.remove(name);
-    if (myAmici.isEmpty) {
-      amici.remove(widget.name);
-    } else {
-      amici[widget.name] = myAmici;
+    final List<String> myAmici = _getMyAmici(meal)..remove(name);
+    try {
+      await _saveMyAmici(meal, myAmici);
+    } catch (e) {
+      _showSaveError();
+      return;
     }
-
-    await FirebaseFirestore.instance
-        .collection('pasti')
-        .doc(meal['id'])
-        .update({'amici': amici});
-
-    setState(() {
-      meal['amici'] = amici;
-    });
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$name rimosso dai presenti')));
   }
 
-  Future<void> _editAmico(Map<String, dynamic> meal, String oldName, String newName) async {
+  Future<void> _editAmico(
+      Map<String, dynamic> meal, String oldName, String newName) async {
     if (newName.trim().isEmpty) return;
-    Map<String, dynamic> amici = Map<String, dynamic>.from(meal['amici']);
-    List<String> myAmici = List<String>.from(amici[widget.name]);
-    int index = myAmici.indexOf(oldName);
+    final List<String> myAmici = _getMyAmici(meal);
+    final int index = myAmici.indexOf(oldName);
     if (index != -1) {
       myAmici[index] = newName.trim();
     }
-    amici[widget.name] = myAmici;
-
-    await FirebaseFirestore.instance
-        .collection('pasti')
-        .doc(meal['id'])
-        .update({'amici': amici});
-
-    setState(() {
-      meal['amici'] = amici;
-    });
+    try {
+      await _saveMyAmici(meal, myAmici);
+    } catch (e) {
+      _showSaveError();
+    }
   }
 
   void _showEditAmicoDialog(Map<String, dynamic> meal, String name) {
@@ -511,7 +525,7 @@ class _LunchState extends State<Lunch> {
                     'giorno': DateFormat('EEEE', 'it_IT')
                         .format(selectedDate!)
                         .toUpperCase(),
-                    'orario': selectedTime!.format(context),
+                    'orario': formatTimeHHmm(selectedTime!),
                     'prenotazioni': [],
                     'appuntamento':
                         DateFormat('dd-MM-yyyy').format(selectedDate!),
@@ -521,7 +535,7 @@ class _LunchState extends State<Lunch> {
                     'classi': classList,
                   });
                   Navigator.of(context).pop();
-                  setState(() {});
+                  _reloadMeals();
                 }
               },
             ),
@@ -532,25 +546,20 @@ class _LunchState extends State<Lunch> {
   }
 
   Future<void> _toggleReservation(var meal) async {
-    List<dynamic> prenotazioni = meal['prenotazioni'];
-    if (prenotazioni.contains(widget.name)) {
-      prenotazioni.remove(widget.name);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Presenza cancellata')));
-    } else {
-      prenotazioni.add(widget.name);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Presenza confermata')));
+    final bool alreadyBooked =
+        (meal['prenotazioni'] as List).contains(widget.name);
+    try {
+      await setPresence(_mealRef(meal),
+          name: widget.name, field: 'prenotazioni', join: !alreadyBooked);
+    } catch (e) {
+      _showSaveError();
+      return;
     }
-
-    await FirebaseFirestore.instance
-        .collection('pasti')
-        .doc(meal['id'])
-        .update({'prenotazioni': prenotazioni});
-
-    setState(() {
-      meal['prenotazioni'] = prenotazioni;
-    });
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content:
+            Text(alreadyBooked ? 'Presenza cancellata' : 'Presenza confermata')));
+    await _refreshMeal(meal);
   }
 
   void _confirmDelete(BuildContext context, String mealId) {
@@ -569,7 +578,6 @@ class _LunchState extends State<Lunch> {
               onPressed: () {
                 _deleteMeal(mealId);
                 Navigator.of(context).pop();
-                setState(() {});
               },
               child: const Text("Elimina"),
             ),
@@ -582,9 +590,11 @@ class _LunchState extends State<Lunch> {
   void _deleteMeal(String mealId) async {
     try {
       await FirebaseFirestore.instance.collection('pasti').doc(mealId).delete();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pasto eliminato')),
       );
+      _reloadMeals();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Errore nell\'eliminazione del pasto')),
@@ -656,7 +666,7 @@ class _LunchState extends State<Lunch> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchMeals(),
+              future: _mealsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Expanded(
@@ -665,11 +675,22 @@ class _LunchState extends State<Lunch> {
                     ),
                   );
                 } else if (snapshot.hasError) {
-                  return const Center(
-                    child: Text(
-                      'Errore nel caricamento',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  return Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Errore nel caricamento',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          TextButton(
+                            onPressed: _reloadMeals,
+                            child: const Text('Riprova'),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -687,7 +708,10 @@ class _LunchState extends State<Lunch> {
                   );
                 } else {
                   return Expanded(
-                    child: ListView.builder(
+                    child: RefreshIndicator(
+                      onRefresh: _reloadMeals,
+                      child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         final meal = snapshot.data![index];
@@ -880,6 +904,7 @@ class _LunchState extends State<Lunch> {
                           ),
                         );
                       },
+                    ),
                     ),
                   );
                 }
