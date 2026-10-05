@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'status.dart';
+import 'package:club/functions/tokenFunctions.dart';
 import 'package:club/main.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -33,142 +34,39 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _currentUser = FirebaseAuth.instance.currentUser;
-
-  @override
-  void initState() {
-    super.initState();
-
-    printUsersWithOldVersion();
-
-    printUserWithNotAccepetedPrivacy();
+  Future<String?> _askPassword() async {
+    final TextEditingController controller = TextEditingController();
+    final String? password = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Conferma con la password'),
+          content: TextField(
+            controller: controller,
+            obscureText: true,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Password'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Annulla'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Conferma'),
+              onPressed: () => Navigator.of(context).pop(controller.text),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    return password;
   }
 
-  Future<void> printUserWithNotAccepetedPrivacy() async {
-    try {
-      CollectionReference users = FirebaseFirestore.instance.collection('user');
-      QuerySnapshot querySnapshot10 =
-          await users.where('privacy', isEqualTo: false).get();
-      if (querySnapshot10.docs.isNotEmpty) {
-        int count = 1;
-        print("Utenti con privacy non accettata Tiber Club:");
-        for (var doc in querySnapshot10.docs) {
-          if(doc['club'] == 'Tiber Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-      } else {
-        print('Nessun utente trovato con privacy non accettata');
-      }
-
-      QuerySnapshot querySnapshot11 =
-          await users.where('privacy', isEqualTo: false).get();
-      if (querySnapshot11.docs.isNotEmpty) {
-        int count = 1;
-        print("");
-        print("Utenti con privacy non accettata Delta Club:");
-        for (var doc in querySnapshot11.docs) {
-          if(doc['club'] == 'Delta Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-        print("");
-      } else {
-        print('Nessun utente trovato con privacy non accettata');
-      }
-    } catch (e) {
-      print('Errore durante la ricerca degli utenti: $e');
-    }
-  }
-
-  Future<void> printUsersWithOldVersion() async {
-    try {
-      String versione = '';
-      final querySnapshot1 = await FirebaseFirestore.instance
-          .collection('aggiornamento')
-          .doc('unico')
-          .get();
-      if (querySnapshot1.exists) {
-        versione = querySnapshot1.data()!['versione'];
-      }
-      CollectionReference users = FirebaseFirestore.instance.collection('user');
-      QuerySnapshot querySnapshot20 = await users.where('versione', isNotEqualTo: versione).get();
-      if (querySnapshot20.docs.isNotEmpty) {
-        int count = 1;
-        print("Devono aggiornare Tiber Club:");
-        for (var doc in querySnapshot20.docs) {
-          if(doc['club'] == 'Tiber Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-      } else {
-        print('Nessun utente trovato con una versione diversa da $versione');
-      }
-
-      QuerySnapshot querySnapshot21 = await users.where('versione', isNotEqualTo: versione).get();
-      if (querySnapshot21.docs.isNotEmpty) {
-        int count = 1;
-        print("");
-        print("Devono aggiornare Delta Club:");
-        for (var doc in querySnapshot21.docs) {
-          if(doc['club'] == 'Delta Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-      } else {
-        print('Nessun utente trovato con una versione diversa da $versione');
-      }
-
-      QuerySnapshot querySnapshot30 =
-          await users.where('versione', isEqualTo: versione).get();
-      if (querySnapshot30.docs.isNotEmpty) {
-        int count = 1;
-        print("");
-        print("Hanno aggiornato Tiber Club:");
-        for (var doc in querySnapshot30.docs) {
-          if(doc['club'] == 'Tiber Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-      } else {
-        print('Nessun utente trovato con una versione uguale a $versione');
-      }
-
-      QuerySnapshot querySnapshot31 =
-          await users.where('versione', isEqualTo: versione).get();
-      if (querySnapshot31.docs.isNotEmpty) {
-        int count = 1;
-        print("");
-        print("Hanno aggiornato Delta Club:");
-        for (var doc in querySnapshot31.docs) {
-          if(doc['club'] == 'Delta Club') {
-            String nome = doc['name'] ?? 'N/A';
-            String cognome = doc['surname'] ?? 'N/A';
-            print('$count. $nome $cognome');
-            count++;
-          }
-        }
-      } else {
-        print('Nessun utente trovato con una versione uguale a $versione');
-      }
-    } catch (e) {
-      print('Errore durante la ricerca degli utenti: $e');
-    }
+  void _showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   Future<void> _showDeleteAccountDialog() async {
@@ -196,54 +94,86 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
-    if (confirm == true) {
-      if (_currentUser != null) {
-        try {
-          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-              .collection('user')
-              .where('email', isEqualTo: _currentUser.email)
-              .get();
+    if (confirm != true) return;
 
-          if (querySnapshot.docs.isNotEmpty) {
-            DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-            DocumentReference userDoc = documentSnapshot.reference;
-            await userDoc.delete();
-            await _currentUser.delete();
-          }
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.clear();
-          Navigator.of(context).pushReplacementNamed('/login');
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Errore durante l\'eliminazione dell\'account'),
-            ),
-          );
-        }
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      _showMessage('Sessione scaduta: esci e accedi di nuovo');
+      return;
+    }
+
+    // Re-authenticate BEFORE deleting anything: the Auth deletion needs a
+    // recent login, and when it failed (after the profile had already been
+    // deleted) the user was left with an account and no profile, unable to
+    // use the app again.
+    final String? password = await _askPassword();
+    if (password == null) return;
+    try {
+      await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(email: user.email!, password: password));
+    } on FirebaseAuthException {
+      _showMessage('Password errata');
+      return;
+    }
+
+    try {
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: user.email)
+          .get();
+      for (final DocumentSnapshot doc in querySnapshot.docs) {
+        await doc.reference.delete();
       }
+      await user.delete();
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/login');
+    } catch (e) {
+      _showMessage('Errore durante l\'eliminazione dell\'account');
     }
   }
 
-  Future<void> _logout(String email) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
+  Future<void> _logout() async {
+    final NavigatorState navigator = Navigator.of(context);
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String email = user?.email ?? widget.email;
 
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .where('email', isEqualTo: email)
-        .get();
-    String? token = await FirebaseMessaging.instance.getToken();
-    assert(token != null);
-    DocumentSnapshot userDoc = querySnapshot.docs.first;
-    List<dynamic> tokens = userDoc["token"];
-    tokens.remove(token);
-    await userDoc.reference.update({'token': tokens});
+    // Best effort: a failure here must never keep the user logged in.
+    try {
+      final String? token = await FirebaseMessaging.instance.getToken();
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: email)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        final DocumentSnapshot userDoc = querySnapshot.docs.first;
+        final Map<String, dynamic> data =
+            userDoc.data() as Map<String, dynamic>;
+        // The token list holds {device: token} maps, so remove(token) on the
+        // list never matched and the device kept receiving this user's
+        // notifications after logout.
+        await userDoc.reference.update({
+          'token': removeDeviceToken(
+              List<dynamic>.from(data['token'] ?? const []), token)
+        });
+      }
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (e) {
+      print('Errore durante la rimozione del token: $e');
+    }
 
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
     await FirebaseAuth.instance.signOut();
-    setState(() {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
-    });
+
+    // Replace the whole stack: with push, the back button of the login page
+    // went back into the app.
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const Login()),
+      (Route<dynamic> route) => false,
+    );
   }
 
   Future<void> _showLogoutDialog() async {
@@ -271,7 +201,7 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
     if (confirm == true) {
-      _logout(_currentUser!.email!);
+      _logout();
     }
   }
 

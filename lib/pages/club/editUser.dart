@@ -260,7 +260,7 @@ class _EditUserState extends State<EditUser> {
                           "Classe",
                           widget.club == 'Tiber Club'
                             ? tiberClubClassOptions
-                            : widget.club == 'Rmapa Club'
+                            : widget.club == 'Rampa Club'
                             ? rampaClubClassOptions
                             : deltaClubClassOptions, (value) {
                               setState(() {

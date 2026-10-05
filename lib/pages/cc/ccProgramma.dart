@@ -5,7 +5,7 @@ import 'ccNuovoProgramma.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/intl.dart';
 import 'ccProgrammaCompleto.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:club/functions/linkFunctions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class CCProgramma extends StatefulWidget {
@@ -57,16 +57,12 @@ class _CCProgrammaState extends State<CCProgramma> {
       return;
     }
 
-    try {
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
+    // canLaunchUrl always returns false on Android 11+ without <queries> in the
+    // manifest, which made every document of this page fail to open.
+    final bool opened = await openLink(url);
+    if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Errore nell\'apertura del link: $e')),
+        const SnackBar(content: Text('Errore nell\'apertura del link')),
       );
     }
   }

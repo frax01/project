@@ -11,6 +11,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'package:club/functions/linkFunctions.dart';
+import 'package:club/functions/versionFunctions.dart';
 import 'package:club/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main/ccLoginPage.dart';
@@ -64,7 +65,9 @@ class _ClubPageState extends State<ClubPage> {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     print("versione: $versione");
     print("packageVersion: ${packageInfo.version}");
-    if (versione != packageInfo.version) {
+    // Not just "different": a build newer than the published one (TestFlight,
+    // store review) must not get a blocking "update" dialog.
+    if (isVersionOlder(packageInfo.version, versione)) {
       if (open) {
         await showDialog<bool>(
               context: context,
@@ -128,7 +131,7 @@ class _ClubPageState extends State<ClubPage> {
       await FirebaseFirestore.instance
           .collection('user')
           .doc(widget.id)
-          .update({'versione': versione});
+          .update({'versione': packageInfo.version});
     }
   }
 
