@@ -46,3 +46,17 @@ app.*.map.json
 
 /lib/config.dart
 /functions/config.js
+# Node modules at the repository root (functions/ has its own .gitignore)
+/node_modules/
+
+# Android native build cache
+**/.cxx/
+
+# Local build/analysis logs
+/build_*.txt
+/analyze_output*.txt
+/gradle_error.txt
+
+# Finder duplicates ("file 2.ext")
+* 2
+* 2.*
