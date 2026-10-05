@@ -10,7 +10,7 @@ import 'lunch.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/functions/linkFunctions.dart';
 import 'package:club/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main/ccLoginPage.dart';
@@ -102,13 +102,9 @@ class _ClubPageState extends State<ClubPage> {
                                     style: TextStyle(fontSize: 20)),
                                 onPressed: () {
                                   if (Platform.isAndroid) {
-                                    FlutterWebBrowser.openWebPage(
-                                        url:
-                                            'https://play.google.com/store/apps/details?id=com.mycompany.dima');
+                                    openLink('https://play.google.com/store/apps/details?id=com.mycompany.dima');
                                   } else if (Platform.isIOS) {
-                                    FlutterWebBrowser.openWebPage(
-                                        url:
-                                            'https://apps.apple.com/it/app/club-app/id6642671734');
+                                    openLink('https://apps.apple.com/it/app/club-app/id6642671734');
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -165,9 +161,7 @@ class _ClubPageState extends State<ClubPage> {
                         IconButton(
                           icon: const Icon(Icons.open_in_new),
                           onPressed: () {
-                            FlutterWebBrowser.openWebPage(
-                                url:
-                                    'https://www.iubenda.com/privacy-policy/69534588');
+                            openLink('https://www.iubenda.com/privacy-policy/69534588');
                           },
                         ),
                       ]),

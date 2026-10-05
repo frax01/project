@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import '../../functions/dateFunctions.dart';
 
 class Lunch extends StatefulWidget {
   const Lunch(
@@ -146,7 +147,7 @@ class _LunchState extends State<Lunch> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime(DateTime.now().year + 1),
+      lastDate: datePickerLastDate(),
     );
 
     if (picked != null && picked != DateTime.now()) {

@@ -9,7 +9,8 @@ import 'addEditProgram.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/functions/linkFunctions.dart';
+import 'package:club/functions/storageFunctions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProgramPage extends StatefulWidget {
@@ -361,7 +362,8 @@ class _ProgramPageState extends State<ProgramPage> {
     try {
       final bytes = File(file.path!).readAsBytesSync();
       final storageRef =
-          FirebaseStorage.instance.ref().child('uploads/${file.name}');
+          FirebaseStorage.instance.ref().child(attachmentStoragePath(
+              docId: widget.documentId, fileName: file.name));
       final uploadTask = storageRef.putData(bytes);
       final snapshot = await uploadTask.whenComplete(() {});
 
@@ -483,11 +485,10 @@ class _ProgramPageState extends State<ProgramPage> {
       return;
     }
 
-    try {
-      await FlutterWebBrowser.openWebPage(url: url);
-    } catch (e) {
+    final bool opened = await openLink(url);
+    if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Errore nell\'aperatura del link')),
+        const SnackBar(content: Text('Errore nell\'apertura del link')),
       );
     }
   }

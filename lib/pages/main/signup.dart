@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'verify.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/functions/linkFunctions.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -480,9 +480,7 @@ class _SignUpState extends State<SignUp> {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  FlutterWebBrowser.openWebPage(
-                                      url:
-                                          'https://www.iubenda.com/privacy-policy/69534588');
+                                  openLink('https://www.iubenda.com/privacy-policy/69534588');
                                 },
                                 icon: const Icon(Icons.open_in_new),
                               ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/functions/linkFunctions.dart';
 
 class Tiber extends StatelessWidget {
   const Tiber({super.key, required this.club});
@@ -16,7 +16,7 @@ class Tiber extends StatelessWidget {
       if (url == null || url.isEmpty) {
         return;
       }
-      FlutterWebBrowser.openWebPage(url: url);
+      openLink(url);
     }
 
     const TextStyle textStyle = TextStyle(
@@ -290,9 +290,7 @@ class Tiber extends StatelessWidget {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.google.com/maps/search/?api=1&query=41.918306,12.474556');
+                      openLink('https://www.google.com/maps/search/?api=1&query=41.918306,12.474556');
                     },
                   ),
                   ListTile(
@@ -306,9 +304,7 @@ class Tiber extends StatelessWidget {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.iubenda.com/privacy-policy/69534588');
+                      openLink('https://www.iubenda.com/privacy-policy/69534588');
                     },
                   ),
                 ]).toList(),
@@ -339,7 +335,7 @@ class _DeltaState extends State<Delta> {
     if (url == null || url.isEmpty) {
       return;
     }
-    FlutterWebBrowser.openWebPage(url: url);
+    openLink(url);
   }
 
   @override
@@ -546,9 +542,7 @@ class _DeltaState extends State<Delta> {
                           trailing:
                               const Icon(Icons.arrow_forward_ios, size: 20),
                           onTap: () {
-                            FlutterWebBrowser.openWebPage(
-                                url:
-                                    'https://docs.google.com/forms/d/e/1FAIpQLSdysbhe4aj4AemaoCFy_05nzT-5oUCpSlQrvMTodtoinJMkow/viewform');
+                            openLink('https://docs.google.com/forms/d/e/1FAIpQLSdysbhe4aj4AemaoCFy_05nzT-5oUCpSlQrvMTodtoinJMkow/viewform');
                           })
                       : Container(),
                   ListTile(
@@ -578,8 +572,7 @@ class _DeltaState extends State<Delta> {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url: 'https://bit.ly/m/centrodelta');
+                      openLink('https://bit.ly/m/centrodelta');
                     },
                   ),
                   ListTile(
@@ -593,9 +586,7 @@ class _DeltaState extends State<Delta> {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.google.com/maps/search/?api=1&query=45.468245,9.164332');
+                      openLink('https://www.google.com/maps/search/?api=1&query=45.468245,9.164332');
                     },
                   ),
                   ListTile(
@@ -609,9 +600,7 @@ class _DeltaState extends State<Delta> {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.iubenda.com/privacy-policy/69534588');
+                      openLink('https://www.iubenda.com/privacy-policy/69534588');
                     },
                   ),
                 ]).toList(),
@@ -893,9 +882,7 @@ class _RampaState extends State<Rampa> {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.google.com/maps/place/Associazione+Idea+Sestopiu/@45.5382134,9.2352257,19.75z/data=!4m6!3m5!1s0x4786b899be7ec9b9:0xfa3ed9ca3dc476e4!8m2!3d45.5383815!4d9.2354612!16s%2Fg%2F11clygy1bz?entry=ttu&g_ep=EgoyMDI1MDMyNS4xIKXMDSoASAFQAw%3D%3D');
+                      openLink('https://www.google.com/maps/place/Associazione+Idea+Sestopiu/@45.5382134,9.2352257,19.75z/data=!4m6!3m5!1s0x4786b899be7ec9b9:0xfa3ed9ca3dc476e4!8m2!3d45.5383815!4d9.2354612!16s%2Fg%2F11clygy1bz?entry=ttu&g_ep=EgoyMDI1MDMyNS4xIKXMDSoASAFQAw%3D%3D');
                     },
                   ),
                   ListTile(
@@ -909,9 +896,7 @@ class _RampaState extends State<Rampa> {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
-                      FlutterWebBrowser.openWebPage(
-                          url:
-                              'https://www.iubenda.com/privacy-policy/69534588');
+                      openLink('https://www.iubenda.com/privacy-policy/69534588');
                     },
                   ),
                 ]).toList(),

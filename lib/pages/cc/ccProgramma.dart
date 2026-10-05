@@ -5,7 +5,6 @@ import 'ccNuovoProgramma.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:intl/intl.dart';
 import 'ccProgrammaCompleto.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 

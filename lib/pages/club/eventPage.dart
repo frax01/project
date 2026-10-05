@@ -8,7 +8,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:club/functions/linkFunctions.dart';
+import 'package:club/functions/storageFunctions.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage(
@@ -289,7 +290,8 @@ class _EventPageState extends State<EventPage> {
     try {
       final bytes = File(file.path!).readAsBytesSync();
       final storageRef =
-          FirebaseStorage.instance.ref().child('uploads/${file.name}');
+          FirebaseStorage.instance.ref().child(attachmentStoragePath(
+              docId: widget.documentId, fileName: file.name));
       final uploadTask = storageRef.putData(bytes);
       final snapshot = await uploadTask.whenComplete(() {});
 
@@ -409,7 +411,12 @@ class _EventPageState extends State<EventPage> {
       return;
     }
 
-    FlutterWebBrowser.openWebPage(url: url);
+    final bool opened = await openLink(url);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Errore nell\'apertura del link')),
+      );
+    }
   }
 
   void _showDeleteConfirmationDialog(Map<String, dynamic> fileData) {

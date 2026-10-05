@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import '../../functions/dateFunctions.dart';
 import '../../functions/geoFunctions.dart';
 import '../../functions/notificationFunctions.dart';
 import 'visibility.dart';
@@ -210,7 +211,7 @@ class _AddEditProgramState extends State<AddEditProgram> {
       context: context,
       initialDate: initialDate,
       firstDate: initialDate,
-      lastDate: DateTime(DateTime.now().year + 1),
+      lastDate: datePickerLastDate(firstDate: initialDate),
     );
 
     if (picked != null && picked != initialDate) {
