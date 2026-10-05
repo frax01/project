@@ -22,6 +22,9 @@ import 'package:club/pages/club/programCard.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'dart:async';
+import 'dart:math';
+import 'package:collection/collection.dart';
+import 'functions/tokenFunctions.dart';
 import 'package:club/pages/cc/ccHomePage.dart';
 
 /// Transizione fra pagine: slide da destra con curva snappy (niente fade).
@@ -310,6 +313,22 @@ class _HomePageStartState extends State<HomePageStart> {
 
   RemoteMessage? initialMessage;
 
+  // Created once: they used to be created inside build(), so every rebuild
+  // reloaded the user and rewrote the token.
+  late final Future<String> _emailFuture = loadData();
+  Future<void>? _retrieveFuture;
+
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
+  StreamSubscription<RemoteMessage>? _foregroundSubscription;
+  bool _terminatedNavigationDone = false;
+
+  @override
+  void dispose() {
+    _openedAppSubscription?.cancel();
+    _foregroundSubscription?.cancel();
+    super.dispose();
+  }
+
   Widget buildClubPage(
       String club, int selectedIndex, String ccRole, bool user) {
     print("sono qui");
@@ -378,34 +397,37 @@ class _HomePageStartState extends State<HomePageStart> {
 
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? getToken = await messaging.getToken();
-      print("token: $getToken");
 
-      String device = await getDeviceInfo();
-      Map deviceToken = {device: getToken};
-
-      if (token.isEmpty || token.any((element) => element is String)) {
-        await FirebaseFirestore.instance.collection('user').doc(id).update({
-          'token': [deviceToken]
-        });
-      } else {
-        if (token.any((map) => map.containsKey(device))) {
-          for (var map in token) {
-            if (map.containsKey(device)) {
-              if (map[device] != getToken) {
-                map[device] = getToken;
-              }
-              break;
-            }
-          }
-        } else {
-          token.add({device: getToken});
+      // A null token (notifications denied, APNs not ready) must never be
+      // written: it broke the notifications of everybody in the same class.
+      if (getToken != null) {
+        final String deviceKey = await _deviceKey();
+        final List<dynamic> updated =
+            upsertDeviceToken(token, deviceKey, getToken);
+        if (!const DeepCollectionEquality().equals(token, updated)) {
+          await FirebaseFirestore.instance
+              .collection('user')
+              .doc(id)
+              .update({'token': updated});
+          token = updated;
         }
-        await FirebaseFirestore.instance
-            .collection('user')
-            .doc(id)
-            .update({'token': token});
       }
     }
+  }
+
+  /// "<model>-<install id>": the model alone ("iPhone") is the same for every
+  /// iPhone, so two devices of the same user overwrote each other's token.
+  Future<String> _deviceKey() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? installId = prefs.getString('installId');
+    if (installId == null) {
+      final Random random = Random.secure();
+      installId = List.generate(6, (_) => random.nextInt(36).toRadixString(36))
+          .join();
+      await prefs.setString('installId', installId);
+    }
+    final String model = await getDeviceInfo();
+    return '${model.isEmpty ? 'device' : model}-$installId';
   }
 
   Future<void> setupInteractedMessage() async {
@@ -421,12 +443,14 @@ class _HomePageStartState extends State<HomePageStart> {
     }
 
     //background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    _openedAppSubscription =
+        FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       handleMessageFromBackgroundAndForegroundState(message);
     });
 
     //foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _foregroundSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       LocalNotificationService.showNotificationOnForeground(message);
     });
   }
@@ -467,7 +491,7 @@ class _HomePageStartState extends State<HomePageStart> {
                   selectedOption: message.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: message.data['role'],
+                  role: message.data['role'] ?? '',
                   classes: classes)));
     } else if (message.data['category'] == 'modified_event') {
       await retrieveData();
@@ -480,7 +504,7 @@ class _HomePageStartState extends State<HomePageStart> {
                   selectedOption: message.data["selectedOption"],
                   isAdmin: status,
                   name: '$name $surname',
-                  role: message.data['role'],
+                  role: message.data['role'] ?? '',
                   classes: classes)));
     } else if (message.data['category'] == 'birthday') {
       Navigator.pushReplacement(
@@ -505,57 +529,48 @@ class _HomePageStartState extends State<HomePageStart> {
     }
   }
 
+  /// Pushes [route] once, after the current frame: it used to be pushed from
+  /// inside build(), which Flutter does not allow, and again at every rebuild.
+  void _pushOnce(Route<dynamic> route) {
+    if (_terminatedNavigationDone) return;
+    _terminatedNavigationDone = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.push(context, route);
+    });
+  }
+
   Widget handleMessageFromTerminatedState() {
+    final Map<String, dynamic>? data = initialMessage?.data;
     if (widget.cc == 'yes') {
-    } else if (initialMessage?.data['category'] == 'new_user') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => AcceptancePage(club: widget.club)));
-    } else if (initialMessage?.data['category'] == 'accepted') {
+    } else if (data?['category'] == 'new_user') {
+      _pushOnce(MaterialPageRoute(
+          builder: (context) => AcceptancePage(club: widget.club)));
+    } else if (data?['category'] == 'accepted') {
       return const Login();
-    } else if (initialMessage?.data['category'] == 'new_event' ||
-        initialMessage?.data['category'] == 'modified_event') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ProgramPage(
-                  club: club,
-                  documentId: initialMessage?.data["docId"],
-                  selectedOption: initialMessage?.data["selectedOption"],
-                  isAdmin: status,
-                  name: '$name $surname',
-                  role: initialMessage?.data['role'],
-                  classes: classes)));
-    } else if (initialMessage?.data['category'] == 'modified_event') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ProgramPage(
-                  club: club,
-                  documentId: initialMessage?.data["docId"],
-                  selectedOption: initialMessage?.data["selectedOption"],
-                  isAdmin: status,
-                  name: '$name $surname',
-                  role: initialMessage?.data['role'],
-                  classes: classes)));
-    } else if (initialMessage?.data['category'] == 'birthday') {
+    } else if (data?['category'] == 'new_event' ||
+        data?['category'] == 'modified_event') {
+      _pushOnce(MaterialPageRoute(
+          builder: (context) => ProgramPage(
+              club: club,
+              documentId: data?["docId"],
+              selectedOption: data?["selectedOption"],
+              isAdmin: status,
+              name: '$name $surname',
+              role: data?['role'] ?? '',
+              classes: classes)));
+    } else if (data?['category'] == 'birthday') {
       return buildClubPage(club, 1, ccRole, true);
-    } else if (initialMessage?.data['category'] == 'evento') {
-      DateTime focusedDay;
-      focusedDay = DateTime.parse(initialMessage?.data['focusedDay']);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => EventPage(
-                    club: club,
-                    documentId: initialMessage?.data['docId'],
-                    isAdmin: status,
-                    name: name,
-                    selectedDay: focusedDay,
-                    role: role,
-                    classes: classes,
-                  )));
+    } else if (data?['category'] == 'evento') {
+      _pushOnce(MaterialPageRoute(
+          builder: (context) => EventPage(
+                club: club,
+                documentId: data?['docId'],
+                isAdmin: status,
+                name: name,
+                selectedDay: DateTime.parse(data?['focusedDay']),
+                role: role,
+                classes: classes,
+              )));
       return buildClubPage(club, 1, ccRole, true);
     }
     return buildClubPage(club, 0, ccRole, true);
@@ -565,13 +580,12 @@ class _HomePageStartState extends State<HomePageStart> {
   void initState() {
     super.initState();
     setupInteractedMessage();
-    retrieveData();
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-      future: loadData(),
+      future: _emailFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -601,7 +615,7 @@ class _HomePageStartState extends State<HomePageStart> {
             return const Login();
           } else {
             return FutureBuilder<void>(
-              future: retrieveData(),
+              future: _retrieveFuture ??= retrieveData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Scaffold(

@@ -131,7 +131,6 @@ exports.scheduleNotificationOneDayBefore = functions.pubsub.schedule('every day 
 });
 
 async function fetchPrograms(elem) {
-    let tokens = [];
     let info = [];
 
     const tomorrow = new Date();
@@ -150,9 +149,10 @@ async function fetchPrograms(elem) {
             for (const event of events.docs) {
                 const [day, month, year] = event.data().startDate.split('-');
                 if (day == dayTomorrow && month == monthTomorrow && year == yearTomorrow) {
+                    // A separate list for every event: the same array used to be shared,
+                    // so each event notified the users of all the events found so far.
                     const userTokens = await fetchProgramsTokens(event.data().selectedClass, elem);
-                    tokens.push(...userTokens);
-                    info.push([tokens, event.data().title, event.data().selectedOption, event.id]);
+                    info.push([userTokens, event.data().title, event.data().selectedOption, event.id]);
                 }
             }
         }

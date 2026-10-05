@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 //import 'package:club/config.dart';
 import 'package:http/http.dart' as http;
+import 'tokenFunctions.dart';
 
 Future<void> sendNotification(
     List fcmToken, String notTitle, String message, String category,
@@ -10,6 +11,10 @@ Future<void> sendNotification(
   const String fcmUrl =
       'https://fcm.googleapis.com/v1/projects/club-60d94/messages:send';
   Uri uri = Uri.parse(fcmUrl);
+
+  if (fcmToken.isEmpty) return;
+  // One access token for the whole batch (it used to be requested per token).
+  final String accessToken = await _generateAccessToken();
 
   for (String token in fcmToken) {
     final Map<String, dynamic> data = {
@@ -36,8 +41,6 @@ Future<void> sendNotification(
         'data': data,
       }
     };
-
-    final String accessToken = await _generateAccessToken();
 
     final http.Response response = await http.post(
       uri,
@@ -75,62 +78,37 @@ Future<String> _generateAccessToken() async {
 
 Future<List<String>> fetchToken(
     String section, String target, String club) async {
-  List<String> tokens = [];
-  try {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .where('club', isEqualTo: club)
-        .where(section, arrayContains: target)
-        .get();
-    for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      for (var value in documentSnapshot['token']) {
-        if (value is String) {
-          if (!tokens.contains(value)) {
-            tokens.add(value);
-          }
-        } else if (value is Map) {
-          String tokenValue = value.values.first;
-          if (!tokens.contains(tokenValue)) {
-            tokens.add(tokenValue);
-          }
-        }
-      }
-    }
-    return tokens;
-  } catch (e) {
-    print(
-        'Errore durante l\'accesso a Firestore per il recupero dei token: $e');
-    return [];
-  }
+  return _collectTokens(FirebaseFirestore.instance
+      .collection('user')
+      .where('club', isEqualTo: club)
+      .where(section, arrayContains: target)
+      .get());
 }
 
 Future<List<String>> retrieveToken(
     String section, String target, String club) async {
-  List<String> tokens = [];
+  return _collectTokens(FirebaseFirestore.instance
+      .collection('user')
+      .where('club', isEqualTo: club)
+      .where(section, isEqualTo: target)
+      .get());
+}
+
+/// Tokens of all the users in [query]. A user with a missing or null token no
+/// longer makes the whole lookup fail (it used to return [] for everybody).
+Future<List<String>> _collectTokens(Future<QuerySnapshot> query) async {
+  final List<String> tokens = [];
   try {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('user')
-        .where('club', isEqualTo: club)
-        .where(section, isEqualTo: target)
-        .get();
-    for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
-      for (var value in documentSnapshot['token']) {
-        if (value is String) {
-          if (!tokens.contains(value)) {
-            tokens.add(value);
-          }
-        } else if (value is Map) {
-          String tokenValue = value.values.first;
-          if (!tokens.contains(tokenValue)) {
-            tokens.add(tokenValue);
-          }
-        }
+    final QuerySnapshot querySnapshot = await query;
+    for (final QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+      final data = documentSnapshot.data() as Map<String, dynamic>;
+      for (final String token in tokensFromField(data['token'])) {
+        if (!tokens.contains(token)) tokens.add(token);
       }
     }
-    return tokens;
   } catch (e) {
     print(
         'Errore durante l\'accesso a Firestore per il recupero dei token: $e');
-    return [];
   }
+  return tokens;
 }
