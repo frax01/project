@@ -251,8 +251,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         'club_class': classList,
         'status': selectedStatus,
       });
-      sendClubNotification(
-          category: 'accepted', userEmail: widget.userEmail);
+      List tokenList = querySnapshot.docs.first["token"];
+      List<String> token = [];
+      for (var elem in tokenList) {
+        if (elem is String) {
+          token.add(elem);
+        } else if (elem is Map<String, String>) {
+          token.add(elem.values.first);
+        }
+      }
+      sendNotification(
+          token, 'Sei stato accettato!', 'Fai di nuovo Login', 'accepted');
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

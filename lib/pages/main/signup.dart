@@ -139,8 +139,10 @@ class _SignUpState extends State<SignUp> {
         prefs.setString('email', _emailController.text);
         prefs.setString('club', club);
 
-        // The server notifies the admins of the club of the new profile.
-        sendClubNotification(category: 'new_user');
+        List<String> token =
+            await retrieveToken('status', 'Admin', _clubController.text);
+        sendNotification(token, 'Nuova registrazione!',
+            'Accetta il nuovo utente', 'new_user');
 
         setState(() {
           Navigator.pushReplacement(context,

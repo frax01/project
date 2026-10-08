@@ -1,3 +1,18 @@
+/// Reads the `token` field of a user document, which holds either legacy
+/// plain strings or `{deviceKey: token}` maps. Null or empty tokens (e.g.
+/// notifications denied, APNs not ready) are skipped instead of throwing, and
+/// the same token is never returned twice.
+List<String> tokensFromField(dynamic field) {
+  final List<String> tokens = [];
+  if (field is! List) return tokens;
+  for (final entry in field) {
+    for (final token in _tokensOfEntry(entry)) {
+      if (!tokens.contains(token)) tokens.add(token);
+    }
+  }
+  return tokens;
+}
+
 Iterable<String> _tokensOfEntry(dynamic entry) {
   if (entry is String) return entry.isEmpty ? const [] : [entry];
   if (entry is Map) {
